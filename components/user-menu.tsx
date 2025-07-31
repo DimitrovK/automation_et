@@ -30,7 +30,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-blue-100 text-blue-700">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -43,8 +43,8 @@ export function UserMenu() {
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
             {(user.is_staff || user.is_superuser) && (
               <div className="flex items-center gap-1 mt-1">
-                <Shield className="h-3 w-3 text-green-600" />
-                <span className="text-xs text-green-600">{user.is_superuser ? "Superuser" : "Staff"}</span>
+                <Shield className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span className="text-xs text-green-600 dark:text-green-400">{user.is_superuser ? "Superuser" : "Staff"}</span>
               </div>
             )}
           </div>

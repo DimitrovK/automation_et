@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, LogIn, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import type { LoginCredentials } from "@/types/auth"
 
 export function LoginForm() {
   const { login, isLoading, error, clearError } = useAuth()
+  const passwordInputRef = useRef<HTMLInputElement>(null)
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: "",
     password: "",
@@ -24,14 +26,30 @@ export function LoginForm() {
     clearError() // Clear any previous errors
     setIsSubmitting(true)
 
+    // Store current credentials before the login attempt
+    const currentCredentials = { ...credentials }
+
     try {
       const result = await login(credentials)
 
       if (!result.success) {
-        // Error is already set in the auth context
+        // Clear only the password field on failed login, keep username
+        setCredentials({
+          username: currentCredentials.username, // Explicitly preserve username
+          password: "",
+        })
+        // Focus the password field for immediate re-entry
+        setTimeout(() => {
+          passwordInputRef.current?.focus()
+        }, 100)
       }
     } catch (err) {
-      // The error should already be set in the auth context
+      // Network or other errors - keep both fields
+      setCredentials({
+        username: currentCredentials.username,
+        password: currentCredentials.password,
+      })
+      console.error('Login error:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -49,12 +67,21 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
+      {isSubmitting && (
+        <LoadingSpinner 
+          message="Authenticating" 
+          subtitle="Verifying staff credentials" 
+          size="md"
+          overlay={true}
+        />
+      )}
+      
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl flex items-center justify-center gap-2">
             <LogIn className="h-6 w-6" />
-            Admin Login
+            Staff Login
           </CardTitle>
           <CardDescription>Sign in to access the Footballer Career Management System</CardDescription>
         </CardHeader>
@@ -76,6 +103,7 @@ export function LoginForm() {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
+                ref={passwordInputRef}
                 id="password"
                 type="password"
                 value={credentials.password}

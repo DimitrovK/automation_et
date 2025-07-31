@@ -40,6 +40,8 @@ import type { Team, PlayerData, PlayerConfiguration } from "@/types/player"
 import { useAuth } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 import { UserMenu } from "@/components/user-menu"
+import { LoadingSpinner } from "@/components/loading-spinner"
+import { ThemeToggle } from "@/components/theme-toggle"
 import config from "@/lib/config"
 
 export default function FootballerCareerApp() {
@@ -284,14 +286,7 @@ export default function FootballerCareerApp() {
 
   // Show loading spinner while checking authentication
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />
   }
 
   // Show login form if not authenticated
@@ -300,15 +295,220 @@ export default function FootballerCareerApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header with utility buttons */}
         <div className="text-center space-y-2 relative">
-          <h1 className="text-4xl font-bold text-gray-900">Footballer Career Lookup</h1>
-          <p className="text-gray-600">Search for detailed career information of football players</p>
+          {/* Mobile layout - buttons above title */}
+          <div className="flex justify-end mb-4 md:hidden">
+            <div className="flex gap-2 items-center">
+              <ThemeToggle />
+              <UserMenu />
 
-          {/* Utility buttons in top right */}
-          <div className="absolute top-0 right-0 flex gap-2 items-center">
+              {/* Connection Settings Dialog */}
+              <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-transparent">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Connection Settings
+                    </DialogTitle>
+                    <DialogDescription>Configure how to connect to your n8n webhook</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Webhook URL</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="webhook-url"
+                            value={webhookUrl}
+                            onChange={(e) => setWebhookUrl(e.target.value)}
+                            placeholder={config.N8N_WEBHOOK_URL}
+                            className="flex-1"
+                          />
+                          <Button onClick={testConnection} variant="outline" size="sm">
+                            Test
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Enter your n8n webhook URL. This is where player search requests will be sent.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="direct-connection"
+                          checked={useDirectConnection}
+                          onCheckedChange={setUseDirectConnection}
+                        />
+                        <Label htmlFor="direct-connection">Use direct connection to webhook</Label>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {useDirectConnection
+                          ? "Requests go directly to the webhook URL above"
+                          : "Requests go through the API route proxy below"}
+                      </p>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="api-url">API Route URL (Proxy)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="api-url"
+                            value="/api/footballer-career"
+                            disabled
+                            className="flex-1 bg-gray-50 dark:bg-gray-700 cursor-not-allowed"
+                          />
+                          <Button
+                            onClick={() => window.open("/api/footballer-career", "_blank")}
+                            variant="outline"
+                            size="sm"
+                            disabled={useDirectConnection}
+                          >
+                            Open
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {useDirectConnection
+                            ? "API route is bypassed when using direct connection"
+                            : "Currently using this API route as proxy to webhook"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {debugInfo.length > 0 && (
+                      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 max-h-32 overflow-y-auto">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium dark:text-white">Connection Test Results:</p>
+                          <Badge variant="outline" className="text-xs">
+                            {useDirectConnection ? `Direct: ${webhookUrl.split("/").pop()}` : "Via API Route"}
+                          </Badge>
+                        </div>
+                        {debugInfo.map((info, index) => (
+                          <p key={index} className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                            {info}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch id="admin-mode" checked={isAdminMode} onCheckedChange={setIsAdminMode} />
+                      <Label htmlFor="admin-mode">Enable Admin Mode</Label>
+                    </div>
+
+                    {isAdminMode && (
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-url">Admin Backend URL</Label>
+                        <Input
+                          id="admin-url"
+                          value={adminBackendUrl}
+                          onChange={(e) => setAdminBackendUrl(e.target.value)}
+                          placeholder={config.ADMIN_BASE_URL}
+                          className="text-sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* API Help Dialog */}
+              <Dialog open={apiHelpOpen} onOpenChange={setApiHelpOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-transparent">
+                    <Code className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Code className="h-4 w-4" />
+                      API Usage & Testing
+                    </DialogTitle>
+                    <DialogDescription>Direct webhook testing commands and troubleshooting</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Test webhook directly:</h4>
+                      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                        <code className="text-gray-800 dark:text-gray-200">
+                          curl -X POST {webhookUrl} \\
+                          <br />
+                          -H "Content-Type: application/json" \\
+                          <br />
+                          -d {'{"name": "Borislav_Tsonev"}'}
+                        </code>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <h4 className="font-medium mb-2">Troubleshooting:</h4>
+                      <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+                        <li>If curl works but web app doesn't, try toggling connection settings</li>
+                        <li>Check browser console for CORS errors</li>
+                        <li>Ensure n8n workflow is running on the specified port</li>
+                        <li>Try both HTTP and HTTPS URLs if one fails</li>
+                      </ul>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Help/Info Dialog */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-transparent">
+                    <HelpCircle className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <HelpCircle className="h-4 w-4" />
+                      How to Use
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <h4 className="font-medium">Player Names:</h4>
+                      <p className="text-gray-600 dark:text-gray-400">Use underscores instead of spaces (e.g., "Borislav_Tsonev")</p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Requirements:</h4>
+                      <p className="text-gray-600 dark:text-gray-400">Make sure your n8n workflow is running on localhost:5678</p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Troubleshooting:</h4>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Use the settings (⚙️) and API (💻) buttons above for configuration and testing
+                      </p>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Footballer Career Lookup</h1>
+          <p className="text-gray-600 dark:text-gray-300">Search for detailed career information of football players</p>
+
+          {/* Desktop layout - buttons positioned absolutely */}
+          <div className="absolute top-0 right-0 hidden md:flex gap-2 items-center">
+            <ThemeToggle />
             <UserMenu />
 
             {/* Connection Settings Dialog */}
@@ -368,7 +568,7 @@ export default function FootballerCareerApp() {
                           id="api-url"
                           value="/api/footballer-career"
                           disabled
-                          className="flex-1 bg-gray-50 cursor-not-allowed"
+                          className="flex-1 bg-gray-50 dark:bg-gray-700 cursor-not-allowed"
                         />
                         <Button
                           onClick={() => window.open("/api/footballer-career", "_blank")}
@@ -390,9 +590,9 @@ export default function FootballerCareerApp() {
                   <Separator />
 
                   {debugInfo.length > 0 && (
-                    <div className="bg-gray-100 rounded-lg p-3 max-h-32 overflow-y-auto">
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 max-h-32 overflow-y-auto">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium">Connection Test Results:</p>
+                        <p className="text-sm font-medium dark:text-white">Connection Test Results:</p>
                         <Badge variant="outline" className="text-xs">
                           {useDirectConnection ? `Direct: ${webhookUrl.split("/").pop()}` : "Via API Route"}
                         </Badge>
@@ -447,8 +647,8 @@ export default function FootballerCareerApp() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-2">Test webhook directly:</h4>
-                    <div className="bg-gray-100 rounded-lg p-4 font-mono text-sm overflow-x-auto">
-                      <code className="text-gray-800">
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                      <code className="text-gray-800 dark:text-gray-200">
                         curl -X POST {webhookUrl} \\
                         <br />
                         -H "Content-Type: application/json" \\
@@ -462,7 +662,7 @@ export default function FootballerCareerApp() {
 
                   <div>
                     <h4 className="font-medium mb-2">Troubleshooting:</h4>
-                    <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                    <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
                       <li>If curl works but web app doesn't, try toggling connection settings</li>
                       <li>Check browser console for CORS errors</li>
                       <li>Ensure n8n workflow is running on the specified port</li>
@@ -490,15 +690,15 @@ export default function FootballerCareerApp() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <h4 className="font-medium">Player Names:</h4>
-                    <p className="text-gray-600">Use underscores instead of spaces (e.g., "Borislav_Tsonev")</p>
+                    <p className="text-gray-600 dark:text-gray-400">Use underscores instead of spaces (e.g., "Borislav_Tsonev")</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Requirements:</h4>
-                    <p className="text-gray-600">Make sure your n8n workflow is running on localhost:5678</p>
+                    <p className="text-gray-600 dark:text-gray-400">Make sure your n8n workflow is running on localhost:5678</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Troubleshooting:</h4>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       Use the settings (⚙️) and API (💻) buttons above for configuration and testing
                     </p>
                   </div>
@@ -515,7 +715,7 @@ export default function FootballerCareerApp() {
               <Search className="h-5 w-5" />
               Player Search
             </CardTitle>
-            <CardDescription>Enter player name with underscores (e.g., "Borislav_Tsonev")</CardDescription>
+            <CardDescription>We are searching Wikipedia so in order for this search to work, get the player name with underscores from there (e.g., "Borislav_Tsonev").</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
@@ -579,8 +779,8 @@ export default function FootballerCareerApp() {
                       <div className="flex items-center gap-3">
                         <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">Age</p>
-                          <p className="font-medium text-sm">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Age</p>
+                          <p className="font-medium text-sm dark:text-white">
                             {calculateAge(playerData.dateOfBirth)} ({playerData.dateOfBirth})
                           </p>
                         </div>
@@ -589,9 +789,9 @@ export default function FootballerCareerApp() {
                       <div className="flex items-center gap-3">
                         <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">Nationality</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Nationality</p>
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm">{playerData.birthCountry}</p>
+                            <p className="font-medium text-sm dark:text-white">{playerData.birthCountry}</p>
                             {!playerData.countryFoundInDB && <AlertTriangle className="h-4 w-4 text-amber-500" />}
                           </div>
                           {!playerData.countryFoundInDB && (
@@ -620,8 +820,8 @@ export default function FootballerCareerApp() {
                       <div className="flex items-center gap-3">
                         <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">Position</p>
-                          <p className="font-medium text-sm">{playerData.position}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Position</p>
+                          <p className="font-medium text-sm dark:text-white">{playerData.position}</p>
                         </div>
                       </div>
                     </div>
@@ -641,26 +841,26 @@ export default function FootballerCareerApp() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-gray-200">
-                            <th className="text-left py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                            <th className="text-left py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                               Club
                             </th>
-                            <th className="text-center py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                            <th className="text-center py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                               Apps
                             </th>
-                            <th className="text-center py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                            <th className="text-center py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                               Goals
                             </th>
-                            <th className="text-center py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                            <th className="text-center py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                               Transfer
                             </th>
-                            <th className="text-left py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                            <th className="text-left py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                               Season
                             </th>
-                            <th className="text-left py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                            <th className="text-left py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                               Status
                             </th>
                             {isAdminMode && (
-                              <th className="text-left py-3 px-2 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                              <th className="text-left py-3 px-2 font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide text-xs">
                                 Admin Link
                               </th>
                             )}
@@ -672,24 +872,24 @@ export default function FootballerCareerApp() {
                             .map((team, index) => (
                               <tr
                                 key={index}
-                                className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                                  !team.teamFound ? "bg-red-50 border-red-200" : ""
+                                className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                                  !team.teamFound ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : ""
                                 }`}
                               >
                                 <td className="py-3 px-2">
                                   <div className="flex items-center gap-2">
                                     <div>
                                       <div
-                                        className={`font-medium ${!team.teamFound ? "text-red-700" : "text-gray-900"} flex items-center gap-1`}
+                                        className={`font-medium ${!team.teamFound ? "text-red-700 dark:text-red-400" : "text-gray-900 dark:text-white"} flex items-center gap-1`}
                                       >
                                         {!team.teamFound && <AlertTriangle className="h-4 w-4 text-red-500" />}
                                         {team.teamName}
                                       </div>
                                       {team.originalTeamName !== team.teamName && (
-                                        <div className="text-xs text-gray-500">({team.originalTeamName})</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">({team.originalTeamName})</div>
                                       )}
                                       {team.teamFound && team.TeamNameDB && team.TeamNameDB !== team.teamName && (
-                                        <div className="text-xs text-blue-600 font-medium">
+                                        <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                                           Name in DB: {team.TeamNameDB}
                                         </div>
                                       )}
@@ -697,10 +897,10 @@ export default function FootballerCareerApp() {
                                   </div>
                                 </td>
                                 <td className="py-3 px-2 text-center">
-                                  <div className="font-medium text-gray-900">{team.appearances}</div>
+                                  <div className="font-medium text-gray-900 dark:text-white">{team.appearances}</div>
                                 </td>
                                 <td className="py-3 px-2 text-center">
-                                  <div className="font-medium text-gray-900">{team.goals}</div>
+                                  <div className="font-medium text-gray-900 dark:text-white">{team.goals}</div>
                                 </td>
                                 <td className="py-3 px-2 text-center">
                                   <Badge
@@ -715,7 +915,7 @@ export default function FootballerCareerApp() {
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-2 text-sm">
-                                  <div className="font-medium text-gray-900">
+                                  <div className="font-medium text-gray-900 dark:text-white">
                                     {team.joinYear}
                                     {team.departYear ? `-${team.departYear}` : ""}
                                   </div>
@@ -753,18 +953,18 @@ export default function FootballerCareerApp() {
                             ))}
                         </tbody>
                         <tfoot>
-                          <tr className="border-t-2 border-gray-300 bg-gray-50">
-                            <td className="py-3 px-2 font-semibold text-gray-700">
+                          <tr className="border-t-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
+                            <td className="py-3 px-2 font-semibold text-gray-700 dark:text-gray-300">
                               {playerData.summary.totalTeams} clubs
                             </td>
-                            <td className="py-3 px-2 text-center font-semibold text-gray-900">
+                            <td className="py-3 px-2 text-center font-semibold text-gray-900 dark:text-white">
                               {playerData.totalAppearances}
                             </td>
-                            <td className="py-3 px-2 text-center font-semibold text-gray-900">
+                            <td className="py-3 px-2 text-center font-semibold text-gray-900 dark:text-white">
                               {playerData.totalGoals}
                             </td>
-                            <td className="py-3 px-2 text-center font-semibold text-gray-900">-</td>
-                            <td className="py-3 px-2 font-semibold text-gray-900">Total</td>
+                            <td className="py-3 px-2 text-center font-semibold text-gray-900 dark:text-white">-</td>
+                            <td className="py-3 px-2 font-semibold text-gray-900 dark:text-white">Total</td>
                             <td className="py-3 px-2">
                               <div className="flex gap-1">
                                 <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
@@ -801,92 +1001,80 @@ export default function FootballerCareerApp() {
                   </div>
                   <Button variant="outline" onClick={handleResync} className="flex items-center gap-2 bg-transparent">
                     <RotateCcw className="h-4 w-4" />
-                    Resync
+                    Resync Data
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Player Information Section - Single Edit Button */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-lg text-gray-900">Player Information</h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setIsEditingNames(!isEditingNames)
-                        setIsEditingDetails(!isEditingDetails)
-                      }}
-                      className="h-8 px-3"
-                    >
-                      <Edit className="h-3 w-3 mr-1" />
-                      {isEditingNames ? "Lock All" : "Edit All"}
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first-name" className="text-sm font-medium">
-                        First Name
-                      </Label>
-                      <Input
-                        id="first-name"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        disabled={!isEditingNames}
-                        className={`${!isEditingNames ? "bg-gray-50 cursor-not-allowed" : ""}`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last-name" className="text-sm font-medium">
-                        Last Name
-                      </Label>
-                      <Input
-                        id="last-name"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        disabled={!isEditingNames}
-                        className={`${!isEditingNames ? "bg-gray-50 cursor-not-allowed" : ""}`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="date-of-birth" className="text-sm font-medium">
-                        Date of Birth
-                      </Label>
-                      <Input
-                        id="date-of-birth"
-                        type="date"
-                        value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
-                        disabled={!isEditingNames}
-                        className={`${!isEditingNames ? "bg-gray-50 cursor-not-allowed" : ""}`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="nationality" className="text-sm font-medium">
-                        Nationality
-                      </Label>
-                      <Input
-                        id="nationality"
-                        value={nationality}
-                        onChange={(e) => setNationality(e.target.value)}
-                        disabled={!isEditingNames}
-                        className={`${!isEditingNames ? "bg-gray-50 cursor-not-allowed" : ""}`}
-                        placeholder="e.g., Bulgaria"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Player information is automatically loaded from the search results. Click "Edit All" to modify any
-                    field.
-                  </p>
-                </div>
-
-                <Separator className="mb-8" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* Boolean Fields Column 1 */}
+                {/* Top Row - Player Information and Player Settings */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                  {/* Left Column - Player Information */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-gray-900">Display Settings</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Player Information</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditingNames(!isEditingNames)
+                          setIsEditingDetails(!isEditingDetails)
+                        }}
+                        className="h-8 px-3"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        {isEditingNames ? "Lock" : "Edit"}
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="first-name" className="text-sm font-medium">
+                          First Name
+                        </Label>
+                        <Input
+                          id="first-name"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          disabled={!isEditingNames}
+                          className={`${!isEditingNames ? "bg-gray-50 dark:bg-gray-700 cursor-not-allowed" : ""}`}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="last-name" className="text-sm font-medium">
+                          Last Name
+                        </Label>
+                        <Input
+                          id="last-name"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          disabled={!isEditingNames}
+                          className={`${!isEditingNames ? "bg-gray-50 dark:bg-gray-700 cursor-not-allowed" : ""}`}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="date-of-birth" className="text-sm font-medium">
+                          Date of Birth
+                        </Label>
+                        <Input
+                          id="date-of-birth"
+                          type="date"
+                          value={dateOfBirth}
+                          onChange={(e) => setDateOfBirth(e.target.value)}
+                          disabled={!isEditingNames}
+                          className={`${!isEditingNames ? "bg-gray-50 dark:bg-gray-700 cursor-not-allowed" : ""}`}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Player information is automatically loaded from the search results. Click "Edit" to modify any field.
+                    </p>
+                  </div>
+
+                  {/* Right Column - Player Settings */}
+                  <div className="space-y-6">
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Player Settings</h3>
+                    
+                    {/* Display Settings */}
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3">
                         <Checkbox
@@ -903,110 +1091,100 @@ export default function FootballerCareerApp() {
                           Show date of birth in search results
                         </Label>
                       </div>
-                      <p className="text-xs text-gray-500 ml-6">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
                         Whether to display the year of birth in search results
                       </p>
                     </div>
-                  </div>
 
-                  {/* Boolean Fields Column 2 */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-gray-900">Player Status</h3>
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            id="retired"
-                            checked={playerConfig.retired}
-                            onCheckedChange={(checked) =>
-                              setPlayerConfig((prev) => ({
-                                ...prev,
-                                retired: checked as boolean,
-                              }))
-                            }
-                          />
-                          <Label htmlFor="retired" className="text-sm font-medium">
-                            Player is retired
-                          </Label>
-                        </div>
-                        <p className="text-xs text-gray-500 ml-6">
-                          Indicates whether the footballer has retired from professional football
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            id="might_change"
-                            checked={playerConfig.might_change}
-                            onCheckedChange={(checked) =>
-                              setPlayerConfig((prev) => ({
-                                ...prev,
-                                might_change: checked as boolean,
-                              }))
-                            }
-                          />
-                          <Label htmlFor="might_change" className="text-sm font-medium">
-                            Information might change
-                          </Label>
-                        </div>
-                        <p className="text-xs text-gray-500 ml-6">
-                          Indicates if the player information might need revisions in the future
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CareerPath Settings Column 3 */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-gray-900">CareerPath Game</h3>
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            id="available_for_career_path"
-                            checked={playerConfig.available_for_career_path}
-                            onCheckedChange={(checked) =>
-                              setPlayerConfig((prev) => ({
-                                ...prev,
-                                available_for_career_path: checked as boolean,
-                              }))
-                            }
-                          />
-                          <Label htmlFor="available_for_career_path" className="text-sm font-medium">
-                            Available for CareerPath game
-                          </Label>
-                        </div>
-                        <p className="text-xs text-gray-500 ml-6">
-                          Whether the footballer is available in the CareerPath game
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="difficulty" className="text-sm font-medium">
-                          CareerPath Difficulty Level
-                        </Label>
-                        <Select
-                          value={playerConfig.career_path_difficulty}
-                          onValueChange={(value: "EASY" | "NORMAL" | "HARD" | "EXTREME") =>
+                    {/* Player Status */}
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="retired"
+                          checked={playerConfig.retired}
+                          onCheckedChange={(checked) =>
                             setPlayerConfig((prev) => ({
                               ...prev,
-                              career_path_difficulty: value,
+                              retired: checked as boolean,
                             }))
                           }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="EASY">Easy</SelectItem>
-                            <SelectItem value="NORMAL">Normal</SelectItem>
-                            <SelectItem value="HARD">Hard</SelectItem>
-                            <SelectItem value="EXTREME">Extreme</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-gray-500">The difficulty level of this footballer in CareerPath</p>
+                        />
+                        <Label htmlFor="retired" className="text-sm font-medium">
+                          Player is retired
+                        </Label>
                       </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                        Indicates whether the footballer has retired from professional football
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="might_change"
+                          checked={playerConfig.might_change}
+                          onCheckedChange={(checked) =>
+                            setPlayerConfig((prev) => ({
+                              ...prev,
+                              might_change: checked as boolean,
+                            }))
+                          }
+                        />
+                        <Label htmlFor="might_change" className="text-sm font-medium">
+                          Information might change
+                        </Label>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                        Indicates if the player information might need revisions in the future
+                      </p>
+                    </div>
+
+                    {/* CareerPath Game Settings */}
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="available_for_career_path"
+                          checked={playerConfig.available_for_career_path}
+                          onCheckedChange={(checked) =>
+                            setPlayerConfig((prev) => ({
+                              ...prev,
+                              available_for_career_path: checked as boolean,
+                            }))
+                          }
+                        />
+                        <Label htmlFor="available_for_career_path" className="text-sm font-medium">
+                          Available for CareerPath game
+                        </Label>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                        Whether the footballer is available in the CareerPath game
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="difficulty" className="text-sm font-medium">
+                        CareerPath Difficulty Level
+                      </Label>
+                      <Select
+                        value={playerConfig.career_path_difficulty}
+                        onValueChange={(value: "EASY" | "NORMAL" | "HARD" | "EXTREME") =>
+                          setPlayerConfig((prev) => ({
+                            ...prev,
+                            career_path_difficulty: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="EASY">Easy</SelectItem>
+                          <SelectItem value="NORMAL">Normal</SelectItem>
+                          <SelectItem value="HARD">Hard</SelectItem>
+                          <SelectItem value="EXTREME">Extreme</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">The difficulty level of this footballer in CareerPath</p>
                     </div>
                   </div>
                 </div>
