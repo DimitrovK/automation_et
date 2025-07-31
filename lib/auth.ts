@@ -30,13 +30,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (credentials: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true)
       setError(null) // Clear any previous errors
 
       const response = await apiFetcher("auth/login/", {
         method: "POST",
         body: JSON.stringify(credentials),
       })
+
+      // Check if user is staff before allowing login
+      if (response.user && !response.user.is_staff) {
+        const errorMessage = "Only staff users are allowed to access this application."
+        setError(errorMessage)
+        return { success: false, error: errorMessage }
+      }
 
       // Store JWT tokens
       localStorage.setItem("token", response.access)
@@ -75,8 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const genericError = "An unexpected error occurred"
       setError(genericError)
       return { success: false, error: genericError }
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -107,19 +111,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async (): Promise<void> => {
     try {
+      console.log("checkAuth: Starting...")
       setIsLoading(true)
+
+      // Check if we're in the browser environment
+      if (typeof window === 'undefined') {
+        console.log("checkAuth: Not in browser environment, setting isLoading to false")
+        setIsLoading(false)
+        return
+      }
 
       // Check localStorage for persisted user and tokens
       const storedUser = localStorage.getItem("user")
       const token = localStorage.getItem("token")
       
+      console.log("checkAuth: storedUser:", !!storedUser, "token:", !!token)
+      
       if (storedUser && token) {
         try {
           const userData = JSON.parse(storedUser)
+          console.log("checkAuth: parsed user data, is_staff:", userData.is_staff)
+          
+          // Check if stored user is staff, if not clear the session
+          if (!userData.is_staff) {
+            console.log("checkAuth: User is not staff, clearing session")
+            localStorage.removeItem("user")
+            localStorage.removeItem("token")
+            localStorage.removeItem("refresh_token")
+            setUser(null)
+            setError("Only staff users are allowed to access this application.")
+            return
+          }
+          
+          console.log("checkAuth: Setting user data")
           setUser(userData)
           // For JWT tokens, we trust the stored data until an API call fails
           // The apiFetcher will handle token refresh automatically when needed
         } catch (error) {
+          console.log("checkAuth: Error parsing stored data:", error)
           // Clear invalid stored data
           localStorage.removeItem("user")
           localStorage.removeItem("token")
@@ -127,12 +156,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null)
         }
       } else {
+        console.log("checkAuth: No stored credentials, user not authenticated")
         // No token or user data, user is not authenticated
         setUser(null)
       }
     } catch (error) {
+      console.log("checkAuth: Outer catch error:", error)
       // Keep existing user state if there's an error
     } finally {
+      console.log("checkAuth: Setting isLoading to false")
       setIsLoading(false)
     }
   }

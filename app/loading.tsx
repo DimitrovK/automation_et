@@ -1,3 +1,5 @@
+import { LoadingSpinner } from "@/components/loading-spinner"
+
 export default function Loading() {
-  return null
+  return <LoadingSpinner message="Loading" subtitle="Preparing your staff dashboard" size="lg" />
 }
