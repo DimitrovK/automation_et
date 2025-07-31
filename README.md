@@ -8,7 +8,7 @@ A Next.js application for managing footballer career data with Django backend in
 - 🔍 **Player Search** - Search and display footballer career information
 - ⚙️ **Configuration** - Player settings and deployment configuration
 - 🏢 **Admin Integration** - Direct links to Django admin for data management
-- 🔗 **N8N Integration** - Webhook integration for data processing
+- 🔗 **N8N Integration** - Webhook integration for data processing.
 
 ## Tech Stack
 
