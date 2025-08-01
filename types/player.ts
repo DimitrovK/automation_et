@@ -14,6 +14,23 @@ export interface Team {
   typeOfTransfer: "loan" | "permanent"
 }
 
+export interface DbPlayerInfo {
+  retired: boolean
+  is_player: boolean
+  is_manager: boolean
+  might_change: boolean
+  available_for_career_path: boolean
+  career_path_difficulty: "EASY" | "NORMAL" | "HARD" | "EXTREME"
+  show_date_of_birth_on_search: boolean
+  date_of_birth: string
+  nation: {
+    id: number
+    name: string
+    nationality: string
+    short: string
+  }
+}
+
 export interface PlayerData {
   playerName: string
   playerFoundInDB: boolean
@@ -30,6 +47,7 @@ export interface PlayerData {
     notFoundTeams: number
   }
   teams: Team[]
+  dbPlayerInfo?: DbPlayerInfo
 }
 
 export interface PlayerConfiguration {
