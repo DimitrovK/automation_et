@@ -11,7 +11,7 @@ export interface Team {
   teamFound: boolean
   teamID: number | null
   TeamNameDB?: string
-  typeOfTransfer: "loan" | "permanent"
+  typeOfTransfer: string
 }
 
 export interface DbPlayerInfo {
