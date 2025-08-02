@@ -42,6 +42,12 @@ export function Navigation({ className }: NavigationProps) {
       icon: Search,
       description: "Football player career search",
     },
+    {
+      label: "Footballer Management",
+      href: "/footballer-management",
+      icon: Sparkles,
+      description: "Test footballer API endpoints",
+    },
     // Easy to add more pages here in the future
     // {
     //   label: "Player Stats",

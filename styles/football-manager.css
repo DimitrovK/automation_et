@@ -1,0 +1,116 @@
+/* Football Manager Theme System */
+:root {
+  /* Light theme colors */
+  --fm-bg-primary: theme(colors.white);
+  --fm-bg-secondary: theme(colors.gray.50);
+  --fm-bg-tertiary: theme(colors.gray.100);
+  --fm-bg-header: linear-gradient(to right, theme(colors.gray.100), theme(colors.gray.200));
+  --fm-bg-footer: theme(colors.gray.200);
+  
+  --fm-border-primary: theme(colors.gray.300);
+  --fm-border-secondary: theme(colors.gray.200);
+  
+  --fm-text-primary: theme(colors.gray.900);
+  --fm-text-secondary: theme(colors.gray.600);
+  --fm-text-muted: theme(colors.gray.400);
+  
+  --fm-stats-blue: theme(colors.blue.600);
+  --fm-stats-yellow: theme(colors.yellow.600);
+  --fm-stats-green: theme(colors.green.600);
+  --fm-stats-red: theme(colors.red.600);
+  --fm-stats-purple: theme(colors.purple.600);
+}
+
+.dark {
+  /* Dark theme colors */
+  --fm-bg-primary: theme(colors.slate.800);
+  --fm-bg-secondary: theme(colors.slate.900);
+  --fm-bg-tertiary: theme(colors.slate.800);
+  --fm-bg-header: linear-gradient(to right, theme(colors.slate.700), theme(colors.slate.600));
+  --fm-bg-footer: theme(colors.slate.900);
+  
+  --fm-border-primary: theme(colors.slate.600);
+  --fm-border-secondary: theme(colors.slate.600);
+  
+  --fm-text-primary: theme(colors.white);
+  --fm-text-secondary: theme(colors.slate.400);
+  --fm-text-muted: theme(colors.slate.500);
+  
+  --fm-stats-blue: theme(colors.blue.300);
+  --fm-stats-yellow: theme(colors.yellow.300);
+  --fm-stats-green: theme(colors.green.300);
+  --fm-stats-red: theme(colors.red.300);
+  --fm-stats-purple: theme(colors.purple.300);
+}
+
+/* Utility classes using the custom properties */
+.fm-card {
+  @apply bg-[var(--fm-bg-primary)] border-[var(--fm-border-primary)] rounded-lg shadow-xl overflow-hidden;
+}
+
+.fm-card-header {
+  background: var(--fm-bg-header);
+  @apply px-4 py-3 border-b-[var(--fm-border-primary)];
+}
+
+.fm-card-body {
+  @apply bg-[var(--fm-bg-secondary)] p-4;
+}
+
+.fm-table-header {
+  background: var(--fm-bg-header);
+  @apply px-4 py-3 border-b-[var(--fm-border-primary)];
+}
+
+.fm-table-row-even {
+  @apply bg-[var(--fm-bg-tertiary)];
+}
+
+.fm-table-row-odd {
+  @apply bg-[var(--fm-bg-secondary)];
+}
+
+.fm-table-footer {
+  @apply bg-[var(--fm-bg-footer)] px-4 py-3 border-t-2 border-[var(--fm-border-primary)];
+}
+
+.fm-text-primary {
+  color: var(--fm-text-primary);
+}
+
+.fm-text-secondary {
+  color: var(--fm-text-secondary);
+}
+
+.fm-text-muted {
+  color: var(--fm-text-muted);
+}
+
+.fm-stat-blue {
+  color: var(--fm-stats-blue);
+}
+
+.fm-stat-yellow {
+  color: var(--fm-stats-yellow);
+}
+
+.fm-stat-green {
+  color: var(--fm-stats-green);
+}
+
+.fm-stat-red {
+  color: var(--fm-stats-red);
+}
+
+.fm-stat-purple {
+  color: var(--fm-stats-purple);
+}
+
+/* Hover states */
+.fm-table-row {
+  @apply transition-colors cursor-pointer border-b border-[var(--fm-border-secondary)];
+}
+
+.fm-table-row:hover {
+  @apply bg-blue-50 dark:bg-slate-700;
+}

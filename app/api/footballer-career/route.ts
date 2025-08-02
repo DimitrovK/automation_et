@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const baseWebhookUrl = process.env.N8N_WEBHOOK_URL || "http://localhost:5678"
     const webhookUrl = `${baseWebhookUrl}/webhook/footballer-career`
 
-    console.log(`API Route: Attempting to call: ${webhookUrl}`)
+    console.log(`N8N Route: Attempting to call: ${webhookUrl}`)
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       })
 
       clearTimeout(timeoutId)
-      console.log(`API Route: Response status: ${response.status}`)
+      console.log(`N8N Route: Response status: ${response.status}`)
 
       if (!response.ok) {
         const errorText = await response.text()

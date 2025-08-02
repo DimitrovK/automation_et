@@ -110,13 +110,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const checkAuth = async (): Promise<void> => {
+    console.log("checkAuth: Starting...")
+    
     try {
-      console.log("checkAuth: Starting...")
-      setIsLoading(true)
-
       // Check if we're in the browser environment
       if (typeof window === 'undefined') {
-        console.log("checkAuth: Not in browser environment, setting isLoading to false")
+        console.log("checkAuth: Not in browser environment")
         setIsLoading(false)
         return
       }
@@ -125,30 +124,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem("user")
       const token = localStorage.getItem("token")
       
-      console.log("checkAuth: storedUser:", !!storedUser, "token:", !!token)
+      console.log("checkAuth: storedUser exists:", !!storedUser, "token exists:", !!token)
       
       if (storedUser && token) {
         try {
           const userData = JSON.parse(storedUser)
           console.log("checkAuth: parsed user data, is_staff:", userData.is_staff)
           
-          // Check if stored user is staff, if not clear the session
-          if (!userData.is_staff) {
+          // Check if stored user is staff
+          if (userData.is_staff) {
+            console.log("checkAuth: User is staff, setting user data")
+            setUser(userData)
+          } else {
             console.log("checkAuth: User is not staff, clearing session")
             localStorage.removeItem("user")
             localStorage.removeItem("token")
             localStorage.removeItem("refresh_token")
             setUser(null)
             setError("Only staff users are allowed to access this application.")
-            return
           }
-          
-          console.log("checkAuth: Setting user data")
-          setUser(userData)
-          // For JWT tokens, we trust the stored data until an API call fails
-          // The apiFetcher will handle token refresh automatically when needed
-        } catch (error) {
-          console.log("checkAuth: Error parsing stored data:", error)
+        } catch (parseError) {
+          console.log("checkAuth: Error parsing stored data:", parseError)
           // Clear invalid stored data
           localStorage.removeItem("user")
           localStorage.removeItem("token")
@@ -157,13 +153,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         console.log("checkAuth: No stored credentials, user not authenticated")
-        // No token or user data, user is not authenticated
         setUser(null)
       }
     } catch (error) {
-      console.log("checkAuth: Outer catch error:", error)
-      // Keep existing user state if there's an error
+      console.log("checkAuth: Unexpected error:", error)
+      setUser(null)
     } finally {
+      // Always set loading to false, regardless of what happened above
       console.log("checkAuth: Setting isLoading to false")
       setIsLoading(false)
     }

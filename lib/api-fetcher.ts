@@ -108,5 +108,26 @@ export async function apiFetcher(url: string, options: ApiOptions = {}): Promise
     throw new Error(errorMessage)
   }
 
-  return response.json()
+  // Check if response has content before trying to parse JSON
+  const contentLength = response.headers.get('content-length')
+  const contentType = response.headers.get('content-type')
+  
+  // If no content (204 status or empty response), return null
+  if (response.status === 204 || contentLength === '0') {
+    return null
+  }
+  
+  // If response doesn't contain JSON, return null
+  if (!contentType || !contentType.includes('application/json')) {
+    return null
+  }
+
+  // Try to parse JSON, return null if parsing fails (empty response)
+  try {
+    const text = await response.text()
+    return text ? JSON.parse(text) : null
+  } catch (error) {
+    console.warn("Failed to parse JSON response:", error)
+    return null
+  }
 }

@@ -52,6 +52,9 @@ const PaginationLink = ({
         variant: isActive ? "outline" : "ghost",
         size,
       }),
+      isActive 
+        ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white border-emerald-500 shadow-lg hover:from-emerald-600 hover:to-green-700"
+        : "hover:bg-gradient-to-r hover:from-emerald-100 hover:to-green-100 dark:hover:from-emerald-800 dark:hover:to-green-800 hover:border-emerald-300 dark:hover:border-emerald-600 hover:text-emerald-700 dark:hover:text-emerald-200 transition-all duration-200",
       className
     )}
     {...props}
@@ -66,7 +69,10 @@ const PaginationPrevious = ({
   <PaginationLink
     aria-label="Go to previous page"
     size="default"
-    className={cn("gap-1 pl-2.5", className)}
+    className={cn(
+      "gap-1 pl-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200",
+      className
+    )}
     {...props}
   >
     <ChevronLeft className="h-4 w-4" />
@@ -82,7 +88,10 @@ const PaginationNext = ({
   <PaginationLink
     aria-label="Go to next page"
     size="default"
-    className={cn("gap-1 pr-2.5", className)}
+    className={cn(
+      "gap-1 pr-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200",
+      className
+    )}
     {...props}
   >
     <span>Next</span>
