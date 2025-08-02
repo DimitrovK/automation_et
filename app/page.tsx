@@ -35,6 +35,9 @@ export default function DashboardPage() {
   const navigateToCareerLookup = () => {
     router.push('/career-lookup')
   }
+  const navigateToFootballerManagement = () => {
+    router.push('/footballer-management')
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-slate-800 dark:to-emerald-900/30 p-4">
@@ -73,24 +76,23 @@ export default function DashboardPage() {
           </Card>
 
           {/* Placeholder for future tools */}
-          <Card className="hover:shadow-lg transition-shadow duration-200 opacity-60">
+          <Card className="hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="h-5 w-5 text-blue-600" />
-                Data Management
+                Footballer Management
               </CardTitle>
               <CardDescription>
-                Manage teams, players, and database operations
+                Manage footballers and their teams using the Django API
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                disabled
-                className="w-full"
-                variant="outline"
+                onClick={navigateToFootballerManagement}
+                className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Database className="h-4 w-4 mr-2" />
-                Coming Soon
+               Check Footballers
               </Button>
             </CardContent>
           </Card>
