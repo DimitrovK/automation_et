@@ -51,6 +51,7 @@ export interface PlayerData {
 }
 
 export interface PlayerConfiguration {
+  status: "AWAITING_REVISION" | "APPROVED" | "DENIED" | "AWAITING_CHANGE_CHECK"
   show_date_of_birth_on_search: boolean
   retired: boolean
   might_change: boolean
