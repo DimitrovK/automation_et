@@ -1,12 +1,12 @@
 "use client"
 
 import React from "react"
-import { Button } from "@/components/ui/button"
+import { ApiButton } from "@/components/ui/emerald-button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { LoadingSpinner } from "@/components/loading-spinner"
+import { Plus } from "lucide-react"
 import type { CreateFootballerRequest, FootballerNation } from "@/types/player"
 
 interface CreateFootballerProps {
@@ -192,13 +192,15 @@ export function CreateFootballer({
 
         {/* Submit Button */}
         <div className="flex gap-2 flex-wrap">
-          <Button 
+          <ApiButton 
             onClick={onCreateFootballer}
-            disabled={createLoading || !isFormValid}
-            className="bg-gradient-to-r from-slate-500 to-slate-600 text-white border-slate-500 shadow-sm hover:from-slate-600 hover:to-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isFormValid}
+            loading={createLoading}
+            loadingText="Creating..."
+            icon={Plus}
           >
-            {createLoading ? <LoadingSpinner size="sm" /> : "POST /data/footballers/"}
-          </Button>
+            POST /data/footballers/
+          </ApiButton>
         </div>
         
         {!isFormValid && (

@@ -196,7 +196,8 @@ export function FootballerCard({
               <div>
                 <h4 className="text-sm font-semibold mb-3 uppercase tracking-wide fm-text-primary">Career History</h4>
                 <FMTable>
-                  <FMTableHeader>
+                  {/* Desktop header - hidden on mobile */}
+                  <FMTableHeader className="hidden md:block">
                     <div className="grid grid-cols-12 gap-3 text-xs font-semibold fm-text-primary uppercase tracking-wider">
                       <div className="col-span-4">Club</div>
                       <div className="col-span-1 text-center">Apps</div>
@@ -210,7 +211,8 @@ export function FootballerCard({
                   <FMTableBody>
                     {footballer.teams_played_for.map((team, index) => (
                       <FMTableRow key={index} isEven={index % 2 === 0}>
-                        <div className="px-4 py-3 grid grid-cols-12 gap-3 text-sm">
+                        {/* Desktop layout - hidden on mobile */}
+                        <div className="hidden md:grid md:grid-cols-12 px-4 py-3 gap-3 text-sm">
                           <div className="col-span-4 font-medium fm-text-primary flex items-center" title={team.team_name}>
                             <span className="truncate">{team.team_name}</span>
                           </div>
@@ -236,12 +238,44 @@ export function FootballerCard({
                             {team.end_year || '-'}
                           </div>
                         </div>
+
+                        {/* Mobile layout - visible only on mobile */}
+                        <div className="block md:hidden px-4 py-3 space-y-2">
+                          <div className="font-medium fm-text-primary" title={team.team_name}>
+                            {team.team_name}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-xs text-gray-500 uppercase tracking-wide">Apps:</span>
+                              <span className="ml-1 fm-stat-blue font-mono font-medium">{team.apps}</span>
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500 uppercase tracking-wide">Goals:</span>
+                              <span className="ml-1 fm-stat-yellow font-mono font-medium">{team.goals}</span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-xs text-gray-500 uppercase tracking-wide">Period:</span>
+                              <span className="ml-1 fm-stat-green font-mono">{team.start_year} - {team.end_year || 'Present'}</span>
+                            </div>
+                            <div>
+                              <span className={`inline-block px-2 py-1 rounded text-xs font-medium border ${
+                                team.transfer_type.toLowerCase() === 'loan' 
+                                  ? 'bg-orange-100 dark:bg-orange-800/60 text-orange-700 dark:text-orange-200 border-orange-300 dark:border-orange-600/30' 
+                                  : 'bg-green-100 dark:bg-green-800/60 text-green-700 dark:text-green-200 border-green-300 dark:border-green-600/30'
+                              }`}>
+                                {team.transfer_type === 'loan' ? 'Loan' : 'Permanent'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </FMTableRow>
                     ))}
                   </FMTableBody>
                   
                   <FMTableFooter>
-                    <div className="grid grid-cols-3 gap-6 text-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center">
                       <div>
                         <span className="fm-text-secondary text-xs uppercase tracking-wide">Total Clubs: </span>
                         <span className="fm-text-primary font-bold">{footballer.teams_played_for.length}</span>
@@ -271,7 +305,8 @@ export function FootballerCard({
           <div className="mt-6">
             <h4 className="text-sm font-semibold fm-stat-purple mb-3 uppercase tracking-wide">Management History</h4>
             <FMTable>
-              <FMTableHeader>
+              {/* Desktop header - hidden on mobile */}
+              <FMTableHeader className="hidden md:block">
                 <div className="grid grid-cols-6 gap-2 text-xs font-medium fm-text-primary uppercase tracking-wide">
                   <div className="col-span-3">Club</div>
                   <div className="col-span-1 text-center">Joined</div>
@@ -282,7 +317,8 @@ export function FootballerCard({
               <div className="max-h-32 overflow-y-auto">
                 {footballer.teams_managed.map((team, index) => (
                   <FMTableRow key={index} isEven={index % 2 === 0}>
-                    <div className="px-3 py-2 grid grid-cols-6 gap-2 text-sm">
+                    {/* Desktop layout - hidden on mobile */}
+                    <div className="hidden md:grid md:grid-cols-6 px-3 py-2 gap-2 text-sm">
                       <div className="col-span-3 font-medium fm-text-primary truncate" title={team.team_name}>
                         {team.team_name}
                       </div>
@@ -294,6 +330,25 @@ export function FootballerCard({
                       </div>
                       <div className="col-span-1 text-center fm-stat-blue font-mono">
                         {team.end_year ? team.end_year - team.start_year : 'Current'}
+                      </div>
+                    </div>
+
+                    {/* Mobile layout - visible only on mobile */}
+                    <div className="block md:hidden px-3 py-2 space-y-2">
+                      <div className="font-medium fm-text-primary" title={team.team_name}>
+                        {team.team_name}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Period:</span>
+                          <span className="ml-1 fm-stat-green font-mono">{team.start_year} - {team.end_year || 'Present'}</span>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Duration:</span>
+                          <span className="ml-1 fm-stat-blue font-mono">
+                            {team.end_year ? `${team.end_year - team.start_year} years` : 'Current'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </FMTableRow>

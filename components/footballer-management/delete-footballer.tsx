@@ -16,8 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { LoadingSpinner } from "@/components/loading-spinner"
-import { Trash2 } from "lucide-react"
+import { Trash2, Loader2 } from "lucide-react"
 
 interface DeleteFootballerProps {
   footballerId: string
@@ -72,7 +71,7 @@ export function DeleteFootballer({
             >
               {deleteLoading ? (
                 <>
-                  <LoadingSpinner size="sm" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (

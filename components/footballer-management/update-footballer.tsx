@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LoadingSpinner } from "@/components/loading-spinner"
-import { Edit, Search } from "lucide-react"
+import { ApiButton } from "@/components/ui/emerald-button"
+import { Edit, Search, Loader2 } from "lucide-react"
 import { FootballerAPI } from "@/lib/footballer-api"
 import type { CreateFootballerRequest, FootballerNation, Footballer, FootballerTeam } from "@/types/player"
 
@@ -142,23 +142,15 @@ export function UpdateFootballer({
             />
           </div>
 
-          <Button 
+          <ApiButton 
             onClick={onFetchFootballerForUpdate}
-            disabled={fetchLoading || !footballerId.trim()}
-            className="bg-gradient-to-r from-slate-500 to-slate-600 text-white border-slate-500 shadow-sm hover:from-slate-600 hover:to-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!footballerId.trim()}
+            loading={fetchLoading}
+            loadingText="Loading footballer..."
+            icon={Search}
           >
-            {fetchLoading ? (
-              <>
-                <LoadingSpinner size="sm" />
-                Loading footballer...
-              </>
-            ) : (
-              <>
-                <Search className="mr-2 h-4 w-4" />
-                Load Footballer Data
-              </>
-            )}
-          </Button>
+            Load Footballer Data
+          </ApiButton>
 
           {footballerToUpdate && (
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
@@ -360,7 +352,7 @@ export function UpdateFootballer({
                 <h4 className="font-medium text-lg mb-3">Team History</h4>
                 {footballerTeamsLoading ? (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <LoadingSpinner size="sm" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Loading team history...
                   </div>
                 ) : !footballerTeams || footballerTeams.length === 0 ? (
@@ -381,7 +373,7 @@ export function UpdateFootballer({
                         <div className="space-y-4">
                           {footballerTeams.filter(team => team.role === "player").map((team, index) => (
                             <div key={team.id}>
-                              <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                                 <div className="space-y-1">
                                   <Label className="text-xs">Team Name</Label>
                                   <Input value={team.team_name} disabled className="bg-gray-100 dark:bg-gray-800 h-8 text-sm" />
@@ -455,7 +447,7 @@ export function UpdateFootballer({
                         <div className="space-y-4">
                           {footballerTeams.filter(team => team.role === "manager").map((team, index) => (
                             <div key={team.id}>
-                              <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                                 <div className="space-y-1">
                                   <Label className="text-xs">Team Name</Label>
                                   <Input value={team.team_name} disabled className="bg-gray-100 dark:bg-gray-800 h-8 text-sm" />
@@ -535,7 +527,7 @@ export function UpdateFootballer({
             >
               {updateLoading ? (
                 <>
-                  <LoadingSpinner size="sm" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {hasUnsavedTeamChanges 
                     ? "Updating footballer & saving teams..." 
                     : "Updating footballer..."

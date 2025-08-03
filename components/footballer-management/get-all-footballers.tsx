@@ -1,8 +1,8 @@
 "use client"
 
 import React from "react"
-import { Button } from "@/components/ui/button"
-import { LoadingSpinner } from "@/components/loading-spinner"
+import { ApiButton } from "@/components/ui/emerald-button"
+import { Database } from "lucide-react"
 
 interface GetAllFootballersProps {
   loading: boolean
@@ -17,12 +17,14 @@ export function GetAllFootballers({ loading, onGetFootballers }: GetAllFootballe
         Retrieve a paginated list of all footballers with optional filtering, searching, and sorting.
       </p>
       <div className="flex gap-2 flex-wrap">
-        <Button 
+        <ApiButton 
           onClick={onGetFootballers}
-          className="bg-gradient-to-r from-slate-500 to-slate-600 text-white border-slate-500 shadow-sm hover:from-slate-600 hover:to-slate-700"
+          loading={loading}
+          loadingText="Loading..."
+          icon={Database}
         >
-          {loading ? <LoadingSpinner size="sm" /> : "GET /data/footballers/"}
-        </Button>
+          GET /data/footballers/
+        </ApiButton>
       </div>
     </div>
   )

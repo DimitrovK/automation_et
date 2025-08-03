@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { OperationNavigation } from "@/components/footballer-management/operation-navigation"
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { Navigation } from "@/components/navigation"
 import { FootballerCard } from "@/components/footballer-management/footballer-card"
@@ -600,6 +600,51 @@ export default function FootballerManagementPage() {
     }, 100)
   }
 
+  // Function to get active filters (only non-default ones)
+  const getActiveFilters = () => {
+    const filters: string[] = []
+    
+    if (searchQuery.trim()) {
+      filters.push(`Search: "${searchQuery}"`)
+    }
+    if (statusFilter !== "all") {
+      const statusLabels = {
+        "AWAITING_REVISION": "Awaiting Revision",
+        "APPROVED": "Approved", 
+        "DENIED": "Denied",
+        "AWAITING_CHANGE_CHECK": "Awaiting Change Check"
+      }
+      filters.push(`Status: ${statusLabels[statusFilter as keyof typeof statusLabels] || statusFilter}`)
+    }
+    if (retiredFilter !== "all") {
+      filters.push(`Retired: ${retiredFilter === "true" ? "Yes" : "No"}`)
+    }
+    if (isPlayerFilter !== "all") {
+      filters.push(`Player: ${isPlayerFilter === "true" ? "Yes" : "No"}`)
+    }
+    if (isManagerFilter !== "all") {
+      filters.push(`Manager: ${isManagerFilter === "true" ? "Yes" : "No"}`)
+    }
+    if (careerDifficultyFilter !== "all") {
+      filters.push(`Difficulty: ${careerDifficultyFilter}`)
+    }
+    if (ordering !== "last_name,first_name") {
+      const orderingLabels = {
+        "last_name,first_name": "Name (A-Z)",
+        "-last_name,-first_name": "Name (Z-A)",
+        "created_at": "Oldest first",
+        "-created_at": "Newest first", 
+        "date_of_birth": "Youngest first",
+        "-date_of_birth": "Oldest first (by age)",
+        "nation__name": "Nation (A-Z)",
+        "-nation__name": "Nation (Z-A)"
+      }
+      filters.push(`Sort: ${orderingLabels[ordering as keyof typeof orderingLabels] || ordering}`)
+    }
+    
+    return filters
+  }
+
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     // Clear all result states when switching tabs (except when coming from edit button)
@@ -668,108 +713,109 @@ export default function FootballerManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30 border border-slate-200 dark:border-slate-700">
-              <TabsTrigger value="overview" className="text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-emerald-200/50 hover:bg-white/30 dark:hover:bg-slate-600/30 dark:data-[state=active]:text-white dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 transition-all duration-400">Overview</TabsTrigger>
-              <TabsTrigger value="read" className="text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-emerald-200/50 hover:bg-white/30 dark:hover:bg-slate-600/30 dark:data-[state=active]:text-white dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 transition-all duration-400">Read</TabsTrigger>
-              <TabsTrigger value="create" className="text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-emerald-200/50 hover:bg-white/30 dark:hover:bg-slate-600/30 dark:data-[state=active]:text-white dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 transition-all duration-400">Create</TabsTrigger>
-              <TabsTrigger value="update" className="text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-emerald-200/50 hover:bg-white/30 dark:hover:bg-slate-600/30 dark:data-[state=active]:text-white dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 transition-all duration-400">Update</TabsTrigger>
-              <TabsTrigger value="delete" className="text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md data-[state=active]:border data-[state=active]:border-emerald-200/50 hover:bg-white/30 dark:hover:bg-slate-600/30 dark:data-[state=active]:text-white dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 transition-all duration-400">Delete</TabsTrigger>
-            </TabsList>
+          {/* Mobile-friendly navigation */}
+          <OperationNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-            {/* OVERVIEW Tab */}
-            <TabsContent value="overview" className="space-y-4 mt-4">
-              <div className="space-y-4">
-                <div className="text-center py-8">
-                  <h4 className="text-lg font-medium mb-2">Footballer API Testing</h4>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Select a tab above to test different API operations
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
-                    <div className="p-4 border rounded-lg">
-                      <h5 className="font-medium text-emerald-600">Read</h5>
-                      <p className="text-sm text-gray-500">GET operations</p>
-                      <p className="text-xs text-gray-400">✅ Available</p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h5 className="font-medium text-emerald-600">Create</h5>
-                      <p className="text-sm text-gray-500">POST operations</p>
-                      <p className="text-xs text-gray-400">✅ Available</p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h5 className="font-medium text-emerald-600">Update</h5>
-                      <p className="text-sm text-gray-500">PUT operations</p>
-                      <p className="text-xs text-gray-400">✅ Available</p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h5 className="font-medium text-red-600">Delete</h5>
-                      <p className="text-sm text-gray-500">DELETE operations</p>
-                      <p className="text-xs text-gray-400">✅ Available</p>
+          {/* Tab Content */}
+          <div className="w-full">
+            {activeTab === "overview" && (
+              <div className="space-y-4 mt-4">
+                <div className="space-y-4">
+                  <div className="text-center py-8">
+                    <h4 className="text-lg font-medium mb-2">Footballer API Testing</h4>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      Select an operation type above to test different API operations
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                      <div className="p-4 border rounded-lg">
+                        <h5 className="font-medium text-emerald-600">Read</h5>
+                        <p className="text-sm text-gray-500">GET operations</p>
+                        <p className="text-xs text-gray-400">✅ Available</p>
+                      </div>
+                      <div className="p-4 border rounded-lg">
+                        <h5 className="font-medium text-emerald-600">Create</h5>
+                        <p className="text-sm text-gray-500">POST operations</p>
+                        <p className="text-xs text-gray-400">✅ Available</p>
+                      </div>
+                      <div className="p-4 border rounded-lg">
+                        <h5 className="font-medium text-emerald-600">Update</h5>
+                        <p className="text-sm text-gray-500">PUT operations</p>
+                        <p className="text-xs text-gray-400">✅ Available</p>
+                      </div>
+                      <div className="p-4 border rounded-lg">
+                        <h5 className="font-medium text-red-600">Delete</h5>
+                        <p className="text-sm text-gray-500">DELETE operations</p>
+                        <p className="text-xs text-gray-400">✅ Available</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            )}
 
-            {/* READ Operations */}
-            <TabsContent value="read" className="space-y-4 mt-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <GetAllFootballers 
-                  loading={loading}
-                  onGetFootballers={() => handleGetFootballers(1)}
-                />
+            {activeTab === "read" && (
+              <div className="space-y-4 mt-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <GetAllFootballers 
+                    loading={loading}
+                    onGetFootballers={() => handleGetFootballers(1)}
+                  />
 
-                <GetSingleFootballer
-                  footballerId={footballerId}
-                  singleLoading={singleLoading}
-                  onFootballerIdChange={setFootballerId}
-                  onGetSingleFootballer={handleGetSingleFootballer}
+                  <GetSingleFootballer
+                    footballerId={footballerId}
+                    singleLoading={singleLoading}
+                    onFootballerIdChange={setFootballerId}
+                    onGetSingleFootballer={handleGetSingleFootballer}
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === "create" && (
+              <div className="space-y-4 mt-4">
+                <CreateFootballer
+                  createForm={createForm}
+                  createLoading={createLoading}
+                  nations={nations}
+                  nationsLoading={nationsLoading}
+                  onFormChange={setCreateForm}
+                  onCreateFootballer={handleCreateFootballer}
                 />
               </div>
-            </TabsContent>
+            )}
 
-            {/* CREATE Operations */}
-            <TabsContent value="create" className="space-y-4 mt-4">
-              <CreateFootballer
-                createForm={createForm}
-                createLoading={createLoading}
-                nations={nations}
-                nationsLoading={nationsLoading}
-                onFormChange={setCreateForm}
-                onCreateFootballer={handleCreateFootballer}
-              />
-            </TabsContent>
+            {activeTab === "update" && (
+              <div className="space-y-4 mt-4">
+                <UpdateFootballer
+                  updateForm={updateForm}
+                  updateLoading={updateLoading}
+                  nations={nations}
+                  nationsLoading={nationsLoading}
+                  footballerToUpdate={footballerToUpdate}
+                  fetchLoading={fetchForUpdateLoading}
+                  footballerId={updateFootballerId}
+                  footballerTeams={footballerTeams}
+                  footballerTeamsLoading={footballerTeamsLoading}
+                  onFormChange={setUpdateForm}
+                  onUpdateFootballer={handleUpdateFootballer}
+                  onFootballerIdChange={setUpdateFootballerId}
+                  onFetchFootballerForUpdate={handleFetchFootballerForUpdate}
+                  onTeamsSaved={handleTeamsSaved}
+                />
+              </div>
+            )}
 
-            {/* UPDATE Operations */}
-            <TabsContent value="update" className="space-y-4 mt-4">
-              <UpdateFootballer
-                updateForm={updateForm}
-                updateLoading={updateLoading}
-                nations={nations}
-                nationsLoading={nationsLoading}
-                footballerToUpdate={footballerToUpdate}
-                fetchLoading={fetchForUpdateLoading}
-                footballerId={updateFootballerId}
-                footballerTeams={footballerTeams}
-                footballerTeamsLoading={footballerTeamsLoading}
-                onFormChange={setUpdateForm}
-                onUpdateFootballer={handleUpdateFootballer}
-                onFootballerIdChange={setUpdateFootballerId}
-                onFetchFootballerForUpdate={handleFetchFootballerForUpdate}
-                onTeamsSaved={handleTeamsSaved}
-              />
-            </TabsContent>
-
-            {/* DELETE Operations */}
-            <TabsContent value="delete" className="space-y-4 mt-4">
-              <DeleteFootballer
-                footballerId={deleteFootballerId}
-                deleteLoading={deleteLoading}
-                onFootballerIdChange={setDeleteFootballerId}
-                onDeleteFootballer={handleDeleteFootballer}
-              />
-            </TabsContent>
-          </Tabs>
+            {activeTab === "delete" && (
+              <div className="space-y-4 mt-4">
+                <DeleteFootballer
+                  footballerId={deleteFootballerId}
+                  deleteLoading={deleteLoading}
+                  onFootballerIdChange={setDeleteFootballerId}
+                  onDeleteFootballer={handleDeleteFootballer}
+                />
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -919,7 +965,14 @@ export default function FootballerManagementPage() {
                 {/* Action Buttons */}
                 <div className="flex gap-2 flex-wrap">
                   <Button onClick={handleSearch} disabled={loading}>
-                    {loading ? <LoadingSpinner size="sm" /> : "Apply Filters"}
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Applying...
+                      </>
+                    ) : (
+                      "Apply Filters"
+                    )}
                   </Button>
                   <Button variant="outline" onClick={handleClearFilters} disabled={loading}>
                     Clear All Filters
@@ -985,6 +1038,17 @@ export default function FootballerManagementPage() {
             <CardTitle>List Results</CardTitle>
             <CardDescription>
               {pagination && `Showing ${footballers.length} of ${pagination.count} results`}
+              {(() => {
+                const activeFilters = getActiveFilters()
+                return activeFilters.length > 0 ? (
+                  <div className="mt-2">
+                    <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Active Filters: </span>
+                    <span className="text-sm text-muted-foreground">
+                      {activeFilters.join(" • ")}
+                    </span>
+                  </div>
+                ) : null
+              })()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
