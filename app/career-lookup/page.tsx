@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,19 +36,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import type { Team, PlayerData, PlayerConfiguration } from "@/types/player"
+import type { Team, PlayerData, PlayerConfiguration, CreateFootballerRequest, CreateFootballerTeamRequest } from "@/types/player"
 
 import { useAuth } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { Navigation } from "@/components/navigation"
+import { JsonCommandPreview } from "@/components/career-lookup/json-command-preview"
+import { DeploymentConsole, createLogEntry, type DeploymentLogEntry } from "@/components/career-lookup/deployment-console"
+import { FootballerAPI } from "@/lib/footballer-api"
 import config from "@/lib/config"
 
 export default function FootballerCareerApp() {
   const { user, isLoading, isAuthenticated } = useAuth()
+  const deploymentConsoleRef = useRef<HTMLDivElement>(null)
   const [playerName, setPlayerName] = useState("")
   const [playerData, setPlayerData] = useState<PlayerData | null>(null)
   const [loading, setLoading] = useState(false)
+  const [deploying, setDeploying] = useState(false)
+  const [deploymentLogs, setDeploymentLogs] = useState<DeploymentLogEntry[]>([])
   const [error, setError] = useState<string | null>(null)
   const [useDirectConnection, setUseDirectConnection] = useState(true)
   const [webhookUrl, setWebhookUrl] = useState(config.N8N_WEBHOOK_URL)
@@ -73,6 +79,7 @@ export default function FootballerCareerApp() {
   const [originalNationality, setOriginalNationality] = useState("")
 
   const [playerConfig, setPlayerConfig] = useState<PlayerConfiguration>({
+    status: "APPROVED",
     show_date_of_birth_on_search: false,
     retired: false,
     might_change: false,
@@ -300,6 +307,7 @@ export default function FootballerCareerApp() {
       if (playerData.playerFoundInDB && playerData.dbPlayerInfo) {
         // Pre-load player configuration from database
         const dbConfig = {
+          status: "APPROVED" as const,
           show_date_of_birth_on_search: playerData.dbPlayerInfo.show_date_of_birth_on_search,
           retired: playerData.dbPlayerInfo.retired,
           might_change: playerData.dbPlayerInfo.might_change,
@@ -337,6 +345,7 @@ export default function FootballerCareerApp() {
       } else {
         // Use default configuration for new players
         const defaultConfig = {
+          status: "APPROVED" as const,
           show_date_of_birth_on_search: false,
           retired: false,
           might_change: false,
@@ -364,12 +373,34 @@ export default function FootballerCareerApp() {
     return config.getAdminUrl(`FootballData/team/${team.teamID}/change/`)
   }
 
+  const addDeploymentLog = (type: DeploymentLogEntry['type'], message: string, data?: any) => {
+    const logEntry = createLogEntry(type, message, data)
+    setDeploymentLogs(prev => [...prev, logEntry])
+    return logEntry
+  }
+
+  const clearDeploymentLogs = () => {
+    setDeploymentLogs([])
+  }
+
   const getCountryAdminLink = (playerData: PlayerData) => {
     if (!playerData.countryFoundInDB || !playerData.countryID) return null
     return config.getAdminUrl(`FootballData/nation/${playerData.countryID}/change/`)
   }
 
-  const handleSaveConfiguration = () => {
+  const handleSaveConfiguration = async () => {
+    // Only allow deployment if player is not found in DB
+    if (playerData?.playerFoundInDB) {
+      alert("This player already exists in the database. Deployment is only available for new players.")
+      return
+    }
+
+    // Prevent multiple simultaneous deployments
+    if (deploying) return
+
+    // Clear previous logs
+    clearDeploymentLogs()
+
     console.log("Player Configuration:", {
       playerName,
       firstName,
@@ -379,7 +410,7 @@ export default function FootballerCareerApp() {
       playerData,
       configuration: playerConfig,
       dataValidation,
-      configurationSource: playerData?.playerFoundInDB && playerData?.dbPlayerInfo ? "database" : "default",
+      configurationSource: "new_player",
     })
     
     // Show warning if there are validation issues
@@ -389,8 +420,105 @@ export default function FootballerCareerApp() {
       )
       if (!confirmed) return
     }
-    
-    alert("Configuration saved! Ready for deployment webhook.")
+
+    // Validate required fields
+    if (!playerData?.countryID || !firstName.trim() || !lastName.trim() || !dateOfBirth) {
+      alert("Please ensure all required fields are completed before deployment.")
+      return
+    }
+
+    try {
+      setDeploying(true)
+      setError(null)
+
+      // Scroll to deployment console
+      setTimeout(() => {
+        deploymentConsoleRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        })
+      }, 100)
+
+      addDeploymentLog('info', '🚀 Starting footballer deployment...')
+      addDeploymentLog('info', `Player: ${firstName} ${lastName}`)
+      
+      // Prepare footballer data
+      const footballerData: CreateFootballerRequest = {
+        status: playerConfig.status,
+        user: user!.id,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        nation_id: playerData.countryID!,
+        date_of_birth: dateOfBirth,
+        show_date_of_birth_on_search: playerConfig.show_date_of_birth_on_search,
+        retired: playerConfig.retired,
+        is_player: true,
+        is_manager: false,
+        might_change: playerConfig.might_change,
+        available_for_career_path: playerConfig.available_for_career_path,
+        career_path_difficulty: playerConfig.career_path_difficulty,
+      }
+
+      addDeploymentLog('loading', 'Deploying footballer to database...')
+      addDeploymentLog('request', 'POST /data/footballers/', footballerData)
+      
+      // Create the footballer
+      const createdFootballer = await FootballerAPI.createFootballer(footballerData)
+      
+      addDeploymentLog('response', `✅ Footballer created successfully (ID: ${createdFootballer.id})`, createdFootballer)
+      console.log("Footballer created successfully:", createdFootballer)
+
+      // Create team records for teams found in the database
+      const foundTeams = playerData.teams.filter(team => team.teamFound && team.teamID)
+      let createdTeams = 0
+
+      addDeploymentLog('info', `📊 Found ${foundTeams.length} teams to create records for`)
+
+      for (let i = 0; i < foundTeams.length; i++) {
+        const team = foundTeams[i]
+        try {
+          const transferTypeString = (team.typeOfTransfer || "").toLowerCase().trim()
+          const transferType = transferTypeString.includes("loan") ? "loan" : "permanent"
+          
+          const teamData: CreateFootballerTeamRequest = {
+            footballer_id: createdFootballer.id,
+            team_id: team.teamID!,
+            role: "player",
+            apps: team.appearances,
+            goals: team.goals,
+            transfer_type: transferType,
+            start_year: team.joinYear,
+            end_year: team.departYear,
+          }
+
+          addDeploymentLog('loading', `Deploying team record ${i + 1}/${foundTeams.length}: ${team.teamName}`)
+          addDeploymentLog('request', 'POST /data/footballer-teams/', teamData)
+
+          const createdTeamRecord = await FootballerAPI.createFootballerTeam(teamData)
+          
+          addDeploymentLog('response', `✅ Team record created: ${team.teamName} (${team.joinYear}${team.departYear ? `-${team.departYear}` : ''})`, createdTeamRecord)
+          createdTeams++
+        } catch (teamError) {
+          addDeploymentLog('error', `❌ Failed to create team record for ${team.teamName}: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`)
+          console.error(`Failed to create team record for ${team.teamName}:`, teamError)
+        }
+      }
+
+      addDeploymentLog('success', `🎉 Deployment completed! Footballer: ${firstName} ${lastName}`)
+      addDeploymentLog('success', `📈 Statistics: ${createdTeams}/${foundTeams.length} team records created`)
+
+      // Optionally trigger a resync to show the updated state
+      handleResync()
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      addDeploymentLog('error', `❌ Deployment failed: ${errorMessage}`)
+      console.error("Deployment failed:", error)
+      setError(`Deployment failed: ${errorMessage}`)
+    } finally {
+      setDeploying(false)
+      addDeploymentLog('info', '🏁 Deployment process finished')
+    }
   }
 
   // Show loading spinner while checking authentication
@@ -1128,12 +1256,12 @@ export default function FootballerCareerApp() {
                                   <Badge
                                     variant="outline"
                                     className={`text-xs ${
-                                      team.typeOfTransfer === "loan"
+                                      (team.typeOfTransfer || "").toLowerCase().includes("loan")
                                         ? "bg-orange-50 text-orange-700 border-orange-200"
                                         : "bg-blue-50 text-blue-700 border-blue-200"
                                     }`}
                                   >
-                                    {team.typeOfTransfer === "loan" ? "Loan" : "Permanent"}
+                                    {(team.typeOfTransfer || "").toLowerCase().includes("loan") ? "Loan" : "Permanent"}
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-2 text-sm">
@@ -1246,6 +1374,33 @@ export default function FootballerCareerApp() {
                         <Edit className="h-3 w-3 mr-1" />
                         {isEditingNames ? "Lock" : "Edit"}
                       </Button>
+                    </div>
+                    
+                    {/* Player Status */}
+                    <div className="space-y-2">
+                      <Label htmlFor="status" className="text-sm font-medium">
+                        Player Status
+                      </Label>
+                      <Select
+                        value={playerConfig.status}
+                        onValueChange={(value: "AWAITING_REVISION" | "APPROVED" | "DENIED" | "AWAITING_CHANGE_CHECK") =>
+                          setPlayerConfig((prev) => ({
+                            ...prev,
+                            status: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="APPROVED">Approved</SelectItem>
+                          <SelectItem value="AWAITING_REVISION">Awaiting Revision</SelectItem>
+                          <SelectItem value="DENIED">Denied</SelectItem>
+                          <SelectItem value="AWAITING_CHANGE_CHECK">Awaiting Change Check</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">The approval status of this footballer record</p>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1432,6 +1587,19 @@ export default function FootballerCareerApp() {
 
                 <Separator className="my-8" />
 
+                {/* JSON Commands Preview */}
+                <JsonCommandPreview
+                  playerData={playerData}
+                  firstName={firstName}
+                  lastName={lastName}
+                  dateOfBirth={dateOfBirth}
+                  nationality={nationality}
+                  playerConfig={playerConfig}
+                  countryID={playerData.countryID}
+                />
+
+                <Separator className="my-8" />
+
                 {/* Validation Message and Save Button */}
                 <div className="space-y-4">
                   {playerData.summary.notFoundTeams > 0 && (
@@ -1452,18 +1620,40 @@ export default function FootballerCareerApp() {
                       onClick={handleSaveConfiguration}
                       size="lg"
                       className="px-8 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
-                      disabled={playerData.summary.notFoundTeams > 0}
+                      disabled={playerData.summary.notFoundTeams > 0 || playerData?.playerFoundInDB || deploying}
                     >
                       <Save className="h-5 w-5 mr-2" />
-                      Save Configuration & Deploy
+                      {deploying 
+                        ? 'Deploying...' 
+                        : playerData?.playerFoundInDB 
+                          ? 'Player Already in Database' 
+                          : 'Deploy Footballer'
+                      }
                     </Button>
                   </div>
 
-                  {playerData.summary.notFoundTeams === 0 && (
+                  {deploying ? (
+                    <p className="text-center text-sm text-blue-600 font-medium">
+                      🚀 Deploying footballer to database...
+                    </p>
+                  ) : playerData?.playerFoundInDB ? (
+                    <p className="text-center text-sm text-amber-600 font-medium">
+                      ⚠️ Player already exists - Deployment disabled for existing players
+                    </p>
+                  ) : playerData.summary.notFoundTeams === 0 ? (
                     <p className="text-center text-sm text-green-600 font-medium">
                       ✅ All teams verified in database - Ready for deployment
                     </p>
-                  )}
+                  ) : null}
+                </div>
+
+                {/* Deployment Console */}
+                <div ref={deploymentConsoleRef}>
+                  <DeploymentConsole 
+                    logs={deploymentLogs}
+                    isActive={deploying}
+                    onClear={clearDeploymentLogs}
+                  />
                 </div>
               </CardContent>
             </Card>
