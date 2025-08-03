@@ -1,9 +1,9 @@
 "use client"
 
 import React from "react"
-import { Button } from "@/components/ui/button"
+import { ApiButton } from "@/components/ui/emerald-button"
 import { Input } from "@/components/ui/input"
-import { LoadingSpinner } from "@/components/loading-spinner"
+import { Search } from "lucide-react"
 
 interface GetSingleFootballerProps {
   footballerId: string
@@ -38,13 +38,15 @@ export function GetSingleFootballer({
           className="w-40"
           onKeyPress={handleKeyPress}
         />
-        <Button 
+        <ApiButton 
           onClick={onGetSingleFootballer}
-          disabled={singleLoading || !footballerId.trim()}
-          className="bg-gradient-to-r from-slate-500 to-slate-600 text-white border-slate-500 shadow-sm hover:from-slate-600 hover:to-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!footballerId.trim()}
+          loading={singleLoading}
+          loadingText="Loading..."
+          icon={Search}
         >
-          {singleLoading ? <LoadingSpinner size="sm" /> : "GET /data/footballers/{id}"}
-        </Button>
+          GET /data/footballers/{"{id}"}
+        </ApiButton>
       </div>
     </div>
   )
