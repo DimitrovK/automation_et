@@ -157,6 +157,19 @@ export function FootballerCard({
               <FMCardBody className="space-y-3 text-sm">
                 <FMStat label="Born" value={footballer.date_of_birth} color="blue" />
                 <FMStat label="Nationality" value={footballer.nation.nationality} color="blue" />
+                {footballer.wikipedia_url && (
+                  <div className="flex justify-between items-center py-1">
+                    <span className="fm-text-secondary">Wikipedia:</span>
+                    <a 
+                      href={footballer.wikipedia_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    >
+                      View Page
+                    </a>
+                  </div>
+                )}
                 <div className="flex justify-between items-center py-1">
                   <span className="fm-text-secondary">Status:</span>
                   <span className={`font-medium ${footballer.retired ? 'fm-stat-red' : 'fm-stat-green'}`}>

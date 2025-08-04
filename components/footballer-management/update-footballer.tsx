@@ -258,6 +258,23 @@ export function UpdateFootballer({
               </div>
             </div>
 
+            {/* Wikipedia URL - Full width */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="update-wikipedia-url">Wikipedia URL</Label>
+                <Input
+                  id="update-wikipedia-url"
+                  placeholder="https://en.wikipedia.org/wiki/Player_Name"
+                  value={updateForm.wikipedia_url || ""}
+                  onChange={(e) => onFormChange({ ...updateForm, wikipedia_url: e.target.value || null })}
+                  disabled={updateLoading}
+                />
+                <p className="text-xs text-gray-500">
+                  Optional: Link to the player's Wikipedia page
+                </p>
+              </div>
+            </div>
+
             {/* Career Difficulty + Available For Career Path - Same line */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

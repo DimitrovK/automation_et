@@ -92,6 +92,7 @@ export interface Footballer {
   full_name: string
   nation: FootballerNation
   date_of_birth: string
+  wikipedia_url: string | null
   show_date_of_birth_on_search: boolean
   retired: boolean
   is_player: boolean
@@ -119,6 +120,7 @@ export interface CreateFootballerRequest {
   last_name: string
   nation_id: number
   date_of_birth: string
+  wikipedia_url?: string | null
   show_date_of_birth_on_search: boolean
   retired: boolean
   is_player: boolean
