@@ -70,6 +70,7 @@ export default function FootballerCareerApp() {
 
   const [dateOfBirth, setDateOfBirth] = useState("")
   const [nationality, setNationality] = useState("")
+  const [wikipediaUrl, setWikipediaUrl] = useState("")
   const [isEditingDetails, setIsEditingDetails] = useState(false)
 
   const [originalConfig, setOriginalConfig] = useState<PlayerConfiguration | null>(null)
@@ -77,6 +78,7 @@ export default function FootballerCareerApp() {
   const [originalLastName, setOriginalLastName] = useState("")
   const [originalDateOfBirth, setOriginalDateOfBirth] = useState("")
   const [originalNationality, setOriginalNationality] = useState("")
+  const [originalWikipediaUrl, setOriginalWikipediaUrl] = useState("")
 
   const [playerConfig, setPlayerConfig] = useState<PlayerConfiguration>({
     status: "APPROVED",
@@ -256,6 +258,7 @@ export default function FootballerCareerApp() {
     setLastName(originalLastName)
     setDateOfBirth(originalDateOfBirth)
     setNationality(originalNationality)
+    setWikipediaUrl(originalWikipediaUrl)
     setIsEditingNames(false)
     setIsEditingDetails(false)
   }
@@ -300,8 +303,10 @@ export default function FootballerCareerApp() {
 
       setDateOfBirth(playerData.dateOfBirth)
       setNationality(playerData.birthCountry)
+      setWikipediaUrl("") // Initialize as empty, user can set manually
       setOriginalDateOfBirth(playerData.dateOfBirth)
       setOriginalNationality(playerData.birthCountry)
+      setOriginalWikipediaUrl("")
 
       // Check if player exists in DB and has dbPlayerInfo
       if (playerData.playerFoundInDB && playerData.dbPlayerInfo) {
@@ -345,7 +350,7 @@ export default function FootballerCareerApp() {
       } else {
         // Use default configuration for new players
         const defaultConfig = {
-          status: "APPROVED" as const,
+          status: "AWAITING_REVISION" as const,
           show_date_of_birth_on_search: false,
           retired: false,
           might_change: false,
@@ -450,6 +455,7 @@ export default function FootballerCareerApp() {
         last_name: lastName.trim(),
         nation_id: playerData.countryID!,
         date_of_birth: dateOfBirth,
+        wikipedia_url: wikipediaUrl.trim() || null,
         show_date_of_birth_on_search: playerConfig.show_date_of_birth_on_search,
         retired: playerConfig.retired,
         is_player: true,
@@ -1383,7 +1389,7 @@ export default function FootballerCareerApp() {
                       </Label>
                       <Select
                         value={playerConfig.status}
-                        onValueChange={(value: "AWAITING_REVISION" | "APPROVED" | "DENIED" | "AWAITING_CHANGE_CHECK") =>
+                        onValueChange={(value: "APPROVED" | "AWAITING_REVISION" | "DENIED" | "AWAITING_CHANGE_CHECK") =>
                           setPlayerConfig((prev) => ({
                             ...prev,
                             status: value,
@@ -1453,6 +1459,24 @@ export default function FootballerCareerApp() {
                           className={`${!isEditingNames ? "bg-gray-50 dark:bg-slate-600 cursor-not-allowed" : ""}`}
                         />
                       </div>
+                    </div>
+
+                    {/* Wikipedia URL - Full width */}
+                    <div className="space-y-2">
+                      <Label htmlFor="wikipediaUrl" className="text-sm font-medium">
+                        Wikipedia URL
+                      </Label>
+                      <Input
+                        id="wikipediaUrl"
+                        placeholder="https://en.wikipedia.org/wiki/Player_Name"
+                        value={wikipediaUrl}
+                        onChange={(e) => setWikipediaUrl(e.target.value)}
+                        disabled={!isEditingNames}
+                        className={`${!isEditingNames ? "bg-gray-50 dark:bg-slate-600 cursor-not-allowed" : ""}`}
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Optional: Link to the player's Wikipedia page
+                      </p>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Player information is automatically loaded from the search results. Click "Edit" to modify any field.

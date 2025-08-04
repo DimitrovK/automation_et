@@ -112,6 +112,22 @@ export function CreateFootballer({
           </div>
         </div>
 
+        {/* Wikipedia URL - Full width */}
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          <div className="space-y-2">
+            <Label htmlFor="wikipediaUrl">Wikipedia URL</Label>
+            <Input
+              id="wikipediaUrl"
+              placeholder="https://en.wikipedia.org/wiki/Player_Name"
+              value={createForm.wikipedia_url || ""}
+              onChange={(e) => updateForm({ wikipedia_url: e.target.value || null })}
+            />
+            <p className="text-xs text-gray-500">
+              Optional: Link to the player's Wikipedia page
+            </p>
+          </div>
+        </div>
+
         {/* Career Difficulty + Available For Career Path - Same line */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="space-y-2">
