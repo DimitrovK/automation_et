@@ -8,9 +8,11 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Footballer Career Management",
-  description: "Search and manage footballer career data",
-    generator: 'v0.dev'
+  title: "Automation ET",
+  description: "Automation for the ExtraTime platform",
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
