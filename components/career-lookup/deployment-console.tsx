@@ -113,7 +113,7 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea ref={scrollAreaRef} className="h-64 w-full border rounded-lg">
+        <ScrollArea ref={scrollAreaRef} className="h-80 w-full border rounded-lg">
           <div className="bg-gray-100 dark:bg-slate-700 p-4 space-y-2">
             {logs.length === 0 && !isActive ? (
               <div className="text-center text-gray-500 dark:text-gray-400 py-8">
