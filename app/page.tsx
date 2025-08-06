@@ -38,6 +38,9 @@ export default function DashboardPage() {
   const navigateToFootballerManagement = () => {
     router.push('/footballer-management')
   }
+  const navigateToBulkCareerLookup = () => {
+    router.push('/bulk-career-lookup')
+  } 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-slate-800 dark:to-emerald-900/30 p-4">
@@ -75,6 +78,27 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
+          <Card className="hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-purple-600" />
+                Bulk Career Lookup
+              </CardTitle>
+              <CardDescription>
+                Do a Bulk career validation for multiple players using their Wikipedia URLs or names.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={navigateToBulkCareerLookup}
+                className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Bulk Check Players
+              </Button>
+            </CardContent>
+          </Card>  
+
           {/* Placeholder for future tools */}
           <Card className="hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
@@ -93,28 +117,6 @@ export default function DashboardPage() {
               >
                 <Database className="h-4 w-4 mr-2" />
                Check Footballers
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow duration-200 opacity-60">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-purple-600" />
-                Analytics
-              </CardTitle>
-              <CardDescription>
-                View statistics and analytics for football data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                disabled
-                className="w-full"
-                variant="outline"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Coming Soon
               </Button>
             </CardContent>
           </Card>

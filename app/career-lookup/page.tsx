@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +29,8 @@ import config from "@/lib/config"
 
 export default function FootballerCareerApp() {
   const { user, isLoading, isAuthenticated } = useAuth()
+  const searchParams = useSearchParams()
+  
   const [playerName, setPlayerName] = useState("")
   const [playerData, setPlayerData] = useState<n8nWikiPlayerData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -44,6 +47,19 @@ export default function FootballerCareerApp() {
   // State for database player info (fetched via API when playerDBId is available)
   const [dbPlayerInfo, setDbPlayerInfo] = useState<Footballer | null>(null)
   const [loadingDbPlayer, setLoadingDbPlayer] = useState(false)
+
+  // Initialize with URL parameters
+  useEffect(() => {
+    const name = searchParams.get('name')
+    
+    if (name) {
+      setPlayerName(name)
+      // Auto-search if name is provided
+      setTimeout(() => {
+        handleSearch()
+      }, 100)
+    }
+  }, [searchParams])
 
   // Fetch database player info using the playerDBId
   const fetchDbPlayerInfo = async (playerDBId: number) => {

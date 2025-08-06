@@ -9,6 +9,7 @@ import {
   Sparkles,
   Menu,
   ChevronDown,
+  Users,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -41,6 +42,12 @@ export function Navigation({ className }: NavigationProps) {
       href: "/career-lookup",
       icon: Search,
       description: "Football player career search",
+    },
+    {
+      label: "Bulk Career Lookup",
+      href: "/bulk-career-lookup", 
+      icon: Users,
+      description: "Bulk player career validation",
     },
     {
       label: "Footballer Management",
