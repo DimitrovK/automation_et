@@ -14,26 +14,10 @@ export interface Team {
   typeOfTransfer: string
 }
 
-export interface DbPlayerInfo {
-  retired: boolean
-  is_player: boolean
-  is_manager: boolean
-  might_change: boolean
-  available_for_career_path: boolean
-  career_path_difficulty: "EASY" | "NORMAL" | "HARD" | "EXTREME"
-  show_date_of_birth_on_search: boolean
-  date_of_birth: string
-  nation: {
-    id: number
-    name: string
-    nationality: string
-    short: string
-  }
-}
-
-export interface PlayerData {
+export interface n8nWikiPlayerData {
   playerName: string
   playerFoundInDB: boolean
+  playerDBId: number | null
   dateOfBirth: string
   birthCountry: string
   countryFoundInDB: boolean
@@ -47,16 +31,24 @@ export interface PlayerData {
     notFoundTeams: number
   }
   teams: Team[]
-  dbPlayerInfo?: DbPlayerInfo
 }
 
 export interface PlayerConfiguration {
+  // Configuration settings
   status: "AWAITING_REVISION" | "APPROVED" | "DENIED" | "AWAITING_CHANGE_CHECK"
   show_date_of_birth_on_search: boolean
   retired: boolean
   might_change: boolean
   available_for_career_path: boolean
   career_path_difficulty: "EASY" | "NORMAL" | "HARD" | "EXTREME"
+  
+  // Player data fields
+  firstName: string
+  lastName: string
+  dateOfBirth: string
+  nationality: string
+  countryID: number | null
+  wikipediaUrl: string
 }
 
 // Django API Types
