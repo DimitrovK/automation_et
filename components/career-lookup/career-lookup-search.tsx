@@ -48,7 +48,6 @@ export function CareerLookupSearch({
       </CardHeader>
       <CardContent>
         <div className="flex gap-2 items-center">
-          <span className="text-gray-700 font-medium">Name</span>
           <Input
             placeholder={searchMode === 'name' ? 'Enter player name...' : 'Enter Wikipedia URL...'}
             value={searchValue}
