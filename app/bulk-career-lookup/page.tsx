@@ -213,7 +213,7 @@ export default function BulkCareerLookupPage() {
             `Player's ${footballer.first_name} ${footballer.last_name} Wikipedia URL found: ${footballer.wikipedia_url}.`,
             {
               wikipedia_url: footballer.wikipedia_url,
-              lookup_url: `/career-lookup?url=${encodeURIComponent(footballer.wikipedia_url)}&useUrl=true`
+              lookup_url: `/career-lookup?url=${encodeURIComponent(footballer.wikipedia_url)}&useWikiUrl=true`
             }
           )
         )
@@ -226,7 +226,7 @@ export default function BulkCareerLookupPage() {
             `No Wikipedia URL found for ${fullName}. Using player full name for lookup. Wikipedia search: ${wikiSearchUrl}.`,
             {
               wikipedia_search_url: wikiSearchUrl,
-              lookup_url: `/career-lookup?name=${encodeURIComponent(fullName)}&useUrl=false`
+              lookup_url: `/career-lookup?name=${encodeURIComponent(fullName)}&useWikiUrl=false`
             }
           )
         )

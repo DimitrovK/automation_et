@@ -52,8 +52,10 @@ export function JsonCommandPreview({
     const changes: Partial<CreateFootballerRequest> = {}
 
     // Compare basic info
-    if (playerConfig.firstName.trim() !== dbPlayerInfo.first_name) {
-      changes.first_name = playerConfig.firstName.trim()
+    const safeFirstName = playerConfig.firstName ? playerConfig.firstName.trim() : "";
+    const dbFirstName = dbPlayerInfo.first_name ? dbPlayerInfo.first_name : "";
+    if (safeFirstName !== dbFirstName) {
+      changes.first_name = safeFirstName;
     }
     if (playerConfig.lastName.trim() !== dbPlayerInfo.last_name) {
       changes.last_name = playerConfig.lastName.trim()
@@ -241,8 +243,8 @@ export function JsonCommandPreview({
     const createFootballerData: CreateFootballerRequest = {
       status: playerConfig.status,
       user: user.id,
-      first_name: playerConfig.firstName.trim(),
-      last_name: playerConfig.lastName.trim(),
+      first_name: playerConfig.firstName ? playerConfig.firstName.trim() : "",
+      last_name: playerConfig.lastName ? playerConfig.lastName.trim() : "",
       nation_id: playerConfig.countryID,
       date_of_birth: playerConfig.dateOfBirth,
       wikipedia_url: playerConfig.wikipediaUrl || null,
@@ -332,7 +334,11 @@ ${JSON.stringify(data, null, 2)}`
     return null // Don't show anything if no data
   }
 
-  const hasValidationIssues = !playerConfig.countryID || !playerConfig.firstName.trim() || !playerConfig.lastName.trim() || !playerConfig.dateOfBirth
+  const hasValidationIssues =
+    !playerConfig.countryID ||
+    !(playerConfig.firstName && playerConfig.firstName.trim()) ||
+    !(playerConfig.lastName && playerConfig.lastName.trim()) ||
+    !playerConfig.dateOfBirth;
   const operationType = isExistingPlayer ? 'Update' : 'Create'
   const footballerEndpoint = getFootballerEndpoint()
   const footballerMethod = getFootballerMethod()
