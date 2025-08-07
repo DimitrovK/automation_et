@@ -31,7 +31,8 @@ export default function FootballerCareerApp() {
   const { user, isLoading, isAuthenticated } = useAuth()
   const searchParams = useSearchParams()
   
-  const [playerName, setPlayerName] = useState("")
+  const [searchValue, setSearchValue] = useState("");
+  const [searchMode, setSearchMode] = useState<'name' | 'wikipedia_url'>('name');
   const [playerData, setPlayerData] = useState<n8nWikiPlayerData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -50,16 +51,23 @@ export default function FootballerCareerApp() {
 
   // Initialize with URL parameters
   useEffect(() => {
-    const name = searchParams.get('name')
-    
-    if (name) {
-      setPlayerName(name)
-      // Auto-search if name is provided
+    const name = searchParams.get('name');
+    const url = searchParams.get('url');
+    const useWikiUrl = searchParams.get('useWikiUrl');
+    if (useWikiUrl === 'true' && url) {
+      setSearchMode('wikipedia_url');
+      setSearchValue(url);
       setTimeout(() => {
-        handleSearch()
-      }, 100)
+        handleSearch('wikipedia_url', url);
+      }, 100);
+    } else if (name) {
+      setSearchMode('name');
+      setSearchValue(name);
+      setTimeout(() => {
+        handleSearch('name', name);
+      }, 100);
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   // Fetch database player info using the playerDBId
   const fetchDbPlayerInfo = async (playerDBId: number) => {
@@ -78,57 +86,56 @@ export default function FootballerCareerApp() {
 
   // Handle reload player - triggers a fresh search with current player name
   const handleReloadPlayer = () => {
-    if (playerName.trim()) {
-      // Reset states
-      setChosenDataSource(null)
-      setDbPlayerInfo(null)
-      setError(null)
-      // Trigger a new search
-      handleSearch()
+    if (searchValue.trim()) {
+      setChosenDataSource(null);
+      setDbPlayerInfo(null);
+      setError(null);
+      handleSearch(searchMode, searchValue);
     }
-  }
+  };
 
-  const handleSearch = async () => {
-    if (!playerName.trim()) return
+  const handleSearch = async (mode = searchMode, value = searchValue) => {
+    if (!value.trim()) return;
 
-    setLoading(true)
-    setError(null)
-    setPlayerData(null)
+    setLoading(true);
+    setError(null);
+    setPlayerData(null);
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 15000)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       try {
+        const body = mode === 'wikipedia_url' ? { wikipedia_url: value } : { name: value };
         const response = await fetch(connectionSettings.webhookUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name: playerName }),
+          body: JSON.stringify(body),
           signal: controller.signal,
           mode: "cors",
-        })
-        clearTimeout(timeoutId)
+        });
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`HTTP ${response.status}: ${errorText}`)
+          const errorText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
 
-        const data = await response.json()
-        setPlayerData(data)
+        const data = await response.json();
+        setPlayerData(data);
       } catch (fetchError) {
-        clearTimeout(timeoutId)
-        throw fetchError
+        clearTimeout(timeoutId);
+        throw fetchError;
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred"
-      setError(errorMessage)
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setError(errorMessage);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDataSourceChosen = (dataSource: 'wikipedia' | 'database') => {
     setChosenDataSource(dataSource)
@@ -163,7 +170,7 @@ export default function FootballerCareerApp() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Navigation */}
         <Navigation />
-        
+
         {/* Header with utility buttons */}
         <div className="text-center space-y-2 relative">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Footballer Career Lookup</h1>
@@ -183,10 +190,12 @@ export default function FootballerCareerApp() {
 
         {/* Search Form */}
         <CareerLookupSearch
-          playerName={playerName}
+          searchValue={searchValue}
+          searchMode={searchMode}
           loading={loading}
-          onPlayerNameChange={setPlayerName}
-          onSearch={handleSearch}
+          onSearchValueChange={setSearchValue}
+          onSearchModeChange={setSearchMode}
+          onSearch={() => handleSearch(searchMode, searchValue)}
         />
 
         {/* Error Display */}
@@ -237,5 +246,5 @@ export default function FootballerCareerApp() {
         )}
       </div>
     </div>
-  )
+  );
 }

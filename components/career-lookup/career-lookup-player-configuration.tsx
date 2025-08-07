@@ -175,8 +175,10 @@ export function CareerLookupPlayerConfiguration({
     const changes: Partial<CreateFootballerRequest> = {}
 
     // Compare basic info
-    if (playerConfig.firstName.trim() !== dbPlayerInfo.first_name) {
-      changes.first_name = playerConfig.firstName.trim()
+    const safeFirstName = playerConfig.firstName ? playerConfig.firstName.trim() : "";
+    const dbFirstName = dbPlayerInfo.first_name ? dbPlayerInfo.first_name : "";
+    if (safeFirstName !== dbFirstName) {
+      changes.first_name = safeFirstName;
     }
     if (playerConfig.lastName.trim() !== dbPlayerInfo.last_name) {
       changes.last_name = playerConfig.lastName.trim()
