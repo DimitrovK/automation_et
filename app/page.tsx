@@ -11,6 +11,7 @@ import {
   Settings,
   Database,
   FileText,
+  MessageCircle,
 } from "lucide-react"
 
 import { useAuth } from "@/lib/auth"
@@ -40,6 +41,9 @@ export default function DashboardPage() {
   }
   const navigateToBulkCareerLookup = () => {
     router.push('/bulk-career-lookup')
+  }
+  const navigateToDiscordControl = () => {
+    router.push('/discord-control')
   } 
 
   return (
@@ -117,6 +121,27 @@ export default function DashboardPage() {
               >
                 <Database className="h-4 w-4 mr-2" />
                Check Footballers
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-indigo-600" />
+                Discord Control
+              </CardTitle>
+              <CardDescription>
+                Send messages to Discord channels using the ExtraTime bot
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={navigateToDiscordControl}
+                className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Manage Discord
               </Button>
             </CardContent>
           </Card>
