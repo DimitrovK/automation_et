@@ -625,8 +625,8 @@ export default function BulkCareerLookupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-slate-800 dark:to-emerald-900/30 p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
         <Navigation />
         
         {/* Header */}

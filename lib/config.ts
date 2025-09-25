@@ -24,6 +24,14 @@ const config = {
     const cleanPath = path.startsWith("/") ? path.slice(1) : path
     return `${baseUrl}${cleanPath}`
   },
+
+  getDiscordToken: () => {
+    return process.env.NEXT_PUBLIC_DISCORD_BOT_TOKEN || ""
+  },
+
+  isDiscordTokenConfigured: () => {
+    return !!process.env.NEXT_PUBLIC_DISCORD_BOT_TOKEN
+  },
 } as const
 
 export default config

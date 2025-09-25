@@ -10,6 +10,7 @@ import {
   Menu,
   ChevronDown,
   Users,
+  MessageCircle,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -54,6 +55,12 @@ export function Navigation({ className }: NavigationProps) {
       href: "/footballer-management",
       icon: Sparkles,
       description: "Test footballer API endpoints",
+    },
+    {
+      label: "Discord Control",
+      href: "/discord-control",
+      icon: MessageCircle,
+      description: "Send messages to Discord channels",
     },
     // Easy to add more pages here in the future
     // {
