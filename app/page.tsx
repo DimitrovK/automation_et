@@ -12,6 +12,7 @@ import {
   Database,
   FileText,
   MessageCircle,
+  MessageCircleQuestionIcon,
 } from "lucide-react"
 
 import { useAuth } from "@/lib/auth"
@@ -44,6 +45,9 @@ export default function DashboardPage() {
   }
   const navigateToDiscordControl = () => {
     router.push('/discord-control')
+  }
+  const navigateToQuestionsHub = () => {
+    router.push('/questions-hub')
   } 
 
   return (
@@ -145,6 +149,27 @@ export default function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircleQuestionIcon className="h-5 w-5 text-indigo-600" />
+                Questions Hub
+              </CardTitle>
+              <CardDescription>
+                Upload questions to the Backend using the ExtraTime API
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={navigateToQuestionsHub}
+                className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <MessageCircleQuestionIcon className="h-4 w-4 mr-2" />
+                Manage Questions
+              </Button>
+            </CardContent>
+          </Card> 
 
           <Card className="hover:shadow-lg transition-shadow duration-200 opacity-60">
             <CardHeader>
