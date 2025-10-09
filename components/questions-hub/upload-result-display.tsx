@@ -7,14 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, AlertTriangle, Info, Copy, ChevronDown, ChevronUp, FileCheck, AlertCircle } from "lucide-react"
 import { UploadQuestionsResponse } from "@/lib/questions-upload-client"
-
-interface UploadResultDisplayProps {
-  result: {
-    type: 'success' | 'error'
-    message: string
-    details?: UploadQuestionsResponse
-  } | null
-}
+import { useQuestions } from "./QuestionsContext"
 
 interface CategorizedError {
   row: string
@@ -25,12 +18,15 @@ interface CategorizedError {
 
 type FilterType = 'all' | 'uploaded' | 'duplicates' | 'skipped' | 'failed'
 
-export function UploadResultDisplay({ result }: UploadResultDisplayProps) {
+export function UploadResultDisplay() {
+  const { uploadResult } = useQuestions()
   const [showDetails, setShowDetails] = useState(true)
   const [copied, setCopied] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
 
-  if (!result) return null
+  if (!uploadResult) return null
+
+  const result = uploadResult
 
   const details = result.details
 

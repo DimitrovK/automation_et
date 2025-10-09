@@ -3,17 +3,10 @@
  * Handles parsing and validation of CSV files for questions
  */
 
-export interface ParsedQuestion {
-  row: number
-  [key: string]: any
-}
+import type { ParsedQuestion, ParseResult } from "@/types/csv"
 
-export interface ParseResult {
-  success: boolean
-  data: ParsedQuestion[]
-  error?: string
-  totalRows?: number
-}
+// Re-export types for backward compatibility
+export type { ParsedQuestion, ParseResult }
 
 /**
  * Parse a single CSV line handling quoted strings with commas

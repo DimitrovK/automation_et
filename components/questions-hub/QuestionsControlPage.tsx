@@ -20,21 +20,7 @@ export function QuestionsControlPage() {
 }
 
 function QuestionsControlPageContent() {
-  const {
-    selectedFile,
-    handleFileSelect,
-    resetUpload,
-    isUploading,
-    handleUpload,
-    uploadResult,
-    previewData,
-    allData
-  } = useQuestions()
-
-  const onFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] || null
-    handleFileSelect(file)
-  }
+  const { selectedFile, uploadResult } = useQuestions()
 
   // Hide upload button if upload was successful
   const showUploadButton = selectedFile && !uploadResult?.details?.successful
@@ -49,31 +35,20 @@ function QuestionsControlPageContent() {
       {/* Format Guidelines Component - Collapsed by default at top */}
       <FormatGuidelines />
 
-      {/* File Selection Component */}
-      <CSVUploadForm
-        selectedFile={selectedFile}
-        isUploading={isUploading}
-        onFileSelect={onFileSelect}
-        onRemoveFile={resetUpload}
-      />
+      {/* File Selection Component - Uses context directly */}
+      <CSVUploadForm />
 
-      {/* CSV Preview Component */}
-      <CSVPreview data={previewData} allData={allData} />
+      {/* CSV Preview Component - Uses context directly */}
+      <CSVPreview />
 
-      {/* Upload Results Display */}
-      <UploadResultDisplay result={uploadResult} />
+      {/* Upload Results Display - Uses context directly */}
+      <UploadResultDisplay />
 
       {/* Console Log Display */}
       <ConsoleLogDisplay />
 
-      {/* Upload Button - Below console, hidden after successful upload */}
-      {showUploadButton && (
-        <UploadButton
-          isUploading={isUploading}
-          questionCount={allData.length}
-          onUpload={handleUpload}
-        />
-      )}
+      {/* Upload Button - Below console, hidden after successful upload - Uses context directly */}
+      {showUploadButton && <UploadButton />}
 
       {/* Refresh Button - Shows after successful upload */}
       {showRefreshButton && (

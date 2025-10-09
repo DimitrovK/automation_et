@@ -4,18 +4,16 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { ApiButton } from "@/components/ui/emerald-button"
 import { Upload, Loader2 } from "lucide-react"
+import { useQuestions } from "./QuestionsContext"
 
-interface UploadButtonProps {
-  isUploading: boolean
-  questionCount: number
-  onUpload: () => void
-}
+export function UploadButton() {
+  const { isUploading, handleUpload, allData } = useQuestions()
+  const questionCount = allData.length
 
-export function UploadButton({ isUploading, questionCount, onUpload }: UploadButtonProps) {
   return (
     <div className="flex justify-center">
       <ApiButton
-        onClick={onUpload}
+        onClick={handleUpload}
         disabled={isUploading}
         size="lg"
       >

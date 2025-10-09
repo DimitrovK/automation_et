@@ -8,21 +8,16 @@ import {
   FileText, 
   X,
 } from "lucide-react"
+import { useQuestions } from "./QuestionsContext"
 
-interface CSVUploadFormProps {
-  selectedFile: File | null
-  isUploading: boolean
-  onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
-  onRemoveFile: () => void
-}
-
-export function CSVUploadForm({
-  selectedFile,
-  isUploading,
-  onFileSelect,
-  onRemoveFile
-}: CSVUploadFormProps) {
+export function CSVUploadForm() {
+  const { selectedFile, isUploading, handleFileSelect, resetUpload } = useQuestions()
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const onFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null
+    handleFileSelect(file)
+  }
 
   return (
     <Card>
@@ -73,7 +68,7 @@ export function CSVUploadForm({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onRemoveFile}
+                onClick={resetUpload}
                 disabled={isUploading}
               >
                 <X className="h-4 w-4" />

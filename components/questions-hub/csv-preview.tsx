@@ -5,26 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Info, ChevronDown, ChevronUp } from "lucide-react"
+import { useQuestions } from "./QuestionsContext"
+import type { ParsedQuestion } from "@/types/csv"
 
-interface ParsedQuestion {
-  row: number
-  [key: string]: any
-}
-
-interface CSVPreviewProps {
-  data: ParsedQuestion[]
-  allData?: ParsedQuestion[]
-}
-
-export function CSVPreview({ data, allData = [] }: CSVPreviewProps) {
+export function CSVPreview() {
+  const { previewData, allData } = useQuestions()
   const [showAll, setShowAll] = useState(false)
   
-  if (data.length === 0) {
+  if (previewData.length === 0) {
     return null
   }
 
-  const displayData = showAll ? allData : data
-  const hasMore = allData.length > data.length
+  const displayData = showAll ? allData : previewData
+  const hasMore = allData.length > previewData.length
 
   return (
     <Card>
@@ -38,7 +31,7 @@ export function CSVPreview({ data, allData = [] }: CSVPreviewProps) {
             <CardDescription>
               {showAll 
                 ? `Showing all ${allData.length} rows from your CSV file`
-                : `Showing first ${data.length} rows (Total: ${allData.length} rows)`
+                : `Showing first ${previewData.length} rows (Total: ${allData.length} rows)`
               }
             </CardDescription>
           </div>
