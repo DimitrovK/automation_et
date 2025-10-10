@@ -58,6 +58,8 @@ export function CareerLookupPlayerConfiguration({
     status: "APPROVED",
     show_date_of_birth_on_search: false,
     retired: false,
+    is_player: true,
+    is_manager: false,
     might_change: false,
     available_for_career_path: true,
     career_path_difficulty: "NORMAL",
@@ -77,6 +79,8 @@ export function CareerLookupPlayerConfiguration({
         status: "APPROVED" as const,
         show_date_of_birth_on_search: dbPlayerInfo.show_date_of_birth_on_search,
         retired: dbPlayerInfo.retired,
+        is_player: dbPlayerInfo.is_player,
+        is_manager: dbPlayerInfo.is_manager,
         might_change: dbPlayerInfo.might_change,
         available_for_career_path: dbPlayerInfo.available_for_career_path,
         career_path_difficulty: dbPlayerInfo.career_path_difficulty as "EASY" | "NORMAL" | "HARD" | "EXTREME",
@@ -95,6 +99,8 @@ export function CareerLookupPlayerConfiguration({
         status: "AWAITING_REVISION" as const,
         show_date_of_birth_on_search: false,
         retired: false,
+        is_player: true,
+        is_manager: false,
         might_change: false,
         available_for_career_path: true,
         career_path_difficulty: "NORMAL" as const,
@@ -200,6 +206,12 @@ export function CareerLookupPlayerConfiguration({
     if (playerConfig.retired !== dbPlayerInfo.retired) {
       changes.retired = playerConfig.retired
     }
+    if (playerConfig.is_player !== dbPlayerInfo.is_player) {
+      changes.is_player = playerConfig.is_player
+    }
+    if (playerConfig.is_manager !== dbPlayerInfo.is_manager) {
+      changes.is_manager = playerConfig.is_manager
+    }
     if (playerConfig.might_change !== dbPlayerInfo.might_change) {
       changes.might_change = playerConfig.might_change
     }
@@ -268,9 +280,18 @@ export function CareerLookupPlayerConfiguration({
         }
 
         if (Object.keys(changes).length > 0) {
-          // Only include team_id and role when we have changes to update (for PUT requests)
+          // Include required fields for PUT requests to prevent null values
           changes.team_id = dbTeam.team_id
           changes.role = dbTeam.role
+          
+          // Always include start_year and end_year if they weren't already in changes
+          // to prevent them from being set to null in the backend
+          if (!changes.hasOwnProperty('start_year')) {
+            changes.start_year = dbTeam.start_year
+          }
+          if (!changes.hasOwnProperty('end_year')) {
+            changes.end_year = dbTeam.end_year
+          }
           
           updates.push({
             id: dbTeam.id,
@@ -539,8 +560,8 @@ export function CareerLookupPlayerConfiguration({
         wikipedia_url: playerConfig.wikipediaUrl.trim() || null,
         show_date_of_birth_on_search: playerConfig.show_date_of_birth_on_search,
         retired: playerConfig.retired,
-        is_player: true,
-        is_manager: false,
+        is_player: playerConfig.is_player,
+        is_manager: playerConfig.is_manager,
         might_change: playerConfig.might_change,
         available_for_career_path: playerConfig.available_for_career_path,
         career_path_difficulty: playerConfig.career_path_difficulty,
@@ -798,6 +819,48 @@ export function CareerLookupPlayerConfiguration({
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
                 Indicates whether the footballer has retired from professional football
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="is_player"
+                  checked={playerConfig.is_player}
+                  onCheckedChange={(checked) =>
+                    setPlayerConfig({
+                      ...playerConfig,
+                      is_player: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor="is_player" className="text-sm font-medium">
+                  Is a Player
+                </Label>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                Indicates whether this person has played as a footballer
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="is_manager"
+                  checked={playerConfig.is_manager}
+                  onCheckedChange={(checked) =>
+                    setPlayerConfig({
+                      ...playerConfig,
+                      is_manager: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor="is_manager" className="text-sm font-medium">
+                  Is a Manager
+                </Label>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                Indicates whether this person has managed as a football manager/coach
               </p>
             </div>
 

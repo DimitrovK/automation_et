@@ -77,6 +77,12 @@ export function JsonCommandPreview({
     if (playerConfig.retired !== dbPlayerInfo.retired) {
       changes.retired = playerConfig.retired
     }
+    if (playerConfig.is_player !== dbPlayerInfo.is_player) {
+      changes.is_player = playerConfig.is_player
+    }
+    if (playerConfig.is_manager !== dbPlayerInfo.is_manager) {
+      changes.is_manager = playerConfig.is_manager
+    }
     if (playerConfig.might_change !== dbPlayerInfo.might_change) {
       changes.might_change = playerConfig.might_change
     }
@@ -144,9 +150,18 @@ export function JsonCommandPreview({
         }
 
         if (Object.keys(changes).length > 0) {
-          // Only include team_id and role when we have changes to update (for PUT requests)
+          // Include required fields for PUT requests to prevent null values
           changes.team_id = dbTeam.team_id
           changes.role = dbTeam.role
+          
+          // Always include start_year and end_year if they weren't already in changes
+          // to prevent them from being set to null in the backend
+          if (!changes.hasOwnProperty('start_year')) {
+            changes.start_year = dbTeam.start_year
+          }
+          if (!changes.hasOwnProperty('end_year')) {
+            changes.end_year = dbTeam.end_year
+          }
           
           updates.push({
             id: dbTeam.id,
@@ -250,8 +265,8 @@ export function JsonCommandPreview({
       wikipedia_url: playerConfig.wikipediaUrl || null,
       show_date_of_birth_on_search: playerConfig.show_date_of_birth_on_search,
       retired: playerConfig.retired,
-      is_player: true,
-      is_manager: false,
+      is_player: playerConfig.is_player,
+      is_manager: playerConfig.is_manager,
       might_change: playerConfig.might_change,
       available_for_career_path: playerConfig.available_for_career_path,
       career_path_difficulty: playerConfig.career_path_difficulty,
@@ -378,7 +393,10 @@ ${JSON.stringify(data, null, 2)}`
                   : `Current footballer data matches database - no updates needed`
                 : `JSON commands that will be executed to create the footballer and team records`
               }
-              {isExistingPlayer && chosenDataSource !== 'wikipedia' && (
+              {isExistingPlayer && chosenDataSource !== 'wikipedia' && chosenDataSource === 'database' && playerData?.teams && dbPlayerInfo?.teams_played_for && (
+                // Only show hint if there might be team differences (different array lengths or if Wikipedia has teams)
+                playerData.teams.length !== dbPlayerInfo.teams_played_for.length || playerData.teams.some(t => t.teamFound && t.teamID)
+              ) && (
                 <span className="block text-amber-600 mt-1">
                   💡 Select "Wikipedia" as data source to see team update options
                 </span>
@@ -402,19 +420,21 @@ ${JSON.stringify(data, null, 2)}`
               )}
 
               <Tabs defaultValue="footballer" className="w-full">
-                <div className="flex items-center justify-between mb-3">
-                  <TabsList className={`grid w-auto ${
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                  <TabsList className={`grid w-full sm:w-auto ${
                     isExistingPlayer && hasTeamChanges ? 'grid-cols-2' : 
                     isExistingPlayer ? 'grid-cols-1' : 'grid-cols-2'
                   }`}>
-                    <TabsTrigger value="footballer">
-                      {operationType} Footballer
-                      <Badge variant="secondary" className="ml-2">1</Badge>
+                    <TabsTrigger value="footballer" className="text-xs sm:text-sm">
+                      <span className="hidden sm:inline">{operationType} Footballer</span>
+                      <span className="sm:hidden">{operationType}</span>
+                      <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs">1</Badge>
                     </TabsTrigger>
                     {((!isExistingPlayer && footballerTeamsJson.length > 0) || (isExistingPlayer && hasTeamChanges)) && (
-                      <TabsTrigger value="teams">
-                        {isExistingPlayer ? 'Team Operations' : 'Create Teams'}
-                        <Badge variant="secondary" className="ml-2">
+                      <TabsTrigger value="teams" className="text-xs sm:text-sm">
+                        <span className="hidden sm:inline">{isExistingPlayer ? 'Team Operations' : 'Create Teams'}</span>
+                        <span className="sm:hidden">Teams</span>
+                        <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs">
                           {isExistingPlayer ? getTeamChanges.deletes.length + getTeamChanges.updates.length + getTeamChanges.creates.length : footballerTeamsJson.length}
                         </Badge>
                       </TabsTrigger>
@@ -426,19 +446,22 @@ ${JSON.stringify(data, null, 2)}`
                     size="sm"
                     onClick={() => setShowAsHttpRequest(!showAsHttpRequest)}
                     className="flex items-center gap-2"
-                    disabled={!!(isExistingPlayer && !hasChanges)}
+                    disabled={!!(isExistingPlayer && hasChanges)}
                   >
                     {showAsHttpRequest ? 'Show JSON' : 'Show HTTP Request'}
                   </Button>
                 </div>
 
                 <TabsContent value="footballer" className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h4 className="font-medium text-sm break-all">
                       {showAsHttpRequest 
-                        ? `HTTP Request to ${footballerMethod} ${footballerEndpoint}` 
-                        : `${footballerMethod} ${footballerEndpoint}`
+                        ? <span className="hidden sm:inline">HTTP Request to {footballerMethod} {footballerEndpoint}</span>
+                        : <span>{footballerMethod} {footballerEndpoint}</span>
                       }
+                      <span className="sm:hidden">
+                        {showAsHttpRequest ? `${footballerMethod}` : `${footballerMethod}`}
+                      </span>
                     </h4>
                     <Button
                       variant="outline"
@@ -450,20 +473,21 @@ ${JSON.stringify(data, null, 2)}`
                         copyToClipboard(content, 'footballer')
                       }}
                       disabled={!!(isExistingPlayer && !hasChanges)}
+                      className="w-full sm:w-auto"
                     >
                       {copiedStates.footballer ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      {copiedStates.footballer ? 'Copied' : 'Copy'}
+                      <span className="ml-2">{copiedStates.footballer ? 'Copied' : 'Copy'}</span>
                     </Button>
                   </div>
                   
                   {isExistingPlayer && !hasChanges ? (
                     <div className="text-center text-gray-500 py-8 border rounded-lg bg-gray-50 dark:bg-slate-800">
-                      <p>No changes detected - API call not needed</p>
+                      <p className="text-sm">No changes detected - API call not needed</p>
                     </div>
                   ) : (
                     <ScrollArea className="h-64 w-full border rounded-lg">
-                      <div className="bg-gray-100 dark:bg-slate-700 p-4">
-                        <pre className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                      <div className="bg-gray-100 dark:bg-slate-700 p-3 sm:p-4">
+                        <pre className="text-[10px] sm:text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
                           <code>
                             {showAsHttpRequest 
                               ? generateHttpRequest(footballerEndpoint, footballerMethod, footballerJson)
@@ -477,9 +501,14 @@ ${JSON.stringify(data, null, 2)}`
                 </TabsContent>
 
                 <TabsContent value="teams" className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">
-                      {isExistingPlayer ? 'Team Updates' : showAsHttpRequest ? 'HTTP Request to POST /data/footballer-teams/' : 'POST /data/footballer-teams/'}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h4 className="font-medium text-sm break-all">
+                      <span className="hidden sm:inline">
+                        {isExistingPlayer ? 'Team Updates' : showAsHttpRequest ? 'HTTP Request to POST /data/footballer-teams/' : 'POST /data/footballer-teams/'}
+                      </span>
+                      <span className="sm:hidden">
+                        {isExistingPlayer ? 'Team Updates' : 'POST /data/footballer-teams/'}
+                      </span>
                     </h4>
                     <Button
                       variant="outline"
@@ -523,9 +552,10 @@ ${JSON.stringify(data, null, 2)}`
                           copyToClipboard(content, 'teams')
                         }
                       }}
+                      className="w-full sm:w-auto"
                     >
                       {copiedStates.teams ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      {copiedStates.teams ? 'Copied' : 'Copy'}
+                      <span className="ml-2">{copiedStates.teams ? 'Copied' : 'Copy'}</span>
                     </Button>
                   </div>
                   
@@ -534,15 +564,15 @@ ${JSON.stringify(data, null, 2)}`
                     <div className="space-y-4">
                       {getTeamChanges.deletes.length > 0 && (
                         <div>
-                          <h5 className="font-medium text-sm mb-2 text-red-700">Team Record Deletions ({getTeamChanges.deletes.length})</h5>
+                          <h5 className="font-medium text-xs sm:text-sm mb-2 text-red-700 dark:text-red-400">Team Record Deletions ({getTeamChanges.deletes.length})</h5>
                           <ScrollArea className="h-48 w-full border rounded-lg">
-                            <div className="bg-red-50 dark:bg-red-900/20 p-4 space-y-3">
+                            <div className="bg-red-50 dark:bg-red-900/20 p-3 sm:p-4 space-y-3">
                               {getTeamChanges.deletes.map((deleteOp, index) => (
                                 <div key={index} className="border-b border-red-200 dark:border-red-700 last:border-b-0 pb-2 last:pb-0">
-                                  <p className="text-xs font-medium text-red-800 dark:text-red-300 mb-1">
+                                  <p className="text-[10px] sm:text-xs font-medium text-red-800 dark:text-red-300 mb-1 break-all">
                                     DELETE /data/footballer-teams/{deleteOp.id}/ - {deleteOp.teamName} (position {deleteOp.position})
                                   </p>
-                                  <pre className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                                  <pre className="text-[10px] sm:text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
                                     <code>
                                       {showAsHttpRequest 
                                         ? generateHttpRequest(`/data/footballer-teams/${deleteOp.id}/`, 'DELETE', { reason: "Team mismatch or extra team in database", position: deleteOp.position, team_name: deleteOp.teamName })
@@ -559,15 +589,15 @@ ${JSON.stringify(data, null, 2)}`
                       
                       {getTeamChanges.updates.length > 0 && (
                         <div>
-                          <h5 className="font-medium text-sm mb-2 text-blue-700">Team Record Updates ({getTeamChanges.updates.length})</h5>
+                          <h5 className="font-medium text-xs sm:text-sm mb-2 text-blue-700 dark:text-blue-400">Team Record Updates ({getTeamChanges.updates.length})</h5>
                           <ScrollArea className="h-48 w-full border rounded-lg">
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 space-y-3">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 space-y-3">
                               {getTeamChanges.updates.map((update, index) => (
                                 <div key={index} className="border-b border-blue-200 dark:border-blue-700 last:border-b-0 pb-2 last:pb-0">
-                                  <p className="text-xs font-medium text-blue-800 dark:text-blue-300 mb-1">
+                                  <p className="text-[10px] sm:text-xs font-medium text-blue-800 dark:text-blue-300 mb-1 break-all">
                                     PUT /data/footballer-teams/{update.id}/ - {update.teamName} (position {update.position})
                                   </p>
-                                  <pre className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                                  <pre className="text-[10px] sm:text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
                                     <code>
                                       {showAsHttpRequest 
                                         ? generateHttpRequest(`/data/footballer-teams/${update.id}/`, 'PUT', update.changes)
@@ -584,15 +614,15 @@ ${JSON.stringify(data, null, 2)}`
                       
                       {getTeamChanges.creates.length > 0 && (
                         <div>
-                          <h5 className="font-medium text-sm mb-2 text-green-700">New Team Records ({getTeamChanges.creates.length})</h5>
+                          <h5 className="font-medium text-xs sm:text-sm mb-2 text-green-700 dark:text-green-400">New Team Records ({getTeamChanges.creates.length})</h5>
                           <ScrollArea className="h-48 w-full border rounded-lg">
-                            <div className="bg-green-50 dark:bg-green-900/20 p-4 space-y-3">
+                            <div className="bg-green-50 dark:bg-green-900/20 p-3 sm:p-4 space-y-3">
                               {getTeamChanges.creates.map((create, index) => (
                                 <div key={index} className="border-b border-green-200 dark:border-green-700 last:border-b-0 pb-2 last:pb-0">
-                                  <p className="text-xs font-medium text-green-800 dark:text-green-300 mb-1">
+                                  <p className="text-[10px] sm:text-xs font-medium text-green-800 dark:text-green-300 mb-1 break-all">
                                     POST /data/footballer-teams/ - {create.teamName} (position {create.position})
                                   </p>
-                                  <pre className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                                  <pre className="text-[10px] sm:text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
                                     <code>
                                       {showAsHttpRequest 
                                         ? generateHttpRequest('/data/footballer-teams/', 'POST', create.teamData)
@@ -609,7 +639,7 @@ ${JSON.stringify(data, null, 2)}`
                       
                       {!hasTeamChanges && (
                         <div className="text-center text-gray-500 py-8 border rounded-lg bg-gray-50 dark:bg-slate-800">
-                          <p>No team changes detected</p>
+                          <p className="text-sm">No team changes detected</p>
                         </div>
                       )}
                     </div>
@@ -617,8 +647,8 @@ ${JSON.stringify(data, null, 2)}`
                     // Show team creation for new players
                     footballerTeamsJson.length > 0 ? (
                       <ScrollArea className="h-64 w-full border rounded-lg">
-                        <div className="bg-gray-100 dark:bg-slate-700 p-4">
-                          <pre className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                        <div className="bg-gray-100 dark:bg-slate-700 p-3 sm:p-4">
+                          <pre className="text-[10px] sm:text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
                             <code>
                               {showAsHttpRequest 
                                 ? generateHttpRequest('/data/footballer-teams/', 'POST', footballerTeamsJson)

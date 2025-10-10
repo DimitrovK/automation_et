@@ -6,9 +6,9 @@ import { Navigation } from "@/components/navigation"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { useAuth } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
-import { QuestionsControlPage } from "@/components/questions-hub/QuestionsControlPage"
+import { QuestionsUploaderHub } from "@/components/questions-uploader/QuestionsUploaderHub"
 
-export default function QuestionsHubPage() {
+export default function QuestionsUploaderPage() {
   const { isLoading, isAuthenticated } = useAuth()
 
   // Authentication check
@@ -38,7 +38,7 @@ export default function QuestionsHubPage() {
         </div>
 
         {/* Main Control Component */}
-        <QuestionsControlPage />
+        <QuestionsUploaderHub />
       </div>
     </div>
   )

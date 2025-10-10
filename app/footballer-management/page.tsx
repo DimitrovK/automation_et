@@ -489,11 +489,15 @@ export default function FootballerManagementPage() {
       // If there are team changes, save them too
       if (teamChanges && teamChanges.length > 0) {
         const patchPromises = teamChanges.map(({ id, changes }) => {
-          // Get the original team to preserve the role
+          // Get the original team to preserve required fields
           const originalTeam = footballerTeams.find(team => team.id === id)
           if (originalTeam) {
             const patchData = {
               role: originalTeam.role,
+              team_id: originalTeam.team_id,
+              // Always include start_year and end_year to prevent them from being set to null
+              start_year: 'start_year' in changes ? changes.start_year : originalTeam.start_year,
+              end_year: 'end_year' in changes ? changes.end_year : originalTeam.end_year,
               ...changes
             }
             return FootballerAPI.patchFootballerTeam(id, patchData)
