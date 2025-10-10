@@ -243,12 +243,25 @@ export function UploadResultDisplay() {
         )}
 
         {/* Success Summary */}
-        {details.successful > 0 && (
+        {details.successful > 0 && result.type !== 'stopped' && (
           <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertTitle className="text-green-800 dark:text-green-200">Successfully Uploaded!</AlertTitle>
             <AlertDescription className="text-green-700 dark:text-green-300">
               {details.successful} question{details.successful !== 1 ? 's' : ''} uploaded successfully and set to <strong>AWAITING_REVISION</strong> status.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Stopped/Paused Summary */}
+        {result.type === 'stopped' && (
+          <Alert className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+            <AlertCircle className="h-4 w-4 text-orange-600" />
+            <AlertTitle className="text-orange-800 dark:text-orange-200">Upload Stopped</AlertTitle>
+            <AlertDescription className="text-orange-700 dark:text-orange-300">
+              The upload process was stopped. {details.successful} question{details.successful !== 1 ? 's' : ''} were successfully uploaded before stopping.
+              <br />
+              <strong className="mt-2 block">You can resume the upload or finish and review the results.</strong>
             </AlertDescription>
           </Alert>
         )}

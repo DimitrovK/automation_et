@@ -7,11 +7,15 @@ import {
   Upload, 
   FileText, 
   X,
+  CheckCircle,
+  Clock
 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { useQuestions } from "./QuestionsContext"
 
 export function CSVUploadForm() {
-  const { selectedFile, isUploading, handleFileSelect, resetUpload } = useQuestions()
+  const { selectedFile, isUploading, handleFileSelect, resetUpload, selectedStatus, setSelectedStatus } = useQuestions()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const onFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +80,46 @@ export function CSVUploadForm() {
             </div>
           )}
         </div>
+
+        {/* Status Selector - Only show when file is selected */}
+        {selectedFile && (
+          <div className="space-y-2 pt-2 border-t">
+            <Label htmlFor="status-select" className="text-sm font-medium">
+              Question Status
+            </Label>
+            <div className="flex items-center gap-3">
+              <Select
+                value={selectedStatus}
+                onValueChange={(value) => setSelectedStatus(value as 'AWAITING_REVISION' | 'APPROVED')}
+                disabled={isUploading}
+              >
+                <SelectTrigger id="status-select" className="w-[240px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AWAITING_REVISION">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-yellow-600" />
+                      <span>Awaiting Revision</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="APPROVED">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Approved</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {selectedStatus === 'APPROVED' 
+                  ? '✓ Questions will be immediately available in the app'
+                  : '⚠ Questions will require manual review before appearing'
+                }
+              </p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

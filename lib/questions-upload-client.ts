@@ -236,8 +236,14 @@ export class QuestionsAPI {
    * Upload questions from CSV file
    * Processes each question: validates, checks for duplicates, and uploads
    */
-  static async uploadQuestionsFromCSV(file: File): Promise<UploadQuestionsResponse> {
+  static async uploadQuestionsFromCSV(
+    file: File, 
+    status: 'AWAITING_REVISION' | 'APPROVED' = 'AWAITING_REVISION',
+    shouldStop?: () => boolean,
+    onProgress?: (partialResults: UploadQuestionsResponse) => void
+  ): Promise<UploadQuestionsResponse> {
     console.log('📂 Starting CSV upload:', file.name, `(${(file.size / 1024).toFixed(2)} KB)`)
+    console.log(`📋 Status: ${status}`)
     
     const results = {
       total: 0,
@@ -267,6 +273,19 @@ export class QuestionsAPI {
 
       // Process each question
       for (const question of questions) {
+        // Check if upload should stop
+        if (shouldStop && shouldStop()) {
+          console.log(`\n⏸️  Upload stopped by user`)
+          console.log(`📊 Partial results: ${results.successful} uploaded, ${results.skipped} skipped, ${results.duplicates} duplicates, ${results.failed} failed`)
+          const partialResponse: UploadQuestionsResponse = {
+            ...results,
+            success: true,
+            message: `Upload stopped. Processed ${results.total} questions: ${results.successful} uploaded, ${results.duplicates} duplicates, ${results.failed} failed, ${results.skipped} skipped`
+          }
+          onProgress?.(partialResponse)
+          break
+        }
+
         const rowNum = question.row
         console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
         console.log(`📝 Processing Row ${rowNum}`)
@@ -381,7 +400,7 @@ export class QuestionsAPI {
         // Upload question
         try {
           const questionData: Omit<Question, 'id'> = {
-            status: "AWAITING_REVISION",
+            status: status, // Use the provided status parameter
             text: question.Questions,
             difficulty: this.mapDifficulty(question.Difficulty),
             answer1: question.A,

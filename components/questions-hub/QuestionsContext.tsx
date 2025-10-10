@@ -5,6 +5,8 @@ import { useCSVUpload } from "@/hooks/use-csv-upload"
 import type { ParsedQuestion } from "@/lib/csv-parser"
 import type { UploadQuestionsResponse } from "@/lib/questions-upload-client"
 
+type QuestionStatus = 'AWAITING_REVISION' | 'APPROVED'
+
 // Context state interface
 interface QuestionsContextState {
   // File state
@@ -15,10 +17,20 @@ interface QuestionsContextState {
   // Upload state
   isUploading: boolean
   handleUpload: () => Promise<void>
+  isPaused: boolean
+  
+  // Upload control
+  stopUpload: () => void
+  resumeUpload: () => Promise<void>
+  finishUpload: () => void
+  
+  // Status selection
+  selectedStatus: QuestionStatus
+  setSelectedStatus: (status: QuestionStatus) => void
   
   // Results state
   uploadResult: {
-    type: 'success' | 'error'
+    type: 'success' | 'error' | 'stopped'
     message: string
     details?: UploadQuestionsResponse
   } | null
@@ -44,6 +56,12 @@ export function QuestionsProvider({ children }: { children: ReactNode }) {
     uploadResult: csvUploadHook.uploadResult,
     previewData: csvUploadHook.previewData,
     allData: csvUploadHook.allData,
+    selectedStatus: csvUploadHook.selectedStatus,
+    setSelectedStatus: csvUploadHook.setSelectedStatus,
+    isPaused: csvUploadHook.isPaused,
+    stopUpload: csvUploadHook.stopUpload,
+    resumeUpload: csvUploadHook.resumeUpload,
+    finishUpload: csvUploadHook.finishUpload,
   }
 
   return (

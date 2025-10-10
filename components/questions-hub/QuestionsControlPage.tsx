@@ -20,11 +20,11 @@ export function QuestionsControlPage() {
 }
 
 function QuestionsControlPageContent() {
-  const { selectedFile, uploadResult } = useQuestions()
+  const { selectedFile, uploadResult, isPaused } = useQuestions()
 
-  // Hide upload button if upload was successful
-  const showUploadButton = selectedFile && !uploadResult?.details?.successful
-  const showRefreshButton = uploadResult?.details?.successful
+  // Hide upload button if upload was successful (but not if paused)
+  const showUploadButton = selectedFile && (!uploadResult?.details?.successful || isPaused)
+  const showRefreshButton = uploadResult?.details?.successful && !isPaused
 
   const handleRefresh = () => {
     window.location.reload()
@@ -35,7 +35,7 @@ function QuestionsControlPageContent() {
       {/* Format Guidelines Component - Collapsed by default at top */}
       <FormatGuidelines />
 
-      {/* File Selection Component - Uses context directly */}
+      {/* File Selection Component with Status Selector - Uses context directly */}
       <CSVUploadForm />
 
       {/* CSV Preview Component - Uses context directly */}
