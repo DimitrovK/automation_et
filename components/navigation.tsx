@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Users,
   MessageCircle,
+  MessageCircleQuestionIcon,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -61,6 +62,12 @@ export function Navigation({ className }: NavigationProps) {
       href: "/discord-control",
       icon: MessageCircle,
       description: "Send messages to Discord channels",
+    },
+    {
+      label: "Questions Hub",
+      href: "/questions-hub",
+      icon: MessageCircleQuestionIcon,
+      description: "Upload Questons to Backend",
     },
     // Easy to add more pages here in the future
     // {
