@@ -2,24 +2,24 @@
 
 import React from "react"
 import { QuestionsProvider, useQuestions } from "./QuestionsContext"
-import { CSVUploadForm } from "./csv-upload-form"
-import { CSVPreview } from "./csv-preview"
-import { UploadButton } from "./upload-button"
-import { UploadResultDisplay } from "./upload-result-display"
-import { ConsoleLogDisplay } from "./console-log-display"
-import { FormatGuidelines } from "./format-guidelines"
+import { CSVUploadForm } from "./CSVUploadForm"
+import { CSVPreview } from "./CSVPreview"
+import { UploadButton } from "./UploadButton"
+import { UploadResultDisplay } from "./UploadResultDisplay"
+import { ConsoleLogDisplay } from "./ConsoleLogDisplay"
+import { FormatGuidelines } from "./FormatGuidelines"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 
-export function QuestionsControlPage() {
+export function QuestionsUploaderHub() {
   return (
     <QuestionsProvider>
-      <QuestionsControlPageContent />
+      <QuestionsUploaderHubContent />
     </QuestionsProvider>
   )
 }
 
-function QuestionsControlPageContent() {
+function QuestionsUploaderHubContent() {
   const { selectedFile, uploadResult, isPaused } = useQuestions()
 
   // Hide upload button if upload was successful (but not if paused)

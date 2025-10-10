@@ -38,6 +38,8 @@ export interface PlayerConfiguration {
   status: "AWAITING_REVISION" | "APPROVED" | "DENIED" | "AWAITING_CHANGE_CHECK"
   show_date_of_birth_on_search: boolean
   retired: boolean
+  is_player: boolean
+  is_manager: boolean
   might_change: boolean
   available_for_career_path: boolean
   career_path_difficulty: "EASY" | "NORMAL" | "HARD" | "EXTREME"

@@ -563,9 +563,9 @@ export default function BulkCareerLookupPage() {
 
   const getCareerLookupHref = (footballer: Footballer) => {
     if (useWikipediaUrl && footballer.wikipedia_url) {
-      return `/career-lookup?url=${encodeURIComponent(footballer.wikipedia_url)}&useUrl=true`
+      return `/career-lookup?url=${encodeURIComponent(footballer.wikipedia_url)}&useWikiUrl=true`
     }
-    return `/career-lookup?name=${encodeURIComponent(footballer.first_name + ' ' + footballer.last_name)}&useUrl=false`
+    return `/career-lookup?name=${encodeURIComponent(footballer.first_name + ' ' + footballer.last_name)}&useWikiUrl=false`
   }
 
   const getLogIcon = (type: DeploymentLogEntry['type']) => {

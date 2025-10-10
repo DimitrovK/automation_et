@@ -12,7 +12,7 @@ import {
   Database,
   FileText,
   MessageCircle,
-  MessageCircleQuestionIcon,
+  FileQuestion,
 } from "lucide-react"
 
 import { useAuth } from "@/lib/auth"
@@ -47,7 +47,7 @@ export default function DashboardPage() {
     router.push('/discord-control')
   }
   const navigateToQuestionsHub = () => {
-    router.push('/questions-hub')
+    router.push('/questions-uploader')
   } 
 
   return (
@@ -145,7 +145,7 @@ export default function DashboardPage() {
                 className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Manage Discord
+                Send Discord Messages
               </Button>
             </CardContent>
           </Card>
@@ -153,11 +153,11 @@ export default function DashboardPage() {
           <Card className="hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageCircleQuestionIcon className="h-5 w-5 text-indigo-600" />
-                Questions Hub
+                <FileQuestion className="h-5 w-5 text-indigo-600" />
+                Questions CSV Uploader
               </CardTitle>
               <CardDescription>
-                Upload questions to the Backend using the ExtraTime API
+                Upload questions via CSV files. Get detailed feedback and error reporting.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -165,8 +165,8 @@ export default function DashboardPage() {
                 onClick={navigateToQuestionsHub}
                 className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <MessageCircleQuestionIcon className="h-4 w-4 mr-2" />
-                Manage Questions
+                <FileQuestion className="h-4 w-4 mr-2" />
+                Upload Questions
               </Button>
             </CardContent>
           </Card> 
