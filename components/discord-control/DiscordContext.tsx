@@ -71,6 +71,39 @@ export const DISCORD_CHANNELS: DiscordChannel[] = [
     name: "contact-us-suggestions",
     description: "Suggestions and feedback"
   },
+  {
+    id: "1427214216888324166",
+    name: "rules-and-scoring",
+    description: "Rules and scoring for Career Path"
+  },
+  { id: "1427214248173633536",
+    name: "announcements",
+    description: "Announcements for Career Path"
+  },
+  { id: "1427215165031452692",
+    name: "rules-and-scoring",
+    description: "Rules and scoring for Avatars of Football"
+  },
+  { id: "1427215261970206921",
+    name: "announcements",
+    description: "Announcements for Avatars of Football"
+  },
+  { id: "1427215180357435482",
+    name: "rules-and-scoring",
+    description: "Rules and scoring for Club Connection"
+  },
+  { id: "1427215280089862234",
+    name: "announcements",
+    description: "Announcements for Club Connection"
+  },
+  { id: "1427215201253589013", 
+    name: "rules-and-scoring",
+    description: "Rules and scoring for TenaGoal"
+  },
+  { id: "1427215297303281776",
+    name: "announcements",
+    description: "Announcements for TenaGoal"
+  },  
 ]
 
 // Context state interface
