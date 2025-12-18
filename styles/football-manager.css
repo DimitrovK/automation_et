@@ -6,14 +6,14 @@
   --fm-bg-tertiary: #f3f4f6;
   --fm-bg-header: linear-gradient(to right, #f3f4f6, #e5e7eb);
   --fm-bg-footer: #e5e7eb;
-  
+
   --fm-border-primary: #d1d5db;
   --fm-border-secondary: #e5e7eb;
-  
+
   --fm-text-primary: #111827;
   --fm-text-secondary: #4b5563;
   --fm-text-muted: #9ca3af;
-  
+
   --fm-stats-blue: #2563eb;
   --fm-stats-yellow: #ca8a04;
   --fm-stats-green: #16a34a;
@@ -28,14 +28,14 @@
   --fm-bg-tertiary: #1e293b;
   --fm-bg-header: linear-gradient(to right, #334155, #475569);
   --fm-bg-footer: #0f172a;
-  
+
   --fm-border-primary: #475569;
   --fm-border-secondary: #475569;
-  
+
   --fm-text-primary: #ffffff;
   --fm-text-secondary: #94a3b8;
   --fm-text-muted: #64748b;
-  
+
   --fm-stats-blue: #93c5fd;
   --fm-stats-yellow: #fcd34d;
   --fm-stats-green: #86efac;

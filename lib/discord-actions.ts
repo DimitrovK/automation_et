@@ -1,7 +1,7 @@
-"use server"
+'use server';
 
-import { sendDiscordMessage } from "./discord"
-import { DiscordApiError } from "@/types/discord"
+import { DiscordApiError } from '@/types/discord';
+import { sendDiscordMessage } from './discord';
 
 /**
  * Server action for sending Discord messages
@@ -9,13 +9,13 @@ import { DiscordApiError } from "@/types/discord"
  */
 export async function sendDiscordMessageAction(channelId: string, message: string) {
   try {
-    const result = await sendDiscordMessage(channelId, message)
-    return { success: true, data: result }
+    const result = await sendDiscordMessage(channelId, message);
+    return { success: true, data: result };
   } catch (error) {
     if (error instanceof DiscordApiError) {
-      return { success: false, error: error.message }
+      return { success: false, error: error.message };
     }
-    console.error("Unexpected error:", error)
-    return { success: false, error: "An unexpected error occurred" }
+    console.error('Unexpected error:', error);
+    return { success: false, error: 'An unexpected error occurred' };
   }
 }

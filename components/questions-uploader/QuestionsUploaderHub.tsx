@@ -1,34 +1,34 @@
-"use client"
+'use client';
 
-import React from "react"
-import { QuestionsProvider, useQuestions } from "./QuestionsContext"
-import { CSVUploadForm } from "./CSVUploadForm"
-import { CSVPreview } from "./CSVPreview"
-import { UploadButton } from "./UploadButton"
-import { UploadResultDisplay } from "./UploadResultDisplay"
-import { ConsoleLogDisplay } from "./ConsoleLogDisplay"
-import { FormatGuidelines } from "./FormatGuidelines"
-import { Button } from "@/components/ui/button"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw } from 'lucide-react';
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ConsoleLogDisplay } from './ConsoleLogDisplay';
+import { CSVPreview } from './CSVPreview';
+import { CSVUploadForm } from './CSVUploadForm';
+import { FormatGuidelines } from './FormatGuidelines';
+import { QuestionsProvider, useQuestions } from './QuestionsContext';
+import { UploadButton } from './UploadButton';
+import { UploadResultDisplay } from './UploadResultDisplay';
 
 export function QuestionsUploaderHub() {
   return (
     <QuestionsProvider>
       <QuestionsUploaderHubContent />
     </QuestionsProvider>
-  )
+  );
 }
 
 function QuestionsUploaderHubContent() {
-  const { selectedFile, uploadResult, isPaused } = useQuestions()
+  const { selectedFile, uploadResult, isPaused } = useQuestions();
 
   // Hide upload button if upload was successful (but not if paused)
-  const showUploadButton = selectedFile && (!uploadResult?.details?.successful || isPaused)
-  const showRefreshButton = uploadResult?.details?.successful && !isPaused
+  const showUploadButton = selectedFile && (!uploadResult?.details?.successful || isPaused);
+  const showRefreshButton = uploadResult?.details?.successful && !isPaused;
 
   const handleRefresh = () => {
-    window.location.reload()
-  }
+    window.location.reload();
+  };
 
   return (
     <div className="space-y-6">
@@ -59,11 +59,11 @@ function QuestionsUploaderHubContent() {
             size="lg"
             className="gap-2"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="size-4" />
             Start New Upload
           </Button>
         </div>
       )}
     </div>
-  )
+  );
 }

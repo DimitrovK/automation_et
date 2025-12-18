@@ -1,38 +1,38 @@
-import { apiFetcher } from "@/lib/api-fetcher"
-import type { 
-  FootballersResponse, 
-  Footballer, 
-  CreateFootballerRequest, 
+import type {
+  CreateFootballerRequest,
+  CreateFootballerTeamRequest,
+  Footballer,
   FootballerNation,
+  FootballersResponse,
   FootballerTeam,
   FootballerTeamsResponse,
-  CreateFootballerTeamRequest
-} from "@/types/player"
+} from '@/types/player';
+import { apiFetcher } from '@/lib/api-fetcher';
 
 /**
  * API service for Django footballer endpoints
  */
 export class FootballerAPI {
-  private static readonly BASE_PATH = "data/footballers"
+  private static readonly BASE_PATH = 'data/footballers';
 
   /**
    * Get all footballers (paginated)
    * GET /data/footballers/
    */
   static async getFootballers(params?: Record<string, string | number>): Promise<FootballersResponse> {
-    const searchParams = new URLSearchParams()
-    
+    const searchParams = new URLSearchParams();
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        searchParams.append(key, value.toString())
-      })
+        searchParams.append(key, value.toString());
+      });
     }
 
-    const url = searchParams.toString() 
+    const url = searchParams.toString()
       ? `${this.BASE_PATH}/?${searchParams.toString()}`
-      : `${this.BASE_PATH}/`
+      : `${this.BASE_PATH}/`;
 
-    return apiFetcher(url)
+    return apiFetcher(url);
   }
 
   /**
@@ -40,7 +40,7 @@ export class FootballerAPI {
    * GET /data/footballers/{id}/
    */
   static async getFootballer(id: number): Promise<Footballer> {
-    return apiFetcher(`${this.BASE_PATH}/${id}/`)
+    return apiFetcher(`${this.BASE_PATH}/${id}/`);
   }
 
   /**
@@ -54,7 +54,7 @@ export class FootballerAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    })
+    });
   }
 
   /**
@@ -68,7 +68,7 @@ export class FootballerAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    })
+    });
   }
 
   /**
@@ -78,7 +78,7 @@ export class FootballerAPI {
   static async deleteFootballer(id: number): Promise<void> {
     return apiFetcher(`${this.BASE_PATH}/${id}/`, {
       method: 'DELETE',
-    })
+    });
   }
 
   /**
@@ -86,7 +86,7 @@ export class FootballerAPI {
    * GET /data/nations/
    */
   static async getNations(): Promise<FootballerNation[]> {
-    return apiFetcher('data/nations/')
+    return apiFetcher('data/nations/');
   }
 
   /**
@@ -94,7 +94,7 @@ export class FootballerAPI {
    * GET /data/footballer-teams/?footballer={footballer_id}
    */
   static async getFootballerTeams(footballerId: number): Promise<FootballerTeamsResponse> {
-    return apiFetcher(`data/footballer-teams/?footballer=${footballerId}`)
+    return apiFetcher(`data/footballer-teams/?footballer=${footballerId}`);
   }
 
   /**
@@ -108,7 +108,7 @@ export class FootballerAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    })
+    });
   }
 
   /**
@@ -122,7 +122,7 @@ export class FootballerAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    })
+    });
   }
 
   /**
@@ -136,7 +136,7 @@ export class FootballerAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    })
+    });
   }
 
   /**
@@ -146,6 +146,6 @@ export class FootballerAPI {
   static async deleteFootballerTeam(id: number): Promise<void> {
     return apiFetcher(`data/footballer-teams/${id}/`, {
       method: 'DELETE',
-    })
+    });
   }
 }

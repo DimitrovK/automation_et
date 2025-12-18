@@ -2,14 +2,14 @@
  * CSV Parser Types
  */
 
-export interface ParsedQuestion {
-  row: number
-  [key: string]: any
-}
+export type ParsedQuestion = {
+  row: number;
+  [key: string]: any;
+};
 
-export interface ParseResult {
-  success: boolean
-  data: ParsedQuestion[]
-  error?: string
-  totalRows?: number
-}
+export type ParseResult = {
+  success: boolean;
+  data: ParsedQuestion[];
+  error?: string;
+  totalRows?: number;
+};

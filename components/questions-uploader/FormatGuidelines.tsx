@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import React, { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function FormatGuidelines() {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <Card>
@@ -17,13 +17,15 @@ export function FormatGuidelines() {
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="h-8 w-8 p-0"
+            className="size-8 p-0"
           >
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
+            {isExpanded
+              ? (
+                  <ChevronUp className="size-4" />
+                )
+              : (
+                  <ChevronDown className="size-4" />
+                )}
           </Button>
         </div>
       </CardHeader>
@@ -31,33 +33,78 @@ export function FormatGuidelines() {
         <CardContent>
           <div className="space-y-3 text-sm">
             <div>
-              <p className="font-medium mb-2">Required Columns (in order):</p>
-              <ul className="space-y-1 text-gray-600 dark:text-gray-400 list-disc list-inside">
-                <li><code>Questions</code> - The question text</li>
-                <li><code>Difficulty</code> - Question difficulty (Easy, Normal, Hard, Expert)</li>
-                <li><code>A</code> - Answer option A</li>
-                <li><code>B</code> - Answer option B</li>
-                <li><code>C</code> - Answer option C</li>
-                <li><code>D</code> - Answer option D</li>
-                <li><code>Correct answer</code> - Correct answer letter (A, B, C, or D)</li>
-                <li><code>Country</code> - Country/region category (will be looked up in database)</li>
-                <li><code>Player</code> - Player name category (optional, will be looked up)</li>
-                <li><code>Team</code> - Team name category (optional, will be looked up)</li>
-                <li><code>Uplouded</code> - Upload status (optional, for tracking)</li>
+              <p className="mb-2 font-medium">Required Columns (in order):</p>
+              <ul className="list-inside list-disc space-y-1 text-gray-600 dark:text-gray-400">
+                <li>
+                  <code>Questions</code>
+                  {' '}
+                  - The question text
+                </li>
+                <li>
+                  <code>Difficulty</code>
+                  {' '}
+                  - Question difficulty (Easy, Normal, Hard, Expert)
+                </li>
+                <li>
+                  <code>A</code>
+                  {' '}
+                  - Answer option A
+                </li>
+                <li>
+                  <code>B</code>
+                  {' '}
+                  - Answer option B
+                </li>
+                <li>
+                  <code>C</code>
+                  {' '}
+                  - Answer option C
+                </li>
+                <li>
+                  <code>D</code>
+                  {' '}
+                  - Answer option D
+                </li>
+                <li>
+                  <code>Correct answer</code>
+                  {' '}
+                  - Correct answer letter (A, B, C, or D)
+                </li>
+                <li>
+                  <code>Country</code>
+                  {' '}
+                  - Country/region category (will be looked up in database)
+                </li>
+                <li>
+                  <code>Player</code>
+                  {' '}
+                  - Player name category (optional, will be looked up)
+                </li>
+                <li>
+                  <code>Team</code>
+                  {' '}
+                  - Team name category (optional, will be looked up)
+                </li>
+                <li>
+                  <code>Uplouded</code>
+                  {' '}
+                  - Upload status (optional, for tracking)
+                </li>
               </ul>
             </div>
             <div>
-              <p className="font-medium mb-2">Format Example:</p>
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-xs overflow-x-auto">
+              <p className="mb-2 font-medium">Format Example:</p>
+              <div className="overflow-x-auto rounded bg-gray-50 p-2 text-xs dark:bg-gray-800">
                 <code>
-                  Questions,Difficulty,A,B,C,D,Correct answer,Country,Player,Team,Uplouded<br/>
+                  Questions,Difficulty,A,B,C,D,Correct answer,Country,Player,Team,Uplouded
+                  <br />
                   "Which Australian football club did Bobby Charlton play for as a guest player in the 1980 Night Series?",Expert,Option A,Option B,Option C,Option D,C,Australia,Bobby Charlton,,Done
                 </code>
               </div>
             </div>
             <div>
-              <p className="font-medium mb-2">Tips:</p>
-              <ul className="space-y-1 text-gray-600 dark:text-gray-400 list-disc list-inside">
+              <p className="mb-2 font-medium">Tips:</p>
+              <ul className="list-inside list-disc space-y-1 text-gray-600 dark:text-gray-400">
                 <li>Use commas to separate columns</li>
                 <li>Wrap text containing commas in double quotes</li>
                 <li>First row must contain column headers exactly as shown above</li>
@@ -71,5 +118,5 @@ export function FormatGuidelines() {
         </CardContent>
       )}
     </Card>
-  )
+  );
 }
