@@ -1,53 +1,54 @@
-"use client"
+'use client';
 
-import React from "react"
-import { ApiButton } from "@/components/ui/emerald-button"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Search } from 'lucide-react';
+import React from 'react';
+import { ApiButton } from '@/components/ui/emerald-button';
+import { Input } from '@/components/ui/input';
 
-interface GetSingleFootballerProps {
-  footballerId: string
-  singleLoading: boolean
-  onFootballerIdChange: (id: string) => void
-  onGetSingleFootballer: () => void
-}
+type GetSingleFootballerProps = {
+  footballerId: string;
+  singleLoading: boolean;
+  onFootballerIdChange: (id: string) => void;
+  onGetSingleFootballer: () => void;
+};
 
-export function GetSingleFootballer({ 
-  footballerId, 
-  singleLoading, 
-  onFootballerIdChange, 
-  onGetSingleFootballer 
+export function GetSingleFootballer({
+  footballerId,
+  singleLoading,
+  onFootballerIdChange,
+  onGetSingleFootballer,
 }: GetSingleFootballerProps) {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && footballerId.trim()) {
-      onGetSingleFootballer()
+      onGetSingleFootballer();
     }
-  }
+  };
 
   return (
     <div>
-      <h4 className="text-sm font-medium mb-2">Get Single Footballer</h4>
-      <p className="text-xs text-gray-500 mb-3">
+      <h4 className="mb-2 text-sm font-medium">Get Single Footballer</h4>
+      <p className="mb-3 text-xs text-gray-500">
         Retrieve detailed information for a specific footballer by their unique ID.
       </p>
-      <div className="flex gap-2 items-center flex-wrap">
+      <div className="flex flex-wrap items-center gap-2">
         <Input
           placeholder="Enter footballer ID"
           value={footballerId}
-          onChange={(e) => onFootballerIdChange(e.target.value)}
+          onChange={e => onFootballerIdChange(e.target.value)}
           className="w-40"
           onKeyPress={handleKeyPress}
         />
-        <ApiButton 
+        <ApiButton
           onClick={onGetSingleFootballer}
           disabled={!footballerId.trim()}
           loading={singleLoading}
           loadingText="Loading..."
           icon={Search}
         >
-          GET /data/footballers/{"{id}"}
+          GET /data/footballers/
+          {'{id}'}
         </ApiButton>
       </div>
     </div>
-  )
+  );
 }

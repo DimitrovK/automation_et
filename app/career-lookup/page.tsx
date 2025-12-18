@@ -1,53 +1,48 @@
-"use client"
+'use client';
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import type React from 'react';
+import type { Footballer, n8nWikiPlayerData } from '@/types/player';
 import {
   AlertCircle,
-  AlertTriangle,
-  ExternalLink,
-} from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import type { Team, n8nWikiPlayerData, Footballer } from "@/types/player"
-import { ConnectionSettings } from "@/components/career-lookup/connection-settings"
-import { HelpDialog } from "@/components/career-lookup/help-dialog"
-import { CareerLookupSearch } from "@/components/career-lookup/career-lookup-search"
-import { CareerLookupDataValidation } from "@/components/career-lookup/career-lookup-data-validation"
-import { CareerLookupPlayerConfiguration } from "@/components/career-lookup/career-lookup-player-configuration"
-import { CareerLookupInfo } from "@/components/career-lookup/career-lookup-info"
+} from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { CareerLookupDataValidation } from '@/components/career-lookup/career-lookup-data-validation';
+import { CareerLookupInfo } from '@/components/career-lookup/career-lookup-info';
+import { CareerLookupPlayerConfiguration } from '@/components/career-lookup/career-lookup-player-configuration';
+import { CareerLookupSearch } from '@/components/career-lookup/career-lookup-search';
+import { ConnectionSettings } from '@/components/career-lookup/connection-settings';
+import { HelpDialog } from '@/components/career-lookup/help-dialog';
+import { LoadingSpinner } from '@/components/loading-spinner';
+import { LoginForm } from '@/components/login-form';
+import { Navigation } from '@/components/navigation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import { useAuth } from "@/lib/auth"
-import { LoginForm } from "@/components/login-form"
-import { LoadingSpinner } from "@/components/loading-spinner"
-import { Navigation } from "@/components/navigation"
-import { FootballerAPI } from "@/lib/footballer-api"
-import config from "@/lib/config"
+import { useAuth } from '@/lib/auth';
+import config from '@/lib/config';
+import { FootballerAPI } from '@/lib/footballer-api';
 
 export default function FootballerCareerApp() {
-  const { user, isLoading, isAuthenticated } = useAuth()
-  const searchParams = useSearchParams()
-  
-  const [searchValue, setSearchValue] = useState("");
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+
+  const [searchValue, setSearchValue] = useState('');
   const [searchMode, setSearchMode] = useState<'name' | 'wikipedia_url'>('name');
-  const [playerData, setPlayerData] = useState<n8nWikiPlayerData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [playerData, setPlayerData] = useState<n8nWikiPlayerData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Connection settings from ConnectionSettings component
   const [connectionSettings, setConnectionSettings] = useState({
-    webhookUrl: config.N8N_WEBHOOK_URL
-  })
+    webhookUrl: config.N8N_WEBHOOK_URL,
+  });
 
   // State for managing data source choice from validation
-  const [chosenDataSource, setChosenDataSource] = useState<'wikipedia' | 'database' | null>(null)
+  const [chosenDataSource, setChosenDataSource] = useState<'wikipedia' | 'database' | null>(null);
 
   // State for database player info (fetched via API when playerDBId is available)
-  const [dbPlayerInfo, setDbPlayerInfo] = useState<Footballer | null>(null)
-  const [loadingDbPlayer, setLoadingDbPlayer] = useState(false)
+  const [dbPlayerInfo, setDbPlayerInfo] = useState<Footballer | null>(null);
+  const [loadingDbPlayer, setLoadingDbPlayer] = useState(false);
 
   // Initialize with URL parameters
   useEffect(() => {
@@ -72,17 +67,17 @@ export default function FootballerCareerApp() {
   // Fetch database player info using the playerDBId
   const fetchDbPlayerInfo = async (playerDBId: number) => {
     try {
-      setLoadingDbPlayer(true)
-      const footballer = await FootballerAPI.getFootballer(playerDBId)      
-      setDbPlayerInfo(footballer)
-      return footballer
+      setLoadingDbPlayer(true);
+      const footballer = await FootballerAPI.getFootballer(playerDBId);
+      setDbPlayerInfo(footballer);
+      return footballer;
     } catch (error) {
-      setDbPlayerInfo(null)
-      return null
+      setDbPlayerInfo(null);
+      return null;
     } finally {
-      setLoadingDbPlayer(false)
+      setLoadingDbPlayer(false);
     }
-  }
+  };
 
   // Handle reload player - triggers a fresh search with current player name
   const handleReloadPlayer = () => {
@@ -95,7 +90,9 @@ export default function FootballerCareerApp() {
   };
 
   const handleSearch = async (mode = searchMode, value = searchValue) => {
-    if (!value.trim()) return;
+    if (!value.trim()) {
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -108,13 +105,13 @@ export default function FootballerCareerApp() {
       try {
         const body = mode === 'wikipedia_url' ? { wikipedia_url: value } : { name: value };
         const response = await fetch(connectionSettings.webhookUrl, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(body),
           signal: controller.signal,
-          mode: "cors",
+          mode: 'cors',
         });
         clearTimeout(timeoutId);
 
@@ -130,7 +127,7 @@ export default function FootballerCareerApp() {
         throw fetchError;
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -138,46 +135,46 @@ export default function FootballerCareerApp() {
   };
 
   const handleDataSourceChosen = (dataSource: 'wikipedia' | 'database') => {
-    setChosenDataSource(dataSource)
-    console.log(`Data source chosen: ${dataSource}`)
-  }
+    setChosenDataSource(dataSource);
+    console.log(`Data source chosen: ${dataSource}`);
+  };
 
   useEffect(() => {
     if (playerData) {
       // Check if player exists in DB and fetch player info via API
       if (playerData.playerFoundInDB && playerData.playerDBId) {
-        fetchDbPlayerInfo(playerData.playerDBId)
+        fetchDbPlayerInfo(playerData.playerDBId);
       } else {
         // Reset state for new players
-        setChosenDataSource(null)
-        setDbPlayerInfo(null) // Clear previous DB player info
+        setChosenDataSource(null);
+        setDbPlayerInfo(null); // Clear previous DB player info
       }
     }
-  }, [playerData])
+  }, [playerData]);
 
   // Show loading spinner while checking authentication
   if (isLoading) {
-    return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />
+    return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
   }
 
   // Show login form if not authenticated
   if (!isAuthenticated) {
-    return <LoginForm />
+    return <LoginForm />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-slate-800 dark:to-emerald-900/30 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Navigation */}
         <Navigation />
 
         {/* Header with utility buttons */}
-        <div className="text-center space-y-2 relative">
+        <div className="relative space-y-2 text-center">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Footballer Career Lookup</h1>
           <p className="text-gray-600 dark:text-gray-300">Search for detailed career information of football players</p>
 
           {/* Desktop layout - settings button positioned absolutely */}
-          <div className="absolute top-0 right-0 hidden md:flex gap-2 items-center">
+          <div className="absolute right-0 top-0 hidden items-center gap-2 md:flex">
             {/* Connection Settings Dialog */}
             <ConnectionSettings
               onSettingsChange={setConnectionSettings}
@@ -201,13 +198,15 @@ export default function FootballerCareerApp() {
         {/* Error Display */}
         {error && (
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="size-4" />
             <AlertDescription>
-              <strong>Error:</strong> {error}
+              <strong>Error:</strong>
+              {' '}
+              {error}
               <br />
               <br />
               <strong>Quick fixes:</strong>
-              <ol className="list-decimal list-inside mt-2 space-y-1">
+              <ol className="mt-2 list-inside list-decimal space-y-1">
                 <li>Click the settings button (⚙️) above to test your connection</li>
                 <li>Make sure your n8n workflow is running on the specified port</li>
                 <li>Try the API testing button (💻) above for direct webhook testing</li>

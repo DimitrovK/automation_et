@@ -1,36 +1,35 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { HelpCircle } from "lucide-react"
+import { HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 
-interface HelpDialogProps {
-  className?: string
-}
+type HelpDialogProps = {
+  className?: string;
+};
 
-export function HelpDialog({ className = "" }: HelpDialogProps) {
+export function HelpDialog({ className = '' }: HelpDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className={`h-8 w-8 p-0 bg-transparent ${className}`}
+        <Button
+          variant="outline"
+          size="sm"
+          className={`size-8 bg-transparent p-0 ${className}`}
         >
-          <HelpCircle className="h-4 w-4" />
+          <HelpCircle className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
+            <HelpCircle className="size-4" />
             How to Use
           </DialogTitle>
         </DialogHeader>
@@ -52,5 +51,5 @@ export function HelpDialog({ className = "" }: HelpDialogProps) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

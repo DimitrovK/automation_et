@@ -1,10 +1,7 @@
-"use client"
+'use client';
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,15 +12,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Trash2, Loader2 } from "lucide-react"
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-interface DeleteFootballerProps {
-  footballerId: string
-  deleteLoading: boolean
-  onFootballerIdChange: (id: string) => void
-  onDeleteFootballer: () => void
-}
+type DeleteFootballerProps = {
+  footballerId: string;
+  deleteLoading: boolean;
+  onFootballerIdChange: (id: string) => void;
+  onDeleteFootballer: () => void;
+};
 
 export function DeleteFootballer({
   footballerId,
@@ -31,22 +31,24 @@ export function DeleteFootballer({
   onFootballerIdChange,
   onDeleteFootballer,
 }: DeleteFootballerProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleConfirmDelete = () => {
-    setIsDialogOpen(false)
-    onDeleteFootballer()
-  }
+    setIsDialogOpen(false);
+    onDeleteFootballer();
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trash2 className="h-5 w-5" />
+          <Trash2 className="size-5" />
           Delete Footballer
         </CardTitle>
         <CardDescription>
-          DELETE /data/footballers/{"{id}"}/
+          DELETE /data/footballers/
+          {'{id}'}
+          /
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -57,36 +59,41 @@ export function DeleteFootballer({
             type="number"
             placeholder="Enter footballer ID to delete"
             value={footballerId}
-            onChange={(e) => onFootballerIdChange(e.target.value)}
+            onChange={e => onFootballerIdChange(e.target.value)}
             disabled={deleteLoading}
           />
         </div>
 
         <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <AlertDialogTrigger asChild>
-            <Button 
+            <Button
               disabled={deleteLoading || !footballerId.trim()}
               variant="destructive"
               className="w-full"
             >
-              {deleteLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Footballer
-                </>
-              )}
+              {deleteLoading
+                ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Deleting...
+                    </>
+                  )
+                : (
+                    <>
+                      <Trash2 className="mr-2 size-4" />
+                      Delete Footballer
+                    </>
+                  )}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure you want to delete this footballer?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete footballer with ID <strong>{footballerId}</strong>. 
+                This will permanently delete footballer with ID
+                {' '}
+                <strong>{footballerId}</strong>
+                .
                 This action cannot be undone and will remove all associated data.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -107,5 +114,5 @@ export function DeleteFootballer({
         </p>
       </CardContent>
     </Card>
-  )
+  );
 }

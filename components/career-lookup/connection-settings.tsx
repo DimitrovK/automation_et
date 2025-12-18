@@ -1,11 +1,9 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Settings } from "lucide-react"
-import { Label } from "@/components/ui/label"
+import { Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,99 +11,101 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import config from "@/lib/config"
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import config from '@/lib/config';
 
-interface ConnectionSettingsProps {
-  webhookUrl?: string
-  setWebhookUrl?: (value: string) => void
-  className?: string
+type ConnectionSettingsProps = {
+  webhookUrl?: string;
+  setWebhookUrl?: (value: string) => void;
+  className?: string;
   onSettingsChange?: (settings: {
-    webhookUrl: string
-  }) => void
-}
+    webhookUrl: string;
+  }) => void;
+};
 
 export function ConnectionSettings({
   webhookUrl: propWebhookUrl,
   setWebhookUrl: propSetWebhookUrl,
   onSettingsChange,
-  className = ""
+  className = '',
 }: ConnectionSettingsProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  
-  // Internal state with defaults
-  const [internalWebhookUrl, setInternalWebhookUrl] = useState(config.N8N_WEBHOOK_URL)
-  const [debugInfo, setDebugInfo] = useState<string[]>([])
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const webhookUrl = propWebhookUrl ?? internalWebhookUrl
-  
+  // Internal state with defaults
+  const [internalWebhookUrl, setInternalWebhookUrl] = useState(config.N8N_WEBHOOK_URL);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const webhookUrl = propWebhookUrl ?? internalWebhookUrl;
+
   const setWebhookUrl = propSetWebhookUrl ?? ((value: string) => {
-    setInternalWebhookUrl(value)
+    setInternalWebhookUrl(value);
     onSettingsChange?.({
-      webhookUrl: value
-    })
-  })
+      webhookUrl: value,
+    });
+  });
 
   const addDebugInfo = (info: string) => {
-    setDebugInfo(prev => [...prev, info])
-  }
+    setDebugInfo(prev => [...prev, info]);
+  };
 
   const testConnection = async () => {
-    setDebugInfo([]) // Clear previous results
-    addDebugInfo("Testing connection...")
-    addDebugInfo(`Testing: ${webhookUrl}`)
+    setDebugInfo([]); // Clear previous results
+    addDebugInfo('Testing connection...');
+    addDebugInfo(`Testing: ${webhookUrl}`);
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const response = await fetch(webhookUrl, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: "test" }),
+        body: JSON.stringify({ name: 'test' }),
         signal: controller.signal,
-        mode: "cors",
-      })
+        mode: 'cors',
+      });
 
-      clearTimeout(timeoutId)
-      addDebugInfo(`${webhookUrl} - Status: ${response.status}`)
+      clearTimeout(timeoutId);
+      addDebugInfo(`${webhookUrl} - Status: ${response.status}`);
 
       if (response.ok) {
-        addDebugInfo(`✅ Connection successful!`)
+        addDebugInfo(`✅ Connection successful!`);
       } else {
-        addDebugInfo(`❌ Connection failed with status: ${response.status}`)
+        addDebugInfo(`❌ Connection failed with status: ${response.status}`);
       }
     } catch (err) {
-      addDebugInfo(`❌ Error: ${err instanceof Error ? err.message : "Unknown error"}`)
+      addDebugInfo(`❌ Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
-  }
+  };
 
   // Notify parent of initial settings when using callback approach
   useEffect(() => {
     if (onSettingsChange && !propWebhookUrl) {
       onSettingsChange({
-        webhookUrl
-      })
+        webhookUrl,
+      });
     }
-  }, []) // Only run once on mount
+  }, []); // Only run once on mount
 
   return (
     <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className={`h-8 w-8 p-0 bg-transparent ${className}`}
+        <Button
+          variant="outline"
+          size="sm"
+          className={`size-8 bg-transparent p-0 ${className}`}
         >
-          <Settings className="h-4 w-4" />
+          <Settings className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+            <Settings className="size-4" />
             Connection Settings
           </DialogTitle>
           <DialogDescription>Configure how to connect to your n8n webhook</DialogDescription>
@@ -118,7 +118,7 @@ export function ConnectionSettings({
                 <Input
                   id="webhook-url"
                   value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  onChange={e => setWebhookUrl(e.target.value)}
                   placeholder={config.N8N_WEBHOOK_URL}
                   className="flex-1"
                 />
@@ -133,15 +133,17 @@ export function ConnectionSettings({
           </div>
 
           {debugInfo && debugInfo.length > 0 && (
-            <div className="bg-gray-100 dark:bg-slate-700 rounded-lg p-3 max-h-32 overflow-y-auto">
-              <div className="flex items-center justify-between mb-2">
+            <div className="max-h-32 overflow-y-auto rounded-lg bg-gray-100 p-3 dark:bg-slate-700">
+              <div className="mb-2 flex items-center justify-between">
                 <p className="text-sm font-medium dark:text-white">Connection Test Results:</p>
                 <Badge variant="outline" className="text-xs">
-                  Direct: {webhookUrl?.split("/").pop() || "webhook"}
+                  Direct:
+                  {' '}
+                  {webhookUrl?.split('/').pop() || 'webhook'}
                 </Badge>
               </div>
               {debugInfo.map((info, index) => (
-                <p key={index} className="text-xs font-mono text-gray-700 dark:text-gray-300">
+                <p key={index} className="font-mono text-xs text-gray-700 dark:text-gray-300">
                   {info}
                 </p>
               ))}
@@ -151,5 +153,5 @@ export function ConnectionSettings({
 
       </DialogContent>
     </Dialog>
-  )
+  );
 }

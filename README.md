@@ -21,7 +21,7 @@ A Next.js application for managing footballer career data with Django backend in
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Access to Django backend API
 

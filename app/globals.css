@@ -1,8 +1,9 @@
+@import '../styles/football-manager.css';
+@import '../styles/recharts.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import '../styles/football-manager.css';
 
 @layer utilities {
   .text-balance {
@@ -96,16 +97,17 @@
   .animate-reverse {
     animation-direction: reverse;
   }
-  
+
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
     }
     50% {
       transform: translateY(-10px);
     }
   }
-  
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);
@@ -114,11 +116,11 @@
       transform: translateX(100%);
     }
   }
-  
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-  
+
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }

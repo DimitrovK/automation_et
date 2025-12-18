@@ -1,173 +1,164 @@
-"use client"
+'use client';
 
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import type { User, LoginCredentials, AuthResponse } from "@/types/auth"
-import { apiFetcher } from "@/lib/api-fetcher"
+import type { ReactNode } from 'react';
+import type { LoginCredentials, User } from '@/types/auth';
+import React, { createContext, useEffect, useState } from 'react';
+import { apiFetcher } from '@/lib/api-fetcher';
 
-interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  error: string | null
-  login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>
-  logout: () => Promise<void>
-  checkAuth: () => Promise<void>
-  clearError: () => void
-}
+type AuthContextType = {
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  error: string | null;
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  clearError: () => void;
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const isAuthenticated = !!user
+  const isAuthenticated = !!user;
 
   const clearError = () => {
-    setError(null)
-  }
+    setError(null);
+  };
 
   const login = async (credentials: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
     try {
-      setError(null) // Clear any previous errors
+      setError(null); // Clear any previous errors
 
-      const response = await apiFetcher("auth/login/", {
-        method: "POST",
+      const response = await apiFetcher('auth/login/', {
+        method: 'POST',
         body: JSON.stringify(credentials),
-      })
+      });
 
       // Check if user is staff before allowing login
       if (response.user && !response.user.is_staff) {
-        const errorMessage = "Only staff users are allowed to access this application."
-        setError(errorMessage)
-        return { success: false, error: errorMessage }
+        const errorMessage = 'Only staff users are allowed to access this application.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       // Store JWT tokens
-      localStorage.setItem("token", response.access)
-      localStorage.setItem("refresh_token", response.refresh)
+      localStorage.setItem('token', response.access);
+      localStorage.setItem('refresh_token', response.refresh);
 
       // Set user data
       if (response.user) {
-        setUser(response.user)
-        localStorage.setItem("user", JSON.stringify(response.user))
+        setUser(response.user);
+        localStorage.setItem('user', JSON.stringify(response.user));
       }
 
-      return { success: true }
+      return { success: true };
     } catch (error) {
       // Handle network errors
-      if (error instanceof TypeError && error.message.includes("fetch")) {
-        const errorMessage = "Network error. Please check your connection and try again."
-        setError(errorMessage)
-        return { success: false, error: errorMessage }
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        const errorMessage = 'Network error. Please check your connection and try again.';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       // Handle API errors
       if (error instanceof Error) {
-        let errorMessage = error.message
-        
+        let errorMessage = error.message;
+
         // Make some error messages more user-friendly
-        if (errorMessage.toLowerCase().includes("unable to log in with provided credentials")) {
-          errorMessage = "Invalid username or password. Please try again."
-        } else if (errorMessage.toLowerCase().includes("invalid credentials")) {
-          errorMessage = "Invalid username or password. Please try again."
+        if (errorMessage.toLowerCase().includes('unable to log in with provided credentials')) {
+          errorMessage = 'Invalid username or password. Please try again.';
+        } else if (errorMessage.toLowerCase().includes('invalid credentials')) {
+          errorMessage = 'Invalid username or password. Please try again.';
         }
-        
-        setError(errorMessage)
-        return { success: false, error: errorMessage }
+
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
-      const genericError = "An unexpected error occurred"
-      setError(genericError)
-      return { success: false, error: genericError }
+      const genericError = 'An unexpected error occurred';
+      setError(genericError);
+      return { success: false, error: genericError };
     }
-  }
+  };
 
   const logout = async (): Promise<void> => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
 
       // Call logout endpoint if available
       try {
-        await apiFetcher("auth/logout/", {
-          method: "POST",
-        })
+        await apiFetcher('auth/logout/', {
+          method: 'POST',
+        });
       } catch (error) {
         // If logout endpoint fails, we still clear local state
-        // Silent fail - no need to alert user about logout endpoint issues
+        console.warn('Logout endpoint failed:', error);
       }
     } catch (error) {
-      // Silent error handling for logout
+      console.error('Logout error:', error);
     } finally {
       // Clear local state regardless of API call success
-      setUser(null)
-      localStorage.removeItem("user")
-      localStorage.removeItem("token")
-      localStorage.removeItem("refresh_token")
-      setIsLoading(false)
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
+      setIsLoading(false);
     }
-  }
+  };
 
   const checkAuth = async (): Promise<void> => {
-    console.log("checkAuth: Starting...")
-    
     try {
       // Check if we're in the browser environment
       if (typeof window === 'undefined') {
-        console.log("checkAuth: Not in browser environment")
-        setIsLoading(false)
-        return
+        setIsLoading(false);
+        return;
       }
 
       // Check localStorage for persisted user and tokens
-      const storedUser = localStorage.getItem("user")
-      const token = localStorage.getItem("token")
-      
-      console.log("checkAuth: storedUser exists:", !!storedUser, "token exists:", !!token)
-      
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
       if (storedUser && token) {
         try {
-          const userData = JSON.parse(storedUser)
-          console.log("checkAuth: parsed user data, is_staff:", userData.is_staff)
-          
+          const userData = JSON.parse(storedUser);
+
           // Check if stored user is staff
           if (userData.is_staff) {
-            console.log("checkAuth: User is staff, setting user data")
-            setUser(userData)
+            setUser(userData);
           } else {
-            console.log("checkAuth: User is not staff, clearing session")
-            localStorage.removeItem("user")
-            localStorage.removeItem("token")
-            localStorage.removeItem("refresh_token")
-            setUser(null)
-            setError("Only staff users are allowed to access this application.")
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            setUser(null);
+            setError('Only staff users are allowed to access this application.');
           }
         } catch (parseError) {
-          console.log("checkAuth: Error parsing stored data:", parseError)
           // Clear invalid stored data
-          localStorage.removeItem("user")
-          localStorage.removeItem("token")
-          localStorage.removeItem("refresh_token")
-          setUser(null)
+          console.error('Error parsing stored user data:', parseError);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
+          setUser(null);
         }
       } else {
-        console.log("checkAuth: No stored credentials, user not authenticated")
-        setUser(null)
+        setUser(null);
       }
     } catch (error) {
-      console.log("checkAuth: Unexpected error:", error)
-      setUser(null)
+      console.error('checkAuth error:', error);
+      setUser(null);
     } finally {
       // Always set loading to false, regardless of what happened above
-      console.log("checkAuth: Setting isLoading to false")
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
   return React.createElement(
     AuthContext.Provider,
@@ -184,13 +175,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     },
     children,
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = React.use(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }

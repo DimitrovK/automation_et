@@ -1,36 +1,35 @@
-"use client"
+'use client';
 
-import React from "react"
-import ReactMarkdown from "react-markdown"
-import remarkBreaks from "remark-breaks"
-import { Button } from "@/components/ui/button"
-import { ApiButton } from "@/components/ui/emerald-button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { 
-  Send, 
-  Hash, 
-  CheckCircle, 
+import {
   AlertCircle,
-  Loader2,
+  Bold,
+  CheckCircle,
+  Code,
   Eye,
   EyeOff,
-  Bold,
+  Hash,
   Italic,
-  Code,
-  Strikethrough,
-  Quote,
+  Link,
   List,
   ListOrdered,
-  Link
-} from "lucide-react"
-import { LoadingSpinner } from "@/components/loading-spinner"
-import { sendDiscordMessageAction } from "@/lib/discord-actions"
-import { useDiscord } from "./DiscordContext"
+  Quote,
+  Send,
+  Strikethrough,
+} from 'lucide-react';
+import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import { LoadingSpinner } from '@/components/loading-spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ApiButton } from '@/components/ui/emerald-button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { sendDiscordMessageAction } from '@/lib/discord-actions';
+import { useDiscord } from './DiscordContext';
 
 export function MessageBox() {
   const {
@@ -47,33 +46,35 @@ export function MessageBox() {
     showPreview,
     setShowPreview,
     clearResult,
-  } = useDiscord()
+  } = useDiscord();
 
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const insertFormatting = (before: string, after: string = '', placeholder: string = '') => {
-    const textarea = textareaRef.current
-    if (!textarea) return
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
 
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = message.substring(start, end)
-    const textToInsert = selectedText || placeholder
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = message.substring(start, end);
+    const textToInsert = selectedText || placeholder;
 
-    const newText = message.substring(0, start) + before + textToInsert + after + message.substring(end)
-    setMessage(newText)
+    const newText = message.substring(0, start) + before + textToInsert + after + message.substring(end);
+    setMessage(newText);
 
     // Set cursor position after formatting
     setTimeout(() => {
       if (selectedText) {
-        textarea.focus()
-        textarea.setSelectionRange(start + before.length, start + before.length + textToInsert.length)
+        textarea.focus();
+        textarea.setSelectionRange(start + before.length, start + before.length + textToInsert.length);
       } else {
-        textarea.focus()
-        textarea.setSelectionRange(start + before.length, start + before.length + placeholder.length)
+        textarea.focus();
+        textarea.setSelectionRange(start + before.length, start + before.length + placeholder.length);
       }
-    }, 0)
-  }
+    }, 0);
+  };
 
   const formatActions = [
     { icon: Bold, label: 'Bold', action: () => insertFormatting('**', '**', 'bold text') },
@@ -84,48 +85,47 @@ export function MessageBox() {
     { icon: List, label: 'Bullet List', action: () => insertFormatting('- ', '', 'list item') },
     { icon: ListOrdered, label: 'Numbered List', action: () => insertFormatting('1. ', '', 'list item') },
     { icon: Link, label: 'Link', action: () => insertFormatting('[', '](https://example.com)', 'link text') },
-  ]
+  ];
 
   const handleSendMessage = async () => {
     if (!selectedChannelId || !message.trim()) {
-      setSendResult({ type: 'error', message: 'Please select a channel and enter a message' })
-      return
+      setSendResult({ type: 'error', message: 'Please select a channel and enter a message' });
+      return;
     }
 
-    setIsSending(true)
-    setSendResult(null)
+    setIsSending(true);
+    setSendResult(null);
 
     try {
-      const result = await sendDiscordMessageAction(selectedChannelId, message.trim())
-      
+      const result = await sendDiscordMessageAction(selectedChannelId, message.trim());
+
       if (result.success) {
-        setSendResult({ type: 'success', message: 'Message sent successfully!' })
-        setMessage("") // Clear message after successful send
+        setSendResult({ type: 'success', message: 'Message sent successfully!' });
+        setMessage(''); // Clear message after successful send
       } else {
-        setSendResult({ type: 'error', message: result.error || 'Failed to send message' })
+        setSendResult({ type: 'error', message: result.error || 'Failed to send message' });
       }
-      
     } catch (error) {
-      console.error("Unexpected error:", error)
-      setSendResult({ type: 'error', message: 'An unexpected error occurred. Please try again.' })
+      console.error('Unexpected error:', error);
+      setSendResult({ type: 'error', message: 'An unexpected error occurred. Please try again.' });
     } finally {
-      setIsSending(false)
+      setIsSending(false);
     }
-  }
+  };
 
   return (
     <>
       <Card className="flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Hash className="h-5 w-5 text-indigo-600" />
+            <Hash className="size-5 text-indigo-600" />
             Channel Message Sender
           </CardTitle>
           <CardDescription>
             Select a Discord channel and compose your message in Markdown format
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 flex-1 overflow-y-auto">
+        <CardContent className="flex-1 space-y-6 overflow-y-auto">
           {/* Channel Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Discord Channel</label>
@@ -134,12 +134,16 @@ export function MessageBox() {
                 <SelectValue placeholder="Select a Discord channel..." />
               </SelectTrigger>
               <SelectContent>
-                {channels.map((channel) => (
+                {channels.map(channel => (
                   <SelectItem key={channel.id} value={channel.id}>
                     <div className="flex items-center gap-2">
-                      <Hash className="h-4 w-4" />
+                      <Hash className="size-4" />
                       <span className="font-medium">{channel.name}</span>
-                      <span className="text-xs text-gray-500">({channel.description})</span>
+                      <span className="text-xs text-gray-500">
+                        (
+                        {channel.description}
+                        )
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
@@ -148,7 +152,9 @@ export function MessageBox() {
             {selectedChannel && (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Badge variant="outline" className="text-xs">
-                  ID: {selectedChannel.id}
+                  ID:
+                  {' '}
+                  {selectedChannel.id}
                 </Badge>
                 <span>{selectedChannel.description}</span>
               </div>
@@ -167,13 +173,13 @@ export function MessageBox() {
                 onClick={() => setShowPreview(!showPreview)}
                 className="text-xs"
               >
-                {showPreview ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
-                {showPreview ? "Hide Preview" : "Show Preview"}
+                {showPreview ? <EyeOff className="mr-1 size-3" /> : <Eye className="mr-1 size-3" />}
+                {showPreview ? 'Hide Preview' : 'Show Preview'}
               </Button>
             </div>
 
             {/* Formatting Toolbar */}
-            <div className="flex flex-wrap gap-1 p-2 bg-gray-50 dark:bg-gray-800 rounded-md border">
+            <div className="flex flex-wrap gap-1 rounded-md border bg-gray-50 p-2 dark:bg-gray-800">
               {formatActions.map((action, index) => (
                 <Button
                   key={index}
@@ -181,20 +187,22 @@ export function MessageBox() {
                   size="sm"
                   onClick={action.action}
                   disabled={isSending}
-                  className="h-8 w-8 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="size-8 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                   title={action.label}
                 >
-                  <action.icon className="h-3 w-3" />
+                  <action.icon className="size-3" />
                 </Button>
               ))}
             </div>
-            
+
             <Textarea
               ref={textareaRef}
               value={message}
               onChange={(e) => {
-                setMessage(e.target.value)
-                if (sendResult) clearResult()
+                setMessage(e.target.value);
+                if (sendResult) {
+                  clearResult();
+                }
               }}
               placeholder="Enter your message here... Use the toolbar above for formatting or type markdown directly."
               className="min-h-32 resize-y"
@@ -205,18 +213,18 @@ export function MessageBox() {
             {showPreview && message && (
               <div className="mt-3">
                 <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Preview:</label>
-                <div className="mt-1 p-3 border rounded-md bg-gray-50 dark:bg-gray-800 text-sm prose prose-sm dark:prose-invert max-w-none">
+                <div className="prose prose-sm dark:prose-invert mt-1 max-w-none rounded-md border bg-gray-50 p-3 text-sm dark:bg-gray-800">
                   <ReactMarkdown
                     remarkPlugins={[remarkBreaks]}
                     components={{
                       // Custom components to match Discord-like styling
                       code: ({ children, ...props }) => (
-                        <code className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-1 py-0.5 rounded text-xs font-mono" {...props}>
+                        <code className="rounded bg-gray-200 px-1 py-0.5 font-mono text-xs text-gray-900 dark:bg-gray-700 dark:text-white" {...props}>
                           {children}
                         </code>
                       ),
                       pre: ({ children, ...props }) => (
-                        <pre className="bg-gray-200 dark:bg-gray-700 p-2 rounded text-xs font-mono overflow-x-auto" {...props}>
+                        <pre className="overflow-x-auto rounded bg-gray-200 p-2 font-mono text-xs dark:bg-gray-700" {...props}>
                           {children}
                         </pre>
                       ),
@@ -236,27 +244,27 @@ export function MessageBox() {
                         </em>
                       ),
                       del: ({ children, ...props }) => (
-                        <del className="line-through text-gray-600 dark:text-gray-400" {...props}>
+                        <del className="text-gray-600 line-through dark:text-gray-400" {...props}>
                           {children}
                         </del>
                       ),
                       a: ({ children, ...props }) => (
-                        <a className="text-indigo-600 dark:text-indigo-400 hover:underline" {...props}>
+                        <a className="text-indigo-600 hover:underline dark:text-indigo-400" {...props}>
                           {children}
                         </a>
                       ),
                       p: ({ children, ...props }) => (
-                        <p className="text-gray-800 dark:text-gray-200 mb-2" {...props}>
+                        <p className="mb-2 text-gray-800 dark:text-gray-200" {...props}>
                           {children}
                         </p>
                       ),
                       ul: ({ children, ...props }) => (
-                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 mb-2" {...props}>
+                        <ul className="mb-2 list-inside list-disc text-gray-800 dark:text-gray-200" {...props}>
                           {children}
                         </ul>
                       ),
                       ol: ({ children, ...props }) => (
-                        <ol className="list-decimal list-inside text-gray-800 dark:text-gray-200 mb-2" {...props}>
+                        <ol className="mb-2 list-inside list-decimal text-gray-800 dark:text-gray-200" {...props}>
                           {children}
                         </ol>
                       ),
@@ -270,14 +278,17 @@ export function MessageBox() {
                     {message}
                   </ReactMarkdown>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   ✨ Live preview - This shows how your message will appear with formatting applied.
                 </p>
               </div>
             )}
 
             <div className="text-xs text-gray-500">
-              Character count: {message.length}/2000
+              Character count:
+              {' '}
+              {message.length}
+              /2000
             </div>
           </div>
 
@@ -298,11 +309,13 @@ export function MessageBox() {
             {/* Result Display */}
             {sendResult && (
               <Alert variant={sendResult.type === 'success' ? 'default' : 'destructive'}>
-                {sendResult.type === 'success' ? (
-                  <CheckCircle className="h-4 w-4" />
-                ) : (
-                  <AlertCircle className="h-4 w-4" />
-                )}
+                {sendResult.type === 'success'
+                  ? (
+                      <CheckCircle className="size-4" />
+                    )
+                  : (
+                      <AlertCircle className="size-4" />
+                    )}
                 <AlertDescription>
                   {sendResult.message}
                 </AlertDescription>
@@ -314,13 +327,13 @@ export function MessageBox() {
 
       {/* Loading Overlay */}
       {isSending && (
-        <LoadingSpinner 
-          message="Sending Discord Message" 
-          subtitle="Connecting to Discord servers..." 
+        <LoadingSpinner
+          message="Sending Discord Message"
+          subtitle="Connecting to Discord servers..."
           size="md"
           overlay={true}
         />
       )}
     </>
-  )
+  );
 }

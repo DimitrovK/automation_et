@@ -1,48 +1,48 @@
-"use client"
+'use client';
 
-import React from "react"
-import { ApiButton } from "@/components/ui/emerald-button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Plus } from "lucide-react"
-import type { CreateFootballerRequest, FootballerNation } from "@/types/player"
+import type { CreateFootballerRequest, FootballerNation } from '@/types/player';
+import { Plus } from 'lucide-react';
+import React from 'react';
+import { ApiButton } from '@/components/ui/emerald-button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
-interface CreateFootballerProps {
-  createForm: CreateFootballerRequest
-  createLoading: boolean
-  nations: FootballerNation[]
-  nationsLoading: boolean
-  onFormChange: (form: CreateFootballerRequest) => void
-  onCreateFootballer: () => void
-}
+type CreateFootballerProps = {
+  createForm: CreateFootballerRequest;
+  createLoading: boolean;
+  nations: FootballerNation[];
+  nationsLoading: boolean;
+  onFormChange: (form: CreateFootballerRequest) => void;
+  onCreateFootballer: () => void;
+};
 
-export function CreateFootballer({ 
-  createForm, 
-  createLoading, 
-  nations, 
+export function CreateFootballer({
+  createForm,
+  createLoading,
+  nations,
   nationsLoading,
-  onFormChange, 
-  onCreateFootballer 
+  onFormChange,
+  onCreateFootballer,
 }: CreateFootballerProps) {
   const updateForm = (updates: Partial<CreateFootballerRequest>) => {
-    onFormChange({ ...createForm, ...updates })
-  }
+    onFormChange({ ...createForm, ...updates });
+  };
 
-  const isFormValid = createForm.last_name.trim() && createForm.date_of_birth
+  const isFormValid = createForm.last_name.trim() && createForm.date_of_birth;
 
   return (
     <div className="space-y-6">
       <div>
-        <h4 className="text-sm font-medium mb-2">Create New Footballer</h4>
-        <p className="text-xs text-gray-500 mb-4">Create a new footballer entry with the required information.</p>
-        
+        <h4 className="mb-2 text-sm font-medium">Create New Footballer</h4>
+        <p className="mb-4 text-xs text-gray-500">Create a new footballer entry with the required information.</p>
+
         {/* Status - First and alone */}
-        <div className="grid grid-cols-1 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <Label>Status</Label>
-            <Select value={createForm.status} onValueChange={(value) => updateForm({ status: value })}>
+            <Select value={createForm.status} onValueChange={value => updateForm({ status: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -57,54 +57,58 @@ export function CreateFootballer({
         </div>
 
         {/* First Name and Last Name - Same line */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
               placeholder="Enter first name"
               value={createForm.first_name}
-              onChange={(e) => updateForm({ first_name: e.target.value })}
+              onChange={e => updateForm({ first_name: e.target.value })}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="lastName">Last Name *</Label>
             <Input
               id="lastName"
               placeholder="Enter last name"
               value={createForm.last_name}
-              onChange={(e) => updateForm({ last_name: e.target.value })}
+              onChange={e => updateForm({ last_name: e.target.value })}
             />
           </div>
         </div>
 
         {/* Date of Birth and Nation - Same line */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Date of Birth *</Label>
             <Input
               id="dateOfBirth"
               type="date"
               value={createForm.date_of_birth}
-              onChange={(e) => updateForm({ date_of_birth: e.target.value })}
+              onChange={e => updateForm({ date_of_birth: e.target.value })}
             />
           </div>
 
           <div className="space-y-2">
             <Label>Nation</Label>
-            <Select 
-              value={createForm.nation_id.toString()} 
-              onValueChange={(value) => updateForm({ nation_id: parseInt(value) })}
+            <Select
+              value={createForm.nation_id.toString()}
+              onValueChange={value => updateForm({ nation_id: Number.parseInt(value) })}
               disabled={nationsLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder={nationsLoading ? "Loading nations..." : "Select a nation"} />
+                <SelectValue placeholder={nationsLoading ? 'Loading nations...' : 'Select a nation'} />
               </SelectTrigger>
               <SelectContent>
-                {nations.map((nation) => (
+                {nations.map(nation => (
                   <SelectItem key={nation.id} value={nation.id.toString()}>
-                    {nation.name} ({nation.nationality})
+                    {nation.name}
+                    {' '}
+                    (
+                    {nation.nationality}
+                    )
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -113,14 +117,14 @@ export function CreateFootballer({
         </div>
 
         {/* Wikipedia URL - Full width */}
-        <div className="grid grid-cols-1 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <Label htmlFor="wikipediaUrl">Wikipedia URL</Label>
             <Input
               id="wikipediaUrl"
               placeholder="https://en.wikipedia.org/wiki/Player_Name"
-              value={createForm.wikipedia_url || ""}
-              onChange={(e) => updateForm({ wikipedia_url: e.target.value || null })}
+              value={createForm.wikipedia_url || ''}
+              onChange={e => updateForm({ wikipedia_url: e.target.value || null })}
             />
             <p className="text-xs text-gray-500">
               Optional: Link to the player's Wikipedia page
@@ -129,10 +133,10 @@ export function CreateFootballer({
         </div>
 
         {/* Career Difficulty + Available For Career Path - Same line */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Career Difficulty</Label>
-            <Select value={createForm.career_path_difficulty} onValueChange={(value) => updateForm({ career_path_difficulty: value })}>
+            <Select value={createForm.career_path_difficulty} onValueChange={value => updateForm({ career_path_difficulty: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -147,11 +151,11 @@ export function CreateFootballer({
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Available for Career Path</Label>
-            <div className="flex items-center space-x-2 h-10">
+            <div className="flex h-10 items-center space-x-2">
               <Switch
                 id="availableForCareer"
                 checked={createForm.available_for_career_path}
-                onCheckedChange={(checked) => updateForm({ available_for_career_path: checked })}
+                onCheckedChange={checked => updateForm({ available_for_career_path: checked })}
               />
               <Label htmlFor="availableForCareer" className="text-sm">Available for Career Path</Label>
             </div>
@@ -159,12 +163,12 @@ export function CreateFootballer({
         </div>
 
         {/* Rest - One per line */}
-        <div className="space-y-4 mb-4">
+        <div className="mb-4 space-y-4">
           <div className="flex items-center space-x-2">
             <Switch
               id="retired"
               checked={createForm.retired}
-              onCheckedChange={(checked) => updateForm({ retired: checked })}
+              onCheckedChange={checked => updateForm({ retired: checked })}
             />
             <Label htmlFor="retired" className="text-sm">Retired</Label>
           </div>
@@ -173,7 +177,7 @@ export function CreateFootballer({
             <Switch
               id="isPlayer"
               checked={createForm.is_player}
-              onCheckedChange={(checked) => updateForm({ is_player: checked })}
+              onCheckedChange={checked => updateForm({ is_player: checked })}
             />
             <Label htmlFor="isPlayer" className="text-sm">Is Player</Label>
           </div>
@@ -182,7 +186,7 @@ export function CreateFootballer({
             <Switch
               id="isManager"
               checked={createForm.is_manager}
-              onCheckedChange={(checked) => updateForm({ is_manager: checked })}
+              onCheckedChange={checked => updateForm({ is_manager: checked })}
             />
             <Label htmlFor="isManager" className="text-sm">Is Manager</Label>
           </div>
@@ -191,7 +195,7 @@ export function CreateFootballer({
             <Switch
               id="mightChange"
               checked={createForm.might_change}
-              onCheckedChange={(checked) => updateForm({ might_change: checked })}
+              onCheckedChange={checked => updateForm({ might_change: checked })}
             />
             <Label htmlFor="mightChange" className="text-sm">Might Change</Label>
           </div>
@@ -200,15 +204,15 @@ export function CreateFootballer({
             <Switch
               id="showDateOfBirth"
               checked={createForm.show_date_of_birth_on_search}
-              onCheckedChange={(checked) => updateForm({ show_date_of_birth_on_search: checked })}
+              onCheckedChange={checked => updateForm({ show_date_of_birth_on_search: checked })}
             />
             <Label htmlFor="showDateOfBirth" className="text-sm">Show Date of Birth in Search</Label>
           </div>
         </div>
 
         {/* Submit Button */}
-        <div className="flex gap-2 flex-wrap">
-          <ApiButton 
+        <div className="flex flex-wrap gap-2">
+          <ApiButton
             onClick={onCreateFootballer}
             disabled={!isFormValid}
             loading={createLoading}
@@ -218,11 +222,11 @@ export function CreateFootballer({
             POST /data/footballers/
           </ApiButton>
         </div>
-        
+
         {!isFormValid && (
-          <p className="text-xs text-orange-600 mt-2">Please fill in all required fields (*) to enable the create button</p>
+          <p className="mt-2 text-xs text-orange-600">Please fill in all required fields (*) to enable the create button</p>
         )}
       </div>
     </div>
-  )
+  );
 }

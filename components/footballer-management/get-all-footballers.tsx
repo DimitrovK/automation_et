@@ -1,23 +1,23 @@
-"use client"
+'use client';
 
-import React from "react"
-import { ApiButton } from "@/components/ui/emerald-button"
-import { Database } from "lucide-react"
+import { Database } from 'lucide-react';
+import React from 'react';
+import { ApiButton } from '@/components/ui/emerald-button';
 
-interface GetAllFootballersProps {
-  loading: boolean
-  onGetFootballers: () => void
-}
+type GetAllFootballersProps = {
+  loading: boolean;
+  onGetFootballers: () => void;
+};
 
 export function GetAllFootballers({ loading, onGetFootballers }: GetAllFootballersProps) {
   return (
     <div>
-      <h4 className="text-sm font-medium mb-2">Get All Footballers</h4>
-      <p className="text-xs text-gray-500 mb-3">
+      <h4 className="mb-2 text-sm font-medium">Get All Footballers</h4>
+      <p className="mb-3 text-xs text-gray-500">
         Retrieve a paginated list of all footballers with optional filtering, searching, and sorting.
       </p>
-      <div className="flex gap-2 flex-wrap">
-        <ApiButton 
+      <div className="flex flex-wrap gap-2">
+        <ApiButton
           onClick={onGetFootballers}
           loading={loading}
           loadingText="Loading..."
@@ -27,5 +27,5 @@ export function GetAllFootballers({ loading, onGetFootballers }: GetAllFootballe
         </ApiButton>
       </div>
     </div>
-  )
+  );
 }
