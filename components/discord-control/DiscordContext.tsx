@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { createContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 // Discord channel type
 export type DiscordChannel = {
@@ -150,7 +150,7 @@ export function DiscordProvider({ children }: { children: ReactNode }) {
 
 // Custom hook to use Discord context
 export function useDiscord() {
-  const context = use(DiscordContext);
+  const context = useContext(DiscordContext);
   if (context === undefined) {
     throw new Error('useDiscord must be used within a DiscordProvider');
   }
