@@ -120,8 +120,19 @@ export default function FootballerCareerApp() {
           throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
 
-        const data = await response.json();
-        setPlayerData(data);
+        // Read as text first to handle empty/truncated responses
+        const responseText = await response.text();
+
+        if (!responseText || responseText.trim().length === 0) {
+          throw new Error(`Empty response received from webhook (status ${response.status})`);
+        }
+
+        try {
+          const data = JSON.parse(responseText);
+          setPlayerData(data);
+        } catch (parseError) {
+          throw new Error(`Invalid JSON in webhook response (${responseText.length} chars): ${parseError instanceof Error ? parseError.message : 'Parse error'}`);
+        }
       } catch (fetchError) {
         clearTimeout(timeoutId);
         throw fetchError;

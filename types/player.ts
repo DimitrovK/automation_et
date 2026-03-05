@@ -14,6 +14,17 @@ export type Team = {
   typeOfTransfer: string;
 };
 
+export type NationalTeam = {
+  teamName: string;
+  startYear: number;
+  endYear: number | null;
+  apps: number;
+  goals: number;
+  nationFound: boolean;
+  nationID: number | null;
+  nationNameDB: string | null;
+};
+
 export type n8nWikiPlayerData = {
   playerName: string;
   playerFoundInDB: boolean;
@@ -31,6 +42,7 @@ export type n8nWikiPlayerData = {
     notFoundTeams: number;
   };
   teams: Team[];
+  nationalTeams?: NationalTeam[];
 };
 
 export type PlayerConfiguration = {
