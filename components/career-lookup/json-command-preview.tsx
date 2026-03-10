@@ -1,9 +1,11 @@
 'use client';
 
 import type {
+  CreateFootballerNationRequest,
   CreateFootballerRequest,
   CreateFootballerTeamRequest,
   Footballer,
+  FootballerNationStat,
   n8nWikiPlayerData,
   PlayerConfiguration,
 } from '@/types/player';
@@ -31,6 +33,7 @@ type JsonCommandPreviewProps = {
   playerConfig: PlayerConfiguration;
   dbPlayerInfo?: Footballer | null;
   chosenDataSource?: 'wikipedia' | 'database' | null;
+  dbNationalTeams?: FootballerNationStat[];
 };
 
 export function JsonCommandPreview({
@@ -38,6 +41,7 @@ export function JsonCommandPreview({
   playerConfig,
   dbPlayerInfo,
   chosenDataSource,
+  dbNationalTeams,
 }: JsonCommandPreviewProps) {
   const { user } = useAuth();
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
@@ -243,6 +247,54 @@ export function JsonCommandPreview({
 
   const hasTeamChanges = getTeamChanges.updates.length > 0 || getTeamChanges.creates.length > 0 || getTeamChanges.deletes.length > 0;
 
+  // Function to analyze national team changes (comparing Wikipedia vs DB nation stats)
+  const getNationChanges = useMemo(() => {
+    if (!playerData?.nationalTeams) {
+      return { creates: [] as Array<{ nationData: CreateFootballerNationRequest; nationName: string }>, updates: [] as Array<{ id: number; changes: Partial<CreateFootballerNationRequest>; nationName: string }> };
+    }
+
+    const wikiNations = playerData.nationalTeams.filter(nt => nt.nationFound && nt.nationID);
+    const creates: Array<{ nationData: CreateFootballerNationRequest; nationName: string }> = [];
+    const updates: Array<{ id: number; changes: Partial<CreateFootballerNationRequest>; nationName: string }> = [];
+
+    const footballerId = dbPlayerInfo?.id ?? 0;
+
+    for (const wikiNation of wikiNations) {
+      const dbMatch = dbNationalTeams?.find(db => db.nation_id === wikiNation.nationID) ?? null;
+
+      if (!dbMatch) {
+        creates.push({
+          nationData: {
+            footballer_id: footballerId,
+            nation_id: wikiNation.nationID!,
+            apps: wikiNation.apps,
+            goals: wikiNation.goals,
+          },
+          nationName: wikiNation.teamName,
+        });
+      } else {
+        const changes: Partial<CreateFootballerNationRequest> = {};
+        if (dbMatch.apps !== wikiNation.apps) {
+          changes.apps = wikiNation.apps;
+        }
+        if (dbMatch.goals !== wikiNation.goals) {
+          changes.goals = wikiNation.goals;
+        }
+        if (Object.keys(changes).length > 0) {
+          updates.push({
+            id: dbMatch.id,
+            changes,
+            nationName: wikiNation.teamName,
+          });
+        }
+      }
+    }
+
+    return { creates, updates };
+  }, [playerData, dbPlayerInfo, dbNationalTeams]);
+
+  const hasNationChanges = getNationChanges.creates.length > 0 || getNationChanges.updates.length > 0;
+
   // Generate footballer creation/update JSON
   const footballerJson = useMemo(() => {
     if (!playerData || !playerConfig.countryID || !user) {
@@ -394,8 +446,8 @@ ${JSON.stringify(data, null, 2)}`;
             </CardTitle>
             <CardDescription>
               {isExistingPlayer
-                ? hasChanges || hasTeamChanges
-                  ? `JSON commands that will be executed to update the existing footballer record${hasTeamChanges ? ' and team records' : ''}`
+                ? hasChanges || hasTeamChanges || hasNationChanges
+                  ? `JSON commands that will be executed to update the existing footballer record${hasTeamChanges ? ' and team records' : ''}${hasNationChanges ? ' and nation stats' : ''}`
                   : `Current footballer data matches database - no updates needed`
                 : `JSON commands that will be executed to create the footballer and team records`}
               {isExistingPlayer && chosenDataSource !== 'wikipedia' && chosenDataSource === 'database' && playerData?.teams && dbPlayerInfo?.teams_played_for && (
@@ -427,9 +479,11 @@ ${JSON.stringify(data, null, 2)}`;
               <Tabs defaultValue="footballer" className="w-full">
                 <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <TabsList className={`grid w-full sm:w-auto ${
-                    isExistingPlayer && hasTeamChanges
-                      ? 'grid-cols-2'
-                      : isExistingPlayer ? 'grid-cols-1' : 'grid-cols-2'
+                    (isExistingPlayer && hasTeamChanges && hasNationChanges) || (!isExistingPlayer && footballerTeamsJson.length > 0 && hasNationChanges)
+                      ? 'grid-cols-3'
+                      : (isExistingPlayer && hasTeamChanges) || (!isExistingPlayer && footballerTeamsJson.length > 0) || hasNationChanges
+                        ? 'grid-cols-2'
+                        : 'grid-cols-1'
                   }`}
                   >
                     <TabsTrigger value="footballer" className="text-xs sm:text-sm">
@@ -447,6 +501,15 @@ ${JSON.stringify(data, null, 2)}`;
                         <span className="sm:hidden">Teams</span>
                         <Badge variant="secondary" className="ml-1 text-xs sm:ml-2">
                           {isExistingPlayer ? getTeamChanges.deletes.length + getTeamChanges.updates.length + getTeamChanges.creates.length : footballerTeamsJson.length}
+                        </Badge>
+                      </TabsTrigger>
+                    )}
+                    {hasNationChanges && (
+                      <TabsTrigger value="nations" className="text-xs sm:text-sm">
+                        <span className="hidden sm:inline">{isExistingPlayer ? 'Nation Operations' : 'Create Nations'}</span>
+                        <span className="sm:hidden">Nations</span>
+                        <Badge variant="secondary" className="ml-1 text-xs sm:ml-2">
+                          {getNationChanges.updates.length + getNationChanges.creates.length}
                         </Badge>
                       </TabsTrigger>
                     )}
@@ -724,6 +787,116 @@ ${JSON.stringify(data, null, 2)}`;
                         )
                   )}
                 </TabsContent>
+
+                <TabsContent value="nations" className="space-y-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <h4 className="break-all text-sm font-medium">
+                      <span>{isExistingPlayer ? 'Nation Stats Operations' : 'POST /data/footballer-nations/'}</span>
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const allNationOps = [
+                          ...getNationChanges.updates.map(update => ({
+                            operation: 'UPDATE',
+                            endpoint: `/data/footballer-nations/${update.id}/`,
+                            method: 'PUT',
+                            data: update.changes,
+                            nationName: update.nationName,
+                          })),
+                          ...getNationChanges.creates.map(create => ({
+                            operation: 'CREATE',
+                            endpoint: '/data/footballer-nations/',
+                            method: 'POST',
+                            data: create.nationData,
+                            nationName: create.nationName,
+                          })),
+                        ];
+                        const content = showAsHttpRequest
+                          ? allNationOps.map(op =>
+                              `// ${op.operation} ${op.nationName}\n${generateHttpRequest(op.endpoint, op.method, op.data)}`,
+                            ).join('\n\n')
+                          : JSON.stringify(allNationOps, null, 2);
+                        copyToClipboard(content, 'nations');
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      {copiedStates.nations ? <Check className="size-4" /> : <Copy className="size-4" />}
+                      <span className="ml-2">{copiedStates.nations ? 'Copied' : 'Copy'}</span>
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {getNationChanges.updates.length > 0 && (
+                      <div>
+                        <h5 className="mb-2 text-xs font-medium text-blue-700 dark:text-blue-400 sm:text-sm">
+                          Nation Stat Updates (
+                          {getNationChanges.updates.length}
+                          )
+                        </h5>
+                        <ScrollArea className="h-48 w-full rounded-lg border">
+                          <div className="space-y-3 bg-blue-50 p-3 dark:bg-blue-900/20 sm:p-4">
+                            {getNationChanges.updates.map((update, index) => (
+                              <div key={index} className="border-b border-blue-200 pb-2 last:border-b-0 last:pb-0 dark:border-blue-700">
+                                <p className="mb-1 break-all text-[10px] font-medium text-blue-800 dark:text-blue-300 sm:text-xs">
+                                  PUT /data/footballer-nations/
+                                  {update.id}
+                                  / -
+                                  {' '}
+                                  {update.nationName}
+                                </p>
+                                <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                  <code>
+                                    {showAsHttpRequest
+                                      ? generateHttpRequest(`/data/footballer-nations/${update.id}/`, 'PUT', update.changes)
+                                      : JSON.stringify(update.changes, null, 2)}
+                                  </code>
+                                </pre>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    )}
+
+                    {getNationChanges.creates.length > 0 && (
+                      <div>
+                        <h5 className="mb-2 text-xs font-medium text-green-700 dark:text-green-400 sm:text-sm">
+                          New Nation Stats (
+                          {getNationChanges.creates.length}
+                          )
+                        </h5>
+                        <ScrollArea className="h-48 w-full rounded-lg border">
+                          <div className="space-y-3 bg-green-50 p-3 dark:bg-green-900/20 sm:p-4">
+                            {getNationChanges.creates.map((create, index) => (
+                              <div key={index} className="border-b border-green-200 pb-2 last:border-b-0 last:pb-0 dark:border-green-700">
+                                <p className="mb-1 break-all text-[10px] font-medium text-green-800 dark:text-green-300 sm:text-xs">
+                                  POST /data/footballer-nations/ -
+                                  {' '}
+                                  {create.nationName}
+                                </p>
+                                <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                  <code>
+                                    {showAsHttpRequest
+                                      ? generateHttpRequest('/data/footballer-nations/', 'POST', create.nationData)
+                                      : JSON.stringify(create.nationData, null, 2)}
+                                  </code>
+                                </pre>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    )}
+
+                    {!hasNationChanges && (
+                      <div className="rounded-lg border bg-gray-50 py-8 text-center text-gray-500 dark:bg-slate-800">
+                        <p className="text-sm">No nation changes detected</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
               </Tabs>
 
               <Separator />
@@ -733,7 +906,7 @@ ${JSON.stringify(data, null, 2)}`;
                   <DialogTrigger asChild>
                     <GraphiteButton
                       onClick={() => setDialogOpen(true)}
-                      disabled={hasValidationIssues || !!(isExistingPlayer && !hasChanges)}
+                      disabled={hasValidationIssues || !!(isExistingPlayer && !hasChanges && !hasTeamChanges && !hasNationChanges)}
                       icon={FileText}
                       className="flex-1"
                     >
@@ -889,6 +1062,67 @@ ${JSON.stringify(data, null, 2)}`;
                                     <div className="overflow-x-auto rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                                       <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
                                         <code>{JSON.stringify(create.teamData, null, 2)}</code>
+                                      </pre>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {hasNationChanges && (
+                          <div>
+                            <h4 className="mb-2 font-medium">
+                              {isExistingPlayer && hasTeamChanges ? '3' : '2'}
+                              .
+                              {' '}
+                              Nation Operations
+                            </h4>
+
+                            {getNationChanges.updates.length > 0 && (
+                              <div className="mb-4">
+                                <p className="mb-2 text-sm font-medium text-blue-700">
+                                  Update Nation Stats (
+                                  {getNationChanges.updates.length}
+                                  )
+                                </p>
+                                {getNationChanges.updates.map((update, index) => (
+                                  <div key={index} className="mb-3">
+                                    <p className="mb-1 text-sm text-gray-600">
+                                      PUT /data/footballer-nations/
+                                      {update.id}
+                                      / -
+                                      {' '}
+                                      {update.nationName}
+                                    </p>
+                                    <div className="overflow-x-auto rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                        <code>{JSON.stringify(update.changes, null, 2)}</code>
+                                      </pre>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {getNationChanges.creates.length > 0 && (
+                              <div>
+                                <p className="mb-2 text-sm font-medium text-green-700">
+                                  Create Nation Stats (
+                                  {getNationChanges.creates.length}
+                                  )
+                                </p>
+                                {getNationChanges.creates.map((create, index) => (
+                                  <div key={index} className="mb-3">
+                                    <p className="mb-1 text-sm text-gray-600">
+                                      POST /data/footballer-nations/ -
+                                      {' '}
+                                      {create.nationName}
+                                    </p>
+                                    <div className="overflow-x-auto rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                        <code>{JSON.stringify(create.nationData, null, 2)}</code>
                                       </pre>
                                     </div>
                                   </div>

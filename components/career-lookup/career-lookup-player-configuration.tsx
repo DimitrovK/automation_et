@@ -1,5 +1,5 @@
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, n8nWikiPlayerData, PlayerConfiguration } from '@/types/player';
+import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, n8nWikiPlayerData, PlayerConfiguration } from '@/types/player';
 import { AlertTriangle, Edit, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createLogEntry, DeploymentConsole } from '@/components/career-lookup/deployment-console';
@@ -20,6 +20,7 @@ type CareerLookupPlayerConfigurationProps = {
   // Player data
   playerData: n8nWikiPlayerData;
   dbPlayerInfo: Footballer | null;
+  dbNationalTeams?: FootballerNationStat[];
 
   // Data source choice for validation conflicts
   chosenDataSource?: 'wikipedia' | 'database' | null;
@@ -27,6 +28,7 @@ type CareerLookupPlayerConfigurationProps = {
   // Handlers
   onErrorChange: (error: string | null) => void;
   onReloadPlayer?: () => void;
+  onNationStatsUpdated?: () => void;
 
   className?: string;
 };
@@ -34,9 +36,11 @@ type CareerLookupPlayerConfigurationProps = {
 export function CareerLookupPlayerConfiguration({
   playerData,
   dbPlayerInfo,
+  dbNationalTeams,
   chosenDataSource,
   onErrorChange,
   onReloadPlayer,
+  onNationStatsUpdated,
   className,
 }: CareerLookupPlayerConfigurationProps) {
   const { user } = useAuth();
@@ -379,8 +383,61 @@ export function CareerLookupPlayerConfiguration({
     return teamChanges.updates.length > 0 || teamChanges.creates.length > 0 || teamChanges.deletes.length > 0;
   };
 
+  // Function to analyze national team changes (comparing Wikipedia vs DB nation stats)
+  const getNationChanges = () => {
+    if (!playerData?.nationalTeams) {
+      return { creates: [] as Array<{ nationData: CreateFootballerNationRequest; nationName: string }>, updates: [] as Array<{ id: number; changes: Partial<CreateFootballerNationRequest>; nationName: string }> };
+    }
+
+    const wikiNations = playerData.nationalTeams.filter(nt => nt.nationFound && nt.nationID);
+    const creates: Array<{ nationData: CreateFootballerNationRequest; nationName: string }> = [];
+    const updates: Array<{ id: number; changes: Partial<CreateFootballerNationRequest>; nationName: string }> = [];
+
+    const footballerId = dbPlayerInfo?.id ?? 0;
+
+    for (const wikiNation of wikiNations) {
+      const dbMatch = dbNationalTeams?.find(db => db.nation_id === wikiNation.nationID) ?? null;
+
+      if (!dbMatch) {
+        // Nation not in DB — needs creation
+        creates.push({
+          nationData: {
+            footballer_id: footballerId,
+            nation_id: wikiNation.nationID!,
+            apps: wikiNation.apps,
+            goals: wikiNation.goals,
+          },
+          nationName: wikiNation.teamName,
+        });
+      } else {
+        // Nation exists in DB — check for mismatches
+        const changes: Partial<CreateFootballerNationRequest> = {};
+        if (dbMatch.apps !== wikiNation.apps) {
+          changes.apps = wikiNation.apps;
+        }
+        if (dbMatch.goals !== wikiNation.goals) {
+          changes.goals = wikiNation.goals;
+        }
+        if (Object.keys(changes).length > 0) {
+          updates.push({
+            id: dbMatch.id,
+            changes,
+            nationName: wikiNation.teamName,
+          });
+        }
+      }
+    }
+
+    return { creates, updates };
+  };
+
+  const hasNationChanges = () => {
+    const nationChanges = getNationChanges();
+    return nationChanges.creates.length > 0 || nationChanges.updates.length > 0;
+  };
+
   const handleUpdatePlayer = async () => {
-    if (!dbPlayerInfo || (!hasChanges() && !hasTeamChanges())) {
+    if (!dbPlayerInfo || (!hasChanges() && !hasTeamChanges() && !hasNationChanges())) {
       return;
     }
 
@@ -395,7 +452,7 @@ export function CareerLookupPlayerConfiguration({
     const playerChanges = getPlayerChanges();
     const teamChanges = getTeamChanges();
 
-    if (!playerChanges && !hasTeamChanges()) {
+    if (!playerChanges && !hasTeamChanges() && !hasNationChanges()) {
       addDeploymentLog('info', '💡 No changes detected - Update cancelled');
       return;
     }
@@ -500,6 +557,52 @@ export function CareerLookupPlayerConfiguration({
         addDeploymentLog('success', `📈 Team operations completed: ${deletedTeams}/${teamChanges.deletes.length} deletes, ${updatedTeams}/${teamChanges.updates.length} updates, ${createdTeams}/${teamChanges.creates.length} creates`);
       }
 
+      // Update and create national team records if there are nation changes
+      const nationChanges = getNationChanges();
+      if (hasNationChanges()) {
+        addDeploymentLog('info', `🏳️ Nation operations: ${nationChanges.updates.length} updates, ${nationChanges.creates.length} creates`);
+
+        let updatedNations = 0;
+        let createdNations = 0;
+
+        // First: Update existing nation stats
+        for (let i = 0; i < nationChanges.updates.length; i++) {
+          const nationUpdate = nationChanges.updates[i];
+          try {
+            addDeploymentLog('loading', `Updating nation stat ${i + 1}/${nationChanges.updates.length}: ${nationUpdate.nationName}`);
+            addDeploymentLog('request', `PUT /data/footballer-nations/${nationUpdate.id}/`, nationUpdate.changes);
+
+            const updatedNationRecord = await FootballerAPI.updateFootballerNation(nationUpdate.id, nationUpdate.changes as CreateFootballerNationRequest);
+
+            addDeploymentLog('response', `✅ Nation stat updated: ${nationUpdate.nationName}`, updatedNationRecord);
+            updatedNations++;
+          } catch (nationError) {
+            addDeploymentLog('error', `❌ Failed to update nation stat for ${nationUpdate.nationName}: ${nationError instanceof Error ? nationError.message : 'Unknown error'}`);
+            console.error(`Failed to update nation stat for ${nationUpdate.nationName}:`, nationError);
+          }
+        }
+
+        // Second: Create new nation stats
+        for (let i = 0; i < nationChanges.creates.length; i++) {
+          const nationCreate = nationChanges.creates[i];
+          try {
+            addDeploymentLog('loading', `Creating nation stat ${i + 1}/${nationChanges.creates.length}: ${nationCreate.nationName}`);
+            addDeploymentLog('request', 'POST /data/footballer-nations/', nationCreate.nationData);
+
+            const createdNationRecord = await FootballerAPI.createFootballerNation(nationCreate.nationData);
+
+            addDeploymentLog('response', `✅ Nation stat created: ${nationCreate.nationName}`, createdNationRecord);
+            createdNations++;
+          } catch (nationError) {
+            addDeploymentLog('error', `❌ Failed to create nation stat for ${nationCreate.nationName}: ${nationError instanceof Error ? nationError.message : 'Unknown error'}`);
+            console.error(`Failed to create nation stat for ${nationCreate.nationName}:`, nationError);
+          }
+        }
+
+        addDeploymentLog('success', `🏳️ Nation operations completed: ${updatedNations}/${nationChanges.updates.length} updates, ${createdNations}/${nationChanges.creates.length} creates`);
+        onNationStatsUpdated?.();
+      }
+
       // Final success message
       const operations = [];
       if (playerChanges) {
@@ -508,6 +611,10 @@ export function CareerLookupPlayerConfiguration({
       if (hasTeamChanges()) {
         const totalTeamOps = teamChanges.deletes.length + teamChanges.updates.length + teamChanges.creates.length;
         operations.push(`${totalTeamOps} team operations completed`);
+      }
+      if (hasNationChanges()) {
+        const totalNationOps = nationChanges.updates.length + nationChanges.creates.length;
+        operations.push(`${totalNationOps} nation operations completed`);
       }
 
       addDeploymentLog('success', `🎉 Update completed! ${operations.join(', ')}`);
@@ -626,6 +733,41 @@ export function CareerLookupPlayerConfiguration({
 
       addDeploymentLog('success', `🎉 Deployment completed! Footballer: ${playerConfig.firstName} ${playerConfig.lastName}`);
       addDeploymentLog('success', `📈 Statistics: ${createdTeams}/${foundTeams.length} team records created`);
+
+      // Create national team stat records for nations found in the database
+      const foundNations = playerData.nationalTeams?.filter(nt => nt.nationFound && nt.nationID) || [];
+      let createdNations = 0;
+
+      if (foundNations.length > 0) {
+        addDeploymentLog('info', `🏳️ Found ${foundNations.length} national team(s) to create records for`);
+
+        for (let i = 0; i < foundNations.length; i++) {
+          const nation = foundNations[i];
+          try {
+            const nationData: CreateFootballerNationRequest = {
+              footballer_id: createdFootballer.id,
+              nation_id: nation.nationID!,
+              apps: nation.apps,
+              goals: nation.goals,
+            };
+
+            addDeploymentLog('loading', `Deploying nation stat ${i + 1}/${foundNations.length}: ${nation.teamName}`);
+            addDeploymentLog('request', 'POST /data/footballer-nations/', nationData);
+
+            const createdNationRecord = await FootballerAPI.createFootballerNation(nationData);
+
+            addDeploymentLog('response', `✅ Nation stat created: ${nation.teamName}`, createdNationRecord);
+            createdNations++;
+          } catch (nationError) {
+            addDeploymentLog('error', `❌ Failed to create nation stat for ${nation.teamName}: ${nationError instanceof Error ? nationError.message : 'Unknown error'}`);
+            console.error(`Failed to create nation stat for ${nation.teamName}:`, nationError);
+          }
+        }
+
+        addDeploymentLog('success', `🏳️ Nation stats: ${createdNations}/${foundNations.length} records created`);
+        onNationStatsUpdated?.();
+      }
+
       setDeploymentComplete(true);
 
       // Trigger a resync to show the updated state
@@ -946,6 +1088,7 @@ export function CareerLookupPlayerConfiguration({
           playerConfig={playerConfig}
           dbPlayerInfo={dbPlayerInfo}
           chosenDataSource={chosenDataSource}
+          dbNationalTeams={dbNationalTeams}
         />
 
         <Separator className="my-8" />
@@ -977,14 +1120,14 @@ export function CareerLookupPlayerConfiguration({
               disabled={
                 deploying
                 || (!playerData?.playerFoundInDB && playerData.summary.notFoundTeams > 0)
-                || (playerData?.playerFoundInDB && !hasChanges() && !hasTeamChanges())
+                || (playerData?.playerFoundInDB && !hasChanges() && !hasTeamChanges() && !hasNationChanges())
               }
             >
               <Save className="mr-2 size-5" />
               {deploying
                 ? (playerData?.playerFoundInDB ? 'Updating...' : 'Deploying...')
                 : playerData?.playerFoundInDB
-                  ? (hasChanges() || hasTeamChanges() ? 'Update Footballer' : 'No Changes Detected')
+                  ? (hasChanges() || hasTeamChanges() || hasNationChanges() ? 'Update Footballer' : 'No Changes Detected')
                   : 'Deploy Footballer'}
             </Button>
           </div>
@@ -993,12 +1136,16 @@ export function CareerLookupPlayerConfiguration({
             ? (
                 playerData?.playerFoundInDB
                   ? (
-                      (hasChanges() || hasTeamChanges())
+                      (hasChanges() || hasTeamChanges() || hasNationChanges())
                         ? (
                             <p className="text-center text-sm font-medium text-blue-600">
                               ✏️ Changes detected - Ready to update existing player
-                              {hasChanges() && hasTeamChanges() && ' and teams'}
-                              {!hasChanges() && hasTeamChanges() && ' teams'}
+                              {hasChanges() && (hasTeamChanges() || hasNationChanges()) && ' and'}
+                              {hasTeamChanges() && ' teams'}
+                              {hasTeamChanges() && hasNationChanges() && ' and'}
+                              {hasNationChanges() && ' nations'}
+                              {!hasChanges() && hasTeamChanges() && !hasNationChanges() && ' teams'}
+                              {!hasChanges() && !hasTeamChanges() && hasNationChanges() && ' nations'}
                             </p>
                           )
                         : (
