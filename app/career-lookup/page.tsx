@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import type { Footballer, n8nWikiPlayerData } from '@/types/player';
+import type { Footballer, FootballerNationStat, n8nWikiPlayerData } from '@/types/player';
 import {
   AlertCircle,
 } from 'lucide-react';
@@ -44,6 +44,9 @@ export default function FootballerCareerApp() {
   const [dbPlayerInfo, setDbPlayerInfo] = useState<Footballer | null>(null);
   const [loadingDbPlayer, setLoadingDbPlayer] = useState(false);
 
+  // State for database national team stats
+  const [dbNationalTeams, setDbNationalTeams] = useState<FootballerNationStat[]>([]);
+
   // Initialize with URL parameters
   useEffect(() => {
     const name = searchParams.get('name');
@@ -70,12 +73,34 @@ export default function FootballerCareerApp() {
       setLoadingDbPlayer(true);
       const footballer = await FootballerAPI.getFootballer(playerDBId);
       setDbPlayerInfo(footballer);
+
+      // Also fetch national team stats
+      try {
+        const nationStats = await FootballerAPI.getFootballerNations(playerDBId);
+        setDbNationalTeams(nationStats);
+      } catch {
+        setDbNationalTeams([]);
+      }
+
       return footballer;
     } catch (error) {
       setDbPlayerInfo(null);
+      setDbNationalTeams([]);
       return null;
     } finally {
       setLoadingDbPlayer(false);
+    }
+  };
+
+  // Re-fetch national team stats (called after add/update operations)
+  const refetchNationalTeams = async () => {
+    if (dbPlayerInfo?.id) {
+      try {
+        const nationStats = await FootballerAPI.getFootballerNations(dbPlayerInfo.id);
+        setDbNationalTeams(nationStats);
+      } catch {
+        setDbNationalTeams([]);
+      }
     }
   };
 
@@ -84,6 +109,7 @@ export default function FootballerCareerApp() {
     if (searchValue.trim()) {
       setChosenDataSource(null);
       setDbPlayerInfo(null);
+      setDbNationalTeams([]);
       setError(null);
       handleSearch(searchMode, searchValue);
     }
@@ -159,6 +185,7 @@ export default function FootballerCareerApp() {
         // Reset state for new players
         setChosenDataSource(null);
         setDbPlayerInfo(null); // Clear previous DB player info
+        setDbNationalTeams([]);
       }
     }
   }, [playerData]);
@@ -240,8 +267,10 @@ export default function FootballerCareerApp() {
             <CareerLookupInfo
               playerData={playerData}
               dbPlayerInfo={dbPlayerInfo}
+              dbNationalTeams={dbNationalTeams}
               chosenDataSource={chosenDataSource}
               onDataSourceChange={setChosenDataSource}
+              onNationStatsUpdated={refetchNationalTeams}
             />
 
             {/* Player Configuration Section - Full Width */}

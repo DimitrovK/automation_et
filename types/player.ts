@@ -149,3 +149,23 @@ export type CreateFootballerTeamRequest = {
 };
 
 export type FootballerTeamsResponse = {} & Array<FootballerTeam>;
+
+// Footballer Nation Stats API Types
+export type FootballerNationStat = {
+  id: number;
+  footballer_id: number;
+  footballer_name: string;
+  nation_id: number;
+  nation_name: string;
+  apps: number;
+  goals: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateFootballerNationRequest = {
+  footballer_id: number;
+  nation_id: number;
+  apps: number;
+  goals: number;
+};

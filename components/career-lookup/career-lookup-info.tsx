@@ -1,4 +1,4 @@
-import type { Footballer, n8nWikiPlayerData } from '@/types/player';
+import type { Footballer, FootballerNationStat, n8nWikiPlayerData } from '@/types/player';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InternationalCareerCard } from './international-career-card';
 import { PlayerProfileCard } from './player-profile-card';
@@ -7,16 +7,20 @@ import { SeniorCareerCard } from './senior-career-card';
 type CareerLookupInfoProps = {
   playerData: n8nWikiPlayerData;
   dbPlayerInfo?: Footballer | null;
+  dbNationalTeams?: FootballerNationStat[];
   chosenDataSource?: 'wikipedia' | 'database' | null;
   onDataSourceChange?: (dataSource: 'wikipedia' | 'database') => void;
+  onNationStatsUpdated?: () => void;
   className?: string;
 };
 
 export function CareerLookupInfo({
   playerData,
   dbPlayerInfo,
+  dbNationalTeams,
   chosenDataSource,
   onDataSourceChange,
+  onNationStatsUpdated,
   className,
 }: CareerLookupInfoProps) {
   return (
@@ -42,6 +46,9 @@ export function CareerLookupInfo({
 
           <InternationalCareerCard
             nationalTeams={playerData.nationalTeams}
+            dbNationalTeams={dbNationalTeams}
+            footballerId={dbPlayerInfo?.id ?? null}
+            onNationStatsUpdated={onNationStatsUpdated}
           />
         </div>
       </div>

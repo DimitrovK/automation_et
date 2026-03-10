@@ -1,8 +1,10 @@
 import type {
+  CreateFootballerNationRequest,
   CreateFootballerRequest,
   CreateFootballerTeamRequest,
   Footballer,
   FootballerNation,
+  FootballerNationStat,
   FootballersResponse,
   FootballerTeam,
   FootballerTeamsResponse,
@@ -145,6 +147,54 @@ export class FootballerAPI {
    */
   static async deleteFootballerTeam(id: number): Promise<void> {
     return apiFetcher(`data/footballer-teams/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ── Footballer Nation Stats ──────────────────────────────
+
+  /**
+   * Get footballer nation stats by footballer ID
+   * GET /data/footballer-nations/?footballer={footballer_id}
+   */
+  static async getFootballerNations(footballerId: number): Promise<FootballerNationStat[]> {
+    return apiFetcher(`data/footballer-nations/?footballer=${footballerId}`);
+  }
+
+  /**
+   * Create a new footballer nation stat record
+   * POST /data/footballer-nations/
+   */
+  static async createFootballerNation(data: CreateFootballerNationRequest): Promise<FootballerNationStat> {
+    return apiFetcher('data/footballer-nations/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update a footballer nation stat record by ID
+   * PUT /data/footballer-nations/{id}/
+   */
+  static async updateFootballerNation(id: number, data: CreateFootballerNationRequest): Promise<FootballerNationStat> {
+    return apiFetcher(`data/footballer-nations/${id}/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete a footballer nation stat record by ID
+   * DELETE /data/footballer-nations/{id}/
+   */
+  static async deleteFootballerNation(id: number): Promise<void> {
+    return apiFetcher(`data/footballer-nations/${id}/`, {
       method: 'DELETE',
     });
   }
