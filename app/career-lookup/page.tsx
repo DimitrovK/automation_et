@@ -280,6 +280,8 @@ export default function FootballerCareerApp() {
               chosenDataSource={chosenDataSource}
               onErrorChange={setError}
               onReloadPlayer={handleReloadPlayer}
+              dbNationalTeams={dbNationalTeams}
+              onNationStatsUpdated={refetchNationalTeams}
             />
           </>
         )}

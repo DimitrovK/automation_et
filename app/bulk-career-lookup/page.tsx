@@ -1,7 +1,7 @@
 'use client';
 
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { Footballer } from '@/types/player';
+import type { Footballer, FootballerNationStat } from '@/types/player';
 import {
   AlertCircle,
   AlertTriangle,
@@ -91,6 +91,7 @@ export default function BulkCareerLookupPage() {
   const [playerFilter, setPlayerFilter] = useState<'all' | 'active' | 'retired'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [useWikipediaUrl, setUseWikipediaUrl] = useState(true);
+  const [checkMode, setCheckMode] = useState<'career' | 'nations' | 'career-and-nations'>('career-and-nations');
 
   // Statistics
   const [stats, setStats] = useState<BulkStats>({ total: 0, processed: 0, discrepancies: 0, errors: 0 });
@@ -251,10 +252,24 @@ export default function BulkCareerLookupPage() {
         teams_count: databaseData.teams_played_for?.length || 0,
       }));
 
+      // Fetch DB national team stats if mode includes nations
+      let dbNationStats: FootballerNationStat[] = [];
+      if (checkMode !== 'career') {
+        try {
+          logs.push(createLogEntry('request', `Fetching database national team stats...`));
+          dbNationStats = await FootballerAPI.getFootballerNations(footballer.id);
+          logs.push(createLogEntry('response', `Found ${dbNationStats.length} national team record(s) in database`, {
+            nations: dbNationStats.map(n => n.nation_name),
+          }));
+        } catch (error) {
+          logs.push(createLogEntry('error', `Failed to fetch national team stats: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      }
+
       logs.push(createLogEntry('loading', `Analyzing data for discrepancies...`));
 
       // Analyze for discrepancies between Wikipedia and database data
-      const discrepancies = analyzeDiscrepancies(databaseData, wikipediaData);
+      const discrepancies = analyzeDiscrepancies(databaseData, wikipediaData, dbNationStats);
 
       if (discrepancies.length > 0) {
         logs.push(createLogEntry('error', `${discrepancies.length} discrepancy(ies) found`, {
@@ -346,7 +361,7 @@ export default function BulkCareerLookupPage() {
     }
   };
 
-  const analyzeDiscrepancies = (databaseData: Footballer, wikipediaData: any): string[] => {
+  const analyzeDiscrepancies = (databaseData: Footballer, wikipediaData: any, dbNationStats: FootballerNationStat[] = []): string[] => {
     const discrepancies: string[] = [];
 
     // Check if Wikipedia data was found
@@ -355,137 +370,174 @@ export default function BulkCareerLookupPage() {
       return discrepancies;
     }
 
-    // Check basic player info discrepancies
-    if (wikipediaData.dateOfBirth && wikipediaData.dateOfBirth !== databaseData.date_of_birth) {
-      discrepancies.push(`Date of birth mismatch: DB has ${databaseData.date_of_birth}, Wikipedia has ${wikipediaData.dateOfBirth}`);
-    }
-
-    // Check nationality discrepancies
-    if (wikipediaData.birthCountry && wikipediaData.countryFoundInDB === false) {
-      discrepancies.push(`Country not found in database: Wikipedia shows ${wikipediaData.birthCountry}`);
-    }
-
-    // Check position discrepancies
-    if (wikipediaData.position) {
-      // You might want to add position comparison logic here if you have position data in the database
-      // discrepancies.push(`Position comparison needed: Wikipedia shows ${wikipediaData.position}`)
-    }
-
-    // Check team count discrepancies (unique teams vs total spells)
-    const dbTeamCount = databaseData.teams_played_for?.length || 0;
-    const wikiTeamCount = wikipediaData.teams?.length || 0;
-    const dbUniqueTeams = new Set(databaseData.teams_played_for?.map(t => t.team_name.toLowerCase()) || []).size;
-    const wikiUniqueTeams = new Set(wikipediaData.teams?.map((t: any) => t.teamName.toLowerCase()) || []).size;
-
-    // Compare unique teams first
-    if (Math.abs(dbUniqueTeams - wikiUniqueTeams) > 1) {
-      discrepancies.push(`Unique team count difference: DB has ${dbUniqueTeams} unique teams (${dbTeamCount} total spells), Wikipedia has ${wikiUniqueTeams} unique teams (${wikiTeamCount} total spells)`);
-    }
-    // If unique teams are similar, check total spells
-    else if (Math.abs(dbTeamCount - wikiTeamCount) > 2) {
-      discrepancies.push(`Total career spells difference: DB has ${dbTeamCount} spells, Wikipedia has ${wikiTeamCount} spells`);
-    }
-
-    // Check career stats discrepancies
-    if (wikipediaData.totalAppearances) {
-      const dbApps = databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0;
-      const wikiApps = wikipediaData.totalAppearances;
-      if (Math.abs(dbApps - wikiApps) > 10) {
-        discrepancies.push(`Total career appearances mismatch: DB has ${dbApps}, Wikipedia has ${wikiApps} (across all teams)`);
-      }
-    }
-
-    if (wikipediaData.totalGoals) {
-      const dbGoals = databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0;
-      const wikiGoals = wikipediaData.totalGoals;
-      if (Math.abs(dbGoals - wikiGoals) > 5) {
-        discrepancies.push(`Total career goals mismatch: DB has ${dbGoals}, Wikipedia has ${wikiGoals} (across all teams)`);
-      }
-    }
-
-    // Check team-specific discrepancies using position-based matching (like career-lookup-data-validation)
-    if (wikipediaData.teams && Array.isArray(wikipediaData.teams)) {
-      const notFoundTeams = wikipediaData.teams.filter((team: any) => !team.teamFound);
-      if (notFoundTeams.length > 0) {
-        discrepancies.push(`Teams not found in database: ${notFoundTeams.map((team: any) => team.teamName).join(', ')}`);
+    // Club career analysis (skip when mode is 'nations' only)
+    if (checkMode !== 'nations') {
+      // Check basic player info discrepancies
+      if (wikipediaData.dateOfBirth && wikipediaData.dateOfBirth !== databaseData.date_of_birth) {
+        discrepancies.push(`Date of birth mismatch: DB has ${databaseData.date_of_birth}, Wikipedia has ${wikipediaData.dateOfBirth}`);
       }
 
-      const wikiTeams = wikipediaData.teams;
-      const dbTeams = databaseData.teams_played_for || [];
+      // Check nationality discrepancies
+      if (wikipediaData.birthCountry && wikipediaData.countryFoundInDB === false) {
+        discrepancies.push(`Country not found in database: Wikipedia shows ${wikipediaData.birthCountry}`);
+      }
 
-      // Compare teams by their position/order in arrays (like the validation component does)
-      const minLength = Math.min(wikiTeams.length, dbTeams.length);
+      // Check position discrepancies
+      if (wikipediaData.position) {
+        // You might want to add position comparison logic here if you have position data in the database
+        // discrepancies.push(`Position comparison needed: Wikipedia shows ${wikipediaData.position}`)
+      }
 
-      // Helper function to get position suffix (1st, 2nd, 3rd, 4th, etc.)
-      const getPositionSuffix = (position: number): string => {
-        if (position >= 11 && position <= 13) {
-          return 'th';
-        }
-        switch (position % 10) {
-          case 1: return 'st';
-          case 2: return 'nd';
-          case 3: return 'rd';
-          default: return 'th';
-        }
-      };
+      // Check team count discrepancies (unique teams vs total spells)
+      const dbTeamCount = databaseData.teams_played_for?.length || 0;
+      const wikiTeamCount = wikipediaData.teams?.length || 0;
+      const dbUniqueTeams = new Set(databaseData.teams_played_for?.map(t => t.team_name.toLowerCase()) || []).size;
+      const wikiUniqueTeams = new Set(wikipediaData.teams?.map((t: any) => t.teamName.toLowerCase()) || []).size;
 
-      for (let i = 0; i < minLength; i++) {
-        const wikiTeam = wikiTeams[i];
-        const dbTeam = dbTeams[i];
+      // Compare unique teams first
+      if (Math.abs(dbUniqueTeams - wikiUniqueTeams) > 1) {
+        discrepancies.push(`Unique team count difference: DB has ${dbUniqueTeams} unique teams (${dbTeamCount} total spells), Wikipedia has ${wikiUniqueTeams} unique teams (${wikiTeamCount} total spells)`);
+      }
+      // If unique teams are similar, check total spells
+      else if (Math.abs(dbTeamCount - wikiTeamCount) > 2) {
+        discrepancies.push(`Total career spells difference: DB has ${dbTeamCount} spells, Wikipedia has ${wikiTeamCount} spells`);
+      }
 
-        // Skip if Wikipedia team wasn't found
-        if (!wikiTeam.teamFound) {
-          continue;
-        }
-
-        const positionSuffix = getPositionSuffix(i + 1);
-        const teamPositionName = `${wikiTeam.teamName} (${i + 1}${positionSuffix} team)`;
-
-        // Check individual field mismatches
-        if (wikiTeam.teamID !== dbTeam.team_id) {
-          discrepancies.push(`${teamPositionName} - Team ID mismatch: Wikipedia=${wikiTeam.teamID || 'Not Found'}, DB=${dbTeam.team_id}`);
-        }
-
-        if (Math.abs((wikiTeam.appearances || 0) - (dbTeam.apps || 0)) > 2) {
-          discrepancies.push(`${teamPositionName} - Appearances mismatch: Wikipedia=${wikiTeam.appearances}, DB=${dbTeam.apps}`);
-        }
-
-        if (Math.abs((wikiTeam.goals || 0) - (dbTeam.goals || 0)) > 1) {
-          discrepancies.push(`${teamPositionName} - Goals mismatch: Wikipedia=${wikiTeam.goals}, DB=${dbTeam.goals}`);
-        }
-
-        if (wikiTeam.joinYear !== dbTeam.start_year) {
-          discrepancies.push(`${teamPositionName} - Join year mismatch: Wikipedia=${wikiTeam.joinYear}, DB=${dbTeam.start_year}`);
-        }
-
-        if (wikiTeam.departYear !== dbTeam.end_year) {
-          discrepancies.push(`${teamPositionName} - Depart year mismatch: Wikipedia=${wikiTeam.departYear || 'Current'}, DB=${dbTeam.end_year || 'Current'}`);
-        }
-
-        // Check transfer type mismatch
-        const wikiTransferType = (wikiTeam.typeOfTransfer || '').toLowerCase().trim();
-        const wikiType = wikiTransferType.includes('loan') ? 'loan' : 'permanent';
-        if (wikiType !== dbTeam.transfer_type) {
-          discrepancies.push(`${teamPositionName} - Transfer type mismatch: Wikipedia=${wikiType}, DB=${dbTeam.transfer_type}`);
+      // Check career stats discrepancies
+      if (wikipediaData.totalAppearances) {
+        const dbApps = databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0;
+        const wikiApps = wikipediaData.totalAppearances;
+        if (Math.abs(dbApps - wikiApps) > 10) {
+          discrepancies.push(`Total career appearances mismatch: DB has ${dbApps}, Wikipedia has ${wikiApps} (across all teams)`);
         }
       }
 
-      // Check if array lengths differ (missing teams)
-      if (wikiTeams.length !== dbTeams.length) {
-        if (wikiTeams.length > dbTeams.length) {
-          const extraTeams = wikiTeams.length - dbTeams.length;
-          const extraTeamNames = wikiTeams
-            .slice(dbTeams.length)
-            .map((team: any) => team.teamName)
-            .join(', ');
-          discrepancies.push(`Wikipedia has ${extraTeams} additional team${extraTeams > 1 ? 's' : ''}: ${extraTeamNames}`);
-        } else {
-          const extraTeams = dbTeams.length - wikiTeams.length;
-          const extraTeamNames = dbTeams
-            .slice(wikiTeams.length)
-            .map((team: any) => team.team_name)
-            .join(', ');
-          discrepancies.push(`Database has ${extraTeams} additional team${extraTeams > 1 ? 's' : ''}: ${extraTeamNames}`);
+      if (wikipediaData.totalGoals) {
+        const dbGoals = databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0;
+        const wikiGoals = wikipediaData.totalGoals;
+        if (Math.abs(dbGoals - wikiGoals) > 5) {
+          discrepancies.push(`Total career goals mismatch: DB has ${dbGoals}, Wikipedia has ${wikiGoals} (across all teams)`);
+        }
+      }
+
+      // Check team-specific discrepancies using position-based matching (like career-lookup-data-validation)
+      if (wikipediaData.teams && Array.isArray(wikipediaData.teams)) {
+        const notFoundTeams = wikipediaData.teams.filter((team: any) => !team.teamFound);
+        if (notFoundTeams.length > 0) {
+          discrepancies.push(`Teams not found in database: ${notFoundTeams.map((team: any) => team.teamName).join(', ')}`);
+        }
+
+        const wikiTeams = wikipediaData.teams;
+        const dbTeams = databaseData.teams_played_for || [];
+
+        // Compare teams by their position/order in arrays (like the validation component does)
+        const minLength = Math.min(wikiTeams.length, dbTeams.length);
+
+        // Helper function to get position suffix (1st, 2nd, 3rd, 4th, etc.)
+        const getPositionSuffix = (position: number): string => {
+          if (position >= 11 && position <= 13) {
+            return 'th';
+          }
+          switch (position % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+          }
+        };
+
+        for (let i = 0; i < minLength; i++) {
+          const wikiTeam = wikiTeams[i];
+          const dbTeam = dbTeams[i];
+
+          // Skip if Wikipedia team wasn't found
+          if (!wikiTeam.teamFound) {
+            continue;
+          }
+
+          const positionSuffix = getPositionSuffix(i + 1);
+          const teamPositionName = `${wikiTeam.teamName} (${i + 1}${positionSuffix} team)`;
+
+          // Check individual field mismatches
+          if (wikiTeam.teamID !== dbTeam.team_id) {
+            discrepancies.push(`${teamPositionName} - Team ID mismatch: Wikipedia=${wikiTeam.teamID || 'Not Found'}, DB=${dbTeam.team_id}`);
+          }
+
+          if (Math.abs((wikiTeam.appearances || 0) - (dbTeam.apps || 0)) > 2) {
+            discrepancies.push(`${teamPositionName} - Appearances mismatch: Wikipedia=${wikiTeam.appearances}, DB=${dbTeam.apps}`);
+          }
+
+          if (Math.abs((wikiTeam.goals || 0) - (dbTeam.goals || 0)) > 1) {
+            discrepancies.push(`${teamPositionName} - Goals mismatch: Wikipedia=${wikiTeam.goals}, DB=${dbTeam.goals}`);
+          }
+
+          if (wikiTeam.joinYear !== dbTeam.start_year) {
+            discrepancies.push(`${teamPositionName} - Join year mismatch: Wikipedia=${wikiTeam.joinYear}, DB=${dbTeam.start_year}`);
+          }
+
+          if (wikiTeam.departYear !== dbTeam.end_year) {
+            discrepancies.push(`${teamPositionName} - Depart year mismatch: Wikipedia=${wikiTeam.departYear || 'Current'}, DB=${dbTeam.end_year || 'Current'}`);
+          }
+
+          // Check transfer type mismatch
+          const wikiTransferType = (wikiTeam.typeOfTransfer || '').toLowerCase().trim();
+          const wikiType = wikiTransferType.includes('loan') ? 'loan' : 'permanent';
+          if (wikiType !== dbTeam.transfer_type) {
+            discrepancies.push(`${teamPositionName} - Transfer type mismatch: Wikipedia=${wikiType}, DB=${dbTeam.transfer_type}`);
+          }
+        }
+
+        // Check if array lengths differ (missing teams)
+        if (wikiTeams.length !== dbTeams.length) {
+          if (wikiTeams.length > dbTeams.length) {
+            const extraTeams = wikiTeams.length - dbTeams.length;
+            const extraTeamNames = wikiTeams
+              .slice(dbTeams.length)
+              .map((team: any) => team.teamName)
+              .join(', ');
+            discrepancies.push(`Wikipedia has ${extraTeams} additional team${extraTeams > 1 ? 's' : ''}: ${extraTeamNames}`);
+          } else {
+            const extraTeams = dbTeams.length - wikiTeams.length;
+            const extraTeamNames = dbTeams
+              .slice(wikiTeams.length)
+              .map((team: any) => team.team_name)
+              .join(', ');
+            discrepancies.push(`Database has ${extraTeams} additional team${extraTeams > 1 ? 's' : ''}: ${extraTeamNames}`);
+          }
+        }
+      }
+    }
+
+    // National team analysis (when mode includes nations)
+    if (checkMode !== 'career') {
+      const wikiNations = wikipediaData.nationalTeams || [];
+
+      if (wikiNations.length > 0 || dbNationStats.length > 0) {
+        // Check each Wikipedia national team against DB
+        for (const wikiNation of wikiNations) {
+          if (!wikiNation.nationFound) {
+            discrepancies.push(`🏳️ National team not in database: ${wikiNation.teamName}`);
+            continue;
+          }
+
+          const dbMatch = dbNationStats.find(db => db.nation_id === wikiNation.nationID);
+          if (!dbMatch) {
+            discrepancies.push(`🏳️ National team not synced: ${wikiNation.teamName} (${wikiNation.apps || 0} apps, ${wikiNation.goals || 0} goals)`);
+          } else {
+            const wikiApps = wikiNation.apps || 0;
+            const wikiGoals = wikiNation.goals || 0;
+            if (dbMatch.apps !== wikiApps || dbMatch.goals !== wikiGoals) {
+              discrepancies.push(`🏳️ National team stats mismatch for ${wikiNation.teamName}: DB=${dbMatch.apps}/${dbMatch.goals}, Wiki=${wikiApps}/${wikiGoals}`);
+            }
+          }
+        }
+
+        // Check for DB nations not in Wikipedia
+        for (const dbNation of dbNationStats) {
+          const wikiMatch = wikiNations.find((w: any) => w.nationID === dbNation.nation_id);
+          if (!wikiMatch) {
+            discrepancies.push(`🏳️ National team in DB but not in Wikipedia: ${dbNation.nation_name} (${dbNation.apps} apps, ${dbNation.goals} goals)`);
+          }
         }
       }
     }
@@ -494,13 +546,18 @@ export default function BulkCareerLookupPage() {
   };
 
   const startBulkProcessing = async () => {
-    if (selectedFootballers.size === 0) {
+    // Determine which players to process: selected ones, or all on current page
+    const processIds = selectedFootballers.size > 0
+      ? Array.from(selectedFootballers)
+      : footballers.map(f => f.id);
+
+    if (processIds.length === 0) {
       return;
     }
 
     setIsProcessing(true);
 
-    const selectedList = Array.from(selectedFootballers);
+    const selectedList = processIds;
     const newResults = new Map(bulkResults);
 
     // Initialize all selected footballers as pending
@@ -736,16 +793,32 @@ export default function BulkCareerLookupPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Check Mode</label>
+                <Select value={checkMode} onValueChange={(value: any) => setCheckMode(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="career-and-nations">Career & Nations</SelectItem>
+                    <SelectItem value="career">Career Only</SelectItem>
+                    <SelectItem value="nations">Nations Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex gap-2">
                 <ApiButton
                   onClick={startBulkProcessing}
-                  disabled={selectedFootballers.size === 0 || isProcessing}
+                  disabled={isProcessing || footballers.length === 0}
                   loading={isProcessing}
                   loadingText="Processing..."
                   className="flex-1"
                   icon={Play}
                 >
-                  Start
+                  {selectedFootballers.size > 0
+                    ? `Start (${selectedFootballers.size})`
+                    : `Check All (${footballers.length})`}
                 </ApiButton>
                 <GraphiteButton
                   onClick={clearAllSelections}
@@ -757,11 +830,25 @@ export default function BulkCareerLookupPage() {
               </div>
 
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Selected:
-                {' '}
-                {selectedFootballers.size}
-                {' '}
-                players
+                {selectedFootballers.size > 0
+                  ? (
+                      <>
+                        Selected:
+                        {' '}
+                        {selectedFootballers.size}
+                        {' '}
+                        players
+                      </>
+                    )
+                  : (
+                      <>
+                        No selection — will check all
+                        {' '}
+                        {footballers.length}
+                        {' '}
+                        on this page
+                      </>
+                    )}
               </div>
 
               <div className="flex items-center justify-between">
@@ -846,8 +933,11 @@ export default function BulkCareerLookupPage() {
                   <div className="text-xs text-blue-700 dark:text-blue-300">
                     {(() => {
                       const footballer = footballers.find(f => f.id === currentlyProcessing);
-                      const currentIndex = Array.from(selectedFootballers).indexOf(currentlyProcessing) + 1;
-                      const totalSelected = selectedFootballers.size;
+                      const processIds = selectedFootballers.size > 0
+                        ? Array.from(selectedFootballers)
+                        : footballers.map(f => f.id);
+                      const currentIndex = processIds.indexOf(currentlyProcessing) + 1;
+                      const totalSelected = processIds.length;
                       return footballer
                         ? `${footballer.first_name} ${footballer.last_name} (${currentIndex} of ${totalSelected})`
                         : `Player ${currentIndex} of ${totalSelected}`;

@@ -150,6 +150,17 @@ export function InternationalCareerCard({
             </CardTitle>
             <CardDescription>
               National team appearances and statistics
+              {footballerId
+                ? (
+                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                      💡 You can sync national team stats here directly, or they will be included when you click Deploy/Update Footballer below.
+                    </span>
+                  )
+                : (
+                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                      📋 National team stats will be created automatically when you deploy the footballer below.
+                    </span>
+                  )}
             </CardDescription>
           </div>
           {footballerId && pendingOperations.length > 0 && (
@@ -180,33 +191,51 @@ export function InternationalCareerCard({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  Nation
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  Wiki Apps
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  Wiki Goals
-                </th>
-                {footballerId && (
-                  <>
-                    <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                      DB Apps
+              {footballerId ? (
+                <>
+                  <tr className="border-b border-gray-100 dark:border-slate-700">
+                    <th rowSpan={2} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      Nation
                     </th>
-                    <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                      DB Goals
+                    <th colSpan={2} className="border-b border-gray-200 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:border-slate-600 dark:text-blue-400">
+                      Wikipedia
                     </th>
-                  </>
-                )}
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  Season
-                </th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  {footballerId ? 'Action' : 'Status'}
-                </th>
-              </tr>
+                    <th colSpan={2} className="border-b border-gray-200 border-l-2 border-l-gray-300 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-slate-600 dark:border-l-slate-500 dark:text-emerald-400">
+                      Database
+                    </th>
+                    <th rowSpan={2} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      Season
+                    </th>
+                    <th rowSpan={2} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      Action
+                    </th>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-slate-600">
+                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Apps</th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
+                    <th className="border-l-2 border-l-gray-300 px-2 py-1 text-center text-xs font-medium text-gray-600 dark:border-l-slate-500 dark:text-gray-400">Apps</th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
+                  </tr>
+                </>
+              ) : (
+                <tr className="border-b border-gray-200">
+                  <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                    Nation
+                  </th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                    Apps
+                  </th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                    Goals
+                  </th>
+                  <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                    Season
+                  </th>
+                  <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                    Status
+                  </th>
+                </tr>
+              )}
             </thead>
             <tbody>
               {comparisons.map((comp) => {
@@ -251,7 +280,7 @@ export function InternationalCareerCard({
                     </td>
                     {footballerId && (
                       <>
-                        <td className="px-2 py-3 text-center">
+                        <td className="border-l-2 border-l-gray-300 px-2 py-3 text-center dark:border-l-slate-500">
                           <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== nt.apps ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
                             {comp.dbStat ? comp.dbStat.apps : '—'}
                           </div>
@@ -329,8 +358,9 @@ export function InternationalCareerCard({
                           </Button>
                         )}
                         {!opStatus && comp.status === 'not-in-db' && !footballerId && (
-                          <Badge variant="secondary" className="border-blue-200 bg-blue-100 text-blue-800">
-                            Not in DB
+                          <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                            <Check className="mr-1 size-3" />
+                            Ready
                           </Badge>
                         )}
                         {!opStatus && comp.status === 'not-found' && (
@@ -358,7 +388,7 @@ export function InternationalCareerCard({
                 </td>
                 {footballerId && (
                   <>
-                    <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                    <td className="border-l-2 border-l-gray-300 px-2 py-3 text-center font-semibold text-gray-900 dark:border-l-slate-500 dark:text-white">
                       {hasDbData ? dbNationalTeams!.reduce((sum, db) => sum + db.apps, 0) : '—'}
                     </td>
                     <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
@@ -369,27 +399,42 @@ export function InternationalCareerCard({
                 <td className="px-2 py-3 font-semibold text-gray-900 dark:text-white">Total</td>
                 <td className="px-2 py-3">
                   <div className="flex flex-wrap gap-1">
-                    {comparisons.filter(c => c.status === 'synced').length > 0 && (
-                      <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
-                        {comparisons.filter(c => c.status === 'synced').length}
-                        {' '}
-                        synced
-                      </Badge>
-                    )}
-                    {comparisons.filter(c => c.status === 'mismatch').length > 0 && (
-                      <Badge variant="secondary" className="bg-amber-100 text-xs text-amber-800">
-                        <AlertTriangle className="mr-1 size-3" />
-                        {comparisons.filter(c => c.status === 'mismatch').length}
-                        {' '}
-                        mismatch
-                      </Badge>
-                    )}
-                    {comparisons.filter(c => c.status === 'not-in-db').length > 0 && (
-                      <Badge variant="secondary" className="bg-blue-100 text-xs text-blue-800">
-                        {comparisons.filter(c => c.status === 'not-in-db').length}
-                        {' '}
-                        not in DB
-                      </Badge>
+                    {footballerId ? (
+                      <>
+                        {comparisons.filter(c => c.status === 'synced').length > 0 && (
+                          <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
+                            {comparisons.filter(c => c.status === 'synced').length}
+                            {' '}
+                            synced
+                          </Badge>
+                        )}
+                        {comparisons.filter(c => c.status === 'mismatch').length > 0 && (
+                          <Badge variant="secondary" className="bg-amber-100 text-xs text-amber-800">
+                            <AlertTriangle className="mr-1 size-3" />
+                            {comparisons.filter(c => c.status === 'mismatch').length}
+                            {' '}
+                            mismatch
+                          </Badge>
+                        )}
+                        {comparisons.filter(c => c.status === 'not-in-db').length > 0 && (
+                          <Badge variant="secondary" className="bg-blue-100 text-xs text-blue-800">
+                            {comparisons.filter(c => c.status === 'not-in-db').length}
+                            {' '}
+                            to add
+                          </Badge>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {comparisons.filter(c => c.status !== 'not-found').length > 0 && (
+                          <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
+                            <Check className="mr-1 size-3" />
+                            {comparisons.filter(c => c.status !== 'not-found').length}
+                            {' '}
+                            ready
+                          </Badge>
+                        )}
+                      </>
                     )}
                     {comparisons.filter(c => c.status === 'not-found').length > 0 && (
                       <Badge variant="destructive" className="bg-red-100 text-xs text-red-800">
