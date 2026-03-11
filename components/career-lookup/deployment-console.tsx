@@ -1,18 +1,14 @@
 'use client';
 
+import type { DeploymentLogEntry } from '@/types/deployment';
 import { CheckCircle, Clock, Loader2, Terminal, XCircle } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-export type DeploymentLogEntry = {
-  id: string;
-  timestamp: Date;
-  type: 'info' | 'request' | 'response' | 'success' | 'error' | 'loading';
-  message: string;
-  data?: any;
-};
+export type { DeploymentLogEntry } from '@/types/deployment';
+export { createLogEntry } from '@/types/deployment';
 
 type DeploymentConsoleProps = {
   logs: DeploymentLogEntry[];
@@ -155,16 +151,3 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
     </Card>
   );
 }
-
-// Helper function to create log entries
-export const createLogEntry = (
-  type: DeploymentLogEntry['type'],
-  message: string,
-  data?: any,
-): DeploymentLogEntry => ({
-  id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-  timestamp: new Date(),
-  type,
-  message,
-  data,
-});

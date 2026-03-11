@@ -160,6 +160,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
+  // Listen for session expiry events (from apiFetcher) and cross-tab storage changes
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setUser(null);
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user' && e.newValue === null) {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('session-expired', handleSessionExpired);
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('session-expired', handleSessionExpired);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   return React.createElement(
     AuthContext.Provider,
     {

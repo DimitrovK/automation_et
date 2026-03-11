@@ -42,15 +42,19 @@ export async function apiFetcher(url: string, options: ApiOptions = {}): Promise
         // Retry the original request with new token
         response = await executeRequest();
       } else {
-        // Refresh failed, clear tokens and throw error
+        // Refresh failed, clear tokens and notify app
         localStorage.removeItem('token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('session-expired'));
         throw new Error('Session expired. Please log in again.');
       }
     } catch (error) {
       // Clear tokens on refresh failure
       localStorage.removeItem('token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      window.dispatchEvent(new Event('session-expired'));
       throw error;
     }
   }
