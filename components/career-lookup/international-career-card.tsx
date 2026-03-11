@@ -1,5 +1,5 @@
 import type { FootballerNationStat, n8nWikiPlayerData, NationalTeam } from '@/types/player';
-import { AlertTriangle, Check, Info, Loader2, Plus, RefreshCw, Shield, Upload } from 'lucide-react';
+import { AlertTriangle, Check, Info, Loader2, Plus, RefreshCw, Shield, ShieldOff, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,28 @@ type InternationalCareerCardProps = {
   onNationStatsUpdated?: () => void;
 };
 
+/**
+ * Detects the "no international career" sentinel from n8n.
+ * When a player has no national team career, n8n returns a single entry with
+ * teamName: "N/A", startYear: 0, apps: 0, goals: 0, nationFound: false.
+ */
+export function isNoInternationalCareer(nationalTeams?: NationalTeam[]): boolean {
+  if (!nationalTeams || nationalTeams.length === 0) {
+    return true;
+  }
+  if (nationalTeams.length === 1) {
+    const nt = nationalTeams[0];
+    return (
+      nt.teamName === 'N/A'
+      && nt.startYear === 0
+      && nt.apps === 0
+      && nt.goals === 0
+      && nt.nationFound === false
+    );
+  }
+  return false;
+}
+
 export function InternationalCareerCard({
   nationalTeams,
   dbNationalTeams,
@@ -34,6 +56,36 @@ export function InternationalCareerCard({
 
   if (!nationalTeams || nationalTeams.length === 0) {
     return null;
+  }
+
+  // Detect "no international career" sentinel from n8n
+  if (isNoInternationalCareer(nationalTeams)) {
+    return (
+      <Card className="mt-6 border-gray-200 bg-gray-50 opacity-75 dark:border-gray-700 dark:bg-gray-800/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <ShieldOff className="size-5 text-gray-400 dark:text-gray-500" />
+            International Career
+          </CardTitle>
+          <CardDescription className="text-gray-400 dark:text-gray-500">
+            National team appearances and statistics
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white/60 p-4 dark:border-gray-600 dark:bg-gray-700/40">
+            <ShieldOff className="size-6 shrink-0 text-gray-400 dark:text-gray-500" />
+            <div>
+              <p className="font-medium text-gray-600 dark:text-gray-300">
+                No International Career
+              </p>
+              <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-500">
+                This footballer has no recorded international career according to Wikipedia.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const hasDbData = dbNationalTeams && dbNationalTeams.length > 0;
@@ -75,11 +127,15 @@ export function InternationalCareerCard({
   };
 
   const handleAddToDb = async (comparison: NationComparison) => {
-    if (!footballerId || !comparison.wikiTeam.nationID) return;
+    if (!footballerId || !comparison.wikiTeam.nationID) {
+      return;
+    }
 
     const key = `${comparison.wikiTeam.nationID}`;
     setOperationStatus(prev => ({ ...prev, [key]: 'loading' }));
-    setOperationErrors(prev => { const next = { ...prev }; delete next[key]; return next; });
+    setOperationErrors((prev) => {
+      const next = { ...prev }; delete next[key]; return next;
+    });
 
     try {
       await FootballerAPI.createFootballerNation({
@@ -100,11 +156,15 @@ export function InternationalCareerCard({
   };
 
   const handleUpdateInDb = async (comparison: NationComparison) => {
-    if (!footballerId || !comparison.dbStat) return;
+    if (!footballerId || !comparison.dbStat) {
+      return;
+    }
 
     const key = `${comparison.wikiTeam.nationID}`;
     setOperationStatus(prev => ({ ...prev, [key]: 'loading' }));
-    setOperationErrors(prev => { const next = { ...prev }; delete next[key]; return next; });
+    setOperationErrors((prev) => {
+      const next = { ...prev }; delete next[key]; return next;
+    });
 
     try {
       await FootballerAPI.updateFootballerNation(comparison.dbStat.id, {
@@ -125,7 +185,9 @@ export function InternationalCareerCard({
   };
 
   const handleSyncAll = async () => {
-    if (!footballerId) return;
+    if (!footballerId) {
+      return;
+    }
     setSyncingAll(true);
 
     for (const comparison of pendingOperations) {
@@ -171,8 +233,20 @@ export function InternationalCareerCard({
               className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
             >
               {syncingAll
-                ? <><Loader2 className="mr-1 size-4 animate-spin" />Syncing...</>
-                : <><RefreshCw className="mr-1 size-4" />Sync All ({pendingOperations.length})</>}
+                ? (
+                    <>
+                      <Loader2 className="mr-1 size-4 animate-spin" />
+                      Syncing...
+                    </>
+                  )
+                : (
+                    <>
+                      <RefreshCw className="mr-1 size-4" />
+                      Sync All (
+                      {pendingOperations.length}
+                      )
+                    </>
+                  )}
             </Button>
           )}
         </div>
@@ -183,7 +257,11 @@ export function InternationalCareerCard({
           <Alert className="mb-4 border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20">
             <Info className="size-4 text-blue-600 dark:text-blue-400" />
             <AlertDescription className="text-blue-800 dark:text-blue-200">
-              This footballer has represented multiple nations. Ensure additional nations are configured in <strong>other_nations</strong> via the admin panel before updating. If the update fails, configure the nations first.
+              This footballer has represented multiple nations. Ensure additional nations are configured in
+              {' '}
+              <strong>other_nations</strong>
+              {' '}
+              via the admin panel before updating. If the update fails, configure the nations first.
             </AlertDescription>
           </Alert>
         )}
@@ -191,51 +269,53 @@ export function InternationalCareerCard({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              {footballerId ? (
-                <>
-                  <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th rowSpan={2} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                      Nation
-                    </th>
-                    <th colSpan={2} className="border-b border-gray-200 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:border-slate-600 dark:text-blue-400">
-                      Wikipedia
-                    </th>
-                    <th colSpan={2} className="border-b border-gray-200 border-l-2 border-l-gray-300 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-slate-600 dark:border-l-slate-500 dark:text-emerald-400">
-                      Database
-                    </th>
-                    <th rowSpan={2} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                      Season
-                    </th>
-                    <th rowSpan={2} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                      Action
-                    </th>
-                  </tr>
-                  <tr className="border-b border-gray-200 dark:border-slate-600">
-                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Apps</th>
-                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
-                    <th className="border-l-2 border-l-gray-300 px-2 py-1 text-center text-xs font-medium text-gray-600 dark:border-l-slate-500 dark:text-gray-400">Apps</th>
-                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
-                  </tr>
-                </>
-              ) : (
-                <tr className="border-b border-gray-200">
-                  <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                    Nation
-                  </th>
-                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                    Apps
-                  </th>
-                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                    Goals
-                  </th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                    Season
-                  </th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                    Status
-                  </th>
-                </tr>
-              )}
+              {footballerId
+                ? (
+                    <>
+                      <tr className="border-b border-gray-100 dark:border-slate-700">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                          Nation
+                        </th>
+                        <th colSpan={2} className="border-b border-gray-200 p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:border-slate-600 dark:text-blue-400">
+                          Wikipedia
+                        </th>
+                        <th colSpan={2} className="border-b border-l-2 border-gray-200 border-l-gray-300 p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-slate-600 dark:border-l-slate-500 dark:text-emerald-400">
+                          Database
+                        </th>
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                          Season
+                        </th>
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                          Action
+                        </th>
+                      </tr>
+                      <tr className="border-b border-gray-200 dark:border-slate-600">
+                        <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Apps</th>
+                        <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
+                        <th className="border-l-2 border-l-gray-300 px-2 py-1 text-center text-xs font-medium text-gray-600 dark:border-l-slate-500 dark:text-gray-400">Apps</th>
+                        <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
+                      </tr>
+                    </>
+                  )
+                : (
+                    <tr className="border-b border-gray-200">
+                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        Nation
+                      </th>
+                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        Apps
+                      </th>
+                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        Goals
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        Season
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        Status
+                      </th>
+                    </tr>
+                  )}
             </thead>
             <tbody>
               {comparisons.map((comp) => {
@@ -399,43 +479,45 @@ export function InternationalCareerCard({
                 <td className="px-2 py-3 font-semibold text-gray-900 dark:text-white">Total</td>
                 <td className="px-2 py-3">
                   <div className="flex flex-wrap gap-1">
-                    {footballerId ? (
-                      <>
-                        {comparisons.filter(c => c.status === 'synced').length > 0 && (
-                          <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
-                            {comparisons.filter(c => c.status === 'synced').length}
-                            {' '}
-                            synced
-                          </Badge>
+                    {footballerId
+                      ? (
+                          <>
+                            {comparisons.filter(c => c.status === 'synced').length > 0 && (
+                              <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
+                                {comparisons.filter(c => c.status === 'synced').length}
+                                {' '}
+                                synced
+                              </Badge>
+                            )}
+                            {comparisons.filter(c => c.status === 'mismatch').length > 0 && (
+                              <Badge variant="secondary" className="bg-amber-100 text-xs text-amber-800">
+                                <AlertTriangle className="mr-1 size-3" />
+                                {comparisons.filter(c => c.status === 'mismatch').length}
+                                {' '}
+                                mismatch
+                              </Badge>
+                            )}
+                            {comparisons.filter(c => c.status === 'not-in-db').length > 0 && (
+                              <Badge variant="secondary" className="bg-blue-100 text-xs text-blue-800">
+                                {comparisons.filter(c => c.status === 'not-in-db').length}
+                                {' '}
+                                to add
+                              </Badge>
+                            )}
+                          </>
+                        )
+                      : (
+                          <>
+                            {comparisons.filter(c => c.status !== 'not-found').length > 0 && (
+                              <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
+                                <Check className="mr-1 size-3" />
+                                {comparisons.filter(c => c.status !== 'not-found').length}
+                                {' '}
+                                ready
+                              </Badge>
+                            )}
+                          </>
                         )}
-                        {comparisons.filter(c => c.status === 'mismatch').length > 0 && (
-                          <Badge variant="secondary" className="bg-amber-100 text-xs text-amber-800">
-                            <AlertTriangle className="mr-1 size-3" />
-                            {comparisons.filter(c => c.status === 'mismatch').length}
-                            {' '}
-                            mismatch
-                          </Badge>
-                        )}
-                        {comparisons.filter(c => c.status === 'not-in-db').length > 0 && (
-                          <Badge variant="secondary" className="bg-blue-100 text-xs text-blue-800">
-                            {comparisons.filter(c => c.status === 'not-in-db').length}
-                            {' '}
-                            to add
-                          </Badge>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {comparisons.filter(c => c.status !== 'not-found').length > 0 && (
-                          <Badge variant="secondary" className="bg-green-100 text-xs text-green-800">
-                            <Check className="mr-1 size-3" />
-                            {comparisons.filter(c => c.status !== 'not-found').length}
-                            {' '}
-                            ready
-                          </Badge>
-                        )}
-                      </>
-                    )}
                     {comparisons.filter(c => c.status === 'not-found').length > 0 && (
                       <Badge variant="destructive" className="bg-red-100 text-xs text-red-800">
                         <AlertTriangle className="mr-1 size-3" />

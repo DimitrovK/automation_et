@@ -1,10 +1,11 @@
 'use client';
 
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { Footballer, FootballerNationStat } from '@/types/player';
+import type { Footballer, FootballerNationStat, NationalTeam } from '@/types/player';
 import {
   AlertCircle,
   AlertTriangle,
+  Check,
   CheckCircle,
   ChevronDown,
   ChevronRight,
@@ -12,16 +13,22 @@ import {
   Eye,
   Loader2,
   Play,
+  Plus,
+  RefreshCw,
   RotateCcw,
+  Shield,
+  ShieldOff,
   Terminal,
+  Upload,
   Users,
   XCircle,
 } from 'lucide-react';
 
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { createLogEntry } from '@/components/career-lookup/deployment-console';
+import { isNoInternationalCareer } from '@/components/career-lookup/international-career-card';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
@@ -29,6 +36,7 @@ import { AmberButton } from '@/components/ui/amber-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ApiButton } from '@/components/ui/emerald-button';
 import { GraphiteButton } from '@/components/ui/graphite-button';
 import {
@@ -54,15 +62,11 @@ type BulkLookupResult = {
   wikipediaData?: any;
   databaseData?: Footballer;
   discrepancies?: string[];
+  wikiNationalTeams?: NationalTeam[];
+  dbNationalTeams?: FootballerNationStat[];
+  hasNoInternationalCareer?: boolean;
   error?: string;
   logs: DeploymentLogEntry[];
-};
-
-type BulkStats = {
-  total: number;
-  processed: number;
-  discrepancies: number;
-  errors: number;
 };
 
 export default function BulkCareerLookupPage() {
@@ -92,9 +96,23 @@ export default function BulkCareerLookupPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [useWikipediaUrl, setUseWikipediaUrl] = useState(true);
   const [checkMode, setCheckMode] = useState<'career' | 'nations' | 'career-and-nations'>('career-and-nations');
+  const [autoSyncNations, setAutoSyncNations] = useState(false);
 
-  // Statistics
-  const [stats, setStats] = useState<BulkStats>({ total: 0, processed: 0, discrepancies: 0, errors: 0 });
+  // Nation sync state for inline/bottom buttons
+  const [nationSyncStatus, setNationSyncStatus] = useState<Record<string, 'loading' | 'success' | 'error'>>({});
+  const [nationSyncErrors, setNationSyncErrors] = useState<Record<string, string>>({});
+  const [syncingAllNations, setSyncingAllNations] = useState(false);
+
+  // Statistics (derived from bulkResults)
+  const stats = useMemo(() => {
+    const results = Array.from(bulkResults.values());
+    return {
+      total: results.length,
+      processed: results.filter(r => r.status === 'completed' || r.status === 'error' || r.status === 'discrepancy').length,
+      discrepancies: results.filter(r => r.status === 'discrepancy').length,
+      errors: results.filter(r => r.status === 'error').length,
+    };
+  }, [bulkResults]);
 
   // Load footballers function
   const loadFootballers = React.useCallback(async () => {
@@ -130,18 +148,6 @@ export default function BulkCareerLookupPage() {
       loadFootballers();
     }
   }, [isAuthenticated, loadFootballers]);
-
-  // Update statistics when results change
-  useEffect(() => {
-    const results = Array.from(bulkResults.values());
-    const newStats = {
-      total: results.length,
-      processed: results.filter(r => r.status === 'completed' || r.status === 'error' || r.status === 'discrepancy').length,
-      discrepancies: results.filter(r => r.status === 'discrepancy').length,
-      errors: results.filter(r => r.status === 'error').length,
-    };
-    setStats(prev => ({ ...prev, ...newStats }));
-  }, [bulkResults]);
 
   // Calculate stats for display
   const getDisplayStats = () => {
@@ -199,105 +205,6 @@ export default function BulkCareerLookupPage() {
       setCurrentPage(page);
       // Clear selections when changing pages to avoid confusion
       setSelectedFootballers(new Set());
-    }
-  };
-
-  const processFootballerCareer = async (footballer: Footballer): Promise<BulkLookupResult> => {
-    const logs: DeploymentLogEntry[] = [];
-
-    try {
-      // Enhanced: Log which method is being used for Wikipedia lookup, plain text with URLs
-      if (useWikipediaUrl && footballer.wikipedia_url) {
-        logs.push(
-          createLogEntry(
-            'info',
-            `Player's ${footballer.first_name} ${footballer.last_name} Wikipedia URL found: ${footballer.wikipedia_url}.`,
-            {
-              wikipedia_url: footballer.wikipedia_url,
-              lookup_url: `/career-lookup?url=${encodeURIComponent(footballer.wikipedia_url)}&useWikiUrl=true`,
-            },
-          ),
-        );
-      } else {
-        const fullName = `${footballer.first_name} ${footballer.last_name}`;
-        const wikiSearchUrl = `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(fullName)}`;
-        logs.push(
-          createLogEntry(
-            'info',
-            `No Wikipedia URL found for ${fullName}. Using player full name for lookup. Wikipedia search: ${wikiSearchUrl}.`,
-            {
-              wikipedia_search_url: wikiSearchUrl,
-              lookup_url: `/career-lookup?name=${encodeURIComponent(fullName)}&useWikiUrl=false`,
-            },
-          ),
-        );
-      }
-
-      logs.push(createLogEntry('request', `Calling n8n webhook for Wikipedia data...`));
-
-      // Call n8n webhook for Wikipedia data
-      const wikipediaData = await fetchWikipediaData(footballer);
-
-      logs.push(createLogEntry('response', `Wikipedia data received successfully`, {
-        playerFoundInDB: wikipediaData?.playerFoundInDB,
-        teamsFound: wikipediaData?.teams?.length || 0,
-      }));
-
-      logs.push(createLogEntry('request', `Fetching fresh database data...`));
-
-      // Fetch fresh database data using the API
-      const databaseData = await FootballerAPI.getFootballer(footballer.id);
-
-      logs.push(createLogEntry('response', `Database data retrieved`, {
-        teams_count: databaseData.teams_played_for?.length || 0,
-      }));
-
-      // Fetch DB national team stats if mode includes nations
-      let dbNationStats: FootballerNationStat[] = [];
-      if (checkMode !== 'career') {
-        try {
-          logs.push(createLogEntry('request', `Fetching database national team stats...`));
-          dbNationStats = await FootballerAPI.getFootballerNations(footballer.id);
-          logs.push(createLogEntry('response', `Found ${dbNationStats.length} national team record(s) in database`, {
-            nations: dbNationStats.map(n => n.nation_name),
-          }));
-        } catch (error) {
-          logs.push(createLogEntry('error', `Failed to fetch national team stats: ${error instanceof Error ? error.message : 'Unknown error'}`));
-        }
-      }
-
-      logs.push(createLogEntry('loading', `Analyzing data for discrepancies...`));
-
-      // Analyze for discrepancies between Wikipedia and database data
-      const discrepancies = analyzeDiscrepancies(databaseData, wikipediaData, dbNationStats);
-
-      if (discrepancies.length > 0) {
-        logs.push(createLogEntry('error', `${discrepancies.length} discrepancy(ies) found`, {
-          discrepancies: discrepancies.slice(0, 3), // Show first 3 in logs
-        }));
-      } else {
-        logs.push(createLogEntry('success', `No discrepancies found - data matches!`));
-      }
-
-      return {
-        footballer,
-        status: discrepancies.length > 0 ? 'discrepancy' : 'completed',
-        wikipediaData,
-        databaseData,
-        discrepancies: discrepancies.length > 0 ? discrepancies : undefined,
-        logs,
-      };
-    } catch (error) {
-      logs.push(createLogEntry('error', `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`, {
-        error: error instanceof Error ? error.stack : error,
-      }));
-
-      return {
-        footballer,
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        logs,
-      };
     }
   };
 
@@ -397,9 +304,8 @@ export default function BulkCareerLookupPage() {
       // Compare unique teams first
       if (Math.abs(dbUniqueTeams - wikiUniqueTeams) > 1) {
         discrepancies.push(`Unique team count difference: DB has ${dbUniqueTeams} unique teams (${dbTeamCount} total spells), Wikipedia has ${wikiUniqueTeams} unique teams (${wikiTeamCount} total spells)`);
-      }
-      // If unique teams are similar, check total spells
-      else if (Math.abs(dbTeamCount - wikiTeamCount) > 2) {
+      } else if (Math.abs(dbTeamCount - wikiTeamCount) > 2) {
+        // If unique teams are similar, check total spells
         discrepancies.push(`Total career spells difference: DB has ${dbTeamCount} spells, Wikipedia has ${wikiTeamCount} spells`);
       }
 
@@ -510,24 +416,29 @@ export default function BulkCareerLookupPage() {
 
     // National team analysis (when mode includes nations)
     if (checkMode !== 'career') {
-      const wikiNations = wikipediaData.nationalTeams || [];
+      const rawWikiNations = wikipediaData.nationalTeams || [];
+      // Filter out the "no international career" sentinel (teamName: "N/A", startYear: 0, apps: 0, goals: 0)
+      const wikiNations = isNoInternationalCareer(rawWikiNations) ? [] : rawWikiNations;
 
-      if (wikiNations.length > 0 || dbNationStats.length > 0) {
+      if (wikiNations.length === 0 && dbNationStats.length > 0) {
+        // Player has no international career on Wikipedia but has national records in DB
+        discrepancies.push(`Player has no international career on Wikipedia but has ${dbNationStats.length} national team record(s) in database`);
+      } else if (wikiNations.length > 0 || dbNationStats.length > 0) {
         // Check each Wikipedia national team against DB
         for (const wikiNation of wikiNations) {
           if (!wikiNation.nationFound) {
-            discrepancies.push(`🏳️ National team not in database: ${wikiNation.teamName}`);
+            discrepancies.push(`National team not in database: ${wikiNation.teamName}`);
             continue;
           }
 
           const dbMatch = dbNationStats.find(db => db.nation_id === wikiNation.nationID);
           if (!dbMatch) {
-            discrepancies.push(`🏳️ National team not synced: ${wikiNation.teamName} (${wikiNation.apps || 0} apps, ${wikiNation.goals || 0} goals)`);
+            discrepancies.push(`National team not synced: ${wikiNation.teamName} (${wikiNation.apps || 0} apps, ${wikiNation.goals || 0} goals)`);
           } else {
             const wikiApps = wikiNation.apps || 0;
             const wikiGoals = wikiNation.goals || 0;
             if (dbMatch.apps !== wikiApps || dbMatch.goals !== wikiGoals) {
-              discrepancies.push(`🏳️ National team stats mismatch for ${wikiNation.teamName}: DB=${dbMatch.apps}/${dbMatch.goals}, Wiki=${wikiApps}/${wikiGoals}`);
+              discrepancies.push(`National team stats mismatch for ${wikiNation.teamName}: DB=${dbMatch.apps}/${dbMatch.goals}, Wiki=${wikiApps}/${wikiGoals}`);
             }
           }
         }
@@ -536,7 +447,7 @@ export default function BulkCareerLookupPage() {
         for (const dbNation of dbNationStats) {
           const wikiMatch = wikiNations.find((w: any) => w.nationID === dbNation.nation_id);
           if (!wikiMatch) {
-            discrepancies.push(`🏳️ National team in DB but not in Wikipedia: ${dbNation.nation_name} (${dbNation.apps} apps, ${dbNation.goals} goals)`);
+            discrepancies.push(`National team in DB but not in Wikipedia: ${dbNation.nation_name} (${dbNation.apps} apps, ${dbNation.goals} goals)`);
           }
         }
       }
@@ -545,6 +456,180 @@ export default function BulkCareerLookupPage() {
     return discrepancies;
   };
 
+  const processFootballerCareer = async (footballer: Footballer): Promise<BulkLookupResult> => {
+    const logs: DeploymentLogEntry[] = [];
+
+    try {
+      // Enhanced: Log which method is being used for Wikipedia lookup, plain text with URLs
+      if (useWikipediaUrl && footballer.wikipedia_url) {
+        logs.push(
+          createLogEntry(
+            'info',
+            `Player's ${footballer.first_name} ${footballer.last_name} Wikipedia URL found: ${footballer.wikipedia_url}.`,
+            {
+              wikipedia_url: footballer.wikipedia_url,
+              lookup_url: `/career-lookup?url=${encodeURIComponent(footballer.wikipedia_url)}&useWikiUrl=true`,
+            },
+          ),
+        );
+      } else {
+        const fullName = `${footballer.first_name} ${footballer.last_name}`;
+        const wikiSearchUrl = `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(fullName)}`;
+        logs.push(
+          createLogEntry(
+            'info',
+            `No Wikipedia URL found for ${fullName}. Using player full name for lookup. Wikipedia search: ${wikiSearchUrl}.`,
+            {
+              wikipedia_search_url: wikiSearchUrl,
+              lookup_url: `/career-lookup?name=${encodeURIComponent(fullName)}&useWikiUrl=false`,
+            },
+          ),
+        );
+      }
+
+      logs.push(createLogEntry('request', `Calling n8n webhook for Wikipedia data...`));
+
+      // Call n8n webhook for Wikipedia data
+      const wikipediaData = await fetchWikipediaData(footballer);
+
+      logs.push(createLogEntry('response', `Wikipedia data received successfully`, {
+        playerFoundInDB: wikipediaData?.playerFoundInDB,
+        teamsFound: wikipediaData?.teams?.length || 0,
+      }));
+
+      logs.push(createLogEntry('request', `Fetching fresh database data...`));
+
+      // Fetch fresh database data using the API
+      const databaseData = await FootballerAPI.getFootballer(footballer.id);
+
+      logs.push(createLogEntry('response', `Database data retrieved`, {
+        teams_count: databaseData.teams_played_for?.length || 0,
+      }));
+
+      // Fetch DB national team stats if mode includes nations
+      let dbNationStats: FootballerNationStat[] = [];
+      if (checkMode !== 'career') {
+        try {
+          logs.push(createLogEntry('request', `Fetching database national team stats...`));
+          dbNationStats = await FootballerAPI.getFootballerNations(footballer.id);
+          logs.push(createLogEntry('response', `Found ${dbNationStats.length} national team record(s) in database`, {
+            nations: dbNationStats.map(n => n.nation_name),
+          }));
+        } catch (error) {
+          logs.push(createLogEntry('error', `Failed to fetch national team stats: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      }
+
+      logs.push(createLogEntry('loading', `Analyzing data for discrepancies...`));
+
+      // Analyze for discrepancies between Wikipedia and database data
+      const discrepancies = analyzeDiscrepancies(databaseData, wikipediaData, dbNationStats);
+
+      if (discrepancies.length > 0) {
+        logs.push(createLogEntry('error', `${discrepancies.length} discrepancy(ies) found`, {
+          discrepancies: discrepancies.slice(0, 3), // Show first 3 in logs
+        }));
+      } else {
+        logs.push(createLogEntry('success', `No discrepancies found - data matches!`));
+      }
+
+      // Determine national team data for inline sync
+      const wikiNations: NationalTeam[] = wikipediaData?.nationalTeams || [];
+      const noIntlCareer = isNoInternationalCareer(wikiNations);
+      // Filter out sentinel entries for storage
+      const cleanWikiNations = noIntlCareer ? [] : wikiNations;
+
+      const result: BulkLookupResult = {
+        footballer,
+        status: discrepancies.length > 0 ? 'discrepancy' : 'completed',
+        wikipediaData,
+        databaseData,
+        discrepancies: discrepancies.length > 0 ? discrepancies : undefined,
+        wikiNationalTeams: cleanWikiNations,
+        dbNationalTeams: dbNationStats,
+        hasNoInternationalCareer: noIntlCareer,
+        logs,
+      };
+
+      // Auto-sync national team stats if enabled
+      if (autoSyncNations && !noIntlCareer && checkMode !== 'career') {
+        const nationDiscrepancies = discrepancies.filter(d => d.startsWith('National team') || d.startsWith('Player has no international'));
+        if (nationDiscrepancies.length > 0) {
+          logs.push(createLogEntry('info', `Auto-syncing ${nationDiscrepancies.length} national team discrepanc${nationDiscrepancies.length > 1 ? 'ies' : 'y'}...`));
+          let syncedCount = 0;
+          let failedCount = 0;
+
+          for (const wikiNation of cleanWikiNations) {
+            if (!wikiNation.nationFound || !wikiNation.nationID) {
+              continue;
+            }
+
+            const dbMatch = dbNationStats.find(db => db.nation_id === wikiNation.nationID);
+
+            if (!dbMatch) {
+              // Add to DB
+              try {
+                await FootballerAPI.createFootballerNation({
+                  footballer_id: footballer.id,
+                  nation_id: wikiNation.nationID,
+                  apps: wikiNation.apps,
+                  goals: wikiNation.goals,
+                });
+                logs.push(createLogEntry('success', `Auto-synced: Added ${wikiNation.teamName} (${wikiNation.apps} apps, ${wikiNation.goals} goals)`));
+                syncedCount++;
+              } catch (err) {
+                logs.push(createLogEntry('error', `Auto-sync failed for ${wikiNation.teamName}: ${err instanceof Error ? err.message : 'Unknown error'}`));
+                failedCount++;
+              }
+            } else if (dbMatch.apps !== wikiNation.apps || dbMatch.goals !== wikiNation.goals) {
+              // Update in DB
+              try {
+                await FootballerAPI.updateFootballerNation(dbMatch.id, {
+                  footballer_id: footballer.id,
+                  nation_id: dbMatch.nation_id,
+                  apps: wikiNation.apps,
+                  goals: wikiNation.goals,
+                });
+                logs.push(createLogEntry('success', `Auto-synced: Updated ${wikiNation.teamName} (${wikiNation.apps} apps, ${wikiNation.goals} goals)`));
+                syncedCount++;
+              } catch (err) {
+                logs.push(createLogEntry('error', `Auto-sync failed for ${wikiNation.teamName}: ${err instanceof Error ? err.message : 'Unknown error'}`));
+                failedCount++;
+              }
+            }
+          }
+
+          if (syncedCount > 0) {
+            logs.push(createLogEntry('success', `Auto-sync complete: ${syncedCount} synced${failedCount > 0 ? `, ${failedCount} failed` : ''}`));
+          }
+
+          // Remove resolved national team discrepancies
+          if (failedCount === 0) {
+            const remainingDiscrepancies = discrepancies.filter(d => !d.startsWith('National team') && !d.startsWith('Player has no international'));
+            result.discrepancies = remainingDiscrepancies.length > 0 ? remainingDiscrepancies : undefined;
+            result.status = remainingDiscrepancies.length > 0 ? 'discrepancy' : 'completed';
+            // Refetch DB nation stats after auto-sync
+            try {
+              result.dbNationalTeams = await FootballerAPI.getFootballerNations(footballer.id);
+            } catch { /* keep existing */ }
+          }
+        }
+      }
+
+      return result;
+    } catch (error) {
+      logs.push(createLogEntry('error', `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`, {
+        error: error instanceof Error ? error.stack : error,
+      }));
+
+      return {
+        footballer,
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        logs,
+      };
+    }
+  };
   const startBulkProcessing = async () => {
     // Determine which players to process: selected ones, or all on current page
     const processIds = selectedFootballers.size > 0
@@ -614,6 +699,126 @@ export default function BulkCareerLookupPage() {
     setCurrentlyProcessing(null);
     setIsProcessing(false);
     setExpandedPlayers(new Set());
+    setNationSyncStatus({});
+    setNationSyncErrors({});
+  };
+
+  // Helper: compute nation comparisons for a result (same logic as InternationalCareerCard)
+  const getNationComparisons = (result: BulkLookupResult) => {
+    const wikiNations = result.wikiNationalTeams || [];
+    const dbNations = result.dbNationalTeams || [];
+
+    return wikiNations.map((nt) => {
+      if (!nt.nationFound || !nt.nationID) {
+        return { wikiTeam: nt, dbStat: null, status: 'not-found' as const };
+      }
+      const dbMatch = dbNations.find(db => db.nation_id === nt.nationID) ?? null;
+      if (!dbMatch) {
+        return { wikiTeam: nt, dbStat: null, status: 'not-in-db' as const };
+      }
+      const isSynced = dbMatch.apps === nt.apps && dbMatch.goals === nt.goals;
+      return { wikiTeam: nt, dbStat: dbMatch, status: (isSynced ? 'synced' : 'mismatch') as 'synced' | 'mismatch' };
+    });
+  };
+
+  // Refresh DB nation stats for a result after inline sync
+  const refreshResultNationStats = async (fId: number) => {
+    try {
+      const freshDbNations = await FootballerAPI.getFootballerNations(fId);
+      setBulkResults((prev) => {
+        const newResults = new Map(prev);
+        const existing = newResults.get(fId);
+        if (existing) {
+          newResults.set(fId, { ...existing, dbNationalTeams: freshDbNations });
+        }
+        return newResults;
+      });
+    } catch {
+      /* silently fail */
+    }
+  };
+
+  // Inline: add a national team to DB for a specific player
+  const handleInlineAddNation = async (fId: number, wikiNation: NationalTeam) => {
+    if (!wikiNation.nationID) {
+      return;
+    }
+    const key = `${fId}-${wikiNation.nationID}`;
+    setNationSyncStatus(prev => ({ ...prev, [key]: 'loading' }));
+    setNationSyncErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+
+    try {
+      await FootballerAPI.createFootballerNation({
+        footballer_id: fId,
+        nation_id: wikiNation.nationID,
+        apps: wikiNation.apps,
+        goals: wikiNation.goals,
+      });
+      setNationSyncStatus(prev => ({ ...prev, [key]: 'success' }));
+      // Refresh DB nation stats in the result
+      await refreshResultNationStats(fId);
+    } catch (err) {
+      setNationSyncStatus(prev => ({ ...prev, [key]: 'error' }));
+      setNationSyncErrors(prev => ({ ...prev, [key]: err instanceof Error ? err.message : 'Failed to add' }));
+    }
+  };
+
+  // Inline: update a national team in DB for a specific player
+  const handleInlineUpdateNation = async (fId: number, wikiNation: NationalTeam, dbStatId: number, dbNationId: number) => {
+    const key = `${fId}-${wikiNation.nationID}`;
+    setNationSyncStatus(prev => ({ ...prev, [key]: 'loading' }));
+    setNationSyncErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+
+    try {
+      await FootballerAPI.updateFootballerNation(dbStatId, {
+        footballer_id: fId,
+        nation_id: dbNationId,
+        apps: wikiNation.apps,
+        goals: wikiNation.goals,
+      });
+      setNationSyncStatus(prev => ({ ...prev, [key]: 'success' }));
+      await refreshResultNationStats(fId);
+    } catch (err) {
+      setNationSyncStatus(prev => ({ ...prev, [key]: 'error' }));
+      setNationSyncErrors(prev => ({ ...prev, [key]: err instanceof Error ? err.message : 'Failed to update' }));
+    }
+  };
+
+  // Batch sync all pending national team operations across all results
+  const handleSyncAllNations = async () => {
+    setSyncingAllNations(true);
+    const results = Array.from(bulkResults.values());
+
+    for (const result of results) {
+      if (result.hasNoInternationalCareer) {
+        continue;
+      }
+      const comparisons = getNationComparisons(result);
+      const pending = comparisons.filter(c => c.status === 'not-in-db' || c.status === 'mismatch');
+
+      for (const comp of pending) {
+        const key = `${result.footballer.id}-${comp.wikiTeam.nationID}`;
+        if (nationSyncStatus[key] === 'success') {
+          continue;
+        }
+
+        if (comp.status === 'not-in-db') {
+          await handleInlineAddNation(result.footballer.id, comp.wikiTeam);
+        } else if (comp.status === 'mismatch' && comp.dbStat) {
+          await handleInlineUpdateNation(result.footballer.id, comp.wikiTeam, comp.dbStat.id, comp.dbStat.nation_id);
+        }
+      }
+    }
+
+    setSyncingAllNations(false);
   };
 
   const getStatusBadgeVariant = (status: BulkLookupResult['status']) => {
@@ -727,9 +932,9 @@ export default function BulkCareerLookupPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium">Player Status</label>
+                <label htmlFor="player-status-filter" className="mb-2 block text-sm font-medium">Player Status</label>
                 <Select value={playerFilter} onValueChange={(value: any) => setPlayerFilter(value)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="player-status-filter">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -741,9 +946,9 @@ export default function BulkCareerLookupPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">Review Status</label>
+                <label htmlFor="review-status-filter" className="mb-2 block text-sm font-medium">Review Status</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger id="review-status-filter">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -756,9 +961,9 @@ export default function BulkCareerLookupPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">Players Per Page</label>
+                <label htmlFor="players-per-page" className="mb-2 block text-sm font-medium">Players Per Page</label>
                 <Select value={itemsPerPage.toString()} onValueChange={value => setItemsPerPage(Number.parseInt(value))}>
-                  <SelectTrigger>
+                  <SelectTrigger id="players-per-page">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -794,9 +999,9 @@ export default function BulkCareerLookupPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium">Check Mode</label>
+                <label htmlFor="check-mode-select" className="mb-2 block text-sm font-medium">Check Mode</label>
                 <Select value={checkMode} onValueChange={(value: any) => setCheckMode(value)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="check-mode-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -867,6 +1072,25 @@ export default function BulkCareerLookupPage() {
                   className="data-[state=unchecked]:bg-gray-200 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600 dark:data-[state=unchecked]:bg-gray-700"
                 />
               </div>
+
+              {checkMode !== 'career' && (
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <label htmlFor="auto-sync-nations" className="text-sm font-medium">
+                      Auto-sync National Teams
+                    </label>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Automatically update national team stats in the DB during processing
+                    </span>
+                  </div>
+                  <Switch
+                    id="auto-sync-nations"
+                    checked={autoSyncNations}
+                    onCheckedChange={setAutoSyncNations}
+                    className="data-[state=unchecked]:bg-gray-200 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-blue-600 dark:data-[state=unchecked]:bg-gray-700"
+                  />
+                </div>
+              )}
 
               {isProcessing && (
                 <Progress value={(stats.processed / stats.total) * 100} className="w-full" />
@@ -979,288 +1203,461 @@ export default function BulkCareerLookupPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {loadingFootballers ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex items-center space-x-2">
-                  <div className="size-4 animate-spin rounded-full border-b-2 border-emerald-600"></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Loading footballers...</span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {footballers.map((footballer) => {
-                  const result = bulkResults.get(footballer.id);
-                  const isSelected = selectedFootballers.has(footballer.id);
-                  const isCurrentlyProcessing = currentlyProcessing === footballer.id;
-                  const isExpanded = expandedPlayers.has(footballer.id);
+            {loadingFootballers
+              ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center space-x-2">
+                      <div className="size-4 animate-spin rounded-full border-b-2 border-emerald-600"></div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Loading footballers...</span>
+                    </div>
+                  </div>
+                )
+              : (
+                  <div className="space-y-4">
+                    {footballers.map((footballer) => {
+                      const result = bulkResults.get(footballer.id);
+                      const isSelected = selectedFootballers.has(footballer.id);
+                      const isCurrentlyProcessing = currentlyProcessing === footballer.id;
+                      const isExpanded = expandedPlayers.has(footballer.id);
 
-                  return (
-                    <div
-                      key={footballer.id}
-                      className={`relative rounded-lg transition-all duration-200 ${
-                        isCurrentlyProcessing
-                          ? 'border-2 border-blue-500 bg-blue-50 shadow-lg dark:bg-blue-900/20'
-                          : result && result.status === 'completed'
-                            ? 'border-2 border-green-500 bg-green-50 shadow-md dark:bg-green-900/20'
-                            : result && result.status === 'discrepancy'
-                              ? 'border-2 border-orange-500 bg-orange-50 shadow-md dark:bg-orange-900/20'
-                              : result && result.status === 'error'
-                                ? 'border-2 border-red-500 bg-red-50 shadow-md dark:bg-red-900/20'
-                                : result && result.status === 'pending'
-                                  ? 'border-2 border-amber-500 bg-amber-50 shadow-md dark:bg-amber-900/20'
-                                  : isSelected
-                                    ? 'border-2 border-gray-600 bg-gray-100 shadow-md ring-2 ring-gray-400/50 dark:bg-gray-800'
-                                    : 'border border-gray-200 hover:shadow-sm dark:border-gray-700'
-                      }`}
-                    >
-                      {/* Processing Indicator */}
-                      {isCurrentlyProcessing && (
-                        <div className="absolute inset-x-0 top-0 h-1 rounded-t-lg bg-gradient-to-r from-blue-500 to-blue-600">
-                          <div className="absolute inset-0 animate-pulse rounded-t-lg bg-gradient-to-r from-blue-400 to-blue-500"></div>
-                        </div>
-                      )}
+                      return (
+                        <div
+                          key={footballer.id}
+                          className={`relative rounded-lg transition-all duration-200 ${
+                            isCurrentlyProcessing
+                              ? 'border-2 border-blue-500 bg-blue-50 shadow-lg dark:bg-blue-900/20'
+                              : result && result.status === 'completed'
+                                ? 'border-2 border-green-500 bg-green-50 shadow-md dark:bg-green-900/20'
+                                : result && result.status === 'discrepancy'
+                                  ? 'border-2 border-orange-500 bg-orange-50 shadow-md dark:bg-orange-900/20'
+                                  : result && result.status === 'error'
+                                    ? 'border-2 border-red-500 bg-red-50 shadow-md dark:bg-red-900/20'
+                                    : result && result.status === 'pending'
+                                      ? 'border-2 border-amber-500 bg-amber-50 shadow-md dark:bg-amber-900/20'
+                                      : isSelected
+                                        ? 'border-2 border-gray-600 bg-gray-100 shadow-md ring-2 ring-gray-400/50 dark:bg-gray-800'
+                                        : 'border border-gray-200 hover:shadow-sm dark:border-gray-700'
+                          }`}
+                        >
+                          {/* Processing Indicator */}
+                          {isCurrentlyProcessing && (
+                            <div className="absolute inset-x-0 top-0 h-1 rounded-t-lg bg-gradient-to-r from-blue-500 to-blue-600">
+                              <div className="absolute inset-0 animate-pulse rounded-t-lg bg-gradient-to-r from-blue-400 to-blue-500"></div>
+                            </div>
+                          )}
 
-                      {/* Collapsed View - Always Visible */}
-                      <div className="flex items-center justify-between p-4">
-                        <div className="flex flex-1 items-center space-x-3">
-                          {/* Expand/Collapse Button - Show if there are discrepancies or logs */}
-                          {result && ((result.discrepancies && result.discrepancies.length > 0) || (result.logs && result.logs.length > 0))
-                            ? (
-                                <button
-                                  onClick={() => togglePlayerExpanded(footballer.id)}
-                                  className="shrink-0 rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                          {/* Collapsed View - Always Visible */}
+                          <div className="flex items-center justify-between p-4">
+                            <div className="flex flex-1 items-center space-x-3">
+                              {/* Expand/Collapse Button - Show if there are discrepancies or logs */}
+                              {result && ((result.discrepancies && result.discrepancies.length > 0) || (result.logs && result.logs.length > 0))
+                                ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => togglePlayerExpanded(footballer.id)}
+                                      className="shrink-0 rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    >
+                                      {isExpanded
+                                        ? (
+                                            <ChevronDown className="size-4 text-gray-500" />
+                                          )
+                                        : (
+                                            <ChevronRight className="size-4 text-gray-500" />
+                                          )}
+                                    </button>
+                                  )
+                                : (
+                                    <div className="w-6 shrink-0" />
+                                  )}
+
+                              {/* Selection Checkbox */}
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={checked => handleSelectFootballer(footballer.id, !!checked)}
+                                disabled={isProcessing}
+                                className={`rounded-md transition-colors ${
+                                  isSelected
+                                    ? 'data-[state=checked]:border-green-600 data-[state=checked]:bg-green-600'
+                                    : ''
+                                }`}
+                              />
+
+                              {/* Player Name and Basic Info */}
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-base font-medium text-gray-900 dark:text-white">
+                                  {footballer.first_name}
+                                  {' '}
+                                  {footballer.last_name}
+                                </div>
+                                <div className="truncate text-sm text-gray-500 dark:text-gray-400">
+                                  {footballer.nation.name}
+                                  {' \u2022 Born: '}
+                                  {footballer.date_of_birth}
+                                </div>
+                              </div>
+
+                              {/* Status Badge */}
+                              {result && (
+                                <Badge
+                                  variant={getStatusBadgeVariant(result.status)}
+                                  className={`shadow-sm ${
+                                    result.status === 'completed'
+                                      ? 'border-green-300 bg-green-100 text-green-800'
+                                      : result.status === 'processing'
+                                        ? 'border-blue-300 bg-blue-100 text-blue-800'
+                                        : result.status === 'discrepancy'
+                                          ? 'border-orange-300 bg-orange-100 text-orange-800'
+                                          : result.status === 'error'
+                                            ? 'border-red-300 bg-red-100 text-red-800'
+                                            : result.status === 'pending'
+                                              ? 'border-amber-300 bg-amber-100 text-amber-800'
+                                              : 'border-gray-300 bg-gray-100 text-gray-800'
+                                  }`}
                                 >
-                                  {isExpanded
-                                    ? (
-                                        <ChevronDown className="size-4 text-gray-500" />
-                                      )
-                                    : (
-                                        <ChevronRight className="size-4 text-gray-500" />
-                                      )}
-                                </button>
-                              )
-                            : (
-                                <div className="w-6 shrink-0" />
+                                  {getStatusText(result.status)}
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="ml-4 flex items-center space-x-2">
+                              {/* Review Button */}
+                              {result && result.status === 'discrepancy' && (
+                                <Link
+                                  href={getCareerLookupHref(footballer)}
+                                  target="_blank"
+                                >
+                                  <AmberButton
+                                    onClick={() => {}}
+                                    size="sm"
+                                    className="transition-shadow duration-200 hover:shadow-lg"
+                                    icon={Eye}
+                                  >
+                                    Review
+                                  </AmberButton>
+                                </Link>
                               )}
 
-                          {/* Selection Checkbox */}
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={checked => handleSelectFootballer(footballer.id, !!checked)}
-                            disabled={isProcessing}
-                            className={`rounded-md transition-colors ${
-                              isSelected
-                                ? 'data-[state=checked]:border-green-600 data-[state=checked]:bg-green-600'
-                                : ''
-                            }`}
-                          />
-
-                          {/* Player Name and Basic Info */}
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-base font-medium text-gray-900 dark:text-white">
-                              {footballer.first_name}
-                              {' '}
-                              {footballer.last_name}
-                            </div>
-                            <div className="truncate text-sm text-gray-500 dark:text-gray-400">
-                              {footballer.nation.name}
-                              {' '}
-                              • Born:
-                              {footballer.date_of_birth}
+                              {/* Error Indicator */}
+                              {result && result.status === 'error' && (
+                                <div className="flex items-center rounded-md border border-red-200 bg-red-50 px-3 py-1 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                                  <AlertCircle className="mr-1 size-4" />
+                                  <span className="text-xs font-medium">Failed</span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
-                          {/* Status Badge */}
-                          {result && (
-                            <Badge
-                              variant={getStatusBadgeVariant(result.status)}
-                              className={`shadow-sm ${
-                                result.status === 'completed'
-                                  ? 'border-green-300 bg-green-100 text-green-800'
-                                  : result.status === 'processing'
-                                    ? 'border-blue-300 bg-blue-100 text-blue-800'
-                                    : result.status === 'discrepancy'
-                                      ? 'border-orange-300 bg-orange-100 text-orange-800'
-                                      : result.status === 'error'
-                                        ? 'border-red-300 bg-red-100 text-red-800'
-                                        : result.status === 'pending'
-                                          ? 'border-amber-300 bg-amber-100 text-amber-800'
-                                          : 'border-gray-300 bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {getStatusText(result.status)}
-                            </Badge>
-                          )}
-                        </div>
-
-                        <div className="ml-4 flex items-center space-x-2">
-                          {/* Review Button */}
-                          {result && result.status === 'discrepancy' && (
-                            <Link
-                              href={getCareerLookupHref(footballer)}
-                              target="_blank"
-                            >
-                              <AmberButton
-                                onClick={() => {}}
-                                size="sm"
-                                className="transition-shadow duration-200 hover:shadow-lg"
-                                icon={Eye}
-                              >
-                                Review
-                              </AmberButton>
-                            </Link>
-                          )}
-
-                          {/* Error Indicator */}
-                          {result && result.status === 'error' && (
-                            <div className="flex items-center rounded-md border border-red-200 bg-red-50 px-3 py-1 text-red-600 dark:bg-red-900/20 dark:text-red-400">
-                              <AlertCircle className="mr-1 size-4" />
-                              <span className="text-xs font-medium">Failed</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Expanded View - Only show when expanded */}
-                      {isExpanded && (
-                        <div className="border-t border-gray-200 dark:border-gray-700">
-                          {/* Discrepancy Details */}
-                          {result && result.discrepancies && result.discrepancies.length > 0 && (
-                            <div className="p-4">
-                              <Card className="border-2 border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                <CardHeader className="pb-3">
-                                  <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
-                                    <AlertTriangle className="size-5 text-orange-600" />
-                                    Data Discrepancies Detected
-                                  </CardTitle>
-                                  <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                    {result.discrepancies.length}
-                                    {' '}
-                                    issue
-                                    {result.discrepancies.length > 1 ? 's' : ''}
-                                    {' '}
-                                    found when comparing database and Wikipedia data
-                                  </CardDescription>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                  <div className="space-y-3">
-                                    {result.discrepancies.slice(0, 3).map((discrepancy, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="flex items-start gap-3 rounded-lg border border-orange-300/60 bg-white/80 p-3 shadow-sm dark:border-orange-600/40 dark:bg-gray-900/40"
-                                      >
-                                        <div className="mt-2.5 size-2 shrink-0 rounded-full bg-orange-600"></div>
-                                        <span className="text-sm font-medium leading-relaxed text-orange-900 dark:text-orange-100">
-                                          {discrepancy}
-                                        </span>
+                          {/* Expanded View - Only show when expanded */}
+                          {isExpanded && (
+                            <div className="border-t border-gray-200 dark:border-gray-700">
+                              {/* Discrepancy Details */}
+                              {result && result.discrepancies && result.discrepancies.length > 0 && (
+                                <div className="p-4">
+                                  <Card className="border-2 border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <CardHeader className="pb-3">
+                                      <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                                        <AlertTriangle className="size-5 text-orange-600" />
+                                        Data Discrepancies Detected
+                                      </CardTitle>
+                                      <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                                        {result.discrepancies.length}
+                                        {' '}
+                                        issue
+                                        {result.discrepancies.length > 1 ? 's' : ''}
+                                        {' '}
+                                        found when comparing database and Wikipedia data
+                                      </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="pt-0">
+                                      <div className="space-y-3">
+                                        {result.discrepancies.slice(0, 3).map(discrepancy => (
+                                          <div
+                                            key={discrepancy}
+                                            className="flex items-start gap-3 rounded-lg border border-orange-300/60 bg-white/80 p-3 shadow-sm dark:border-orange-600/40 dark:bg-gray-900/40"
+                                          >
+                                            <div className="mt-2.5 size-2 shrink-0 rounded-full bg-orange-600"></div>
+                                            <span className="text-sm font-medium leading-relaxed text-orange-900 dark:text-orange-100">
+                                              {discrepancy}
+                                            </span>
+                                          </div>
+                                        ))}
+                                        {result.discrepancies.length > 3 && (
+                                          <div className="mt-4 space-y-3">
+                                            <div className="rounded-lg border border-orange-300 bg-orange-200/60 p-3 shadow-sm dark:border-orange-600 dark:bg-orange-700/30">
+                                              <div className="text-center text-sm font-semibold text-orange-900 dark:text-orange-200">
+                                                +
+                                                {result.discrepancies.length - 3}
+                                                {' '}
+                                                additional discrepanc
+                                                {result.discrepancies.length - 3 > 1 ? 'ies' : 'y'}
+                                                {' '}
+                                                found
+                                              </div>
+                                            </div>
+                                            <AmberButton
+                                              onClick={() => {
+                                                const footballerSection = document.querySelector(`[data-footballer-id="${footballer.id}"]`);
+                                                if (footballerSection) {
+                                                  footballerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                }
+                                              }}
+                                              className="w-full text-sm shadow-md transition-shadow duration-200 hover:shadow-lg"
+                                              size="sm"
+                                            >
+                                              View All Issues (
+                                              {result.discrepancies.length}
+                                              )
+                                            </AmberButton>
+                                          </div>
+                                        )}
                                       </div>
-                                    ))}
-                                    {result.discrepancies.length > 3 && (
-                                      <div className="mt-4 space-y-3">
-                                        <div className="rounded-lg border border-orange-300 bg-orange-200/60 p-3 shadow-sm dark:border-orange-600 dark:bg-orange-700/30">
-                                          <div className="text-center text-sm font-semibold text-orange-900 dark:text-orange-200">
-                                            +
-                                            {result.discrepancies.length - 3}
-                                            {' '}
-                                            additional discrepanc
-                                            {result.discrepancies.length - 3 > 1 ? 'ies' : 'y'}
-                                            {' '}
-                                            found
+                                    </CardContent>
+                                  </Card>
+                                </div>
+                              )}
+
+                              {/* Inline National Team Sync */}
+                              {result && !result.hasNoInternationalCareer && result.wikiNationalTeams && result.wikiNationalTeams.length > 0 && (() => {
+                                const comparisons = getNationComparisons(result);
+                                const pending = comparisons.filter(c => c.status === 'not-in-db' || c.status === 'mismatch');
+                                if (pending.length === 0 && comparisons.every(c => c.status === 'synced' || c.status === 'not-found')) {
+                                  // All synced or not-found, show a green summary
+                                  return (
+                                    <div className="px-4 pb-2">
+                                      <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300">
+                                        <Shield className="size-4" />
+                                        National team stats are in sync
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="p-4">
+                                    <Card className="border-2 border-blue-200 bg-white shadow-lg dark:border-blue-700 dark:bg-gray-800">
+                                      <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                          <div>
+                                            <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                                              <Shield className="size-5 text-blue-600" />
+                                              National Team Sync
+                                            </CardTitle>
+                                            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                                              {pending.length}
+                                              {' '}
+                                              nation
+                                              {pending.length !== 1 ? 's' : ''}
+                                              {' '}
+                                              need
+                                              {pending.length === 1 ? 's' : ''}
+                                              {' '}
+                                              updating
+                                            </CardDescription>
                                           </div>
                                         </div>
-                                        <AmberButton
-                                          onClick={() => {
-                                            const footballerSection = document.querySelector(`[data-footballer-id="${footballer.id}"]`);
-                                            if (footballerSection) {
-                                              footballerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                            }
-                                          }}
-                                          className="w-full text-sm shadow-md transition-shadow duration-200 hover:shadow-lg"
-                                          size="sm"
-                                        >
-                                          View All Issues (
-                                          {result.discrepancies.length}
-                                          )
-                                        </AmberButton>
-                                      </div>
-                                    )}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          )}
+                                      </CardHeader>
+                                      <CardContent className="pt-0">
+                                        <div className="overflow-x-auto">
+                                          <table className="w-full">
+                                            <thead>
+                                              <tr className="border-b border-gray-100 dark:border-slate-700">
+                                                <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Nation</th>
+                                                <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Wiki Apps</th>
+                                                <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Wiki Goals</th>
+                                                <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">DB Apps</th>
+                                                <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">DB Goals</th>
+                                                <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Action</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {comparisons.map((comp) => {
+                                                const syncKey = `${footballer.id}-${comp.wikiTeam.nationID}`;
+                                                const opStatus = nationSyncStatus[syncKey];
+                                                const opError = nationSyncErrors[syncKey];
 
-                          {/* Processing Logs */}
-                          {result && result.logs && result.logs.length > 0 && (
-                            <div className="p-4">
-                              <Card className="border-2 border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-                                <CardHeader className="pb-3">
-                                  <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
-                                    <Terminal className="size-5 text-blue-600" />
-                                    Processing Logs
-                                  </CardTitle>
-                                  <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                    Detailed processing activity and search method used
-                                  </CardDescription>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                  <ScrollArea className="h-64 w-full rounded-lg border">
-                                    <div className="space-y-2 bg-gray-100 p-4 dark:bg-slate-700">
-                                      {result.logs.length === 0
-                                        ? (
-                                            <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-                                              <Terminal className="mx-auto mb-2 size-8 opacity-50" />
-                                              <p className="text-sm">No processing logs yet</p>
-                                            </div>
-                                          )
-                                        : (
-                                            result.logs.map((log, index) => (
-                                              <div key={log.id} className="flex items-start gap-3 font-mono text-xs">
-                                                <span className="mt-0.5 shrink-0 text-gray-500 dark:text-gray-400">
-                                                  {formatTimestamp(log.timestamp)}
-                                                </span>
-                                                <div className="mt-0.5 shrink-0">
-                                                  {getLogIcon(log.type)}
+                                                return (
+                                                  <tr
+                                                    key={`inline-nt-${comp.wikiTeam.teamName}`}
+                                                    className={`border-b border-gray-100 text-sm dark:border-slate-600 ${
+                                                      comp.status === 'mismatch'
+                                                        ? 'bg-amber-50 dark:bg-amber-900/20'
+                                                        : comp.status === 'not-in-db'
+                                                          ? 'bg-blue-50 dark:bg-blue-900/20'
+                                                          : comp.status === 'not-found'
+                                                            ? 'bg-red-50 dark:bg-red-900/20'
+                                                            : ''
+                                                    }`}
+                                                  >
+                                                    <td className="p-2 font-medium text-gray-900 dark:text-white">
+                                                      {comp.wikiTeam.teamName}
+                                                      {comp.wikiTeam.nationNameDB && comp.wikiTeam.nationNameDB !== comp.wikiTeam.teamName && (
+                                                        <span className="ml-1 text-xs text-blue-600 dark:text-blue-400">
+                                                          (DB:
+                                                          {' '}
+                                                          {comp.wikiTeam.nationNameDB}
+                                                          )
+                                                        </span>
+                                                      )}
+                                                    </td>
+                                                    <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== comp.wikiTeam.apps ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                                      {comp.wikiTeam.apps}
+                                                    </td>
+                                                    <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== comp.wikiTeam.goals ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                                      {comp.wikiTeam.goals}
+                                                    </td>
+                                                    <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== comp.wikiTeam.apps ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                                      {comp.dbStat ? comp.dbStat.apps : '—'}
+                                                    </td>
+                                                    <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== comp.wikiTeam.goals ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                                      {comp.dbStat ? comp.dbStat.goals : '—'}
+                                                    </td>
+                                                    <td className="p-2">
+                                                      {opStatus === 'loading' && (
+                                                        <Badge variant="secondary" className="border-blue-200 bg-blue-100 text-blue-800">
+                                                          <Loader2 className="mr-1 size-3 animate-spin" />
+                                                          Processing
+                                                        </Badge>
+                                                      )}
+                                                      {opStatus === 'success' && (
+                                                        <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                                                          <Check className="mr-1 size-3" />
+                                                          Done
+                                                        </Badge>
+                                                      )}
+                                                      {opStatus === 'error' && (
+                                                        <div className="flex flex-col gap-1">
+                                                          <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
+                                                            <AlertTriangle className="mr-1 size-3" />
+                                                            Failed
+                                                          </Badge>
+                                                          {opError && <span className="max-w-[160px] text-xs text-red-600 dark:text-red-400">{opError}</span>}
+                                                        </div>
+                                                      )}
+                                                      {!opStatus && comp.status === 'synced' && (
+                                                        <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                                                          <Check className="mr-1 size-3" />
+                                                          Synced
+                                                        </Badge>
+                                                      )}
+                                                      {!opStatus && comp.status === 'mismatch' && comp.dbStat && (
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => handleInlineUpdateNation(footballer.id, comp.wikiTeam, comp.dbStat!.id, comp.dbStat!.nation_id)}
+                                                          className="inline-flex items-center rounded-md border border-amber-300 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                                                        >
+                                                          <Upload className="mr-1 size-3" />
+                                                          Update in DB
+                                                        </button>
+                                                      )}
+                                                      {!opStatus && comp.status === 'not-in-db' && (
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => handleInlineAddNation(footballer.id, comp.wikiTeam)}
+                                                          className="inline-flex items-center rounded-md border border-blue-300 px-2 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                                        >
+                                                          <Plus className="mr-1 size-3" />
+                                                          Add to DB
+                                                        </button>
+                                                      )}
+                                                      {!opStatus && comp.status === 'not-found' && (
+                                                        <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
+                                                          <AlertTriangle className="mr-1 size-3" />
+                                                          Nation not in DB
+                                                        </Badge>
+                                                      )}
+                                                    </td>
+                                                  </tr>
+                                                );
+                                              })}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* No International Career indicator */}
+                              {result && result.hasNoInternationalCareer && (
+                                <div className="px-4 pb-2">
+                                  <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-700/40 dark:text-gray-400">
+                                    <ShieldOff className="size-4" />
+                                    No international career recorded on Wikipedia
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Processing Logs */}
+                              {result && result.logs && result.logs.length > 0 && (
+                                <div className="p-4">
+                                  <Card className="border-2 border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                    <CardHeader className="pb-3">
+                                      <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                                        <Terminal className="size-5 text-blue-600" />
+                                        Processing Logs
+                                      </CardTitle>
+                                      <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                                        Detailed processing activity and search method used
+                                      </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="pt-0">
+                                      <ScrollArea className="h-64 w-full rounded-lg border">
+                                        <div className="space-y-2 bg-gray-100 p-4 dark:bg-slate-700">
+                                          {result.logs.length === 0
+                                            ? (
+                                                <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                                  <Terminal className="mx-auto mb-2 size-8 opacity-50" />
+                                                  <p className="text-sm">No processing logs yet</p>
                                                 </div>
-                                                <div className="min-w-0 flex-1">
-                                                  <div className={`${getLogStyle(log.type)} break-words`}>
-                                                    {log.message}
+                                              )
+                                            : (
+                                                result.logs.map((log, _index) => (
+                                                  <div key={log.id} className="flex items-start gap-3 font-mono text-xs">
+                                                    <span className="mt-0.5 shrink-0 text-gray-500 dark:text-gray-400">
+                                                      {formatTimestamp(log.timestamp)}
+                                                    </span>
+                                                    <div className="mt-0.5 shrink-0">
+                                                      {getLogIcon(log.type)}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                      <div className={`${getLogStyle(log.type)} break-words`}>
+                                                        {log.message}
+                                                      </div>
+                                                      {log.data && (
+                                                        <details className="mt-1">
+                                                          <summary className="cursor-pointer text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+                                                            View data
+                                                          </summary>
+                                                          <pre className="mt-1 overflow-x-auto rounded bg-gray-200 p-2 text-xs dark:bg-slate-600">
+                                                            <code>{JSON.stringify(log.data, null, 2)}</code>
+                                                          </pre>
+                                                        </details>
+                                                      )}
+                                                    </div>
                                                   </div>
-                                                  {log.data && (
-                                                    <details className="mt-1">
-                                                      <summary className="cursor-pointer text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
-                                                        View data
-                                                      </summary>
-                                                      <pre className="mt-1 overflow-x-auto rounded bg-gray-200 p-2 text-xs dark:bg-slate-600">
-                                                        <code>{JSON.stringify(log.data, null, 2)}</code>
-                                                      </pre>
-                                                    </details>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            ))
-                                          )}
-                                    </div>
-                                  </ScrollArea>
-                                </CardContent>
-                              </Card>
+                                                ))
+                                              )}
+                                        </div>
+                                      </ScrollArea>
+                                    </CardContent>
+                                  </Card>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    })}
 
-                {footballers.length === 0 && (
-                  <div className="py-12 text-center">
-                    <Users className="mx-auto mb-4 size-12 text-gray-400" />
-                    <p className="text-lg text-gray-500">No players found with current filters</p>
-                    <p className="mt-1 text-sm text-gray-400">Try adjusting your filter criteria</p>
+                    {footballers.length === 0 && (
+                      <div className="py-12 text-center">
+                        <Users className="mx-auto mb-4 size-12 text-gray-400" />
+                        <p className="text-lg text-gray-500">No players found with current filters</p>
+                        <p className="mt-1 text-sm text-gray-400">Try adjusting your filter criteria</p>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
           </CardContent>
 
           {/* Pagination */}
@@ -1351,201 +1748,484 @@ export default function BulkCareerLookupPage() {
           <div id="results-summary">
             {/* Successful Results */}
             {Array.from(bulkResults.values()).filter(result => result.status === 'completed').length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-600">
-                    <CheckCircle className="size-5" />
-                    Successful Validations (
-                    {Array.from(bulkResults.values()).filter(result => result.status === 'completed').length}
-                    )
-                  </CardTitle>
-                  <CardDescription>
-                    Players with matching data between database and Wikipedia
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                    {Array.from(bulkResults.values())
-                      .filter(result => result.status === 'completed')
-                      .map(result => (
-                        <div key={result.footballer.id} className="rounded-lg border border-green-200 bg-green-50 p-3 dark:bg-green-900/20">
-                          <div className="text-sm font-medium">
-                            {result.footballer.first_name}
-                            {' '}
-                            {result.footballer.last_name}
-                          </div>
-                          {result.wikipediaData && result.databaseData && (
-                            <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                              Teams:
-                              {' '}
-                              {result.databaseData.teams_played_for?.length || 0}
-                              {' '}
-                              |
-                              Apps:
-                              {' '}
-                              {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0}
-                              {' '}
-                              |
-                              Goals:
-                              {' '}
-                              {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0}
+              <Collapsible defaultOpen>
+                <Card>
+                  <CardHeader>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between [&[data-state=closed]>svg.collapse-icon]:-rotate-90">
+                      <CardTitle className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="size-5" />
+                        Successful Validations (
+                        {Array.from(bulkResults.values()).filter(result => result.status === 'completed').length}
+                        )
+                      </CardTitle>
+                      <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                    </CollapsibleTrigger>
+                    <CardDescription>
+                      Players with matching data between database and Wikipedia
+                    </CardDescription>
+                  </CardHeader>
+                  <CollapsibleContent>
+                    <CardContent>
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                        {Array.from(bulkResults.values())
+                          .filter(result => result.status === 'completed')
+                          .map(result => (
+                            <div key={result.footballer.id} className="rounded-lg border border-green-200 bg-green-50 p-3 dark:bg-green-900/20">
+                              <div className="text-sm font-medium">
+                                {result.footballer.first_name}
+                                {' '}
+                                {result.footballer.last_name}
+                              </div>
+                              {result.wikipediaData && result.databaseData && (
+                                <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                  Teams:
+                                  {' '}
+                                  {result.databaseData.teams_played_for?.length || 0}
+                                  {' '}
+                                  |
+                                  Apps:
+                                  {' '}
+                                  {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0}
+                                  {' '}
+                                  |
+                                  Goals:
+                                  {' '}
+                                  {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0}
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             )}
 
             {/* Error Results */}
             {stats.errors > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-red-600">
-                    <AlertCircle className="size-5" />
-                    Processing Errors (
-                    {stats.errors}
-                    )
-                  </CardTitle>
-                  <CardDescription>
-                    Players that could not be processed due to API errors
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {Array.from(bulkResults.values())
-                      .filter(result => result.status === 'error')
-                      .map(result => (
-                        <div key={result.footballer.id} className="rounded-lg border border-red-200 bg-red-50 p-3 dark:bg-red-900/20">
-                          <div className="text-sm font-medium">
-                            {result.footballer.first_name}
-                            {' '}
-                            {result.footballer.last_name}
-                          </div>
-                          <div className="mt-1 text-sm text-red-700 dark:text-red-400">
-                            {result.error}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <Collapsible defaultOpen>
+                <Card>
+                  <CardHeader>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between [&[data-state=closed]>svg.collapse-icon]:-rotate-90">
+                      <CardTitle className="flex items-center gap-2 text-red-600">
+                        <AlertCircle className="size-5" />
+                        Processing Errors (
+                        {stats.errors}
+                        )
+                      </CardTitle>
+                      <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                    </CollapsibleTrigger>
+                    <CardDescription>
+                      Players that could not be processed due to API errors
+                    </CardDescription>
+                  </CardHeader>
+                  <CollapsibleContent>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {Array.from(bulkResults.values())
+                          .filter(result => result.status === 'error')
+                          .map(result => (
+                            <div key={result.footballer.id} className="rounded-lg border border-red-200 bg-red-50 p-3 dark:bg-red-900/20">
+                              <div className="text-sm font-medium">
+                                {result.footballer.first_name}
+                                {' '}
+                                {result.footballer.last_name}
+                              </div>
+                              <div className="mt-1 text-sm text-red-700 dark:text-red-400">
+                                {result.error}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             )}
 
             {/* Discrepancy Results */}
-            {stats.discrepancies > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-orange-600">
-                    <AlertTriangle className="size-5" />
-                    Discrepancies Found (
-                    {stats.discrepancies}
-                    )
-                  </CardTitle>
-                  <CardDescription>
-                    Comparison between database records and Wikipedia data
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {Array.from(bulkResults.values())
-                      .filter(result => result.status === 'discrepancy')
-                      .map(result => (
-                        <div key={result.footballer.id} data-footballer-id={result.footballer.id} className="rounded-lg border border-orange-200 p-4">
-                          <div className="mb-2 flex items-center justify-between">
-                            <div className="text-lg font-medium">
-                              {result.footballer.first_name}
-                              {' '}
-                              {result.footballer.last_name}
-                            </div>
-                            <Link
-                              href={getCareerLookupHref(result.footballer)}
-                              target="_blank"
-                            >
-                              <AmberButton
-                                onClick={() => {}}
-                                size="sm"
-                                className="transition-shadow duration-200 hover:shadow-lg"
-                                icon={Eye}
-                              >
-                                Review Details
-                              </AmberButton>
-                            </Link>
-                          </div>
-
-                          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-                            {result.footballer.nation.name}
-                            {' '}
-                            • Born:
-                            {result.footballer.date_of_birth}
-                          </div>
-
-                          {result.discrepancies && (
-                            <div className="space-y-2">
-                              <div className="text-sm font-medium text-orange-700 dark:text-orange-400">
-                                Issues Found:
+            {stats.discrepancies > 0 && checkMode !== 'nations' && (
+              <Collapsible defaultOpen>
+                <Card>
+                  <CardHeader>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between [&[data-state=closed]>svg.collapse-icon]:-rotate-90">
+                      <CardTitle className="flex items-center gap-2 text-orange-600">
+                        <AlertTriangle className="size-5" />
+                        Discrepancies Found (
+                        {stats.discrepancies}
+                        )
+                      </CardTitle>
+                      <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                    </CollapsibleTrigger>
+                    <CardDescription>
+                      Comparison between database records and Wikipedia data
+                    </CardDescription>
+                  </CardHeader>
+                  <CollapsibleContent>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {Array.from(bulkResults.values())
+                          .filter(result => result.status === 'discrepancy')
+                          .map(result => (
+                            <div key={result.footballer.id} data-footballer-id={result.footballer.id} className="rounded-lg border border-orange-200 p-4">
+                              <div className="mb-2 flex items-center justify-between">
+                                <div className="text-lg font-medium">
+                                  {result.footballer.first_name}
+                                  {' '}
+                                  {result.footballer.last_name}
+                                </div>
+                                <Link
+                                  href={getCareerLookupHref(result.footballer)}
+                                  target="_blank"
+                                >
+                                  <AmberButton
+                                    onClick={() => {}}
+                                    size="sm"
+                                    className="transition-shadow duration-200 hover:shadow-lg"
+                                    icon={Eye}
+                                  >
+                                    Review Details
+                                  </AmberButton>
+                                </Link>
                               </div>
-                              <ul className="space-y-1">
-                                {result.discrepancies.map((discrepancy, idx) => (
-                                  <li key={idx} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <AlertCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
-                                    {discrepancy}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
 
-                          {/* Quick stats comparison */}
-                          {result.wikipediaData && result.databaseData && (
-                            <div className="mt-3 border-t border-orange-100 pt-3">
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <div className="font-medium text-gray-700 dark:text-gray-300">Database</div>
-                                  <div className="text-gray-600 dark:text-gray-400">
-                                    Teams:
-                                    {' '}
-                                    {result.databaseData.teams_played_for?.length || 0}
-                                    {' '}
-                                    |
-                                    Apps:
-                                    {' '}
-                                    {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0}
-                                    {' '}
-                                    |
-                                    Goals:
-                                    {' '}
-                                    {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0}
+                              <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                                {result.footballer.nation.name}
+                                {' \u2022 Born: '}
+                                {result.footballer.date_of_birth}
+                              </div>
+
+                              {result.discrepancies && (
+                                <div className="space-y-2">
+                                  <div className="text-sm font-medium text-orange-700 dark:text-orange-400">
+                                    Issues Found:
+                                  </div>
+                                  <ul className="space-y-1">
+                                    {result.discrepancies.map(discrepancy => (
+                                      <li key={discrepancy} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                        <AlertCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                                        {discrepancy}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Quick stats comparison */}
+                              {result.wikipediaData && result.databaseData && (
+                                <div className="mt-3 border-t border-orange-100 pt-3">
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <div className="font-medium text-gray-700 dark:text-gray-300">Database</div>
+                                      <div className="text-gray-600 dark:text-gray-400">
+                                        Teams:
+                                        {' '}
+                                        {result.databaseData.teams_played_for?.length || 0}
+                                        {' '}
+                                        |
+                                        Apps:
+                                        {' '}
+                                        {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0}
+                                        {' '}
+                                        |
+                                        Goals:
+                                        {' '}
+                                        {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div className="font-medium text-gray-700 dark:text-gray-300">Wikipedia</div>
+                                      <div className="text-gray-600 dark:text-gray-400">
+                                        Teams:
+                                        {' '}
+                                        {result.wikipediaData.teams?.length || 0}
+                                        {' '}
+                                        |
+                                        Apps:
+                                        {' '}
+                                        {result.wikipediaData.totalAppearances || 'N/A'}
+                                        {' '}
+                                        |
+                                        Goals:
+                                        {' '}
+                                        {result.wikipediaData.totalGoals || 'N/A'}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                                <div>
-                                  <div className="font-medium text-gray-700 dark:text-gray-300">Wikipedia</div>
-                                  <div className="text-gray-600 dark:text-gray-400">
-                                    Teams:
-                                    {' '}
-                                    {result.wikipediaData.teams?.length || 0}
-                                    {' '}
-                                    |
-                                    Apps:
-                                    {' '}
-                                    {result.wikipediaData.totalAppearances || 'N/A'}
-                                    {' '}
-                                    |
-                                    Goals:
-                                    {' '}
-                                    {result.wikipediaData.totalGoals || 'N/A'}
-                                  </div>
-                                </div>
-                              </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             )}
+
+            {/* National Team Sync Summary */}
+            {(() => {
+              const allResults = Array.from(bulkResults.values());
+              const resultsWithNationIssues = allResults.filter((result) => {
+                if (result.hasNoInternationalCareer) {
+                  return false;
+                }
+                if (!result.wikiNationalTeams || result.wikiNationalTeams.length === 0) {
+                  return false;
+                }
+                const comparisons = getNationComparisons(result);
+                return comparisons.some(c => c.status === 'not-in-db' || c.status === 'mismatch');
+              });
+
+              if (resultsWithNationIssues.length === 0) {
+                return null;
+              }
+
+              if (checkMode === 'career') {
+                return null;
+              }
+
+              const totalPending = resultsWithNationIssues.reduce((sum, result) => {
+                const comparisons = getNationComparisons(result);
+                return sum + comparisons.filter((c) => {
+                  const key = `${result.footballer.id}-${c.wikiTeam.nationID}`;
+                  if (nationSyncStatus[key] === 'success') {
+                    return false;
+                  }
+                  return c.status === 'not-in-db' || c.status === 'mismatch';
+                }).length;
+              }, 0);
+
+              return (
+                <Collapsible defaultOpen>
+                  <Card className="mt-4">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CollapsibleTrigger className="flex w-full items-center gap-2 [&[data-state=closed]>svg.collapse-icon]:-rotate-90">
+                            <CardTitle className="flex items-center gap-2 text-blue-600">
+                              <Shield className="size-5" />
+                              National Team Sync Summary (
+                              {resultsWithNationIssues.length}
+                              {' '}
+                              player
+                              {resultsWithNationIssues.length !== 1 ? 's' : ''}
+                              )
+                            </CardTitle>
+                            <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                          </CollapsibleTrigger>
+                          <CardDescription>
+                            National team stats that differ between Wikipedia and the database
+                          </CardDescription>
+                        </div>
+                        {totalPending > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleSyncAllNations}
+                            disabled={syncingAllNations}
+                            className="inline-flex items-center rounded-md bg-gradient-to-r from-emerald-500 to-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-green-700 disabled:opacity-50"
+                          >
+                            {syncingAllNations
+                              ? (
+                                  <>
+                                    <Loader2 className="mr-2 size-4 animate-spin" />
+                                    Syncing All...
+                                  </>
+                                )
+                              : (
+                                  <>
+                                    <RefreshCw className="mr-2 size-4" />
+                                    Sync All Nations (
+                                    {totalPending}
+                                    )
+                                  </>
+                                )}
+                          </button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CollapsibleContent>
+                      <CardContent>
+                        <div className="space-y-6">
+                          {resultsWithNationIssues.map((result) => {
+                            const comparisons = getNationComparisons(result);
+                            const pendingComps = comparisons.filter((c) => {
+                              const key = `${result.footballer.id}-${c.wikiTeam.nationID}`;
+                              if (nationSyncStatus[key] === 'success') {
+                                return false;
+                              }
+                              return c.status === 'not-in-db' || c.status === 'mismatch';
+                            });
+
+                            return (
+                              <div key={result.footballer.id} className="rounded-lg border border-blue-200 p-4 dark:border-blue-700">
+                                <div className="mb-3 flex items-center justify-between">
+                                  <div>
+                                    <div className="text-base font-medium text-gray-900 dark:text-white">
+                                      {result.footballer.first_name}
+                                      {' '}
+                                      {result.footballer.last_name}
+                                    </div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      {result.footballer.nation.name}
+                                      {' \u2022 '}
+                                      {pendingComps.length}
+                                      {' '}
+                                      pending sync
+                                      {pendingComps.length !== 1 ? 's' : ''}
+                                    </div>
+                                  </div>
+                                  <Link href={getCareerLookupHref(result.footballer)} target="_blank">
+                                    <AmberButton onClick={() => {}} size="sm" icon={Eye}>Review</AmberButton>
+                                  </Link>
+                                </div>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full">
+                                    <thead>
+                                      <tr className="border-b border-gray-200 dark:border-slate-600">
+                                        <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Nation</th>
+                                        <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Wiki Apps</th>
+                                        <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Wiki Goals</th>
+                                        <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">DB Apps</th>
+                                        <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">DB Goals</th>
+                                        <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Status</th>
+                                        <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Action</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {comparisons.map((comp) => {
+                                        const syncKey = `${result.footballer.id}-${comp.wikiTeam.nationID}`;
+                                        const opStatus = nationSyncStatus[syncKey];
+                                        const opError = nationSyncErrors[syncKey];
+
+                                        return (
+                                          <tr
+                                            key={`bottom-nt-${result.footballer.id}-${comp.wikiTeam.teamName}`}
+                                            className={`border-b border-gray-100 text-sm dark:border-slate-600 ${
+                                              comp.status === 'mismatch'
+                                                ? 'bg-amber-50 dark:bg-amber-900/20'
+                                                : comp.status === 'not-in-db'
+                                                  ? 'bg-blue-50 dark:bg-blue-900/20'
+                                                  : comp.status === 'not-found'
+                                                    ? 'bg-red-50 dark:bg-red-900/20'
+                                                    : ''
+                                            }`}
+                                          >
+                                            <td className="p-2 font-medium text-gray-900 dark:text-white">
+                                              {comp.wikiTeam.teamName}
+                                              {comp.wikiTeam.nationNameDB && comp.wikiTeam.nationNameDB !== comp.wikiTeam.teamName && (
+                                                <span className="ml-1 text-xs text-blue-600 dark:text-blue-400">
+                                                  (DB:
+                                                  {' '}
+                                                  {comp.wikiTeam.nationNameDB}
+                                                  )
+                                                </span>
+                                              )}
+                                            </td>
+                                            <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== comp.wikiTeam.apps ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                              {comp.wikiTeam.apps}
+                                            </td>
+                                            <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== comp.wikiTeam.goals ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                              {comp.wikiTeam.goals}
+                                            </td>
+                                            <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== comp.wikiTeam.apps ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                              {comp.dbStat ? comp.dbStat.apps : '\u2014'}
+                                            </td>
+                                            <td className={`p-2 text-center ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== comp.wikiTeam.goals ? 'font-semibold text-amber-700 dark:text-amber-400' : ''}`}>
+                                              {comp.dbStat ? comp.dbStat.goals : '\u2014'}
+                                            </td>
+                                            <td className="p-2">
+                                              {comp.status === 'synced' && (
+                                                <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                                                  <Check className="mr-1 size-3" />
+                                                  Synced
+                                                </Badge>
+                                              )}
+                                              {comp.status === 'mismatch' && (
+                                                <Badge variant="secondary" className="border-amber-200 bg-amber-100 text-amber-800">
+                                                  <AlertTriangle className="mr-1 size-3" />
+                                                  Mismatch
+                                                </Badge>
+                                              )}
+                                              {comp.status === 'not-in-db' && (
+                                                <Badge variant="secondary" className="border-blue-200 bg-blue-100 text-blue-800">
+                                                  <Plus className="mr-1 size-3" />
+                                                  Not in DB
+                                                </Badge>
+                                              )}
+                                              {comp.status === 'not-found' && (
+                                                <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
+                                                  <AlertTriangle className="mr-1 size-3" />
+                                                  Nation missing
+                                                </Badge>
+                                              )}
+                                            </td>
+                                            <td className="p-2">
+                                              {opStatus === 'loading' && (
+                                                <Badge variant="secondary" className="border-blue-200 bg-blue-100 text-blue-800">
+                                                  <Loader2 className="mr-1 size-3 animate-spin" />
+                                                  Processing
+                                                </Badge>
+                                              )}
+                                              {opStatus === 'success' && (
+                                                <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                                                  <Check className="mr-1 size-3" />
+                                                  Done
+                                                </Badge>
+                                              )}
+                                              {opStatus === 'error' && (
+                                                <div className="flex flex-col gap-1">
+                                                  <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
+                                                    <AlertTriangle className="mr-1 size-3" />
+                                                    Failed
+                                                  </Badge>
+                                                  {opError && <span className="max-w-[160px] text-xs text-red-600">{opError}</span>}
+                                                </div>
+                                              )}
+                                              {!opStatus && comp.status === 'mismatch' && comp.dbStat && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleInlineUpdateNation(result.footballer.id, comp.wikiTeam, comp.dbStat!.id, comp.dbStat!.nation_id)}
+                                                  className="inline-flex items-center rounded-md border border-amber-300 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                                                >
+                                                  <Upload className="mr-1 size-3" />
+                                                  Update
+                                                </button>
+                                              )}
+                                              {!opStatus && comp.status === 'not-in-db' && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleInlineAddNation(result.footballer.id, comp.wikiTeam)}
+                                                  className="inline-flex items-center rounded-md border border-blue-300 px-2 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                                >
+                                                  <Plus className="mr-1 size-3" />
+                                                  Add
+                                                </button>
+                                              )}
+                                              {!opStatus && comp.status === 'synced' && (
+                                                <span className="text-xs text-gray-400">&mdash;</span>
+                                              )}
+                                              {!opStatus && comp.status === 'not-found' && (
+                                                <span className="text-xs text-gray-400">&mdash;</span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              );
+            })()}
           </div>
         )}
       </div>
