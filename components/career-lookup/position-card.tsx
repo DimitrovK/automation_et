@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiButton } from '@/components/ui/emerald-button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import type { Position, PositionsTracker, SetPositionsRequest } from '@/types/player';
@@ -88,6 +90,7 @@ export function PositionCard({
   const [allPositions, setAllPositions] = useState<Position[]>([]);
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [selectedPositions, setSelectedPositions] = useState<SelectedPosition[]>([]);
+  const [positionsEnabled, setPositionsEnabled] = useState(true);
 
   const syncStatus = getSyncStatus(positionsTracker, playerFoundInDB);
   const statusBadge = STATUS_BADGES[syncStatus];
@@ -132,10 +135,10 @@ export function PositionCard({
     setSelectedPositions(initial);
   }, [positionsTracker]);
 
-  // Notify parent when selection changes
+  // Notify parent when selection or enabled state changes
   useEffect(() => {
-    onSelectedPositionsChange?.(selectedPositions);
-  }, [selectedPositions, onSelectedPositionsChange]);
+    onSelectedPositionsChange?.(positionsEnabled ? selectedPositions : []);
+  }, [selectedPositions, positionsEnabled, onSelectedPositionsChange]);
 
   // Fetch all available positions from DB
   useEffect(() => {
@@ -240,7 +243,7 @@ export function PositionCard({
   }, {});
 
   return (
-    <Card className={className}>
+    <Card className={`${className ?? ''} ${!positionsEnabled ? 'opacity-75' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -250,8 +253,18 @@ export function PositionCard({
               <CardDescription>{positionsTracker.message}</CardDescription>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {hasUnsavedChanges && !applied && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="positions-enabled"
+                checked={positionsEnabled}
+                onCheckedChange={setPositionsEnabled}
+              />
+              <Label htmlFor="positions-enabled" className="cursor-pointer text-xs text-gray-500 dark:text-gray-400">
+                {positionsEnabled ? 'Active' : 'Disabled'}
+              </Label>
+            </div>
+            {positionsEnabled && hasUnsavedChanges && !applied && (
               <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
                 Unsaved
               </Badge>
@@ -261,6 +274,14 @@ export function PositionCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {!positionsEnabled && (
+          <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+            Position management is disabled. Toggle the switch above to include positions in deployment.
+          </div>
+        )}
+
+        {positionsEnabled && (
+          <>
         {/* Discrepancy Alert */}
         {syncStatus === 'mismatch' && hasMissing && (
           <Alert className="border-amber-200 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20">
@@ -428,6 +449,8 @@ export function PositionCard({
             )}
           </TabsContent>
         </Tabs>
+          </>
+        )}
       </CardContent>
     </Card>
   );

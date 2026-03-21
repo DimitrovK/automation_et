@@ -496,7 +496,7 @@ ${JSON.stringify(data, null, 2)}`;
               API Commands Preview
               {isExistingPlayer && (
                 <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
-                  {hasChanges ? 'Update Mode' : 'No Changes'}
+                  {hasChanges || hasTeamChanges || hasNationChanges || hasPositionChanges ? 'Has Changes' : 'No Changes'}
                 </Badge>
               )}
             </CardTitle>
