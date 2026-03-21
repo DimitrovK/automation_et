@@ -1,5 +1,5 @@
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
+import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, FootballerPosition, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
 import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { AlertTriangle, Edit, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -33,7 +33,7 @@ type CareerLookupPlayerConfigurationProps = {
 
   // Position selections from PositionCard
   selectedPositions?: SelectedPosition[];
-  positionsSynced?: boolean;
+  dbFootballerPositions?: FootballerPosition[];
 
   className?: string;
 };
@@ -47,7 +47,7 @@ export function CareerLookupPlayerConfiguration({
   onReloadPlayer,
   onNationStatsUpdated,
   selectedPositions,
-  positionsSynced,
+  dbFootballerPositions,
   className,
 }: CareerLookupPlayerConfigurationProps) {
   const { user } = useAuth();
@@ -444,18 +444,16 @@ export function CareerLookupPlayerConfiguration({
   };
 
   const hasPositionChanges = () => {
-    if (positionsSynced) return false;
     if (!selectedPositions || selectedPositions.length === 0) return false;
     if (!playerData?.playerFoundInDB || !dbPlayerInfo) return selectedPositions.length > 0;
-    const tracker = playerData.positionsTracker;
-    if (!tracker) return selectedPositions.length > 0;
-    const dbIds = new Set(tracker.databasePositions.map(p => p.id));
+    // Compare against fresh DB data (refetched after saves)
+    const dbIds = new Set(dbFootballerPositions?.map(p => p.position_id) ?? []);
     const selIds = new Set(selectedPositions.map(p => p.position_id));
     if (selIds.size !== dbIds.size) return true;
     if ([...selIds].some(id => !dbIds.has(id))) return true;
     return selectedPositions.some(sp => {
-      const dbP = tracker.databasePositions.find(d => d.id === sp.position_id);
-      return dbP && dbP.isPrimary !== sp.is_primary;
+      const dbP = dbFootballerPositions?.find(d => d.position_id === sp.position_id);
+      return dbP && dbP.is_primary !== sp.is_primary;
     });
   };
 
@@ -1168,7 +1166,7 @@ export function CareerLookupPlayerConfiguration({
           chosenDataSource={chosenDataSource}
           dbNationalTeams={dbNationalTeams}
           selectedPositions={selectedPositions}
-          positionsSynced={positionsSynced}
+          dbFootballerPositions={dbFootballerPositions}
         />
 
         <Separator className="my-8" />

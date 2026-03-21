@@ -14,7 +14,7 @@ type CareerLookupInfoProps = {
   onDataSourceChange?: (dataSource: 'wikipedia' | 'database') => void;
   onNationStatsUpdated?: () => void;
   onSelectedPositionsChange?: (positions: SelectedPosition[]) => void;
-  onPositionsApplied?: () => void;
+  onPositionsSaved?: () => void;
   className?: string;
 };
 
@@ -26,7 +26,7 @@ export function CareerLookupInfo({
   onDataSourceChange,
   onNationStatsUpdated,
   onSelectedPositionsChange,
-  onPositionsApplied,
+  onPositionsSaved,
   className,
 }: CareerLookupInfoProps) {
   return (
@@ -62,7 +62,7 @@ export function CareerLookupInfo({
             footballerId={dbPlayerInfo?.id ?? null}
             playerFoundInDB={playerData.playerFoundInDB}
             onSelectedPositionsChange={onSelectedPositionsChange}
-            onPositionsApplied={onPositionsApplied}
+            onPositionsApplied={onPositionsSaved}
           />
         </div>
       </div>

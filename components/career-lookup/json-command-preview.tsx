@@ -6,6 +6,7 @@ import type {
   CreateFootballerTeamRequest,
   Footballer,
   FootballerNationStat,
+  FootballerPosition,
   n8nWikiPlayerData,
   PlayerConfiguration,
 } from '@/types/player';
@@ -36,7 +37,7 @@ type JsonCommandPreviewProps = {
   chosenDataSource?: 'wikipedia' | 'database' | null;
   dbNationalTeams?: FootballerNationStat[];
   selectedPositions?: SelectedPosition[];
-  positionsSynced?: boolean;
+  dbFootballerPositions?: FootballerPosition[];
 };
 
 export function JsonCommandPreview({
@@ -46,7 +47,7 @@ export function JsonCommandPreview({
   chosenDataSource,
   dbNationalTeams,
   selectedPositions,
-  positionsSynced,
+  dbFootballerPositions,
 }: JsonCommandPreviewProps) {
   const { user } = useAuth();
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
@@ -300,17 +301,12 @@ export function JsonCommandPreview({
 
   const hasNationChanges = getNationChanges.creates.length > 0 || getNationChanges.updates.length > 0;
 
-  // Compute position operations from selectedPositions
+  // Compute position operations from selectedPositions vs fresh DB data
   const getPositionOps = useMemo(() => {
-    if (positionsSynced) {
-      return { hasChanges: false, positionsPayload: null };
-    }
-
     if (!selectedPositions || selectedPositions.length === 0) {
       return { hasChanges: false, positionsPayload: null };
     }
 
-    const positionsTracker = playerData?.positionsTracker;
     const footballerId = dbPlayerInfo?.id;
 
     // For new players, show positions that will be assigned on deploy
@@ -326,17 +322,17 @@ export function JsonCommandPreview({
       return { hasChanges: true, positionsPayload: payload };
     }
 
-    // For existing players, check if positions differ from DB
-    if (positionsTracker && footballerId) {
-      const dbIds = new Set(positionsTracker.databasePositions.map(p => p.id));
+    // For existing players, compare against fresh DB positions
+    if (footballerId) {
+      const dbIds = new Set(dbFootballerPositions?.map(p => p.position_id) ?? []);
       const selectedIds = new Set(selectedPositions.map(p => p.position_id));
       const hasChange =
         selectedIds.size !== dbIds.size
         || [...selectedIds].some(id => !dbIds.has(id))
         || [...dbIds].some(id => !selectedIds.has(id))
         || selectedPositions.some(sp => {
-          const dbP = positionsTracker.databasePositions.find(d => d.id === sp.position_id);
-          return dbP && dbP.isPrimary !== sp.is_primary;
+          const dbP = dbFootballerPositions?.find(d => d.position_id === sp.position_id);
+          return dbP && dbP.is_primary !== sp.is_primary;
         });
 
       if (hasChange) {
@@ -353,7 +349,7 @@ export function JsonCommandPreview({
     }
 
     return { hasChanges: false, positionsPayload: null };
-  }, [selectedPositions, playerData, dbPlayerInfo, isExistingPlayer, positionsSynced]);
+  }, [selectedPositions, dbPlayerInfo, isExistingPlayer, dbFootballerPositions]);
 
   const hasPositionChanges = getPositionOps.hasChanges;
 

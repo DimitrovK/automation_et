@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import type { Footballer, FootballerNationStat, n8nWikiPlayerData } from '@/types/player';
+import type { Footballer, FootballerNationStat, FootballerPosition, n8nWikiPlayerData } from '@/types/player';
 import {
   AlertCircle,
 } from 'lucide-react';
@@ -48,15 +48,13 @@ export default function FootballerCareerApp() {
   // State for database national team stats
   const [dbNationalTeams, setDbNationalTeams] = useState<FootballerNationStat[]>([]);
 
+  // State for database footballer positions (refetched after save, like dbNationalTeams)
+  const [dbFootballerPositions, setDbFootballerPositions] = useState<FootballerPosition[]>([]);
+
   // State for selected positions from PositionCard
   const [selectedPositions, setSelectedPositions] = useState<SelectedPosition[]>([]);
-  const [positionsSynced, setPositionsSynced] = useState(false);
   const handleSelectedPositionsChange = useCallback((positions: SelectedPosition[]) => {
     setSelectedPositions(positions);
-    setPositionsSynced(false);
-  }, []);
-  const handlePositionsApplied = useCallback(() => {
-    setPositionsSynced(true);
   }, []);
 
   // Initialize with URL parameters
@@ -94,10 +92,19 @@ export default function FootballerCareerApp() {
         setDbNationalTeams([]);
       }
 
+      // Also fetch footballer positions
+      try {
+        const positions = await FootballerAPI.getFootballerPositions(playerDBId);
+        setDbFootballerPositions(positions);
+      } catch {
+        setDbFootballerPositions([]);
+      }
+
       return footballer;
     } catch (error) {
       setDbPlayerInfo(null);
       setDbNationalTeams([]);
+      setDbFootballerPositions([]);
       return null;
     } finally {
       setLoadingDbPlayer(false);
@@ -116,12 +123,25 @@ export default function FootballerCareerApp() {
     }
   };
 
+  // Re-fetch footballer positions (called after save operations)
+  const refetchPositions = async () => {
+    if (dbPlayerInfo?.id) {
+      try {
+        const positions = await FootballerAPI.getFootballerPositions(dbPlayerInfo.id);
+        setDbFootballerPositions(positions);
+      } catch {
+        setDbFootballerPositions([]);
+      }
+    }
+  };
+
   // Handle reload player - triggers a fresh search with current player name
   const handleReloadPlayer = () => {
     if (searchValue.trim()) {
       setChosenDataSource(null);
       setDbPlayerInfo(null);
       setDbNationalTeams([]);
+      setDbFootballerPositions([]);
       setError(null);
       handleSearch(searchMode, searchValue);
     }
@@ -284,7 +304,7 @@ export default function FootballerCareerApp() {
               onDataSourceChange={setChosenDataSource}
               onNationStatsUpdated={refetchNationalTeams}
               onSelectedPositionsChange={handleSelectedPositionsChange}
-              onPositionsApplied={handlePositionsApplied}
+              onPositionsSaved={refetchPositions}
             />
 
             {/* Player Configuration Section - Full Width */}
@@ -297,7 +317,7 @@ export default function FootballerCareerApp() {
               dbNationalTeams={dbNationalTeams}
               onNationStatsUpdated={refetchNationalTeams}
               selectedPositions={selectedPositions}
-              positionsSynced={positionsSynced}
+              dbFootballerPositions={dbFootballerPositions}
             />
           </>
         )}
