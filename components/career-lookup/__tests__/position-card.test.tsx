@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PositionCard } from '@/components/career-lookup/position-card';
@@ -8,12 +8,14 @@ import type { PositionsTracker } from '@/types/player';
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: {
     setPositions: vi.fn(),
+    getPositions: vi.fn().mockResolvedValue([]),
   },
 }));
 
 import { FootballerAPI } from '@/lib/footballer-api';
 
 const mockSetPositions = vi.mocked(FootballerAPI.setPositions);
+const mockGetPositions = vi.mocked(FootballerAPI.getPositions);
 
 const makeTracker = (overrides: Partial<PositionsTracker> = {}): PositionsTracker => ({
   hasDiscrepancy: false,
@@ -29,6 +31,8 @@ const makeTracker = (overrides: Partial<PositionsTracker> = {}): PositionsTracke
 describe('PositionCard', () => {
   beforeEach(() => {
     mockSetPositions.mockReset();
+    mockGetPositions.mockReset();
+    mockGetPositions.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -40,7 +44,7 @@ describe('PositionCard', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders Wikipedia positions with role badges', () => {
+  it('renders selected positions from Wikipedia data', () => {
     const tracker = makeTracker({
       wikipediaPositions: [
         { id: 1, name: 'GK', fullName: 'Goalkeeper', originalWikipediaName: 'Goalkeeper' },
@@ -68,7 +72,7 @@ describe('PositionCard', () => {
 
     render(<PositionCard positionsTracker={tracker} playerFoundInDB />);
 
-    expect(screen.getByText('(Primary)')).toBeInTheDocument();
+    expect(screen.getByText('Primary')).toBeInTheDocument();
     expect(screen.getByText('Centre-Forward')).toBeInTheDocument();
   });
 
@@ -103,7 +107,6 @@ describe('PositionCard', () => {
 
     expect(screen.getByText('Mismatch')).toBeInTheDocument();
     expect(screen.getByText(/missing in database/i)).toBeInTheDocument();
-    expect(screen.getByText('Apply Wikipedia Positions')).toBeInTheDocument();
   });
 
   it('shows New Player badge for players not in DB', () => {
@@ -121,7 +124,7 @@ describe('PositionCard', () => {
     expect(screen.getByText(/will be assigned when the player is deployed/i)).toBeInTheDocument();
   });
 
-  it('calls setPositions API when Apply button clicked', async () => {
+  it('calls setPositions API when Save button clicked for unsaved positions', async () => {
     const user = userEvent.setup();
     const onApplied = vi.fn();
 
@@ -155,13 +158,13 @@ describe('PositionCard', () => {
       />,
     );
 
-    await user.click(screen.getByText('Apply Wikipedia Positions'));
+    await user.click(screen.getByText('Save Positions'));
 
     expect(mockSetPositions).toHaveBeenCalledWith({
       footballer_id: 42,
       positions: [{ position_id: 16, is_primary: true, sort_order: 0 }],
     });
-    expect(await screen.findByText(/applied successfully/i)).toBeInTheDocument();
+    expect(await screen.findByText(/saved successfully/i)).toBeInTheDocument();
     expect(onApplied).toHaveBeenCalled();
   });
 
@@ -171,6 +174,11 @@ describe('PositionCard', () => {
 
     const tracker = makeTracker({
       hasDiscrepancy: true,
+      databasePositions: [],
+      databaseHasPositions: false,
+      wikipediaPositions: [
+        { id: 16, name: 'ST', fullName: 'Striker', originalWikipediaName: 'Forward' },
+      ],
       missingInDatabase: [{ id: 16, name: 'ST', fullName: 'Striker', originalWikipediaName: 'Forward' }],
       missingIdsToApply: [16],
       message: '1 position missing',
@@ -178,13 +186,15 @@ describe('PositionCard', () => {
 
     render(<PositionCard positionsTracker={tracker} playerFoundInDB footballerId={42} />);
 
-    await user.click(screen.getByText('Apply Wikipedia Positions'));
+    await user.click(screen.getByText('Save Positions'));
 
     expect(await screen.findByText(/Network error/i)).toBeInTheDocument();
   });
 
-  it('shows original Wikipedia name when different from matched name', () => {
+  it('shows Wiki badge for positions from Wikipedia not yet in DB', () => {
     const tracker = makeTracker({
+      databasePositions: [],
+      databaseHasPositions: false,
       wikipediaPositions: [
         { id: 16, name: 'ST', fullName: 'Striker', originalWikipediaName: 'Forward' },
       ],
@@ -193,6 +203,63 @@ describe('PositionCard', () => {
 
     render(<PositionCard positionsTracker={tracker} />);
 
-    expect(screen.getByText('(Forward)')).toBeInTheDocument();
+    expect(screen.getByText('Wiki')).toBeInTheDocument();
+  });
+
+  it('has tabs for Selected Positions and All Positions', () => {
+    const tracker = makeTracker({
+      wikipediaPositions: [
+        { id: 1, name: 'GK', fullName: 'Goalkeeper', originalWikipediaName: 'Goalkeeper' },
+      ],
+      message: 'Test',
+    });
+
+    render(<PositionCard positionsTracker={tracker} />);
+
+    expect(screen.getByRole('tab', { name: /Selected Positions/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /All Positions/i })).toBeInTheDocument();
+  });
+
+  it('shows Unsaved badge when positions differ from DB state', () => {
+    const tracker = makeTracker({
+      databasePositions: [],
+      databaseHasPositions: false,
+      wikipediaPositions: [
+        { id: 16, name: 'ST', fullName: 'Striker', originalWikipediaName: 'Forward' },
+      ],
+      message: 'Test',
+    });
+
+    render(<PositionCard positionsTracker={tracker} playerFoundInDB footballerId={42} />);
+
+    expect(screen.getByText('Unsaved')).toBeInTheDocument();
+  });
+
+  it('calls onSelectedPositionsChange when positions initialize', async () => {
+    const onChange = vi.fn();
+    const tracker = makeTracker({
+      wikipediaPositions: [
+        { id: 16, name: 'ST', fullName: 'Striker', originalWikipediaName: 'Forward' },
+      ],
+      message: 'Test',
+    });
+
+    render(
+      <PositionCard
+        positionsTracker={tracker}
+        onSelectedPositionsChange={onChange}
+      />,
+    );
+
+    // useEffect should fire and call onChange with the wikipedia positions
+    expect(onChange).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          position_id: 16,
+          name: 'ST',
+          is_primary: true,
+        }),
+      ]),
+    );
   });
 });

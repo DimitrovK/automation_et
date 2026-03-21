@@ -1,5 +1,6 @@
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
 import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
+import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { AlertTriangle, Edit, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createLogEntry, DeploymentConsole } from '@/components/career-lookup/deployment-console';
@@ -30,6 +31,9 @@ type CareerLookupPlayerConfigurationProps = {
   onReloadPlayer?: () => void;
   onNationStatsUpdated?: () => void;
 
+  // Position selections from PositionCard
+  selectedPositions?: SelectedPosition[];
+
   className?: string;
 };
 
@@ -41,6 +45,7 @@ export function CareerLookupPlayerConfiguration({
   onErrorChange,
   onReloadPlayer,
   onNationStatsUpdated,
+  selectedPositions,
   className,
 }: CareerLookupPlayerConfigurationProps) {
   const { user } = useAuth();
@@ -1155,6 +1160,7 @@ export function CareerLookupPlayerConfiguration({
           dbPlayerInfo={dbPlayerInfo}
           chosenDataSource={chosenDataSource}
           dbNationalTeams={dbNationalTeams}
+          selectedPositions={selectedPositions}
         />
 
         <Separator className="my-8" />

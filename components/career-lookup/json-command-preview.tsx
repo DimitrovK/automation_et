@@ -9,6 +9,7 @@ import type {
   n8nWikiPlayerData,
   PlayerConfiguration,
 } from '@/types/player';
+import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { AlertTriangle, Check, ChevronDown, ChevronUp, Code, Copy, FileText } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ type JsonCommandPreviewProps = {
   dbPlayerInfo?: Footballer | null;
   chosenDataSource?: 'wikipedia' | 'database' | null;
   dbNationalTeams?: FootballerNationStat[];
+  selectedPositions?: SelectedPosition[];
 };
 
 export function JsonCommandPreview({
@@ -42,6 +44,7 @@ export function JsonCommandPreview({
   dbPlayerInfo,
   chosenDataSource,
   dbNationalTeams,
+  selectedPositions,
 }: JsonCommandPreviewProps) {
   const { user } = useAuth();
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
@@ -295,6 +298,59 @@ export function JsonCommandPreview({
 
   const hasNationChanges = getNationChanges.creates.length > 0 || getNationChanges.updates.length > 0;
 
+  // Compute position operations from selectedPositions
+  const getPositionOps = useMemo(() => {
+    if (!selectedPositions || selectedPositions.length === 0) {
+      return { hasChanges: false, positionsPayload: null };
+    }
+
+    const positionsTracker = playerData?.positionsTracker;
+    const footballerId = dbPlayerInfo?.id;
+
+    // For new players, show positions that will be assigned on deploy
+    if (!isExistingPlayer) {
+      const payload = {
+        footballer_id: '{{footballer_id}}',
+        positions: selectedPositions.map(p => ({
+          position_id: p.position_id,
+          is_primary: p.is_primary,
+          sort_order: p.sort_order,
+        })),
+      };
+      return { hasChanges: true, positionsPayload: payload };
+    }
+
+    // For existing players, check if positions differ from DB
+    if (positionsTracker && footballerId) {
+      const dbIds = new Set(positionsTracker.databasePositions.map(p => p.id));
+      const selectedIds = new Set(selectedPositions.map(p => p.position_id));
+      const hasChange =
+        selectedIds.size !== dbIds.size
+        || [...selectedIds].some(id => !dbIds.has(id))
+        || [...dbIds].some(id => !selectedIds.has(id))
+        || selectedPositions.some(sp => {
+          const dbP = positionsTracker.databasePositions.find(d => d.id === sp.position_id);
+          return dbP && dbP.isPrimary !== sp.is_primary;
+        });
+
+      if (hasChange) {
+        const payload = {
+          footballer_id: footballerId,
+          positions: selectedPositions.map(p => ({
+            position_id: p.position_id,
+            is_primary: p.is_primary,
+            sort_order: p.sort_order,
+          })),
+        };
+        return { hasChanges: true, positionsPayload: payload };
+      }
+    }
+
+    return { hasChanges: false, positionsPayload: null };
+  }, [selectedPositions, playerData, dbPlayerInfo, isExistingPlayer]);
+
+  const hasPositionChanges = getPositionOps.hasChanges;
+
   // Generate footballer creation/update JSON
   const footballerJson = useMemo(() => {
     if (!playerData || !playerConfig.countryID || !user) {
@@ -446,8 +502,8 @@ ${JSON.stringify(data, null, 2)}`;
             </CardTitle>
             <CardDescription>
               {isExistingPlayer
-                ? hasChanges || hasTeamChanges || hasNationChanges
-                  ? `JSON commands that will be executed to update the existing footballer record${hasTeamChanges ? ' and team records' : ''}${hasNationChanges ? ' and nation stats' : ''}`
+                ? hasChanges || hasTeamChanges || hasNationChanges || hasPositionChanges
+                  ? `JSON commands that will be executed to update the existing footballer record${hasTeamChanges ? ' and team records' : ''}${hasNationChanges ? ' and nation stats' : ''}${hasPositionChanges ? ' and positions' : ''}`
                   : `Current footballer data matches database - no updates needed`
                 : `JSON commands that will be executed to create the footballer and team records`}
               {isExistingPlayer && chosenDataSource !== 'wikipedia' && chosenDataSource === 'database' && playerData?.teams && dbPlayerInfo?.teams_played_for && (
@@ -479,11 +535,12 @@ ${JSON.stringify(data, null, 2)}`;
               <Tabs defaultValue="footballer" className="w-full">
                 <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <TabsList className={`grid w-full sm:w-auto ${
-                    (isExistingPlayer && hasTeamChanges && hasNationChanges) || (!isExistingPlayer && footballerTeamsJson.length > 0 && hasNationChanges)
-                      ? 'grid-cols-3'
-                      : (isExistingPlayer && hasTeamChanges) || (!isExistingPlayer && footballerTeamsJson.length > 0) || hasNationChanges
-                        ? 'grid-cols-2'
-                        : 'grid-cols-1'
+                    (() => {
+                      const showTeams = (!isExistingPlayer && footballerTeamsJson.length > 0) || (isExistingPlayer && hasTeamChanges);
+                      const tabCount = 1 + (showTeams ? 1 : 0) + (hasNationChanges ? 1 : 0) + (hasPositionChanges ? 1 : 0);
+                      const colsMap: Record<number, string> = { 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' };
+                      return colsMap[Math.min(tabCount, 4)] || 'grid-cols-1';
+                    })()
                   }`}
                   >
                     <TabsTrigger value="footballer" className="text-xs sm:text-sm">
@@ -510,6 +567,15 @@ ${JSON.stringify(data, null, 2)}`;
                         <span className="sm:hidden">Nations</span>
                         <Badge variant="secondary" className="ml-1 text-xs sm:ml-2">
                           {getNationChanges.updates.length + getNationChanges.creates.length}
+                        </Badge>
+                      </TabsTrigger>
+                    )}
+                    {hasPositionChanges && (
+                      <TabsTrigger value="positions" className="text-xs sm:text-sm">
+                        <span className="hidden sm:inline">{isExistingPlayer ? 'Position Sync' : 'Set Positions'}</span>
+                        <span className="sm:hidden">Positions</span>
+                        <Badge variant="secondary" className="ml-1 text-xs sm:ml-2">
+                          {selectedPositions?.length ?? 0}
                         </Badge>
                       </TabsTrigger>
                     )}
@@ -897,6 +963,79 @@ ${JSON.stringify(data, null, 2)}`;
                     )}
                   </div>
                 </TabsContent>
+
+                {/* Positions Tab */}
+                <TabsContent value="positions" className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">
+                      {isExistingPlayer ? 'Position Sync' : 'Set Positions'}
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!getPositionOps.positionsPayload) return;
+                        const posOp = {
+                          operation: isExistingPlayer ? 'SYNC' : 'SET',
+                          endpoint: '/data/footballer-positions/set-positions/',
+                          method: 'POST',
+                          data: getPositionOps.positionsPayload,
+                        };
+                        const content = showAsHttpRequest
+                          ? `// ${posOp.operation} Positions\n${generateHttpRequest(posOp.endpoint, posOp.method, posOp.data)}`
+                          : JSON.stringify(posOp, null, 2);
+                        copyToClipboard(content, 'positions');
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      {copiedStates.positions ? <Check className="size-4" /> : <Copy className="size-4" />}
+                      <span className="ml-2">{copiedStates.positions ? 'Copied' : 'Copy'}</span>
+                    </Button>
+                  </div>
+
+                  {getPositionOps.positionsPayload ? (
+                    <div>
+                      <h5 className="mb-2 text-xs font-medium text-purple-700 dark:text-purple-400 sm:text-sm">
+                        {isExistingPlayer ? 'Sync' : 'Set'}
+                        {' '}
+                        Positions (
+                        {selectedPositions?.length ?? 0}
+                        )
+                      </h5>
+                      <ScrollArea className="h-48 w-full rounded-lg border">
+                        <div className="space-y-3 bg-purple-50 p-3 dark:bg-purple-900/20 sm:p-4">
+                          <div className="border-b border-purple-200 pb-2 last:border-b-0 last:pb-0 dark:border-purple-700">
+                            <p className="mb-1 break-all text-[10px] font-medium text-purple-800 dark:text-purple-300 sm:text-xs">
+                              POST /data/footballer-positions/set-positions/
+                            </p>
+                            <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                              <code>
+                                {showAsHttpRequest
+                                  ? generateHttpRequest('/data/footballer-positions/set-positions/', 'POST', getPositionOps.positionsPayload)
+                                  : JSON.stringify(getPositionOps.positionsPayload, null, 2)}
+                              </code>
+                            </pre>
+                          </div>
+
+                          {/* Show individual positions being set */}
+                          <div className="mt-2 space-y-1">
+                            {selectedPositions?.map(pos => (
+                              <div key={pos.position_id} className="flex items-center gap-2 text-xs text-purple-700 dark:text-purple-300">
+                                <span className="font-mono">{pos.name}</span>
+                                <span className="opacity-60">{pos.full_name}</span>
+                                {pos.is_primary && <span className="font-medium text-amber-600 dark:text-amber-400">★ Primary</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border bg-gray-50 py-8 text-center text-gray-500 dark:bg-slate-800">
+                      <p className="text-sm">No position changes detected</p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
 
               <Separator />
@@ -906,7 +1045,7 @@ ${JSON.stringify(data, null, 2)}`;
                   <DialogTrigger asChild>
                     <GraphiteButton
                       onClick={() => setDialogOpen(true)}
-                      disabled={hasValidationIssues || !!(isExistingPlayer && !hasChanges && !hasTeamChanges && !hasNationChanges)}
+                      disabled={hasValidationIssues || !!(isExistingPlayer && !hasChanges && !hasTeamChanges && !hasNationChanges && !hasPositionChanges)}
                       icon={FileText}
                       className="flex-1"
                     >
@@ -1129,6 +1268,32 @@ ${JSON.stringify(data, null, 2)}`;
                                 ))}
                               </div>
                             )}
+                          </div>
+                        )}
+
+                        {hasPositionChanges && getPositionOps.positionsPayload && (
+                          <div>
+                            <h4 className="mb-2 font-medium">
+                              {(() => {
+                                let step = 2;
+                                if (isExistingPlayer && hasTeamChanges) step++;
+                                if (hasNationChanges) step++;
+                                return step;
+                              })()}
+                              .
+                              {' '}
+                              {isExistingPlayer ? 'Sync Positions' : 'Set Positions'}
+                            </h4>
+                            <div className="mb-3">
+                              <p className="mb-1 text-sm text-gray-600">
+                                POST /data/footballer-positions/set-positions/
+                              </p>
+                              <div className="overflow-x-auto rounded-lg bg-purple-50 p-3 dark:bg-purple-900/20">
+                                <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                  <code>{JSON.stringify(getPositionOps.positionsPayload, null, 2)}</code>
+                                </pre>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
