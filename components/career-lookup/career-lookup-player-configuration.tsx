@@ -623,26 +623,16 @@ export function CareerLookupPlayerConfiguration({
         onNationStatsUpdated?.();
       }
 
-      // Sync positions if there's a discrepancy
-      if (playerData.positionsTracker?.hasDiscrepancy && playerData.positionsTracker.missingIdsToApply.length > 0 && dbPlayerInfo.id) {
-        const tracker = playerData.positionsTracker;
-        addDeploymentLog('info', `📍 Position discrepancy: ${tracker.missingInDatabase.length} missing position(s)`);
-
-        // Merge existing DB positions with missing ones
-        const existingDbIds = new Set(tracker.databasePositions.map(p => p.id));
-        const allPositionIds = [
-          ...tracker.databasePositions.map(p => p.id),
-          ...tracker.missingIdsToApply.filter(id => !existingDbIds.has(id)),
-        ];
-
-        const existingPrimary = tracker.databasePositions.find(p => p.isPrimary);
+      // Sync positions if user has made changes (and positions are enabled)
+      if (hasPositionChanges() && selectedPositions && selectedPositions.length > 0 && dbPlayerInfo.id) {
+        addDeploymentLog('info', `📍 Syncing ${selectedPositions.length} position(s)`);
 
         const positionsRequest: SetPositionsRequest = {
           footballer_id: dbPlayerInfo.id,
-          positions: allPositionIds.map((id, index) => ({
-            position_id: id,
-            is_primary: existingPrimary ? id === existingPrimary.id : index === 0,
-            sort_order: index,
+          positions: selectedPositions.map(p => ({
+            position_id: p.position_id,
+            is_primary: p.is_primary,
+            sort_order: p.sort_order,
           })),
         };
 
@@ -672,8 +662,8 @@ export function CareerLookupPlayerConfiguration({
         const totalNationOps = nationChanges.updates.length + nationChanges.creates.length;
         operations.push(`${totalNationOps} nation operations completed`);
       }
-      if (playerData.positionsTracker?.hasDiscrepancy && playerData.positionsTracker.missingIdsToApply.length > 0) {
-        operations.push(`${playerData.positionsTracker.missingIdsToApply.length} position(s) synced`);
+      if (hasPositionChanges()) {
+        operations.push(`${selectedPositions?.length ?? 0} position(s) synced`);
       }
 
       addDeploymentLog('success', `🎉 Update completed! ${operations.join(', ')}`);
@@ -827,17 +817,16 @@ export function CareerLookupPlayerConfiguration({
         onNationStatsUpdated?.();
       }
 
-      // Assign positions from positionsTracker
-      const positionIds = playerData.positionsTracker?.missingIdsToApply ?? [];
-      if (positionIds.length > 0) {
-        addDeploymentLog('info', `📍 Found ${positionIds.length} position(s) to assign`);
+      // Assign positions from selectedPositions (when enabled)
+      if (selectedPositions && selectedPositions.length > 0) {
+        addDeploymentLog('info', `📍 Found ${selectedPositions.length} position(s) to assign`);
 
         const positionsRequest: SetPositionsRequest = {
           footballer_id: createdFootballer.id,
-          positions: positionIds.map((id, index) => ({
-            position_id: id,
-            is_primary: index === 0,
-            sort_order: index,
+          positions: selectedPositions.map(p => ({
+            position_id: p.position_id,
+            is_primary: p.is_primary,
+            sort_order: p.sort_order,
           })),
         };
 

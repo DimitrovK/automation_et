@@ -347,6 +347,7 @@ export function PositionCard({
                           onClick={() => setPrimary(pos.position_id)}
                           className="rounded p-1 text-xs text-gray-500 transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
                           title="Set as primary"
+                          aria-label={`Set ${pos.full_name} as primary`}
                         >
                           <Star className="size-4" />
                         </button>
@@ -355,6 +356,7 @@ export function PositionCard({
                         onClick={() => removePosition(pos.position_id)}
                         className="rounded p-1 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                         title="Remove"
+                        aria-label={`Remove ${pos.full_name}`}
                       >
                         <X className="size-4" />
                       </button>
