@@ -91,8 +91,11 @@ export function PositionCard({
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [selectedPositions, setSelectedPositions] = useState<SelectedPosition[]>([]);
   const [positionsEnabled, setPositionsEnabled] = useState(true);
+  // Tracks the last-saved state so we can detect unsaved changes after a save
+  const [savedSnapshot, setSavedSnapshot] = useState<SelectedPosition[] | null>(null);
 
-  const syncStatus = getSyncStatus(positionsTracker, playerFoundInDB);
+  // After a save, override sync status to reflect current state
+  const syncStatus = savedSnapshot ? 'synced' : getSyncStatus(positionsTracker, playerFoundInDB);
   const statusBadge = STATUS_BADGES[syncStatus];
 
   // Initialize selected positions from tracker data
@@ -207,6 +210,10 @@ export function PositionCard({
       setError(null);
       await FootballerAPI.setPositions(request);
       setApplied(true);
+      // Update local state: mark all positions as saved/database source
+      const saved = selectedPositions.map(p => ({ ...p, source: 'database' as const }));
+      setSelectedPositions(saved);
+      setSavedSnapshot(saved);
       onPositionsApplied?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to apply positions');
@@ -222,18 +229,31 @@ export function PositionCard({
   const hasWikipediaPositions = positionsTracker.wikipediaPositions.length > 0;
   const hasMissing = positionsTracker.missingInDatabase.length > 0;
 
-  // Determine if current selection differs from DB state
-  const dbPositionIds = new Set(positionsTracker.databasePositions.map(p => p.id));
-  const selectedIds = new Set(selectedPositions.map(p => p.position_id));
-  const hasUnsavedChanges = positionsTracker.databaseHasPositions
-    ? (selectedIds.size !== dbPositionIds.size
-      || [...selectedIds].some(id => !dbPositionIds.has(id))
-      || [...dbPositionIds].some(id => !selectedIds.has(id))
-      || selectedPositions.some(sp => {
-        const dbP = positionsTracker.databasePositions.find(d => d.id === sp.position_id);
-        return dbP && dbP.isPrimary !== sp.is_primary;
-      }))
-    : selectedPositions.length > 0;
+  // Determine if current selection differs from saved/DB state
+  const hasUnsavedChanges = (() => {
+    // After a save, compare against the saved snapshot
+    if (savedSnapshot) {
+      if (selectedPositions.length !== savedSnapshot.length) return true;
+      const snapIds = new Set(savedSnapshot.map(p => p.position_id));
+      if (selectedPositions.some(p => !snapIds.has(p.position_id))) return true;
+      return selectedPositions.some(sp => {
+        const saved = savedSnapshot.find(s => s.position_id === sp.position_id);
+        return saved && saved.is_primary !== sp.is_primary;
+      });
+    }
+    // Before any save, compare against original DB data
+    const dbPositionIds = new Set(positionsTracker.databasePositions.map(p => p.id));
+    const selectedIds = new Set(selectedPositions.map(p => p.position_id));
+    return positionsTracker.databaseHasPositions
+      ? (selectedIds.size !== dbPositionIds.size
+        || [...selectedIds].some(id => !dbPositionIds.has(id))
+        || [...dbPositionIds].some(id => !selectedIds.has(id))
+        || selectedPositions.some(sp => {
+          const dbP = positionsTracker.databasePositions.find(d => d.id === sp.position_id);
+          return dbP && dbP.isPrimary !== sp.is_primary;
+        }))
+      : selectedPositions.length > 0;
+  })();
 
   // Group allPositions by role for the selector
   const positionsByRole = allPositions.reduce<Record<string, Position[]>>((acc, pos) => {
@@ -250,7 +270,11 @@ export function PositionCard({
             <MapPin className="size-5 text-gray-600 dark:text-gray-400" />
             <div>
               <CardTitle className="text-lg">Positions</CardTitle>
-              <CardDescription>{positionsTracker.message}</CardDescription>
+              <CardDescription>
+                {savedSnapshot
+                  ? `${selectedPositions.length} position(s) saved to database`
+                  : positionsTracker.message}
+              </CardDescription>
             </div>
           </div>
           <div className="flex items-center gap-3">
