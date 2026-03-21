@@ -43,6 +43,7 @@ export type n8nWikiPlayerData = {
   };
   teams: Team[];
   nationalTeams?: NationalTeam[];
+  positionsTracker?: PositionsTracker;
 };
 
 export type PlayerConfiguration = {
@@ -168,4 +169,49 @@ export type CreateFootballerNationRequest = {
   nation_id: number;
   apps: number;
   goals: number;
+};
+
+// Position API types (from /data/positions/)
+export type Position = {
+  id: number;
+  name: string;
+  full_name: string;
+  role: 'GK' | 'DEF' | 'MID' | 'FWD';
+  sort_order: number;
+};
+
+// FootballerPosition API types (from /data/footballer-positions/)
+export type FootballerPosition = {
+  id: number;
+  footballer_id: number;
+  footballer_name: string;
+  position_id: number;
+  position_name: string;
+  position_full_name: string;
+  position_role: string;
+  is_primary: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+// Request type for set-positions bulk endpoint
+export type SetPositionsRequest = {
+  footballer_id: number;
+  positions: Array<{
+    position_id: number;
+    is_primary: boolean;
+    sort_order?: number;
+  }>;
+};
+
+// positionsTracker from n8n webhook
+export type PositionsTracker = {
+  hasDiscrepancy: boolean;
+  databasePositions: Array<{ id: number; name: string; fullName: string; isPrimary: boolean }>;
+  databaseHasPositions: boolean;
+  wikipediaPositions: Array<{ id: number; name: string; fullName: string; originalWikipediaName: string }>;
+  missingInDatabase: Array<{ id: number; name: string; fullName: string; originalWikipediaName: string }>;
+  missingIdsToApply: number[];
+  message: string;
 };

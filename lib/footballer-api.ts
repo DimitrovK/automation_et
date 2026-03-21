@@ -5,9 +5,12 @@ import type {
   Footballer,
   FootballerNation,
   FootballerNationStat,
+  FootballerPosition,
   FootballersResponse,
   FootballerTeam,
   FootballerTeamsResponse,
+  Position,
+  SetPositionsRequest,
 } from '@/types/player';
 import { apiFetcher } from '@/lib/api-fetcher';
 
@@ -196,6 +199,38 @@ export class FootballerAPI {
   static async deleteFootballerNation(id: number): Promise<void> {
     return apiFetcher(`data/footballer-nations/${id}/`, {
       method: 'DELETE',
+    });
+  }
+
+  // ── Positions ──────────────────────────────────────────────
+
+  /**
+   * Get all positions (for dropdowns/selectors)
+   * GET /data/positions/ (AllowAny)
+   */
+  static async getPositions(): Promise<Position[]> {
+    return apiFetcher('data/positions/');
+  }
+
+  /**
+   * Get footballer positions by footballer ID
+   * GET /data/footballer-positions/?footballer={footballer_id} (AllowAny for GET)
+   */
+  static async getFootballerPositions(footballerId: number): Promise<FootballerPosition[]> {
+    return apiFetcher(`data/footballer-positions/?footballer=${footballerId}`);
+  }
+
+  /**
+   * Bulk set positions for a footballer (atomically replaces all)
+   * POST /data/footballer-positions/set-positions/ (Admin auth)
+   */
+  static async setPositions(data: SetPositionsRequest): Promise<FootballerPosition[]> {
+    return apiFetcher('data/footballer-positions/set-positions/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
     });
   }
 }

@@ -1,18 +1,19 @@
 'use client';
 
 import type React from 'react';
-import type { Footballer, FootballerNationStat, n8nWikiPlayerData } from '@/types/player';
+import type { Footballer, FootballerNationStat, FootballerPosition, n8nWikiPlayerData } from '@/types/player';
 import {
   AlertCircle,
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CareerLookupDataValidation } from '@/components/career-lookup/career-lookup-data-validation';
 import { CareerLookupInfo } from '@/components/career-lookup/career-lookup-info';
 import { CareerLookupPlayerConfiguration } from '@/components/career-lookup/career-lookup-player-configuration';
 import { CareerLookupSearch } from '@/components/career-lookup/career-lookup-search';
 import { ConnectionSettings } from '@/components/career-lookup/connection-settings';
 import { HelpDialog } from '@/components/career-lookup/help-dialog';
+import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
@@ -46,6 +47,15 @@ export default function FootballerCareerApp() {
 
   // State for database national team stats
   const [dbNationalTeams, setDbNationalTeams] = useState<FootballerNationStat[]>([]);
+
+  // State for database footballer positions (refetched after save, like dbNationalTeams)
+  const [dbFootballerPositions, setDbFootballerPositions] = useState<FootballerPosition[]>([]);
+
+  // State for selected positions from PositionCard
+  const [selectedPositions, setSelectedPositions] = useState<SelectedPosition[]>([]);
+  const handleSelectedPositionsChange = useCallback((positions: SelectedPosition[]) => {
+    setSelectedPositions(positions);
+  }, []);
 
   // Initialize with URL parameters
   useEffect(() => {
@@ -82,10 +92,19 @@ export default function FootballerCareerApp() {
         setDbNationalTeams([]);
       }
 
+      // Also fetch footballer positions
+      try {
+        const positions = await FootballerAPI.getFootballerPositions(playerDBId);
+        setDbFootballerPositions(positions);
+      } catch {
+        setDbFootballerPositions([]);
+      }
+
       return footballer;
     } catch (error) {
       setDbPlayerInfo(null);
       setDbNationalTeams([]);
+      setDbFootballerPositions([]);
       return null;
     } finally {
       setLoadingDbPlayer(false);
@@ -104,12 +123,25 @@ export default function FootballerCareerApp() {
     }
   };
 
+  // Re-fetch footballer positions (called after save operations)
+  const refetchPositions = async () => {
+    if (dbPlayerInfo?.id) {
+      try {
+        const positions = await FootballerAPI.getFootballerPositions(dbPlayerInfo.id);
+        setDbFootballerPositions(positions);
+      } catch {
+        setDbFootballerPositions([]);
+      }
+    }
+  };
+
   // Handle reload player - triggers a fresh search with current player name
   const handleReloadPlayer = () => {
     if (searchValue.trim()) {
       setChosenDataSource(null);
       setDbPlayerInfo(null);
       setDbNationalTeams([]);
+      setDbFootballerPositions([]);
       setError(null);
       handleSearch(searchMode, searchValue);
     }
@@ -271,6 +303,8 @@ export default function FootballerCareerApp() {
               chosenDataSource={chosenDataSource}
               onDataSourceChange={setChosenDataSource}
               onNationStatsUpdated={refetchNationalTeams}
+              onSelectedPositionsChange={handleSelectedPositionsChange}
+              onPositionsSaved={refetchPositions}
             />
 
             {/* Player Configuration Section - Full Width */}
@@ -282,6 +316,8 @@ export default function FootballerCareerApp() {
               onReloadPlayer={handleReloadPlayer}
               dbNationalTeams={dbNationalTeams}
               onNationStatsUpdated={refetchNationalTeams}
+              selectedPositions={selectedPositions}
+              dbFootballerPositions={dbFootballerPositions}
             />
           </>
         )}

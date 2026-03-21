@@ -1,5 +1,6 @@
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, n8nWikiPlayerData, PlayerConfiguration } from '@/types/player';
+import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, FootballerPosition, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
+import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { AlertTriangle, Edit, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createLogEntry, DeploymentConsole } from '@/components/career-lookup/deployment-console';
@@ -30,6 +31,10 @@ type CareerLookupPlayerConfigurationProps = {
   onReloadPlayer?: () => void;
   onNationStatsUpdated?: () => void;
 
+  // Position selections from PositionCard
+  selectedPositions?: SelectedPosition[];
+  dbFootballerPositions?: FootballerPosition[];
+
   className?: string;
 };
 
@@ -41,6 +46,8 @@ export function CareerLookupPlayerConfiguration({
   onErrorChange,
   onReloadPlayer,
   onNationStatsUpdated,
+  selectedPositions,
+  dbFootballerPositions,
   className,
 }: CareerLookupPlayerConfigurationProps) {
   const { user } = useAuth();
@@ -436,8 +443,22 @@ export function CareerLookupPlayerConfiguration({
     return nationChanges.creates.length > 0 || nationChanges.updates.length > 0;
   };
 
+  const hasPositionChanges = () => {
+    if (!selectedPositions || selectedPositions.length === 0) return false;
+    if (!playerData?.playerFoundInDB || !dbPlayerInfo) return selectedPositions.length > 0;
+    // Compare against fresh DB data (refetched after saves)
+    const dbIds = new Set(dbFootballerPositions?.map(p => p.position_id) ?? []);
+    const selIds = new Set(selectedPositions.map(p => p.position_id));
+    if (selIds.size !== dbIds.size) return true;
+    if ([...selIds].some(id => !dbIds.has(id))) return true;
+    return selectedPositions.some(sp => {
+      const dbP = dbFootballerPositions?.find(d => d.position_id === sp.position_id);
+      return dbP && dbP.is_primary !== sp.is_primary;
+    });
+  };
+
   const handleUpdatePlayer = async () => {
-    if (!dbPlayerInfo || (!hasChanges() && !hasTeamChanges() && !hasNationChanges())) {
+    if (!dbPlayerInfo || (!hasChanges() && !hasTeamChanges() && !hasNationChanges() && !hasPositionChanges())) {
       return;
     }
 
@@ -452,7 +473,7 @@ export function CareerLookupPlayerConfiguration({
     const playerChanges = getPlayerChanges();
     const teamChanges = getTeamChanges();
 
-    if (!playerChanges && !hasTeamChanges() && !hasNationChanges()) {
+    if (!playerChanges && !hasTeamChanges() && !hasNationChanges() && !hasPositionChanges()) {
       addDeploymentLog('info', '💡 No changes detected - Update cancelled');
       return;
     }
@@ -603,6 +624,32 @@ export function CareerLookupPlayerConfiguration({
         onNationStatsUpdated?.();
       }
 
+      // Sync positions if user has made changes (and positions are enabled)
+      if (hasPositionChanges() && selectedPositions && selectedPositions.length > 0 && dbPlayerInfo.id) {
+        addDeploymentLog('info', `📍 Syncing ${selectedPositions.length} position(s)`);
+
+        const positionsRequest: SetPositionsRequest = {
+          footballer_id: dbPlayerInfo.id,
+          positions: selectedPositions.map(p => ({
+            position_id: p.position_id,
+            is_primary: p.is_primary,
+            sort_order: p.sort_order,
+          })),
+        };
+
+        try {
+          addDeploymentLog('loading', 'Syncing positions...');
+          addDeploymentLog('request', 'POST /data/footballer-positions/set-positions/', positionsRequest);
+
+          const updatedPositions = await FootballerAPI.setPositions(positionsRequest);
+
+          addDeploymentLog('response', `✅ ${updatedPositions.length} position(s) synced`, updatedPositions);
+        } catch (posError) {
+          addDeploymentLog('error', `❌ Failed to sync positions: ${posError instanceof Error ? posError.message : 'Unknown error'}`);
+          console.error('Failed to sync positions:', posError);
+        }
+      }
+
       // Final success message
       const operations = [];
       if (playerChanges) {
@@ -615,6 +662,9 @@ export function CareerLookupPlayerConfiguration({
       if (hasNationChanges()) {
         const totalNationOps = nationChanges.updates.length + nationChanges.creates.length;
         operations.push(`${totalNationOps} nation operations completed`);
+      }
+      if (hasPositionChanges()) {
+        operations.push(`${selectedPositions?.length ?? 0} position(s) synced`);
       }
 
       addDeploymentLog('success', `🎉 Update completed! ${operations.join(', ')}`);
@@ -766,6 +816,32 @@ export function CareerLookupPlayerConfiguration({
 
         addDeploymentLog('success', `🏳️ Nation stats: ${createdNations}/${foundNations.length} records created`);
         onNationStatsUpdated?.();
+      }
+
+      // Assign positions from selectedPositions (when enabled)
+      if (selectedPositions && selectedPositions.length > 0) {
+        addDeploymentLog('info', `📍 Found ${selectedPositions.length} position(s) to assign`);
+
+        const positionsRequest: SetPositionsRequest = {
+          footballer_id: createdFootballer.id,
+          positions: selectedPositions.map(p => ({
+            position_id: p.position_id,
+            is_primary: p.is_primary,
+            sort_order: p.sort_order,
+          })),
+        };
+
+        try {
+          addDeploymentLog('loading', 'Assigning positions...');
+          addDeploymentLog('request', 'POST /data/footballer-positions/set-positions/', positionsRequest);
+
+          const createdPositions = await FootballerAPI.setPositions(positionsRequest);
+
+          addDeploymentLog('response', `✅ ${createdPositions.length} position(s) assigned`, createdPositions);
+        } catch (posError) {
+          addDeploymentLog('error', `❌ Failed to assign positions: ${posError instanceof Error ? posError.message : 'Unknown error'}`);
+          console.error('Failed to assign positions:', posError);
+        }
       }
 
       setDeploymentComplete(true);
@@ -1089,6 +1165,8 @@ export function CareerLookupPlayerConfiguration({
           dbPlayerInfo={dbPlayerInfo}
           chosenDataSource={chosenDataSource}
           dbNationalTeams={dbNationalTeams}
+          selectedPositions={selectedPositions}
+          dbFootballerPositions={dbFootballerPositions}
         />
 
         <Separator className="my-8" />
@@ -1120,14 +1198,14 @@ export function CareerLookupPlayerConfiguration({
               disabled={
                 deploying
                 || (!playerData?.playerFoundInDB && playerData.summary.notFoundTeams > 0)
-                || (playerData?.playerFoundInDB && !hasChanges() && !hasTeamChanges() && !hasNationChanges())
+                || (playerData?.playerFoundInDB && !hasChanges() && !hasTeamChanges() && !hasNationChanges() && !hasPositionChanges())
               }
             >
               <Save className="mr-2 size-5" />
               {deploying
                 ? (playerData?.playerFoundInDB ? 'Updating...' : 'Deploying...')
                 : playerData?.playerFoundInDB
-                  ? (hasChanges() || hasTeamChanges() || hasNationChanges() ? 'Update Footballer' : 'No Changes Detected')
+                  ? (hasChanges() || hasTeamChanges() || hasNationChanges() || hasPositionChanges() ? 'Update Footballer' : 'No Changes Detected')
                   : 'Deploy Footballer'}
             </Button>
           </div>
@@ -1136,16 +1214,16 @@ export function CareerLookupPlayerConfiguration({
             ? (
                 playerData?.playerFoundInDB
                   ? (
-                      (hasChanges() || hasTeamChanges() || hasNationChanges())
+                      (hasChanges() || hasTeamChanges() || hasNationChanges() || hasPositionChanges())
                         ? (
                             <p className="text-center text-sm font-medium text-blue-600">
                               ✏️ Changes detected - Ready to update existing player
-                              {hasChanges() && (hasTeamChanges() || hasNationChanges()) && ' and'}
+                              {hasChanges() && (hasTeamChanges() || hasNationChanges() || hasPositionChanges()) && ' and'}
                               {hasTeamChanges() && ' teams'}
-                              {hasTeamChanges() && hasNationChanges() && ' and'}
+                              {hasTeamChanges() && (hasNationChanges() || hasPositionChanges()) && ' and'}
                               {hasNationChanges() && ' nations'}
-                              {!hasChanges() && hasTeamChanges() && !hasNationChanges() && ' teams'}
-                              {!hasChanges() && !hasTeamChanges() && hasNationChanges() && ' nations'}
+                              {hasNationChanges() && hasPositionChanges() && ' and'}
+                              {hasPositionChanges() && ' positions'}
                             </p>
                           )
                         : (
