@@ -2,6 +2,7 @@ import type { Footballer, FootballerNationStat, n8nWikiPlayerData } from '@/type
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InternationalCareerCard } from './international-career-card';
 import { PlayerProfileCard } from './player-profile-card';
+import { PositionCard } from './position-card';
 import { SeniorCareerCard } from './senior-career-card';
 
 type CareerLookupInfoProps = {
@@ -49,6 +50,12 @@ export function CareerLookupInfo({
             dbNationalTeams={dbNationalTeams}
             footballerId={dbPlayerInfo?.id ?? null}
             onNationStatsUpdated={onNationStatsUpdated}
+          />
+
+          <PositionCard
+            positionsTracker={playerData.positionsTracker}
+            footballerId={dbPlayerInfo?.id ?? null}
+            playerFoundInDB={playerData.playerFoundInDB}
           />
         </div>
       </div>

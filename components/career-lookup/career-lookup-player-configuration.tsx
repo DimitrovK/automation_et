@@ -1,5 +1,5 @@
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, n8nWikiPlayerData, PlayerConfiguration } from '@/types/player';
+import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
 import { AlertTriangle, Edit, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createLogEntry, DeploymentConsole } from '@/components/career-lookup/deployment-console';
@@ -603,6 +603,42 @@ export function CareerLookupPlayerConfiguration({
         onNationStatsUpdated?.();
       }
 
+      // Sync positions if there's a discrepancy
+      if (playerData.positionsTracker?.hasDiscrepancy && playerData.positionsTracker.missingIdsToApply.length > 0 && dbPlayerInfo.id) {
+        const tracker = playerData.positionsTracker;
+        addDeploymentLog('info', `📍 Position discrepancy: ${tracker.missingInDatabase.length} missing position(s)`);
+
+        // Merge existing DB positions with missing ones
+        const existingDbIds = new Set(tracker.databasePositions.map(p => p.id));
+        const allPositionIds = [
+          ...tracker.databasePositions.map(p => p.id),
+          ...tracker.missingIdsToApply.filter(id => !existingDbIds.has(id)),
+        ];
+
+        const existingPrimary = tracker.databasePositions.find(p => p.isPrimary);
+
+        const positionsRequest: SetPositionsRequest = {
+          footballer_id: dbPlayerInfo.id,
+          positions: allPositionIds.map((id, index) => ({
+            position_id: id,
+            is_primary: existingPrimary ? id === existingPrimary.id : index === 0,
+            sort_order: index,
+          })),
+        };
+
+        try {
+          addDeploymentLog('loading', 'Syncing positions...');
+          addDeploymentLog('request', 'POST /data/footballer-positions/set-positions/', positionsRequest);
+
+          const updatedPositions = await FootballerAPI.setPositions(positionsRequest);
+
+          addDeploymentLog('response', `✅ ${updatedPositions.length} position(s) synced`, updatedPositions);
+        } catch (posError) {
+          addDeploymentLog('error', `❌ Failed to sync positions: ${posError instanceof Error ? posError.message : 'Unknown error'}`);
+          console.error('Failed to sync positions:', posError);
+        }
+      }
+
       // Final success message
       const operations = [];
       if (playerChanges) {
@@ -615,6 +651,9 @@ export function CareerLookupPlayerConfiguration({
       if (hasNationChanges()) {
         const totalNationOps = nationChanges.updates.length + nationChanges.creates.length;
         operations.push(`${totalNationOps} nation operations completed`);
+      }
+      if (playerData.positionsTracker?.hasDiscrepancy && playerData.positionsTracker.missingIdsToApply.length > 0) {
+        operations.push(`${playerData.positionsTracker.missingIdsToApply.length} position(s) synced`);
       }
 
       addDeploymentLog('success', `🎉 Update completed! ${operations.join(', ')}`);
@@ -766,6 +805,33 @@ export function CareerLookupPlayerConfiguration({
 
         addDeploymentLog('success', `🏳️ Nation stats: ${createdNations}/${foundNations.length} records created`);
         onNationStatsUpdated?.();
+      }
+
+      // Assign positions from positionsTracker
+      const positionIds = playerData.positionsTracker?.missingIdsToApply ?? [];
+      if (positionIds.length > 0) {
+        addDeploymentLog('info', `📍 Found ${positionIds.length} position(s) to assign`);
+
+        const positionsRequest: SetPositionsRequest = {
+          footballer_id: createdFootballer.id,
+          positions: positionIds.map((id, index) => ({
+            position_id: id,
+            is_primary: index === 0,
+            sort_order: index,
+          })),
+        };
+
+        try {
+          addDeploymentLog('loading', 'Assigning positions...');
+          addDeploymentLog('request', 'POST /data/footballer-positions/set-positions/', positionsRequest);
+
+          const createdPositions = await FootballerAPI.setPositions(positionsRequest);
+
+          addDeploymentLog('response', `✅ ${createdPositions.length} position(s) assigned`, createdPositions);
+        } catch (posError) {
+          addDeploymentLog('error', `❌ Failed to assign positions: ${posError instanceof Error ? posError.message : 'Unknown error'}`);
+          console.error('Failed to assign positions:', posError);
+        }
       }
 
       setDeploymentComplete(true);
