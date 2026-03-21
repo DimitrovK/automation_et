@@ -441,8 +441,23 @@ export function CareerLookupPlayerConfiguration({
     return nationChanges.creates.length > 0 || nationChanges.updates.length > 0;
   };
 
+  const hasPositionChanges = () => {
+    if (!selectedPositions || selectedPositions.length === 0) return false;
+    if (!playerData?.playerFoundInDB || !dbPlayerInfo) return selectedPositions.length > 0;
+    const tracker = playerData.positionsTracker;
+    if (!tracker) return selectedPositions.length > 0;
+    const dbIds = new Set(tracker.databasePositions.map(p => p.id));
+    const selIds = new Set(selectedPositions.map(p => p.position_id));
+    if (selIds.size !== dbIds.size) return true;
+    if ([...selIds].some(id => !dbIds.has(id))) return true;
+    return selectedPositions.some(sp => {
+      const dbP = tracker.databasePositions.find(d => d.id === sp.position_id);
+      return dbP && dbP.isPrimary !== sp.is_primary;
+    });
+  };
+
   const handleUpdatePlayer = async () => {
-    if (!dbPlayerInfo || (!hasChanges() && !hasTeamChanges() && !hasNationChanges())) {
+    if (!dbPlayerInfo || (!hasChanges() && !hasTeamChanges() && !hasNationChanges() && !hasPositionChanges())) {
       return;
     }
 
@@ -457,7 +472,7 @@ export function CareerLookupPlayerConfiguration({
     const playerChanges = getPlayerChanges();
     const teamChanges = getTeamChanges();
 
-    if (!playerChanges && !hasTeamChanges() && !hasNationChanges()) {
+    if (!playerChanges && !hasTeamChanges() && !hasNationChanges() && !hasPositionChanges()) {
       addDeploymentLog('info', '💡 No changes detected - Update cancelled');
       return;
     }
@@ -1192,14 +1207,14 @@ export function CareerLookupPlayerConfiguration({
               disabled={
                 deploying
                 || (!playerData?.playerFoundInDB && playerData.summary.notFoundTeams > 0)
-                || (playerData?.playerFoundInDB && !hasChanges() && !hasTeamChanges() && !hasNationChanges())
+                || (playerData?.playerFoundInDB && !hasChanges() && !hasTeamChanges() && !hasNationChanges() && !hasPositionChanges())
               }
             >
               <Save className="mr-2 size-5" />
               {deploying
                 ? (playerData?.playerFoundInDB ? 'Updating...' : 'Deploying...')
                 : playerData?.playerFoundInDB
-                  ? (hasChanges() || hasTeamChanges() || hasNationChanges() ? 'Update Footballer' : 'No Changes Detected')
+                  ? (hasChanges() || hasTeamChanges() || hasNationChanges() || hasPositionChanges() ? 'Update Footballer' : 'No Changes Detected')
                   : 'Deploy Footballer'}
             </Button>
           </div>
@@ -1208,16 +1223,16 @@ export function CareerLookupPlayerConfiguration({
             ? (
                 playerData?.playerFoundInDB
                   ? (
-                      (hasChanges() || hasTeamChanges() || hasNationChanges())
+                      (hasChanges() || hasTeamChanges() || hasNationChanges() || hasPositionChanges())
                         ? (
                             <p className="text-center text-sm font-medium text-blue-600">
                               ✏️ Changes detected - Ready to update existing player
-                              {hasChanges() && (hasTeamChanges() || hasNationChanges()) && ' and'}
+                              {hasChanges() && (hasTeamChanges() || hasNationChanges() || hasPositionChanges()) && ' and'}
                               {hasTeamChanges() && ' teams'}
-                              {hasTeamChanges() && hasNationChanges() && ' and'}
+                              {hasTeamChanges() && (hasNationChanges() || hasPositionChanges()) && ' and'}
                               {hasNationChanges() && ' nations'}
-                              {!hasChanges() && hasTeamChanges() && !hasNationChanges() && ' teams'}
-                              {!hasChanges() && !hasTeamChanges() && hasNationChanges() && ' nations'}
+                              {hasNationChanges() && hasPositionChanges() && ' and'}
+                              {hasPositionChanges() && ' positions'}
                             </p>
                           )
                         : (
