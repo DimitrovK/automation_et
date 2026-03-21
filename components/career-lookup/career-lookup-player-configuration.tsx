@@ -33,6 +33,7 @@ type CareerLookupPlayerConfigurationProps = {
 
   // Position selections from PositionCard
   selectedPositions?: SelectedPosition[];
+  positionsSynced?: boolean;
 
   className?: string;
 };
@@ -46,6 +47,7 @@ export function CareerLookupPlayerConfiguration({
   onReloadPlayer,
   onNationStatsUpdated,
   selectedPositions,
+  positionsSynced,
   className,
 }: CareerLookupPlayerConfigurationProps) {
   const { user } = useAuth();
@@ -442,6 +444,7 @@ export function CareerLookupPlayerConfiguration({
   };
 
   const hasPositionChanges = () => {
+    if (positionsSynced) return false;
     if (!selectedPositions || selectedPositions.length === 0) return false;
     if (!playerData?.playerFoundInDB || !dbPlayerInfo) return selectedPositions.length > 0;
     const tracker = playerData.positionsTracker;
@@ -1165,6 +1168,7 @@ export function CareerLookupPlayerConfiguration({
           chosenDataSource={chosenDataSource}
           dbNationalTeams={dbNationalTeams}
           selectedPositions={selectedPositions}
+          positionsSynced={positionsSynced}
         />
 
         <Separator className="my-8" />

@@ -36,6 +36,7 @@ type JsonCommandPreviewProps = {
   chosenDataSource?: 'wikipedia' | 'database' | null;
   dbNationalTeams?: FootballerNationStat[];
   selectedPositions?: SelectedPosition[];
+  positionsSynced?: boolean;
 };
 
 export function JsonCommandPreview({
@@ -45,6 +46,7 @@ export function JsonCommandPreview({
   chosenDataSource,
   dbNationalTeams,
   selectedPositions,
+  positionsSynced,
 }: JsonCommandPreviewProps) {
   const { user } = useAuth();
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
@@ -300,6 +302,10 @@ export function JsonCommandPreview({
 
   // Compute position operations from selectedPositions
   const getPositionOps = useMemo(() => {
+    if (positionsSynced) {
+      return { hasChanges: false, positionsPayload: null };
+    }
+
     if (!selectedPositions || selectedPositions.length === 0) {
       return { hasChanges: false, positionsPayload: null };
     }
@@ -347,7 +353,7 @@ export function JsonCommandPreview({
     }
 
     return { hasChanges: false, positionsPayload: null };
-  }, [selectedPositions, playerData, dbPlayerInfo, isExistingPlayer]);
+  }, [selectedPositions, playerData, dbPlayerInfo, isExistingPlayer, positionsSynced]);
 
   const hasPositionChanges = getPositionOps.hasChanges;
 

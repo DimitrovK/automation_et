@@ -50,8 +50,13 @@ export default function FootballerCareerApp() {
 
   // State for selected positions from PositionCard
   const [selectedPositions, setSelectedPositions] = useState<SelectedPosition[]>([]);
+  const [positionsSynced, setPositionsSynced] = useState(false);
   const handleSelectedPositionsChange = useCallback((positions: SelectedPosition[]) => {
     setSelectedPositions(positions);
+    setPositionsSynced(false);
+  }, []);
+  const handlePositionsApplied = useCallback(() => {
+    setPositionsSynced(true);
   }, []);
 
   // Initialize with URL parameters
@@ -279,6 +284,7 @@ export default function FootballerCareerApp() {
               onDataSourceChange={setChosenDataSource}
               onNationStatsUpdated={refetchNationalTeams}
               onSelectedPositionsChange={handleSelectedPositionsChange}
+              onPositionsApplied={handlePositionsApplied}
             />
 
             {/* Player Configuration Section - Full Width */}
@@ -291,6 +297,7 @@ export default function FootballerCareerApp() {
               dbNationalTeams={dbNationalTeams}
               onNationStatsUpdated={refetchNationalTeams}
               selectedPositions={selectedPositions}
+              positionsSynced={positionsSynced}
             />
           </>
         )}
