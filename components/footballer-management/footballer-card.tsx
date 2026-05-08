@@ -72,7 +72,7 @@ export function FootballerCard({
                         ? 'border-amber-500 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg'
                         : footballer.status === 'AWAITING_CHANGE_CHECK'
                           ? 'border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
-                          : footballer.status === 'REFUSED'
+                          : footballer.status === 'DENIED'
                             ? 'border-red-500 bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
                             : 'border-gray-500 bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg'
                   }`}
@@ -335,13 +335,13 @@ export function FootballerCard({
                         <div>
                           <span className="fm-text-secondary text-xs uppercase tracking-wide">Apps: </span>
                           <span className="fm-stat-blue font-mono font-bold">
-                            {footballer.teams_played_for.reduce((sum, team) => sum + team.apps, 0)}
+                            {footballer.teams_played_for.reduce((sum, team) => sum + (team.apps ?? 0), 0)}
                           </span>
                         </div>
                         <div>
                           <span className="fm-text-secondary text-xs uppercase tracking-wide">Goals: </span>
                           <span className="fm-stat-yellow font-mono font-bold">
-                            {footballer.teams_played_for.reduce((sum, team) => sum + team.goals, 0)}
+                            {footballer.teams_played_for.reduce((sum, team) => sum + (team.goals ?? 0), 0)}
                           </span>
                         </div>
                       </div>
@@ -381,7 +381,7 @@ export function FootballerCard({
                           {team.end_year || 'Present'}
                         </div>
                         <div className="fm-stat-blue col-span-1 text-center font-mono">
-                          {team.end_year ? team.end_year - team.start_year : 'Current'}
+                          {team.end_year && team.start_year ? team.end_year - team.start_year : 'Current'}
                         </div>
                       </div>
 
@@ -404,7 +404,7 @@ export function FootballerCard({
                           <div>
                             <span className="text-xs uppercase tracking-wide text-gray-500">Duration:</span>
                             <span className="fm-stat-blue ml-1 font-mono">
-                              {team.end_year ? `${team.end_year - team.start_year} years` : 'Current'}
+                              {team.end_year && team.start_year ? `${team.end_year - team.start_year} years` : 'Current'}
                             </span>
                           </div>
                         </div>

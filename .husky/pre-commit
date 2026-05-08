@@ -1,0 +1,10 @@
+# Pre-commit hook: lint staged files, then run the full Vitest suite.
+# - `lint-staged` auto-fixes ESLint issues on staged JS/TS files
+#   (rules live in lint-staged.config.js).
+# - `npm run test:run` invokes `vitest run` (single-pass, no watch).
+# Both must pass for the commit to land. Bypass with `--no-verify`
+# only when you know what you're doing.
+set -e
+
+npx lint-staged
+npm run test:run

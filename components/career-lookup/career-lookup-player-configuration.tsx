@@ -74,6 +74,8 @@ export function CareerLookupPlayerConfiguration({
     is_manager: false,
     might_change: false,
     available_for_career_path: true,
+    available_for_grid: false,
+    available_for_scout: true,
     career_path_difficulty: 'NORMAL',
     firstName: '',
     lastName: '',
@@ -95,6 +97,8 @@ export function CareerLookupPlayerConfiguration({
         is_manager: dbPlayerInfo.is_manager,
         might_change: dbPlayerInfo.might_change,
         available_for_career_path: dbPlayerInfo.available_for_career_path,
+        available_for_grid: dbPlayerInfo.available_for_grid,
+        available_for_scout: dbPlayerInfo.available_for_scout,
         career_path_difficulty: dbPlayerInfo.career_path_difficulty as 'EASY' | 'NORMAL' | 'HARD' | 'EXTREME',
         firstName: dbPlayerInfo.first_name,
         lastName: dbPlayerInfo.last_name,
@@ -115,6 +119,8 @@ export function CareerLookupPlayerConfiguration({
         is_manager: false,
         might_change: false,
         available_for_career_path: true,
+        available_for_grid: false,
+        available_for_scout: true,
         career_path_difficulty: 'NORMAL' as const,
         firstName: first,
         lastName: last,
@@ -303,7 +309,7 @@ export function CareerLookupPlayerConfiguration({
           // Always include start_year and end_year if they weren't already in changes
           // to prevent them from being set to null in the backend
           if (!changes.hasOwnProperty('start_year')) {
-            changes.start_year = dbTeam.start_year;
+            changes.start_year = dbTeam.start_year ?? undefined;
           }
           if (!changes.hasOwnProperty('end_year')) {
             changes.end_year = dbTeam.end_year;
@@ -733,6 +739,8 @@ export function CareerLookupPlayerConfiguration({
         is_manager: playerConfig.is_manager,
         might_change: playerConfig.might_change,
         available_for_career_path: playerConfig.available_for_career_path,
+        available_for_grid: playerConfig.available_for_grid,
+        available_for_scout: playerConfig.available_for_scout,
         career_path_difficulty: playerConfig.career_path_difficulty,
       };
 

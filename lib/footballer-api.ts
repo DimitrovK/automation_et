@@ -3,8 +3,12 @@ import type {
   CreateFootballerRequest,
   CreateFootballerTeamRequest,
   Footballer,
+  FootballerBulkUpdateResponse,
+  FootballerBulkUpdates,
+  FootballerIncludeToken,
   FootballerNation,
   FootballerNationStat,
+  FootballerPicture,
   FootballerPosition,
   FootballersResponse,
   FootballerTeam,
@@ -12,6 +16,7 @@ import type {
   Position,
   SetPositionsRequest,
 } from '@/types/player';
+import config from '@/lib/config';
 import { apiFetcher } from '@/lib/api-fetcher';
 
 /**
@@ -42,10 +47,37 @@ export class FootballerAPI {
 
   /**
    * Get a single footballer by ID
-   * GET /data/footballers/{id}/
+   * GET /data/footballers/{id}/[?include=...]
+   *
+   * Pass an array of include tokens (``teams``, ``nations``,
+   * ``positions``, ``pictures``) to expand nested relations in one
+   * round trip — used by the modernised Update flow.
    */
-  static async getFootballer(id: number): Promise<Footballer> {
-    return apiFetcher(`${this.BASE_PATH}/${id}/`);
+  static async getFootballer(
+    id: number,
+    include?: FootballerIncludeToken[],
+  ): Promise<Footballer> {
+    const qs = include && include.length > 0 ? `?include=${include.join(',')}` : '';
+    return apiFetcher<Footballer>(`${this.BASE_PATH}/${id}/${qs}`);
+  }
+
+  /**
+   * Bulk-update a fixed allowlist of fields on many footballers.
+   * POST /data/footballers/bulk-update/
+   * @returns count of rows updated + the applied diff
+   */
+  static async bulkUpdateFootballers(
+    ids: number[],
+    updates: FootballerBulkUpdates,
+  ): Promise<FootballerBulkUpdateResponse> {
+    return apiFetcher<FootballerBulkUpdateResponse>(
+      `${this.BASE_PATH}/bulk-update/`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, updates }),
+      },
+    );
   }
 
   /**
@@ -202,35 +234,118 @@ export class FootballerAPI {
     });
   }
 
-  // ── Positions ──────────────────────────────────────────────
+  // ── Footballer (raw) update helpers ──────────────────────────
 
-  /**
-   * Get all positions (for dropdowns/selectors)
-   * GET /data/positions/ (AllowAny)
-   */
+  /** Partial update via PATCH — used when only a few fields change. */
+  static async patchFootballer(
+    id: number,
+    updates: Partial<CreateFootballerRequest>,
+  ): Promise<Footballer> {
+    return apiFetcher<Footballer>(`${this.BASE_PATH}/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+  }
+
+  // ── Positions ────────────────────────────────────────────────
+
+  /** GET /data/positions/ — reference list of all 16 positions. */
   static async getPositions(): Promise<Position[]> {
-    return apiFetcher('data/positions/');
+    return apiFetcher<Position[]>('data/positions/');
+  }
+
+  /** GET /data/footballer-positions/?footballer={id} (AllowAny for GET). */
+  static async getFootballerPositions(
+    footballerId: number,
+  ): Promise<FootballerPosition[]> {
+    return apiFetcher<FootballerPosition[]>(
+      `data/footballer-positions/?footballer=${footballerId}`,
+    );
   }
 
   /**
-   * Get footballer positions by footballer ID
-   * GET /data/footballer-positions/?footballer={footballer_id} (AllowAny for GET)
-   */
-  static async getFootballerPositions(footballerId: number): Promise<FootballerPosition[]> {
-    return apiFetcher(`data/footballer-positions/?footballer=${footballerId}`);
-  }
-
-  /**
-   * Bulk set positions for a footballer (atomically replaces all)
-   * POST /data/footballer-positions/set-positions/ (Admin auth)
+   * POST /data/footballer-positions/set-positions/ — admin-only.
+   * Atomically replaces the footballer's full position set. Pass an
+   * empty positions array to clear them all.
    */
   static async setPositions(data: SetPositionsRequest): Promise<FootballerPosition[]> {
-    return apiFetcher('data/footballer-positions/set-positions/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    return apiFetcher<FootballerPosition[]>(
+      'data/footballer-positions/set-positions/',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
+    );
+  }
+
+  // ── Pictures ─────────────────────────────────────────────────
+
+  /** GET /data/footballer-pictures/?footballer={id}&is_active=... */
+  static async getFootballerPictures(
+    footballerId: number,
+    onlyActive = false,
+  ): Promise<FootballerPicture[]> {
+    const params = new URLSearchParams({ footballer: String(footballerId) });
+    if (onlyActive) params.set('is_active', 'true');
+    return apiFetcher<FootballerPicture[]>(`data/footballer-pictures/?${params.toString()}`);
+  }
+
+  /**
+   * POST /data/footballer-pictures/ — multipart upload.
+   *
+   * apiFetcher hard-codes ``Content-Type: application/json`` so we
+   * can't reuse it for multipart (the boundary header would be
+   * stomped). Build the request inline using ``fetch`` with the same
+   * Bearer token apiFetcher uses, but let the browser set the
+   * multipart boundary itself.
+   */
+  static async uploadFootballerPicture(
+    footballerId: number,
+    name: string,
+    file: File,
+  ): Promise<FootballerPicture> {
+    const form = new FormData();
+    form.append('footballer_id', String(footballerId));
+    form.append('name', name);
+    form.append('image', file);
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const response = await fetch(config.getApiUrl('data/footballer-pictures/'), {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
     });
+
+    if (!response.ok) {
+      let message = `HTTP ${response.status}: ${response.statusText} (POST data/footballer-pictures/)`;
+      try {
+        const data = await response.json();
+        if (typeof data?.detail === 'string') message = data.detail;
+        else if (typeof data?.error === 'string') message = data.error;
+      } catch {
+        // keep the default message
+      }
+      throw new Error(message);
+    }
+    return (await response.json()) as FootballerPicture;
+  }
+
+  /** PATCH /data/footballer-pictures/{id}/ — toggle is_active or rename. */
+  static async patchFootballerPicture(
+    id: number,
+    updates: Partial<Pick<FootballerPicture, 'name' | 'is_active'>>,
+  ): Promise<FootballerPicture> {
+    return apiFetcher<FootballerPicture>(`data/footballer-pictures/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+  }
+
+  /** DELETE /data/footballer-pictures/{id}/ */
+  static async deleteFootballerPicture(id: number): Promise<void> {
+    return apiFetcher<void>(`data/footballer-pictures/${id}/`, { method: 'DELETE' });
   }
 }

@@ -169,7 +169,7 @@ export function JsonCommandPreview({
           // Always include start_year and end_year if they weren't already in changes
           // to prevent them from being set to null in the backend
           if (!changes.hasOwnProperty('start_year')) {
-            changes.start_year = dbTeam.start_year;
+            changes.start_year = dbTeam.start_year ?? undefined;
           }
           if (!changes.hasOwnProperty('end_year')) {
             changes.end_year = dbTeam.end_year;
@@ -383,6 +383,8 @@ export function JsonCommandPreview({
       is_manager: playerConfig.is_manager,
       might_change: playerConfig.might_change,
       available_for_career_path: playerConfig.available_for_career_path,
+      available_for_grid: playerConfig.available_for_grid,
+      available_for_scout: playerConfig.available_for_scout,
       career_path_difficulty: playerConfig.career_path_difficulty,
     };
 

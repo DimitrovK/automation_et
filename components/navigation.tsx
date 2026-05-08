@@ -11,6 +11,7 @@ import {
   Search,
   Sparkles,
   Users,
+  Users2,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -79,6 +80,12 @@ export function Navigation({ className }: NavigationProps) {
           href: '/footballer-management',
           icon: Sparkles,
           description: 'Test footballer API endpoints',
+        },
+        {
+          label: 'Team Players',
+          href: '/team-players',
+          icon: Users2,
+          description: 'Browse the squad assigned to a team',
         },
       ],
     },

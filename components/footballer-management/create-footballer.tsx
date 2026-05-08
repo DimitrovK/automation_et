@@ -2,12 +2,15 @@
 
 import type { CreateFootballerRequest, FootballerNation } from '@/types/player';
 import { Plus } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { NationCombobox } from '@/components/footballer-management/NationCombobox';
+import { NationsMultiSelect } from '@/components/footballer-management/NationsMultiSelect';
 import { ApiButton } from '@/components/ui/emerald-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 
 type CreateFootballerProps = {
   createForm: CreateFootballerRequest;
@@ -32,6 +35,17 @@ export function CreateFootballer({
 
   const isFormValid = createForm.last_name.trim() && createForm.date_of_birth;
 
+  // Resolve ``other_nation_ids`` (numbers) into the full Nation objects
+  // the multi-select renders as chips. Falls back to {} placeholders if
+  // the nations list hasn't loaded yet — preserves the user's selection
+  // across re-renders without dropping the ids.
+  const otherNations = useMemo(() => {
+    const ids = createForm.other_nation_ids ?? [];
+    return ids
+      .map((id) => nations.find((n) => n.id === id))
+      .filter((n): n is FootballerNation => Boolean(n));
+  }, [createForm.other_nation_ids, nations]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -42,7 +56,7 @@ export function CreateFootballer({
         <div className="mb-4 grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <Label>Status</Label>
-            <Select value={createForm.status} onValueChange={value => updateForm({ status: value })}>
+            <Select value={createForm.status} onValueChange={value => updateForm({ status: value as CreateFootballerRequest['status'] })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -93,26 +107,26 @@ export function CreateFootballer({
 
           <div className="space-y-2">
             <Label>Nation</Label>
-            <Select
-              value={createForm.nation_id.toString()}
-              onValueChange={value => updateForm({ nation_id: Number.parseInt(value) })}
-              disabled={nationsLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={nationsLoading ? 'Loading nations...' : 'Select a nation'} />
-              </SelectTrigger>
-              <SelectContent>
-                {nations.map(nation => (
-                  <SelectItem key={nation.id} value={nation.id.toString()}>
-                    {nation.name}
-                    {' '}
-                    (
-                    {nation.nationality}
-                    )
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NationCombobox
+              value={createForm.nation_id || null}
+              onChange={(id) => updateForm({ nation_id: id })}
+              placeholder="Search and pick a nation…"
+            />
+          </div>
+        </div>
+
+        {/* Secondary nationalities (other_nations M2M) — full width */}
+        <div className="mb-4 grid grid-cols-1 gap-4">
+          <div className="space-y-2">
+            <Label>Other Nationalities</Label>
+            <NationsMultiSelect
+              value={otherNations}
+              onChange={(arr) => updateForm({ other_nation_ids: arr.map((n) => n.id) })}
+              excludeIds={createForm.nation_id ? [createForm.nation_id] : []}
+            />
+            <p className="text-xs text-gray-500">
+              Optional: dual citizenship. The primary nation above is excluded from this list.
+            </p>
           </div>
         </div>
 
@@ -132,11 +146,25 @@ export function CreateFootballer({
           </div>
         </div>
 
-        {/* Career Difficulty + Available For Career Path - Same line */}
-        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Additional Info - full-width textarea */}
+        <div className="mb-4 grid grid-cols-1 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="additionalInfo">Additional Info</Label>
+            <Textarea
+              id="additionalInfo"
+              placeholder="Free-form notes about this footballer (used by some game prompts)…"
+              value={createForm.additional_info ?? ''}
+              onChange={e => updateForm({ additional_info: e.target.value || null })}
+              rows={3}
+            />
+          </div>
+        </div>
+
+        {/* Career Difficulty - Full width */}
+        <div className="mb-4 grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <Label>Career Difficulty</Label>
-            <Select value={createForm.career_path_difficulty} onValueChange={value => updateForm({ career_path_difficulty: value })}>
+            <Select value={createForm.career_path_difficulty} onValueChange={value => updateForm({ career_path_difficulty: value as CreateFootballerRequest['career_path_difficulty'] })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -148,16 +176,35 @@ export function CreateFootballer({
               </SelectContent>
             </Select>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Available for Career Path</Label>
-            <div className="flex h-10 items-center space-x-2">
+        {/* Game eligibility group — three switches side-by-side. */}
+        <div className="mb-4 rounded-md border bg-gray-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+          <Label className="mb-2 block text-sm font-medium">Game Eligibility</Label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="flex items-center space-x-2">
               <Switch
                 id="availableForCareer"
                 checked={createForm.available_for_career_path}
                 onCheckedChange={checked => updateForm({ available_for_career_path: checked })}
               />
-              <Label htmlFor="availableForCareer" className="text-sm">Available for Career Path</Label>
+              <Label htmlFor="availableForCareer" className="text-sm">Career Path</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="availableForGrid"
+                checked={createForm.available_for_grid}
+                onCheckedChange={checked => updateForm({ available_for_grid: checked })}
+              />
+              <Label htmlFor="availableForGrid" className="text-sm">Grid</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="availableForScout"
+                checked={createForm.available_for_scout}
+                onCheckedChange={checked => updateForm({ available_for_scout: checked })}
+              />
+              <Label htmlFor="availableForScout" className="text-sm">Scout</Label>
             </div>
           </div>
         </div>

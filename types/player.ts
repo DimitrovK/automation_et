@@ -55,6 +55,8 @@ export type PlayerConfiguration = {
   is_manager: boolean;
   might_change: boolean;
   available_for_career_path: boolean;
+  available_for_grid: boolean;
+  available_for_scout: boolean;
   career_path_difficulty: 'EASY' | 'NORMAL' | 'HARD' | 'EXTREME';
 
   // Player data fields
@@ -74,10 +76,11 @@ export type FootballerTeam = {
   team_id: number;
   team_name: string;
   role: 'player' | 'manager';
-  apps: number;
-  goals: number;
+  /** Match the model: apps / goals / years are nullable. */
+  apps: number | null;
+  goals: number | null;
   transfer_type: 'permanent' | 'loan';
-  start_year: number;
+  start_year: number | null;
   end_year: number | null;
   created_at: string;
   updated_at: string;
@@ -90,14 +93,36 @@ export type FootballerNation = {
   short: string;
 };
 
+export type FootballerPicture = {
+  id: number;
+  footballer_id?: number;
+  footballer_name?: string;
+  image_url: string | null;
+  thumbnail_url: string | null;
+  name: string;
+  slug: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+// ``Position`` and ``FootballerPosition`` types are declared further
+// down — both came from PR #25 (position-management). Don't redeclare
+// them here.
+
+export type CareerPathDifficulty = 'EASY' | 'NORMAL' | 'HARD' | 'EXTREME';
+export type FootballerStatus = 'AWAITING_REVISION' | 'APPROVED' | 'DENIED' | 'AWAITING_CHANGE_CHECK';
+
 export type Footballer = {
   id: number;
-  status: string;
+  status: FootballerStatus;
   user: number;
   first_name: string;
   last_name: string;
   full_name: string;
   nation: FootballerNation;
+  /** Secondary nationalities (M2M, dual citizenship). Empty array if none. */
+  other_nations: FootballerNation[];
   date_of_birth: string;
   wikipedia_url: string | null;
   show_date_of_birth_on_search: boolean;
@@ -106,9 +131,18 @@ export type Footballer = {
   is_manager: boolean;
   might_change: boolean;
   available_for_career_path: boolean;
-  career_path_difficulty: string;
+  available_for_grid: boolean;
+  available_for_scout: boolean;
+  career_path_difficulty: CareerPathDifficulty;
   teams_played_for: FootballerTeam[];
   teams_managed: FootballerTeam[];
+  /** Populated when retrieved with ?include=positions; null otherwise. */
+  positions: FootballerPosition[] | null;
+  /** Populated when retrieved with ?include=pictures; null otherwise. */
+  pictures: FootballerPicture[] | null;
+  /** Populated when retrieved with ?include=nations; null otherwise. */
+  national_stats: FootballerNationStat[] | null;
+  additional_info: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -121,11 +155,13 @@ export type FootballersResponse = {
 };
 
 export type CreateFootballerRequest = {
-  status: string;
-  user: number;
-  first_name: string;
+  status: FootballerStatus;
+  user?: number;
+  first_name?: string;
   last_name: string;
   nation_id: number;
+  /** Secondary nation ids for dual citizenship. */
+  other_nation_ids?: number[];
   date_of_birth: string;
   wikipedia_url?: string | null;
   show_date_of_birth_on_search: boolean;
@@ -134,8 +170,34 @@ export type CreateFootballerRequest = {
   is_manager: boolean;
   might_change: boolean;
   available_for_career_path: boolean;
-  career_path_difficulty: string;
+  available_for_grid: boolean;
+  available_for_scout: boolean;
+  career_path_difficulty: CareerPathDifficulty;
+  additional_info?: string | null;
 };
+
+/** Fields the bulk-update endpoint accepts. Subset of CreateFootballerRequest
+ *  — admin-tweakable flags, no identity / DoB / nation. */
+export type FootballerBulkUpdates = Partial<{
+  status: FootballerStatus;
+  retired: boolean;
+  is_player: boolean;
+  is_manager: boolean;
+  might_change: boolean;
+  available_for_career_path: boolean;
+  available_for_grid: boolean;
+  available_for_scout: boolean;
+  career_path_difficulty: CareerPathDifficulty;
+}>;
+
+export type FootballerBulkUpdateResponse = {
+  updated: number;
+  ids: number[];
+  applied: FootballerBulkUpdates;
+};
+
+/** Optional include tokens for `GET /data/footballers/<id>/?include=...` */
+export type FootballerIncludeToken = 'teams' | 'nations' | 'positions' | 'pictures';
 
 // Footballer Teams API Types
 export type CreateFootballerTeamRequest = {

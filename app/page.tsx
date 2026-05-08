@@ -9,6 +9,7 @@ import {
   Search,
   Settings,
   Users,
+  Users2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -48,6 +49,9 @@ export default function DashboardPage() {
   };
   const navigateToQuestionsHub = () => {
     router.push('/questions-uploader');
+  };
+  const navigateToTeamPlayers = () => {
+    router.push('/team-players');
   };
 
   return (
@@ -125,6 +129,27 @@ export default function DashboardPage() {
               >
                 <Database className="mr-2 size-4" />
                 Check Footballers
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="transition-shadow duration-200 hover:shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users2 className="size-5 text-teal-600" />
+                Team Players
+              </CardTitle>
+              <CardDescription>
+                Look up the squad of any team by name or ID. Filter by role, era, transfer type.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={navigateToTeamPlayers}
+                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+              >
+                <Users2 className="mr-2 size-4" />
+                Browse Squad
               </Button>
             </CardContent>
           </Card>
