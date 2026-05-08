@@ -6,8 +6,13 @@ type ApiOptions = {
 
 /**
  * API fetcher with automatic JWT token handling and refresh
+ *
+ * Generic so call sites can do `apiFetcher<MyResponse>(url)` and skip the
+ * `as MyResponse` cast. Defaults to `any` to preserve the previous
+ * behaviour for untyped callers — new code should pass an explicit `T`.
  */
-export async function apiFetcher(url: string, options: ApiOptions = {}): Promise<any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function apiFetcher<T = any>(url: string, options: ApiOptions = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 
@@ -60,7 +65,8 @@ export async function apiFetcher(url: string, options: ApiOptions = {}): Promise
   }
 
   if (!response.ok) {
-    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    const method = (options.method || 'GET').toUpperCase();
+    let errorMessage = `HTTP ${response.status}: ${response.statusText} (${method} ${url})`;
 
     try {
       const errorData = await response.json();
@@ -113,20 +119,20 @@ export async function apiFetcher(url: string, options: ApiOptions = {}): Promise
 
   // If no content (204 status or empty response), return null
   if (response.status === 204 || contentLength === '0') {
-    return null;
+    return null as T;
   }
 
   // If response doesn't contain JSON, return null
   if (!contentType || !contentType.includes('application/json')) {
-    return null;
+    return null as T;
   }
 
   // Try to parse JSON, return null if parsing fails (empty response)
   try {
     const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return (text ? JSON.parse(text) : null) as T;
   } catch (error) {
     console.warn('Failed to parse JSON response:', error);
-    return null;
+    return null as T;
   }
 }

@@ -134,7 +134,7 @@ export function analyzeDiscrepancies(
     }
 
     if (wikipediaData.totalAppearances) {
-      const dbApps = databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0;
+      const dbApps = databaseData.teams_played_for?.reduce((sum, team) => sum + (team.apps ?? 0), 0) || 0;
       const wikiApps = wikipediaData.totalAppearances;
       if (Math.abs(dbApps - wikiApps) > 10) {
         discrepancies.push(`Total career appearances mismatch: DB has ${dbApps}, Wikipedia has ${wikiApps} (across all teams)`);
@@ -142,7 +142,7 @@ export function analyzeDiscrepancies(
     }
 
     if (wikipediaData.totalGoals) {
-      const dbGoals = databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0;
+      const dbGoals = databaseData.teams_played_for?.reduce((sum, team) => sum + (team.goals ?? 0), 0) || 0;
       const wikiGoals = wikipediaData.totalGoals;
       if (Math.abs(dbGoals - wikiGoals) > 5) {
         discrepancies.push(`Total career goals mismatch: DB has ${dbGoals}, Wikipedia has ${wikiGoals} (across all teams)`);

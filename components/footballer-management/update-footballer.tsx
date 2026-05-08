@@ -2,7 +2,9 @@
 
 import type { CreateFootballerRequest, Footballer, FootballerNation, FootballerTeam } from '@/types/player';
 import { Edit, Loader2, Search } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
+import { NationCombobox } from '@/components/footballer-management/NationCombobox';
+import { NationsMultiSelect } from '@/components/footballer-management/NationsMultiSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiButton } from '@/components/ui/emerald-button';
@@ -10,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 
 type UpdateFootballerProps = {
   updateForm: CreateFootballerRequest;
@@ -20,102 +22,32 @@ type UpdateFootballerProps = {
   footballerToUpdate: Footballer | null;
   fetchLoading: boolean;
   footballerId: string;
-  footballerTeams: FootballerTeam[];
-  footballerTeamsLoading: boolean;
   onFormChange: (form: CreateFootballerRequest) => void;
-  onUpdateFootballer: (teamChanges?: Array<{ id: number; changes: Partial<FootballerTeam> }>) => void;
+  onUpdateFootballer: () => void;
   onFootballerIdChange: (id: string) => void;
   onFetchFootballerForUpdate: () => void;
-  onTeamUpdate?: (teamId: number, updatedTeam: Partial<FootballerTeam>) => void;
-  onTeamsSaved?: () => void;
 };
 
 export function UpdateFootballer({
   updateForm,
   updateLoading,
   nations,
-  nationsLoading,
   footballerToUpdate,
   fetchLoading,
   footballerId,
-  footballerTeams,
-  footballerTeamsLoading,
   onFormChange,
   onUpdateFootballer,
   onFootballerIdChange,
   onFetchFootballerForUpdate,
-  onTeamUpdate,
-  onTeamsSaved,
 }: UpdateFootballerProps) {
-  const [editingTeams, setEditingTeams] = useState<Record<number, Partial<FootballerTeam>>>({});
-  const [originalTeams, setOriginalTeams] = useState<Record<number, FootballerTeam>>({});
-
-  // Track original team values when footballerTeams changes
-  useEffect(() => {
-    if (footballerTeams && footballerTeams.length > 0) {
-      const teamsMap = footballerTeams.reduce((acc, team) => {
-        acc[team.id] = { ...team };
-        return acc;
-      }, {} as Record<number, FootballerTeam>);
-      setOriginalTeams(teamsMap);
-      // Clear any existing edits when new teams are loaded
-      setEditingTeams({});
-    }
-  }, [footballerTeams]);
-
-  const handleTeamFieldChange = (teamId: number, field: keyof FootballerTeam, value: string | number | null) => {
-    setEditingTeams(prev => ({
-      ...prev,
-      [teamId]: {
-        ...prev[teamId],
-        [field]: value,
-      },
-    }));
-  };
-
-  const getTeamFieldValue = (team: FootballerTeam, field: keyof FootballerTeam) => {
-    const editedValue = editingTeams[team.id]?.[field];
-    return editedValue !== undefined ? editedValue : team[field];
-  };
-
-  // Get changed teams - only teams that have been modified
-  const getChangedTeams = (): Array<{ id: number; changes: Partial<FootballerTeam> }> => {
-    const changedTeams: Array<{ id: number; changes: Partial<FootballerTeam> }> = [];
-
-    Object.entries(editingTeams).forEach(([teamIdStr, editedFields]) => {
-      const teamId = Number.parseInt(teamIdStr);
-      const originalTeam = originalTeams[teamId];
-
-      if (!originalTeam) {
-        return;
-      }
-
-      const actualChanges: Partial<FootballerTeam> = {};
-      let hasChanges = false;
-
-      // Check each edited field to see if it's actually different from original
-      Object.entries(editedFields).forEach(([field, newValue]) => {
-        const originalValue = originalTeam[field as keyof FootballerTeam];
-        if (originalValue !== newValue) {
-          actualChanges[field as keyof FootballerTeam] = newValue as any;
-          hasChanges = true;
-        }
-      });
-
-      if (hasChanges) {
-        changedTeams.push({ id: teamId, changes: actualChanges });
-      }
-    });
-
-    return changedTeams;
-  };
-
-  const hasUnsavedTeamChanges = getChangedTeams().length > 0;
-
-  const handleUpdateClick = () => {
-    const teamChanges = getChangedTeams();
-    onUpdateFootballer(teamChanges);
-  };
+  // Resolve other_nation_ids → Nation objects for the multi-select chip
+  // renderer. Falls back gracefully when ``nations`` is still loading.
+  const otherNations = useMemo(() => {
+    const ids = updateForm.other_nation_ids ?? [];
+    return ids
+      .map((id) => nations.find((n) => n.id === id))
+      .filter((n): n is FootballerNation => Boolean(n));
+  }, [updateForm.other_nation_ids, nations]);
 
   return (
     <div className="space-y-6">
@@ -250,23 +182,29 @@ export function UpdateFootballer({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="update-nation">Nation</Label>
-                <Select
-                  value={updateForm.nation_id.toString()}
-                  onValueChange={value => onFormChange({ ...updateForm, nation_id: Number.parseInt(value) })}
-                  disabled={updateLoading || nationsLoading}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select nation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {nations.map(nation => (
-                      <SelectItem key={nation.id} value={nation.id.toString()}>
-                        {nation.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Nation</Label>
+                <NationCombobox
+                  value={updateForm.nation_id || null}
+                  onChange={(id) => onFormChange({ ...updateForm, nation_id: id })}
+                  placeholder="Search and pick a nation…"
+                  disabled={updateLoading}
+                />
+              </div>
+            </div>
+
+            {/* Secondary nationalities (other_nations M2M) - full width */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label>Other Nationalities</Label>
+                <NationsMultiSelect
+                  value={otherNations}
+                  onChange={(arr) => onFormChange({ ...updateForm, other_nation_ids: arr.map((n) => n.id) })}
+                  excludeIds={updateForm.nation_id ? [updateForm.nation_id] : []}
+                  disabled={updateLoading}
+                />
+                <p className="text-xs text-gray-500">
+                  Optional: dual citizenship. The primary nation above is excluded from this list.
+                </p>
               </div>
             </div>
 
@@ -287,8 +225,23 @@ export function UpdateFootballer({
               </div>
             </div>
 
-            {/* Career Difficulty + Available For Career Path - Same line */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Additional Info - full-width textarea */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="update-additional-info">Additional Info</Label>
+                <Textarea
+                  id="update-additional-info"
+                  placeholder="Free-form notes about this footballer (used by some game prompts)…"
+                  value={updateForm.additional_info ?? ''}
+                  onChange={e => onFormChange({ ...updateForm, additional_info: e.target.value || null })}
+                  rows={3}
+                  disabled={updateLoading}
+                />
+              </div>
+            </div>
+
+            {/* Career Difficulty - Full width */}
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="update-career-difficulty">Career Difficulty</Label>
                 <Select
@@ -307,17 +260,38 @@ export function UpdateFootballer({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Available for Career Path</Label>
-                <div className="flex h-10 items-center space-x-2">
+            {/* Game eligibility group — three switches side-by-side. */}
+            <div className="rounded-md border bg-gray-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+              <Label className="mb-2 block text-sm font-medium">Game Eligibility</Label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="flex items-center space-x-2">
                   <Switch
                     id="update-career-available"
                     checked={updateForm.available_for_career_path}
                     onCheckedChange={checked => onFormChange({ ...updateForm, available_for_career_path: checked })}
                     disabled={updateLoading}
                   />
-                  <Label htmlFor="update-career-available" className="text-sm">Available for Career Path</Label>
+                  <Label htmlFor="update-career-available" className="text-sm">Career Path</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="update-grid-available"
+                    checked={updateForm.available_for_grid}
+                    onCheckedChange={checked => onFormChange({ ...updateForm, available_for_grid: checked })}
+                    disabled={updateLoading}
+                  />
+                  <Label htmlFor="update-grid-available" className="text-sm">Grid</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="update-scout-available"
+                    checked={updateForm.available_for_scout}
+                    onCheckedChange={checked => onFormChange({ ...updateForm, available_for_scout: checked })}
+                    disabled={updateLoading}
+                  />
+                  <Label htmlFor="update-scout-available" className="text-sm">Scout</Label>
                 </div>
               </div>
             </div>
@@ -375,224 +349,22 @@ export function UpdateFootballer({
               </div>
             </div>
 
-            {/* Team History Section */}
-            <div className="space-y-3">
-              <div className="border-t pt-4">
-                <h4 className="mb-3 text-lg font-medium">Team History</h4>
-                {footballerTeamsLoading
-                  ? (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Loader2 className="size-4 animate-spin" />
-                        Loading team history...
-                      </div>
-                    )
-                  : !footballerTeams || footballerTeams.length === 0
-                      ? (
-                          <p className="text-sm text-gray-600">No team records found.</p>
-                        )
-                      : (
-                          <Tabs defaultValue="player" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
-                              <TabsTrigger value="player" className="text-sm">
-                                Player (
-                                {footballerTeams.filter(team => team.role === 'player').length}
-                                )
-                              </TabsTrigger>
-                              <TabsTrigger value="manager" className="text-sm">
-                                Manager (
-                                {footballerTeams.filter(team => team.role === 'manager').length}
-                                )
-                              </TabsTrigger>
-                            </TabsList>
-
-                            <TabsContent value="player" className="mt-4">
-                              {footballerTeams.filter(team => team.role === 'player').length > 0
-                                ? (
-                                    <div className="space-y-4">
-                                      {footballerTeams.filter(team => team.role === 'player').map((team, index) => (
-                                        <div key={team.id}>
-                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Team Name</Label>
-                                              <Input value={team.team_name} disabled className="h-8 bg-gray-100 text-sm dark:bg-gray-800" />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Apps</Label>
-                                              <Input
-                                                type="number"
-                                                value={(getTeamFieldValue(team, 'apps') || 0).toString()}
-                                                onChange={e => handleTeamFieldChange(team.id, 'apps', Number.parseInt(e.target.value) || 0)}
-                                                className="h-8 bg-blue-50 text-sm dark:bg-blue-950/20"
-                                              />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Goals</Label>
-                                              <Input
-                                                type="number"
-                                                value={(getTeamFieldValue(team, 'goals') || 0).toString()}
-                                                onChange={e => handleTeamFieldChange(team.id, 'goals', Number.parseInt(e.target.value) || 0)}
-                                                className="h-8 bg-blue-50 text-sm dark:bg-blue-950/20"
-                                              />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Transfer Type</Label>
-                                              <Select
-                                                value={getTeamFieldValue(team, 'transfer_type') as string || 'permanent'}
-                                                onValueChange={value => handleTeamFieldChange(team.id, 'transfer_type', value)}
-                                              >
-                                                <SelectTrigger className="h-8 bg-blue-50 text-sm dark:bg-blue-950/20">
-                                                  <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="permanent">Permanent</SelectItem>
-                                                  <SelectItem value="loan">Loan</SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Start Year</Label>
-                                              <Input
-                                                type="number"
-                                                value={(getTeamFieldValue(team, 'start_year') || new Date().getFullYear()).toString()}
-                                                onChange={e => handleTeamFieldChange(team.id, 'start_year', Number.parseInt(e.target.value) || new Date().getFullYear())}
-                                                className="h-8 bg-blue-50 text-sm dark:bg-blue-950/20"
-                                              />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">End Year</Label>
-                                              <Input
-                                                type="number"
-                                                value={getTeamFieldValue(team, 'end_year') ? (getTeamFieldValue(team, 'end_year') as number).toString() : ''}
-                                                onChange={e => handleTeamFieldChange(team.id, 'end_year', e.target.value ? Number.parseInt(e.target.value) : null)}
-                                                placeholder="Present"
-                                                className="h-8 bg-blue-50 text-sm dark:bg-blue-950/20"
-                                              />
-                                            </div>
-                                          </div>
-                                          {index < footballerTeams.filter(team => team.role === 'player').length - 1 && (
-                                            <hr className="mt-4 border-gray-200 dark:border-gray-700" />
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )
-                                : (
-                                    <p className="text-sm text-gray-600">No player records found.</p>
-                                  )}
-                            </TabsContent>
-
-                            <TabsContent value="manager" className="mt-4">
-                              {footballerTeams.filter(team => team.role === 'manager').length > 0
-                                ? (
-                                    <div className="space-y-4">
-                                      {footballerTeams.filter(team => team.role === 'manager').map((team, index) => (
-                                        <div key={team.id}>
-                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Team Name</Label>
-                                              <Input value={team.team_name} disabled className="h-8 bg-gray-100 text-sm dark:bg-gray-800" />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Apps</Label>
-                                              <Input
-                                                type="number"
-                                                value={(getTeamFieldValue(team, 'apps') || 0).toString()}
-                                                onChange={e => handleTeamFieldChange(team.id, 'apps', Number.parseInt(e.target.value) || 0)}
-                                                className="h-8 bg-green-50 text-sm dark:bg-green-950/20"
-                                              />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Goals</Label>
-                                              <Input
-                                                type="number"
-                                                value={(getTeamFieldValue(team, 'goals') || 0).toString()}
-                                                onChange={e => handleTeamFieldChange(team.id, 'goals', Number.parseInt(e.target.value) || 0)}
-                                                className="h-8 bg-green-50 text-sm dark:bg-green-950/20"
-                                              />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Transfer Type</Label>
-                                              <Select
-                                                value={getTeamFieldValue(team, 'transfer_type') as string || 'permanent'}
-                                                onValueChange={value => handleTeamFieldChange(team.id, 'transfer_type', value)}
-                                              >
-                                                <SelectTrigger className="h-8 bg-green-50 text-sm dark:bg-green-950/20">
-                                                  <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="permanent">Permanent</SelectItem>
-                                                  <SelectItem value="loan">Loan</SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Start Year</Label>
-                                              <Input
-                                                type="number"
-                                                value={(getTeamFieldValue(team, 'start_year') || new Date().getFullYear()).toString()}
-                                                onChange={e => handleTeamFieldChange(team.id, 'start_year', Number.parseInt(e.target.value) || new Date().getFullYear())}
-                                                className="h-8 bg-green-50 text-sm dark:bg-green-950/20"
-                                              />
-                                            </div>
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">End Year</Label>
-                                              <Input
-                                                type="number"
-                                                value={getTeamFieldValue(team, 'end_year') ? (getTeamFieldValue(team, 'end_year') as number).toString() : ''}
-                                                onChange={e => handleTeamFieldChange(team.id, 'end_year', e.target.value ? Number.parseInt(e.target.value) : null)}
-                                                placeholder="Present"
-                                                className="h-8 bg-green-50 text-sm dark:bg-green-950/20"
-                                              />
-                                            </div>
-                                          </div>
-                                          {index < footballerTeams.filter(team => team.role === 'manager').length - 1 && (
-                                            <hr className="mt-4 border-gray-200 dark:border-gray-700" />
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )
-                                : (
-                                    <p className="text-sm text-gray-600">No manager records found.</p>
-                                  )}
-                            </TabsContent>
-                          </Tabs>
-                        )}
-              </div>
-            </div>
-
             <Button
-              onClick={handleUpdateClick}
+              onClick={onUpdateFootballer}
               disabled={updateLoading || !updateForm.last_name.trim() || !updateForm.date_of_birth}
               className="border-slate-500 bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-sm hover:from-slate-600 hover:to-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {updateLoading
-                ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      {hasUnsavedTeamChanges
-                        ? 'Updating footballer & saving teams...'
-                        : 'Updating footballer...'}
-                    </>
-                  )
-                : (
-                    <>
-                      <Edit className="mr-2 size-4" />
-                      {hasUnsavedTeamChanges
-                        ? `Update Footballer + Save Team Changes (${getChangedTeams().length})`
-                        : 'Update Footballer'}
-                    </>
-                  )}
+              {updateLoading ? (
+                <><Loader2 className="mr-2 size-4 animate-spin" /> Updating footballer...</>
+              ) : (
+                <><Edit className="mr-2 size-4" /> Update Footballer</>
+              )}
             </Button>
 
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              * Required fields. This will completely replace the footballer record.
-              {hasUnsavedTeamChanges && (
-                <>
-                  <br />
-                  ✨ Team changes will also be saved automatically.
-                </>
-              )}
+              * Required fields. Team stints, positions, nation stats, and pictures
+              are managed in the editors below — saving the form here only updates
+              the core footballer record.
             </p>
           </CardContent>
         </Card>

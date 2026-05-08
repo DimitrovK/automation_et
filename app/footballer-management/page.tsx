@@ -2,7 +2,9 @@
 
 import type { CreateFootballerRequest, Footballer, FootballerNation, FootballersResponse, FootballerTeam } from '@/types/player';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
+import { BulkUpdateToolbar } from '@/components/footballer-management/BulkUpdateToolbar';
 import { CreateFootballer } from '@/components/footballer-management/create-footballer';
 import { DeleteFootballer } from '@/components/footballer-management/delete-footballer';
 import { FootballerCard } from '@/components/footballer-management/footballer-card';
@@ -10,13 +12,19 @@ import { GetAllFootballers } from '@/components/footballer-management/get-all-fo
 import { GetSingleFootballer } from '@/components/footballer-management/get-single-footballer';
 import { OperationNavigation } from '@/components/footballer-management/operation-navigation';
 import { Result } from '@/components/footballer-management/result';
+import { NationsEditor } from '@/components/footballer-management/sub-editors/NationsEditor';
+import { PicturesEditor } from '@/components/footballer-management/sub-editors/PicturesEditor';
+import { PositionsEditor } from '@/components/footballer-management/sub-editors/PositionsEditor';
+import { TeamsEditor } from '@/components/footballer-management/sub-editors/TeamsEditor';
 import { UpdateFootballer } from '@/components/footballer-management/update-footballer';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DataPagination } from '@/components/ui/data-pagination';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -26,6 +34,11 @@ import { FootballerAPI } from '@/lib/footballer-api';
 
 export default function FootballerManagementPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // Track whether we've already consumed the ``?edit=<id>`` deep-link
+  // so a re-render (e.g. nations finishing loading) doesn't re-fire it.
+  const consumedEditParam = useRef(false);
   const [footballers, setFootballers] = useState<Footballer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +62,12 @@ export default function FootballerManagementPage() {
   // Collapsible state
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState('overview');
+  // Tab state — Read is the default landing tab now that Overview is gone.
+  const [activeTab, setActiveTab] = useState('read');
+
+  // Bulk-update selection — Set of footballer ids selected in the
+  // List Results view. Reset to empty after a successful bulk apply.
+  const [bulkSelection, setBulkSelection] = useState<Set<number>>(new Set());
 
   // Single footballer fetch states
   const [footballerId, setFootballerId] = useState('');
@@ -76,8 +93,6 @@ export default function FootballerManagementPage() {
   const [fetchForUpdateLoading, setFetchForUpdateLoading] = useState(false);
 
   // Footballer teams states for update view
-  const [footballerTeams, setFootballerTeams] = useState<FootballerTeam[]>([]);
-  const [footballerTeamsLoading, setFootballerTeamsLoading] = useState(false);
 
   const [updateForm, setUpdateForm] = useState<CreateFootballerRequest>({
     status: 'AWAITING_REVISION',
@@ -93,7 +108,11 @@ export default function FootballerManagementPage() {
     is_manager: false,
     might_change: false,
     available_for_career_path: true,
+    available_for_grid: false,
+    available_for_scout: true,
     career_path_difficulty: 'NORMAL',
+    other_nation_ids: [],
+    additional_info: null,
   });
   const [createForm, setCreateForm] = useState<CreateFootballerRequest>({
     status: 'AWAITING_REVISION',
@@ -109,7 +128,11 @@ export default function FootballerManagementPage() {
     is_manager: false,
     might_change: false,
     available_for_career_path: true,
+    available_for_grid: false,
+    available_for_scout: true,
     career_path_difficulty: 'NORMAL',
+    other_nation_ids: [],
+    additional_info: null,
   });
 
   // Load nations on component mount
@@ -259,7 +282,11 @@ export default function FootballerManagementPage() {
         is_manager: false,
         might_change: false,
         available_for_career_path: true,
+        available_for_grid: false,
+        available_for_scout: true,
         career_path_difficulty: 'NORMAL',
+        other_nation_ids: [],
+        additional_info: null,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create footballer');
@@ -356,7 +383,11 @@ export default function FootballerManagementPage() {
       is_manager: footballer.is_manager,
       might_change: footballer.might_change,
       available_for_career_path: footballer.available_for_career_path,
+      available_for_grid: footballer.available_for_grid,
+      available_for_scout: footballer.available_for_scout,
       career_path_difficulty: footballer.career_path_difficulty,
+      other_nation_ids: (footballer.other_nations ?? []).map((n) => n.id),
+      additional_info: footballer.additional_info ?? null,
     });
 
     // Clear other results to focus on updating
@@ -368,16 +399,8 @@ export default function FootballerManagementPage() {
     setDeletedFootballerId(null);
     setUpdatedFootballer(null);
 
-    // Fetch footballer teams data
-    setFootballerTeamsLoading(true);
-    try {
-      const footballerTeamsData = await FootballerAPI.getFootballerTeams(footballer.id);
-      setFootballerTeams(footballerTeamsData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch footballer teams');
-    } finally {
-      setFootballerTeamsLoading(false);
-    }
+    // The TeamsEditor sub-editor fetches its own stints — no need to
+    // pre-load them at the page level any more.
 
     // Switch to the update tab
     setActiveTab('update');
@@ -387,6 +410,42 @@ export default function FootballerManagementPage() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   };
+
+  // Deep-link entry point for `/footballer-management?edit=<id>`. Used by
+  // the team-players page so admins can jump straight from a squad row
+  // into the edit form.
+  //
+  // Important: no `cancelled` guard inside the IIFE. Under React Strict
+  // Mode (Next 16 dev) effects double-invoke as run → cleanup → run, and
+  // a cancelled flag would abort the canonical fetch *before*
+  // ``handleEditFromCard`` could apply its state writes — leaving the
+  // page stuck on the overview tab. ``consumedEditParam`` (a ref that
+  // persists across the strict-mode pair) ensures we don't fetch twice;
+  // the state setters are idempotent.
+  useEffect(() => {
+    if (consumedEditParam.current || !isAuthenticated) return;
+    const editId = searchParams?.get('edit');
+    if (!editId) return;
+    const parsed = Number(editId);
+    if (!Number.isInteger(parsed) || parsed <= 0) return;
+
+    consumedEditParam.current = true;
+    (async () => {
+      try {
+        const footballer = await FootballerAPI.getFootballer(parsed);
+        await handleEditFromCard(footballer);
+        // Drop the query param once consumed so refreshes don't re-fire.
+        router.replace('/footballer-management');
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? `Failed to open footballer #${parsed} for edit: ${err.message}`
+            : `Failed to open footballer #${parsed} for edit`,
+        );
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, searchParams]);
 
   const handleFetchFootballerForUpdate = async () => {
     if (!updateFootballerId.trim()) {
@@ -403,7 +462,6 @@ export default function FootballerManagementPage() {
     setFetchForUpdateLoading(true);
     setError(null);
     setFootballerToUpdate(null);
-    setFootballerTeams([]);
     // Clear other results
     setFootballers([]);
     setPagination(null);
@@ -413,14 +471,9 @@ export default function FootballerManagementPage() {
     setDeletedFootballerId(null);
 
     try {
-      // Fetch footballer and teams data in parallel
-      const [footballer, footballerTeamsData] = await Promise.all([
-        FootballerAPI.getFootballer(id),
-        FootballerAPI.getFootballerTeams(id),
-      ]);
-
+      // Fetch the footballer (sub-editors handle stints themselves).
+      const footballer = await FootballerAPI.getFootballer(id);
       setFootballerToUpdate(footballer);
-      setFootballerTeams(footballerTeamsData);
 
       // Populate the update form with current data
       setUpdateForm({
@@ -437,7 +490,11 @@ export default function FootballerManagementPage() {
         is_manager: footballer.is_manager,
         might_change: footballer.might_change,
         available_for_career_path: footballer.available_for_career_path,
+        available_for_grid: footballer.available_for_grid,
+        available_for_scout: footballer.available_for_scout,
         career_path_difficulty: footballer.career_path_difficulty,
+        other_nation_ids: (footballer.other_nations ?? []).map((n) => n.id),
+        additional_info: footballer.additional_info ?? null,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch footballer for update');
@@ -446,22 +503,7 @@ export default function FootballerManagementPage() {
     }
   };
 
-  // Handle team changes saved
-  const handleTeamsSaved = async () => {
-    if (footballerToUpdate) {
-      try {
-        setFootballerTeamsLoading(true);
-        const teams = await FootballerAPI.getFootballerTeams(footballerToUpdate.id);
-        setFootballerTeams(teams);
-      } catch (error) {
-        console.error('Error refreshing team data after save:', error);
-      } finally {
-        setFootballerTeamsLoading(false);
-      }
-    }
-  };
-
-  const handleUpdateFootballer = async (teamChanges?: Array<{ id: number; changes: Partial<FootballerTeam> }>) => {
+  const handleUpdateFootballer = async () => {
     if (!footballerToUpdate) {
       setError('Please load a footballer to update first');
       return;
@@ -489,43 +531,13 @@ export default function FootballerManagementPage() {
     setDeletedFootballerId(null);
 
     try {
-      // Update footballer first
-      const updatedFootballer = await FootballerAPI.updateFootballer(footballerToUpdate.id, updateForm);
+      // Update the core footballer record. Stints/positions/nations/
+      // pictures are now managed by their dedicated sub-editors below
+      // the form, so the legacy ``teamChanges`` payload is gone.
+      await FootballerAPI.updateFootballer(footballerToUpdate.id, updateForm);
 
-      // If there are team changes, save them too
-      if (teamChanges && teamChanges.length > 0) {
-        const patchPromises = teamChanges.map(({ id, changes }) => {
-          // Get the original team to preserve required fields
-          const originalTeam = footballerTeams.find(team => team.id === id);
-          if (originalTeam) {
-            const patchData = {
-              role: originalTeam.role,
-              team_id: originalTeam.team_id,
-              // Always include start_year and end_year to prevent them from being set to null
-              start_year: 'start_year' in changes ? changes.start_year : originalTeam.start_year,
-              end_year: 'end_year' in changes ? changes.end_year : originalTeam.end_year,
-              ...changes,
-            };
-            return FootballerAPI.patchFootballerTeam(id, patchData);
-          }
-          return Promise.resolve();
-        });
-
-        // Wait for all team updates to complete
-        await Promise.all(patchPromises.filter(promise => promise));
-      }
-
-      // After all updates are complete, fetch the complete footballer data with fresh team info
+      // After the update is complete, fetch the complete footballer data.
       const completeUpdatedFootballer = await FootballerAPI.getFootballer(footballerToUpdate.id);
-
-      // Also refresh the team data for the update form
-      try {
-        const refreshedTeams = await FootballerAPI.getFootballerTeams(footballerToUpdate.id);
-        setFootballerTeams(refreshedTeams);
-      } catch (teamError) {
-        console.warn('Failed to refresh team data:', teamError);
-        // Don't fail the whole operation if team refresh fails
-      }
 
       // Show the result with the complete footballer data (including fresh team data)
       setUpdatedFootballer(completeUpdatedFootballer);
@@ -565,30 +577,16 @@ export default function FootballerManagementPage() {
         is_manager: false,
         might_change: false,
         available_for_career_path: true,
+        available_for_grid: false,
+        available_for_scout: true,
         career_path_difficulty: 'NORMAL',
+        other_nation_ids: [],
+        additional_info: null,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update footballer');
     } finally {
       setUpdateLoading(false);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (pagination?.previous && currentPage > 1) {
-      handleGetFootballers(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (pagination?.next && currentPage < (pagination?.totalPages || 1)) {
-      handleGetFootballers(currentPage + 1);
-    }
-  };
-
-  const handlePageSelect = (page: number) => {
-    if (page >= 1 && page <= (pagination?.totalPages || 1)) {
-      handleGetFootballers(page);
     }
   };
 
@@ -734,41 +732,6 @@ export default function FootballerManagementPage() {
 
               {/* Tab Content */}
               <div className="w-full">
-                {activeTab === 'overview' && (
-                  <div className="mt-4 space-y-4">
-                    <div className="space-y-4">
-                      <div className="py-8 text-center">
-                        <h4 className="mb-2 text-lg font-medium">Footballer API Testing</h4>
-                        <p className="mb-4 text-gray-600 dark:text-gray-400">
-                          Select an operation type above to test different API operations
-                        </p>
-                        <div className="mx-auto grid max-w-2xl grid-cols-2 gap-4 md:grid-cols-4">
-                          <div className="rounded-lg border p-4">
-                            <h5 className="font-medium text-emerald-600">Read</h5>
-                            <p className="text-sm text-gray-500">GET operations</p>
-                            <p className="text-xs text-gray-400">✅ Available</p>
-                          </div>
-                          <div className="rounded-lg border p-4">
-                            <h5 className="font-medium text-emerald-600">Create</h5>
-                            <p className="text-sm text-gray-500">POST operations</p>
-                            <p className="text-xs text-gray-400">✅ Available</p>
-                          </div>
-                          <div className="rounded-lg border p-4">
-                            <h5 className="font-medium text-emerald-600">Update</h5>
-                            <p className="text-sm text-gray-500">PUT operations</p>
-                            <p className="text-xs text-gray-400">✅ Available</p>
-                          </div>
-                          <div className="rounded-lg border p-4">
-                            <h5 className="font-medium text-red-600">Delete</h5>
-                            <p className="text-sm text-gray-500">DELETE operations</p>
-                            <p className="text-xs text-gray-400">✅ Available</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {activeTab === 'read' && (
                   <div className="mt-4 space-y-4">
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -810,27 +773,33 @@ export default function FootballerManagementPage() {
                       footballerToUpdate={footballerToUpdate}
                       fetchLoading={fetchForUpdateLoading}
                       footballerId={updateFootballerId}
-                      footballerTeams={footballerTeams}
-                      footballerTeamsLoading={footballerTeamsLoading}
                       onFormChange={setUpdateForm}
                       onUpdateFootballer={handleUpdateFootballer}
                       onFootballerIdChange={setUpdateFootballerId}
                       onFetchFootballerForUpdate={handleFetchFootballerForUpdate}
-                      onTeamsSaved={handleTeamsSaved}
                     />
+
+                    {/* Modernised sub-editors — visible once a footballer is
+                        loaded for editing. They each manage their own
+                        FK-attached models against the BE without
+                        round-tripping through the page. */}
+                    {footballerToUpdate && (
+                      <>
+                        <PositionsEditor footballerId={footballerToUpdate.id} />
+                        <TeamsEditor footballerId={footballerToUpdate.id} />
+                        <NationsEditor
+                          footballerId={footballerToUpdate.id}
+                          eligibleNations={[
+                            footballerToUpdate.nation,
+                            ...(footballerToUpdate.other_nations ?? []),
+                          ]}
+                        />
+                        <PicturesEditor footballerId={footballerToUpdate.id} />
+                      </>
+                    )}
                   </div>
                 )}
 
-                {activeTab === 'delete' && (
-                  <div className="mt-4 space-y-4">
-                    <DeleteFootballer
-                      footballerId={deleteFootballerId}
-                      deleteLoading={deleteLoading}
-                      onFootballerIdChange={setDeleteFootballerId}
-                      onDeleteFootballer={handleDeleteFootballer}
-                    />
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -1052,6 +1021,31 @@ export default function FootballerManagementPage() {
             />
           )}
 
+          {/* Empty state: a list query was fired but matched nothing.
+              Without this, the user pressed "Get All" with filters and saw
+              no feedback — the List Results card just never rendered. */}
+          {pagination && footballers.length === 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>No footballers match these filters</CardTitle>
+                <CardDescription>
+                  {(() => {
+                    const activeFilters = getActiveFilters();
+                    return activeFilters.length > 0
+                      ? `Active filters: ${activeFilters.join(' • ')}`
+                      : 'No active filters — the database has no footballers visible to your query.';
+                  })()}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Try widening the filters above (e.g. status set to "All", clearing the search box)
+                  and running the query again.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* List Results */}
           {footballers.length > 0 && (
             <Card>
@@ -1075,46 +1069,68 @@ export default function FootballerManagementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Bulk-update toolbar — operates on whichever rows are
+                    currently checked. Hidden until a list is loaded. */}
+                <BulkUpdateToolbar
+                  visibleIds={footballers.map((f) => f.id)}
+                  selectedIds={bulkSelection}
+                  onSelectionChange={setBulkSelection}
+                  onApplied={() => handleGetFootballers(currentPage)}
+                />
+
                 {/* Footballers Grid */}
                 <div className="grid grid-cols-1 gap-4">
-                  {footballers.map(footballer => (
-                    <div key={footballer.id}>
-                      <FootballerCard footballer={footballer} defaultExpanded={false} showActions={true} onEdit={handleEditFromCard} onDelete={handleDeleteFromCard} />
-                    </div>
-                  ))}
+                  {footballers.map((footballer) => {
+                    const checked = bulkSelection.has(footballer.id);
+                    return (
+                      <div
+                        key={footballer.id}
+                        className={
+                          'flex items-start gap-2 rounded-md transition-colors '
+                          + (checked
+                            ? 'bg-emerald-50/40 dark:bg-emerald-900/10'
+                            : '')
+                        }
+                      >
+                        <div className="pl-2 pt-4">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              setBulkSelection((prev) => {
+                                const next = new Set(prev);
+                                if (v) next.add(footballer.id);
+                                else next.delete(footballer.id);
+                                return next;
+                              });
+                            }}
+                            aria-label={`Select ${footballer.full_name}`}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <FootballerCard
+                            footballer={footballer}
+                            defaultExpanded={false}
+                            showActions={true}
+                            onEdit={handleEditFromCard}
+                            onDelete={handleDeleteFromCard}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                {/* Simple Pagination */}
-                {pagination && pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 pt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePreviousPage}
-                      disabled={!pagination.previous || loading}
-                    >
-                      Previous
-                    </Button>
-
-                    <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
-                      Page
-                      {' '}
-                      {currentPage}
-                      {' '}
-                      of
-                      {' '}
-                      {pagination.totalPages}
-                    </span>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={!pagination.next || loading}
-                    >
-                      Next
-                    </Button>
-                  </div>
+                {pagination && (
+                  <DataPagination
+                    currentPage={currentPage}
+                    totalPages={pagination.totalPages}
+                    totalCount={pagination.count}
+                    visibleCount={footballers.length}
+                    onPageChange={handlePageChange}
+                    disabled={loading}
+                    hideCount
+                    className="pt-4"
+                  />
                 )}
               </CardContent>
             </Card>

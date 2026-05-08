@@ -102,12 +102,12 @@ export function ResultsSummary() {
                           |
                           Apps:
                           {' '}
-                          {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0}
+                          {result.databaseData.teams_played_for?.reduce((sum, team) => sum + (team.apps ?? 0), 0) || 0}
                           {' '}
                           |
                           Goals:
                           {' '}
-                          {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0}
+                          {result.databaseData.teams_played_for?.reduce((sum, team) => sum + (team.goals ?? 0), 0) || 0}
                         </div>
                       )}
                     </div>
@@ -238,12 +238,12 @@ export function ResultsSummary() {
                                   |
                                   Apps:
                                   {' '}
-                                  {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.apps, 0) || 0}
+                                  {result.databaseData.teams_played_for?.reduce((sum, team) => sum + (team.apps ?? 0), 0) || 0}
                                   {' '}
                                   |
                                   Goals:
                                   {' '}
-                                  {result.databaseData.teams_played_for?.reduce((sum, team) => sum + team.goals, 0) || 0}
+                                  {result.databaseData.teams_played_for?.reduce((sum, team) => sum + (team.goals ?? 0), 0) || 0}
                                 </div>
                               </div>
                               <div>

@@ -148,9 +148,9 @@ export function CareerLookupDataValidation({
             },
             dbTeam: {
               team_id: dbTeam.team_id,
-              apps: dbTeam.apps,
-              goals: dbTeam.goals,
-              start_year: dbTeam.start_year,
+              apps: dbTeam.apps ?? 0,
+              goals: dbTeam.goals ?? 0,
+              start_year: dbTeam.start_year ?? 0,
               end_year: dbTeam.end_year,
               transfer_type: dbTeam.transfer_type,
             },

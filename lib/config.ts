@@ -1,7 +1,18 @@
-// Configuration utility for environment variables
+// Configuration utility for environment variables.
+//
+// API base URL precedence:
+//   1. `NEXT_PUBLIC_API_BASE_URL` if set (e.g. via `.env.local`).
+//   2. `http://localhost:8000` when running `next dev` so the
+//      automation app talks to a local Django by default.
+//   3. The hosted prod API for production builds.
+const DEFAULT_API_BASE_URL =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:8000'
+    : 'https://api.extratime.world';
+
 const config = {
   // API Configuration
-  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.extratime.world',
+  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL,
 
   // N8N Configuration
   N8N_WEBHOOK_URL: process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://n8n.extratime.world/webhook/footballer-career',
