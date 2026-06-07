@@ -1,5 +1,6 @@
 'use client';
 
+import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import type {
   CreateFootballerNationRequest,
   CreateFootballerRequest,
@@ -10,7 +11,6 @@ import type {
   n8nWikiPlayerData,
   PlayerConfiguration,
 } from '@/types/player';
-import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { AlertTriangle, Check, ChevronDown, ChevronUp, Code, Copy, FileText } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/auth';
+import { computeTeamChanges, inferTransferType } from '@/lib/team-changes';
 
 type JsonCommandPreviewProps = {
   playerData: n8nWikiPlayerData | null;
@@ -114,141 +115,18 @@ export function JsonCommandPreview({
   const hasChanges = getPlayerChanges !== null;
   const isExistingPlayer = playerData?.playerFoundInDB && dbPlayerInfo;
 
-  // Function to analyze team changes when Wikipedia is chosen as data source
+  // Team changes for existing-player + wiki-source flow. Shares the one
+  // implementation in lib/team-changes.ts so the preview, the inline-sync
+  // card, and the full-deploy code path can't drift from each other.
   const getTeamChanges = useMemo(() => {
     if (!isExistingPlayer || !dbPlayerInfo || chosenDataSource !== 'wikipedia' || !playerData?.teams) {
       return { updates: [], creates: [], deletes: [] };
     }
-
-    const wikipediaTeams = playerData.teams.filter(team => team.teamFound && team.teamID);
-    const dbTeams = dbPlayerInfo.teams_played_for || [];
-
-    const updates: Array<{ id: number; changes: Partial<CreateFootballerTeamRequest>; teamName: string; position: number }> = [];
-    const creates: Array<{ teamData: CreateFootballerTeamRequest; teamName: string; position: number }> = [];
-    const deletes: Array<{ id: number; teamName: string; position: number }> = [];
-
-    // Position-based matching: compare teams by their position in the arrays
-    const minLength = Math.min(wikipediaTeams.length, dbTeams.length);
-
-    // Process teams that exist in both arrays (by position)
-    for (let i = 0; i < minLength; i++) {
-      const wikiTeam = wikipediaTeams[i];
-      const dbTeam = dbTeams[i];
-
-      const transferTypeString = (wikiTeam.typeOfTransfer || '').toLowerCase().trim();
-      const transferType = transferTypeString.includes('loan') ? 'loan' : 'permanent';
-
-      // Check if this is the same team (by team_id) or a completely different team
-      const isSameTeam = dbTeam.team_id === wikiTeam.teamID;
-
-      if (isSameTeam) {
-        // Same team - check for field changes
-        const changes: Partial<CreateFootballerTeamRequest> = {};
-
-        if (dbTeam.apps !== wikiTeam.appearances) {
-          changes.apps = wikiTeam.appearances;
-        }
-        if (dbTeam.goals !== wikiTeam.goals) {
-          changes.goals = wikiTeam.goals;
-        }
-        if (dbTeam.transfer_type !== transferType) {
-          changes.transfer_type = transferType;
-        }
-        if (dbTeam.start_year !== wikiTeam.joinYear) {
-          changes.start_year = wikiTeam.joinYear;
-        }
-        if (dbTeam.end_year !== wikiTeam.departYear) {
-          changes.end_year = wikiTeam.departYear;
-        }
-
-        if (Object.keys(changes).length > 0) {
-          // Include required fields for PUT requests to prevent null values
-          changes.team_id = dbTeam.team_id;
-          changes.role = dbTeam.role;
-
-          // Always include start_year and end_year if they weren't already in changes
-          // to prevent them from being set to null in the backend
-          if (!changes.hasOwnProperty('start_year')) {
-            changes.start_year = dbTeam.start_year ?? undefined;
-          }
-          if (!changes.hasOwnProperty('end_year')) {
-            changes.end_year = dbTeam.end_year;
-          }
-
-          updates.push({
-            id: dbTeam.id,
-            changes,
-            teamName: wikiTeam.teamName,
-            position: i + 1,
-          });
-        }
-      } else {
-        // Different team - delete the old one and create the new one
-        deletes.push({
-          id: dbTeam.id,
-          teamName: dbTeam.team_name,
-          position: i + 1,
-        });
-
-        const teamData: CreateFootballerTeamRequest = {
-          footballer_id: dbPlayerInfo.id,
-          team_id: wikiTeam.teamID!,
-          role: 'player',
-          apps: wikiTeam.appearances,
-          goals: wikiTeam.goals,
-          transfer_type: transferType,
-          start_year: wikiTeam.joinYear,
-          end_year: wikiTeam.departYear,
-        };
-
-        creates.push({
-          teamData,
-          teamName: wikiTeam.teamName,
-          position: i + 1,
-        });
-      }
-    }
-
-    // Handle extra Wikipedia teams (more teams in Wikipedia than in DB)
-    if (wikipediaTeams.length > dbTeams.length) {
-      for (let i = dbTeams.length; i < wikipediaTeams.length; i++) {
-        const wikiTeam = wikipediaTeams[i];
-        const transferTypeString = (wikiTeam.typeOfTransfer || '').toLowerCase().trim();
-        const transferType = transferTypeString.includes('loan') ? 'loan' : 'permanent';
-
-        const teamData: CreateFootballerTeamRequest = {
-          footballer_id: dbPlayerInfo.id,
-          team_id: wikiTeam.teamID!,
-          role: 'player',
-          apps: wikiTeam.appearances,
-          goals: wikiTeam.goals,
-          transfer_type: transferType,
-          start_year: wikiTeam.joinYear,
-          end_year: wikiTeam.departYear,
-        };
-
-        creates.push({
-          teamData,
-          teamName: wikiTeam.teamName,
-          position: i + 1,
-        });
-      }
-    }
-
-    // Handle extra DB teams (more teams in DB than in Wikipedia)
-    if (dbTeams.length > wikipediaTeams.length) {
-      for (let i = wikipediaTeams.length; i < dbTeams.length; i++) {
-        const dbTeam = dbTeams[i];
-
-        deletes.push({
-          id: dbTeam.id,
-          teamName: dbTeam.team_name,
-          position: i + 1,
-        });
-      }
-    }
-
-    return { updates, creates, deletes };
+    return computeTeamChanges(
+      playerData.teams,
+      dbPlayerInfo.teams_played_for ?? [],
+      dbPlayerInfo.id,
+    );
   }, [isExistingPlayer, dbPlayerInfo, chosenDataSource, playerData]);
 
   const hasTeamChanges = getTeamChanges.updates.length > 0 || getTeamChanges.creates.length > 0 || getTeamChanges.deletes.length > 0;
@@ -326,14 +204,14 @@ export function JsonCommandPreview({
     if (footballerId) {
       const dbIds = new Set(dbFootballerPositions?.map(p => p.position_id) ?? []);
       const selectedIds = new Set(selectedPositions.map(p => p.position_id));
-      const hasChange =
-        selectedIds.size !== dbIds.size
-        || [...selectedIds].some(id => !dbIds.has(id))
-        || [...dbIds].some(id => !selectedIds.has(id))
-        || selectedPositions.some(sp => {
-          const dbP = dbFootballerPositions?.find(d => d.position_id === sp.position_id);
-          return dbP && dbP.is_primary !== sp.is_primary;
-        });
+      const hasChange
+        = selectedIds.size !== dbIds.size
+          || [...selectedIds].some(id => !dbIds.has(id))
+          || [...dbIds].some(id => !selectedIds.has(id))
+          || selectedPositions.some((sp) => {
+            const dbP = dbFootballerPositions?.find(d => d.position_id === sp.position_id);
+            return dbP && dbP.is_primary !== sp.is_primary;
+          });
 
       if (hasChange) {
         const payload = {
@@ -407,16 +285,13 @@ export function JsonCommandPreview({
       const foundTeams = playerData.teams.filter(team => team.teamFound && team.teamID);
 
       return foundTeams.map((team) => {
-        const transferTypeString = (team.typeOfTransfer || '').toLowerCase().trim();
-        const transferType = transferTypeString.includes('loan') ? 'loan' : 'permanent';
-
         const createTeamData: CreateFootballerTeamRequest = {
           footballer_id: 0, // Will be replaced with actual ID after footballer creation
           team_id: team.teamID!,
           role: 'player',
           apps: team.appearances,
           goals: team.goals,
-          transfer_type: transferType,
+          transfer_type: inferTransferType(team.typeOfTransfer),
           start_year: team.joinYear,
           end_year: team.departYear,
         };
@@ -716,6 +591,7 @@ ${JSON.stringify(data, null, 2)}`;
                     </Button>
                   </div>
 
+                  {/* eslint-disable-next-line style/multiline-ternary -- pre-existing JSX ternary; reformatting is noisy and unrelated to this PR. */}
                   {isExistingPlayer ? (
                     // Show team deletes, updates and creates for existing players
                     <div className="space-y-4">
@@ -978,7 +854,9 @@ ${JSON.stringify(data, null, 2)}`;
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        if (!getPositionOps.positionsPayload) return;
+                        if (!getPositionOps.positionsPayload) {
+                          return;
+                        }
                         const posOp = {
                           operation: isExistingPlayer ? 'SYNC' : 'SET',
                           endpoint: '/data/footballer-positions/set-positions/',
@@ -997,6 +875,7 @@ ${JSON.stringify(data, null, 2)}`;
                     </Button>
                   </div>
 
+                  {/* eslint-disable-next-line style/multiline-ternary -- pre-existing JSX ternary; reformatting is noisy and unrelated to this PR. */}
                   {getPositionOps.positionsPayload ? (
                     <div>
                       <h5 className="mb-2 text-xs font-medium text-purple-700 dark:text-purple-400 sm:text-sm">
@@ -1280,8 +1159,12 @@ ${JSON.stringify(data, null, 2)}`;
                             <h4 className="mb-2 font-medium">
                               {(() => {
                                 let step = 2;
-                                if (isExistingPlayer && hasTeamChanges) step++;
-                                if (hasNationChanges) step++;
+                                if (isExistingPlayer && hasTeamChanges) {
+                                  step++;
+                                }
+                                if (hasNationChanges) {
+                                  step++;
+                                }
                                 return step;
                               })()}
                               .

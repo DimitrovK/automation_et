@@ -28,30 +28,74 @@ export type TeamChanges = {
   deletes: TeamDelete[];
 };
 
-function inferTransferType(typeOfTransfer: string | undefined): 'permanent' | 'loan' {
+/**
+ * Derive `transfer_type` from the wiki's free-text `typeOfTransfer` field.
+ * Matches the contains-"loan" heuristic used everywhere we round-trip wiki
+ * data through the BE serializer.
+ */
+export function inferTransferType(typeOfTransfer: string | undefined): 'permanent' | 'loan' {
   return (typeOfTransfer || '').toLowerCase().includes('loan') ? 'loan' : 'permanent';
+}
+
+/**
+ * Composite row key for matching a wiki spell to its DB row. Keying by
+ * `team_id` alone collides when a player has multiple spells at the same
+ * club (loan then permanent, two loans, player-then-manager). The BE
+ * model allows all of those: `unique_player_permanent_transfer` is the
+ * ONLY uniqueness constraint, and it's filtered to `role='player' AND
+ * transfer_type='permanent'` over `(footballer, team, start_year,
+ * transfer_type)`. So `(team_id, start_year, transfer_type, role)` is the
+ * tightest key that won't collide for any state the DB accepts.
+ *
+ * Edge cases:
+ * - `start_year` null/undefined → sentinel `'NULL'`. Two rows that both
+ *   have a null start_year will collide; that's intentional (legacy data
+ *   without a start_year is one undifferentiable bucket — fix the data
+ *   in admin, not here).
+ * - `transfer_type` always passed explicitly so callers can't drift from
+ *   `inferTransferType`'s wiki→DB normalization.
+ */
+export function teamRowKey(
+  teamId: number,
+  startYear: number | null | undefined,
+  transferType: 'permanent' | 'loan',
+  role: 'player' | 'manager' = 'player',
+): string {
+  return `${teamId}|${startYear ?? 'NULL'}|${transferType}|${role}`;
+}
+
+/** Composite key for a wiki spell. Returns `null` for unresolvable rows. */
+export function wikiTeamRowKey(team: Team): string | null {
+  if (!team.teamFound || team.teamID == null) {
+    return null;
+  }
+  return teamRowKey(team.teamID, team.joinYear, inferTransferType(team.typeOfTransfer));
+}
+
+/** Composite key for a DB row. */
+export function dbTeamRowKey(team: FootballerTeam): string {
+  return teamRowKey(team.team_id, team.start_year, team.transfer_type, team.role);
 }
 
 /**
  * Compute the delete/update/create deltas to reconcile a footballer's DB
  * `teams_played_for` rows with the Wikipedia-derived `Team[]` from n8n.
  *
- * Matching is by `team_id` (NOT array position). Position-based matching
- * breaks the moment a single row is synced inline — the indices in Wiki
- * and DB stop lining up, and `updates` would spam redundant fixes (or
- * worse, delete-and-recreate the row we just synced). Keying by `team_id`
- * makes already-synced rows fall out naturally: their fields match, so
- * `updates` is empty for them. Mirrors how `getNationChanges` works for
- * international career.
+ * Matching is by composite `(team_id, start_year, transfer_type, role)` key
+ * — see `teamRowKey`. Matching by `team_id` alone (the pre-fix approach)
+ * collided when a player had multiple spells at the same club, silently
+ * dropping one spell from every collision pair. Matching by array position
+ * (the pre-PR approach) drifted as soon as a single row was synced inline.
+ * Composite-key matching handles both.
  *
- * - `updates`: same team_id in both, but at least one tracked field differs.
- *   `team_id` and `role` are always echoed back (the DRF serializer treats
- *   them as required on PUT; omitting causes a 400). `start_year` /
- *   `end_year` are echoed too — leaving them out can null-overwrite the row.
- * - `creates`: team_id present in Wiki, absent in DB.
- * - `deletes`: team_id present in DB, absent in Wiki.
+ * - `updates`: same composite key in both, but at least one tracked field
+ *   differs. `team_id`, `role`, `start_year`, `end_year` are always echoed
+ *   back to the BE — DRF treats them as required on PUT (omitting causes a
+ *   400 or null-overwrites).
+ * - `creates`: wiki spell whose composite key has no DB match.
+ * - `deletes`: DB spell whose composite key has no wiki match.
  *
- * Wiki teams without a `teamID` (n8n couldn't resolve the club) are
+ * Wiki rows without a `teamID` (n8n couldn't resolve the club) are
  * skipped — the deploy console surfaces those separately so the user can
  * fix them by hand.
  */
@@ -60,29 +104,30 @@ export function computeTeamChanges(
   dbTeams: FootballerTeam[],
   footballerId: number,
 ): TeamChanges {
-  const wikiByTeamId = new Map<number, { team: Team; position: number }>();
+  const wikiByKey = new Map<string, { team: Team; position: number }>();
   wikiTeams.forEach((team, idx) => {
-    if (team.teamFound && team.teamID != null) {
-      wikiByTeamId.set(team.teamID, { team, position: idx + 1 });
+    const key = wikiTeamRowKey(team);
+    if (key !== null) {
+      wikiByKey.set(key, { team, position: idx + 1 });
     }
   });
 
-  const dbByTeamId = new Map<number, { team: FootballerTeam; position: number }>();
+  const dbByKey = new Map<string, { team: FootballerTeam; position: number }>();
   dbTeams.forEach((team, idx) => {
-    dbByTeamId.set(team.team_id, { team, position: idx + 1 });
+    dbByKey.set(dbTeamRowKey(team), { team, position: idx + 1 });
   });
 
   const updates: TeamUpdate[] = [];
   const creates: TeamCreate[] = [];
   const deletes: TeamDelete[] = [];
 
-  for (const [teamId, { team: wikiTeam, position }] of wikiByTeamId) {
-    const dbEntry = dbByTeamId.get(teamId);
+  for (const [key, { team: wikiTeam, position }] of wikiByKey) {
+    const dbEntry = dbByKey.get(key);
     if (!dbEntry) {
       creates.push({
         teamData: {
           footballer_id: footballerId,
-          team_id: teamId,
+          team_id: wikiTeam.teamID!,
           role: 'player',
           apps: wikiTeam.appearances,
           goals: wikiTeam.goals,
@@ -97,20 +142,16 @@ export function computeTeamChanges(
     }
 
     const dbTeam = dbEntry.team;
-    const transferType = inferTransferType(wikiTeam.typeOfTransfer);
+    // Composite key already guarantees transfer_type, start_year, and role
+    // match — the only fields that can still differ are apps, goals, and
+    // end_year. Diff those, then echo back the load-bearing fields so the
+    // DRF serializer accepts the PUT.
     const changes: Partial<CreateFootballerTeamRequest> = {};
-
     if (dbTeam.apps !== wikiTeam.appearances) {
       changes.apps = wikiTeam.appearances;
     }
     if (dbTeam.goals !== wikiTeam.goals) {
       changes.goals = wikiTeam.goals;
-    }
-    if (dbTeam.transfer_type !== transferType) {
-      changes.transfer_type = transferType;
-    }
-    if (dbTeam.start_year !== wikiTeam.joinYear) {
-      changes.start_year = wikiTeam.joinYear;
     }
     if (dbTeam.end_year !== wikiTeam.departYear) {
       changes.end_year = wikiTeam.departYear;
@@ -120,14 +161,10 @@ export function computeTeamChanges(
       continue;
     }
 
-    // DRF serializer requires team_id + role on PUT; start/end_year are
-    // echoed back to prevent null-overwrites on partial diffs (see #2 in
-    // the PR description for the underlying constraint).
     changes.team_id = dbTeam.team_id;
     changes.role = dbTeam.role;
-    if (!Object.hasOwn(changes, 'start_year')) {
-      changes.start_year = dbTeam.start_year ?? undefined;
-    }
+    changes.transfer_type = dbTeam.transfer_type;
+    changes.start_year = dbTeam.start_year ?? undefined;
     if (!Object.hasOwn(changes, 'end_year')) {
       changes.end_year = dbTeam.end_year;
     }
@@ -140,8 +177,8 @@ export function computeTeamChanges(
     });
   }
 
-  for (const [teamId, { team: dbTeam, position }] of dbByTeamId) {
-    if (!wikiByTeamId.has(teamId)) {
+  for (const [key, { team: dbTeam, position }] of dbByKey) {
+    if (!wikiByKey.has(key)) {
       deletes.push({
         id: dbTeam.id,
         teamName: dbTeam.team_name,

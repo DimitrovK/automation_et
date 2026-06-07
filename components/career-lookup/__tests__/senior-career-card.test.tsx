@@ -344,3 +344,119 @@ describe('SeniorCareerCard — within row layout', () => {
     expect(within(sharedAncestor as HTMLElement).getByRole('link', { name: /Edit Team/i })).toBe(adminLink);
   });
 });
+
+// Regression: a player with two spells at the same club (loan then permanent)
+// must produce per-row sync state and target the correct DB row id. Pre-fix,
+// keying the `dbByTeamId` map + `useRowSync` state by `team.teamID` alone
+// collapsed both spells under one entry — the loan-row button mutated the
+// permanent record's id and both rows shared loading/spinner state.
+describe('SeniorCareerCard — multi-spell at same club', () => {
+  beforeEach(() => {
+    mockCreate.mockReset();
+    mockUpdate.mockReset();
+  });
+
+  afterEach(() => cleanup());
+
+  const arsenalLoan = makeWiki({
+    teamName: 'Arsenal',
+    teamID: 1,
+    joinYear: 2010,
+    departYear: 2011,
+    appearances: 20,
+    goals: 3,
+    typeOfTransfer: 'Loan',
+  });
+  const arsenalPermanent = makeWiki({
+    teamName: 'Arsenal',
+    teamID: 1,
+    joinYear: 2012,
+    departYear: 2015,
+    appearances: 90,
+    goals: 25,
+    typeOfTransfer: 'Permanent',
+  });
+  const dbLoan = makeDbTeam({
+    id: 100,
+    team_id: 1,
+    team_name: 'Arsenal',
+    start_year: 2010,
+    end_year: 2011,
+    apps: 18, // ← mismatch on apps so the loan row shows "Update in DB"
+    goals: 3,
+    transfer_type: 'loan',
+  });
+  const dbPermanent = makeDbTeam({
+    id: 200,
+    team_id: 1,
+    team_name: 'Arsenal',
+    start_year: 2012,
+    end_year: 2015,
+    apps: 90,
+    goals: 25,
+    transfer_type: 'permanent',
+  });
+
+  it('clicking "Update in DB" on the LOAN row calls updateFootballerTeam with the LOAN row id (not the permanent)', async () => {
+    const user = userEvent.setup();
+    mockUpdate.mockResolvedValue({ ...dbLoan, apps: 20 });
+
+    render(
+      <SeniorCareerCard
+        playerData={makePlayerData({ teams: [arsenalLoan, arsenalPermanent] })}
+        dbPlayerInfo={makeFootballer({ teams_played_for: [dbLoan, dbPermanent] })}
+        dbFootballerTeams={[dbLoan, dbPermanent]}
+        footballerId={99}
+      />,
+    );
+
+    // Exactly one update button (only the loan row mismatches; permanent matches).
+    const updateButtons = screen.getAllByRole('button', { name: /Update in DB/i });
+
+    expect(updateButtons).toHaveLength(1);
+
+    await user.click(updateButtons[0]);
+
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      100, // ← LOAN row's id, NOT 200 (the permanent's)
+      expect.objectContaining({
+        apps: 20,
+        transfer_type: 'loan',
+        start_year: 2010,
+      }),
+    );
+  });
+
+  it('two mismatched spells at the same club render TWO independent Update buttons (sync state is per-spell)', async () => {
+    const user = userEvent.setup();
+    // Both rows mismatch — drift apps on both.
+    const dbLoanDrift = makeDbTeam({ ...dbLoan, apps: 18 });
+    const dbPermDrift = makeDbTeam({ ...dbPermanent, apps: 85 });
+    // First click resolves; second never resolves, so we can observe state independence.
+    mockUpdate.mockResolvedValueOnce(dbLoanDrift)
+      .mockImplementationOnce(() => new Promise(() => { /* pending forever */ }));
+
+    render(
+      <SeniorCareerCard
+        playerData={makePlayerData({ teams: [arsenalLoan, arsenalPermanent] })}
+        dbPlayerInfo={makeFootballer({ teams_played_for: [dbLoanDrift, dbPermDrift] })}
+        dbFootballerTeams={[dbLoanDrift, dbPermDrift]}
+        footballerId={99}
+      />,
+    );
+
+    const updateButtons = screen.getAllByRole('button', { name: /Update in DB/i });
+
+    expect(updateButtons).toHaveLength(2);
+
+    // Click only the loan-row button. The permanent-row button must remain
+    // clickable — pre-fix, both shared the same sync key and both flipped to
+    // "Processing..." simultaneously.
+    await user.click(updateButtons[0]);
+
+    expect(mockUpdate).toHaveBeenCalledWith(100, expect.anything());
+    // The other row's button must still be present (not turned into a Processing badge).
+    expect(screen.getAllByRole('button', { name: /Update in DB/i })).toHaveLength(1);
+  });
+});

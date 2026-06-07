@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useRowSync } from '@/hooks/use-row-sync';
 import config from '@/lib/config';
 import { FootballerAPI } from '@/lib/footballer-api';
+import { dbTeamRowKey, inferTransferType, wikiTeamRowKey } from '@/lib/team-changes';
 import { RowSyncButton } from './shared/row-sync-button';
 
 type ClubSyncStatus = 'synced' | 'mismatch' | 'not-in-db' | 'not-found' | 'db-only';
@@ -31,10 +32,6 @@ type SeniorCareerCardProps = {
   onClubStatsUpdated?: () => void;
 };
 
-function inferTransferType(typeOfTransfer: string | undefined): 'permanent' | 'loan' {
-  return (typeOfTransfer || '').toLowerCase().includes('loan') ? 'loan' : 'permanent';
-}
-
 /** True iff every tracked stat field on a wiki/DB pair already matches. */
 function isClubSynced(wikiTeam: Team, dbTeam: FootballerTeam): boolean {
   return (
@@ -55,22 +52,33 @@ export function SeniorCareerCard({
   onDataSourceChange,
   onClubStatsUpdated,
 }: SeniorCareerCardProps) {
-  const sync = useRowSync<number>();
+  // Per-row sync state is keyed by the composite spell key (string), not
+  // raw teamID. Keying by teamID collided when a player had two spells at
+  // the same club (loan then permanent) — both rows shared loading/success
+  // state and one click could update the wrong DB row. See `wikiTeamRowKey`
+  // in lib/team-changes.ts for the key shape.
+  const sync = useRowSync<string>();
 
   // Authoritative DB team rows — prefer the lifted prop (refetched after
   // each inline sync) over the snapshot embedded in `dbPlayerInfo`.
   const liveDbTeams: FootballerTeam[] = dbFootballerTeams ?? dbPlayerInfo?.teams_played_for ?? [];
-  const dbByTeamId = new Map<number, FootballerTeam>(liveDbTeams.map(t => [t.team_id, t]));
+  const dbByKey = new Map<string, FootballerTeam>(liveDbTeams.map(t => [dbTeamRowKey(t), t]));
 
-  /** Per-row sync status keyed by wiki teamID; `null` when no actionable sync. */
+  /**
+   * Per-row sync status for a wiki spell. Uses the composite key so a
+   * loan-then-permanent player gets one independent status per spell —
+   * pre-fix, the loan row's lookup hit the permanent DB row and showed
+   * the wrong status (and clicking Update mutated the wrong row).
+   */
   const getClubSyncStatus = (team: Team, source: 'wikipedia' | 'database' | 'both'): ClubSyncStatus => {
     if (source === 'database') {
       return 'db-only';
     }
-    if (!team.teamFound || team.teamID == null) {
+    const key = wikiTeamRowKey(team);
+    if (key === null) {
       return 'not-found';
     }
-    const dbTeam = dbByTeamId.get(team.teamID);
+    const dbTeam = dbByKey.get(key);
     if (!dbTeam) {
       return 'not-in-db';
     }
@@ -82,11 +90,15 @@ export function SeniorCareerCard({
   // click handlers we swallow at the boundary — the failure already lives
   // in `sync.errors` and the UI reads from there.
   const handleAddClub = async (team: Team) => {
-    if (!footballerId || !team.teamID) {
+    if (!footballerId) {
+      return;
+    }
+    const key = wikiTeamRowKey(team);
+    if (key === null) {
       return;
     }
     try {
-      await sync.run(team.teamID, async () => {
+      await sync.run(key, async () => {
         await FootballerAPI.createFootballerTeam({
           footballer_id: footballerId,
           team_id: team.teamID!,
@@ -100,20 +112,24 @@ export function SeniorCareerCard({
         onClubStatsUpdated?.();
       }, 'Failed to add club');
     } catch {
-      // Captured in sync.errors[team.teamID] for the UI.
+      // Captured in sync.errors[key] for the UI.
     }
   };
 
   const handleUpdateClub = async (team: Team) => {
-    if (!footballerId || team.teamID == null) {
+    if (!footballerId) {
       return;
     }
-    const dbTeam = dbByTeamId.get(team.teamID);
+    const key = wikiTeamRowKey(team);
+    if (key === null) {
+      return;
+    }
+    const dbTeam = dbByKey.get(key);
     if (!dbTeam) {
       return;
     }
     try {
-      await sync.run(team.teamID, async () => {
+      await sync.run(key, async () => {
         await FootballerAPI.updateFootballerTeam(dbTeam.id, {
           footballer_id: footballerId,
           team_id: dbTeam.team_id,
@@ -127,7 +143,7 @@ export function SeniorCareerCard({
         onClubStatsUpdated?.();
       }, 'Failed to update club');
     } catch {
-      // Captured in sync.errors[team.teamID] for the UI.
+      // Captured in sync.errors[key] for the UI.
     }
   };
 
@@ -793,10 +809,12 @@ export function SeniorCareerCard({
                       <div className="flex flex-col gap-1.5">
                         {(() => {
                           const syncStatus = getClubSyncStatus(team, source);
-                          // `team.teamID` is the row key for sync state; `null` rows
-                          // (not-found) can't be synced and skip the button entirely.
-                          const opStatus = team.teamID != null ? sync.status[team.teamID] : undefined;
-                          const opError = team.teamID != null ? sync.errors[team.teamID] : undefined;
+                          // Composite key — keying by raw teamID collided when a
+                          // player had two spells at the same club (the loan row's
+                          // status used to mirror the permanent row's).
+                          const opKey = wikiTeamRowKey(team);
+                          const opStatus = opKey !== null ? sync.status[opKey] : undefined;
+                          const opError = opKey !== null ? sync.errors[opKey] : undefined;
 
                           if (opStatus) {
                             return (

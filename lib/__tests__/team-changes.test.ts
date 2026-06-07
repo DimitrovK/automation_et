@@ -86,14 +86,36 @@ describe('computeTeamChanges', () => {
     expect(result.updates[0].changes.end_year).toBe(2018);
   });
 
-  it('preserves role from the existing DB row on update', () => {
+  it('treats a role mismatch as delete+create (composite key includes role)', () => {
+    // Wiki always emits role='player' (manager career is tracked separately).
+    // A DB row with role='manager' at the same (team, year, transfer_type) is a
+    // distinct record — the BE allows player and manager rows to coexist. Don't
+    // silently mutate the manager row; emit delete+create so the operator sees
+    // both operations in the deploy console.
     const result = computeTeamChanges(
       [makeWiki({ appearances: 10 })],
-      [makeDb({ role: 'manager', apps: 5 })],
+      [makeDb({ id: 7, role: 'manager', apps: 5 })],
       99,
     );
 
-    expect(result.updates[0].changes.role).toBe('manager');
+    expect(result.updates).toEqual([]);
+    expect(result.creates).toHaveLength(1);
+    expect(result.creates[0].teamData.role).toBe('player');
+    expect(result.deletes).toHaveLength(1);
+    expect(result.deletes[0].id).toBe(7);
+  });
+
+  it('echoes role from the existing DB row on update (same role both sides)', () => {
+    // The common case — wiki and DB both role='player'. role is still echoed
+    // back on update so DRF accepts the PUT.
+    const result = computeTeamChanges(
+      [makeWiki({ appearances: 10 })],
+      [makeDb({ role: 'player', apps: 5 })],
+      99,
+    );
+
+    expect(result.updates).toHaveLength(1);
+    expect(result.updates[0].changes.role).toBe('player');
   });
 
   it('detects a create when wiki has a team_id absent in DB', () => {
@@ -137,14 +159,87 @@ describe('computeTeamChanges', () => {
     expect(result.updates).toEqual([]);
   });
 
-  it('infers transfer_type from "loan" substring (case-insensitive)', () => {
+  it('treats a transfer_type mismatch as delete+create (composite key includes transfer_type)', () => {
+    // Wiki says loan; DB says permanent. The BE `unique_player_permanent_transfer`
+    // constraint forbids in-place transfer_type swap for player+permanent rows,
+    // so a "change of type" must be delete+create — composite-key matching gets
+    // this right; team_id-keyed matching would have silently mutated the wrong
+    // row in the loan-then-permanent case.
     const result = computeTeamChanges(
       [makeWiki({ typeOfTransfer: 'Loan from Real Madrid' })],
-      [makeDb({ transfer_type: 'permanent' })],
+      [makeDb({ id: 8, transfer_type: 'permanent' })],
       99,
     );
 
+    expect(result.updates).toEqual([]);
+    expect(result.creates).toHaveLength(1);
+    expect(result.creates[0].teamData.transfer_type).toBe('loan');
+    expect(result.deletes).toHaveLength(1);
+    expect(result.deletes[0].id).toBe(8);
+  });
+
+  // --- Multi-spell coverage (regression for the loan-then-permanent bug) ---
+
+  it('matches two spells at the same club by composite key (loan then permanent)', () => {
+    // Reproduces the original bug: player has Arsenal loan 2010, then Arsenal
+    // permanent 2012. Each wiki row must match its OWN DB row by id, not the
+    // last-inserted one in a team_id-keyed map.
+    const wiki = [
+      makeWiki({ teamID: 1, teamName: 'Arsenal', joinYear: 2010, departYear: 2011, appearances: 50, goals: 8, typeOfTransfer: 'Loan' }),
+      makeWiki({ teamID: 1, teamName: 'Arsenal', joinYear: 2012, departYear: 2015, appearances: 90, goals: 25, typeOfTransfer: 'Permanent' }),
+    ];
+    const db = [
+      makeDb({ id: 100, team_id: 1, start_year: 2010, end_year: 2011, apps: 50, goals: 8, transfer_type: 'loan' }),
+      makeDb({ id: 200, team_id: 1, start_year: 2012, end_year: 2015, apps: 90, goals: 25, transfer_type: 'permanent' }),
+    ];
+
+    const result = computeTeamChanges(wiki, db, 99);
+
+    // Both spells already match → no operations of any kind. Pre-fix, the
+    // loan wiki row was silently dropped by `Map.set` collision.
+    expect(result.updates).toEqual([]);
+    expect(result.creates).toEqual([]);
+    expect(result.deletes).toEqual([]);
+  });
+
+  it('attributes a mismatch to the correct spell — loan stats change does NOT touch the permanent row', () => {
+    // Most explicit regression test: loan apps drift to 55. The update must
+    // target id=100 (loan), not id=200 (permanent). Asserting by id, not count.
+    const wiki = [
+      makeWiki({ teamID: 1, teamName: 'Arsenal', joinYear: 2010, departYear: 2011, appearances: 55, goals: 8, typeOfTransfer: 'Loan' }),
+      makeWiki({ teamID: 1, teamName: 'Arsenal', joinYear: 2012, departYear: 2015, appearances: 90, goals: 25, typeOfTransfer: 'Permanent' }),
+    ];
+    const db = [
+      makeDb({ id: 100, team_id: 1, start_year: 2010, end_year: 2011, apps: 50, goals: 8, transfer_type: 'loan' }),
+      makeDb({ id: 200, team_id: 1, start_year: 2012, end_year: 2015, apps: 90, goals: 25, transfer_type: 'permanent' }),
+    ];
+
+    const result = computeTeamChanges(wiki, db, 99);
+
+    expect(result.updates).toHaveLength(1);
+    expect(result.updates[0].id).toBe(100); // ← the loan row, NOT the permanent
+    expect(result.updates[0].changes.apps).toBe(55);
     expect(result.updates[0].changes.transfer_type).toBe('loan');
+    expect(result.updates[0].changes.start_year).toBe(2010);
+  });
+
+  it('handles 3+ spells at the same club (Ronaldo-style Man Utd × 2)', () => {
+    const wiki = [
+      makeWiki({ teamID: 1, joinYear: 2003, departYear: 2009, appearances: 196, goals: 84, typeOfTransfer: 'Permanent' }),
+      makeWiki({ teamID: 2, teamName: 'Real Madrid', joinYear: 2009, departYear: 2018, appearances: 292, goals: 311, typeOfTransfer: 'Permanent' }),
+      makeWiki({ teamID: 1, joinYear: 2021, departYear: 2022, appearances: 28, goals: 18, typeOfTransfer: 'Permanent' }),
+    ];
+    const db = [
+      makeDb({ id: 10, team_id: 1, start_year: 2003, end_year: 2009, apps: 196, goals: 84, transfer_type: 'permanent' }),
+      makeDb({ id: 11, team_id: 2, team_name: 'Real Madrid', start_year: 2009, end_year: 2018, apps: 292, goals: 311, transfer_type: 'permanent' }),
+      makeDb({ id: 12, team_id: 1, start_year: 2021, end_year: 2022, apps: 28, goals: 18, transfer_type: 'permanent' }),
+    ];
+
+    const result = computeTeamChanges(wiki, db, 99);
+
+    expect(result.updates).toEqual([]);
+    expect(result.creates).toEqual([]);
+    expect(result.deletes).toEqual([]);
   });
 
   it('does NOT emit an update for a row whose DB was just refreshed to match', () => {
