@@ -1,26 +1,159 @@
-import { AlertTriangle, ExternalLink, HelpCircle, Search, Shield } from 'lucide-react';
+import type { Footballer, FootballerTeam, n8nWikiPlayerData, Team } from '@/types/player';
+import { AlertTriangle, Check, ExternalLink, HelpCircle, Loader2, RefreshCw, Search, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiButton } from '@/components/ui/emerald-button';
 import { GraphiteButton } from '@/components/ui/graphite-button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Footballer, n8nWikiPlayerData, Team } from '@/types/player';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useRowSync } from '@/hooks/use-row-sync';
 import config from '@/lib/config';
+import { FootballerAPI } from '@/lib/footballer-api';
+import { RowSyncButton } from './shared/row-sync-button';
+
+type ClubSyncStatus = 'synced' | 'mismatch' | 'not-in-db' | 'not-found' | 'db-only';
 
 type SeniorCareerCardProps = {
   playerData: n8nWikiPlayerData;
   dbPlayerInfo?: Footballer | null;
+  /**
+   * Live DB team rows, lifted from the page so per-row inline syncs feed
+   * back here and the comparison reruns against fresh data. Falls back to
+   * `dbPlayerInfo.teams_played_for` for backwards compatibility.
+   */
+  dbFootballerTeams?: FootballerTeam[];
+  /** Required to enable per-row sync buttons. */
+  footballerId?: number | null;
   chosenDataSource?: 'wikipedia' | 'database' | null;
   onDataSourceChange?: (dataSource: 'wikipedia' | 'database') => void;
+  /** Called after a successful per-row sync so the parent can refetch DB teams. */
+  onClubStatsUpdated?: () => void;
 };
+
+function inferTransferType(typeOfTransfer: string | undefined): 'permanent' | 'loan' {
+  return (typeOfTransfer || '').toLowerCase().includes('loan') ? 'loan' : 'permanent';
+}
+
+/** True iff every tracked stat field on a wiki/DB pair already matches. */
+function isClubSynced(wikiTeam: Team, dbTeam: FootballerTeam): boolean {
+  return (
+    dbTeam.apps === wikiTeam.appearances
+    && dbTeam.goals === wikiTeam.goals
+    && dbTeam.start_year === wikiTeam.joinYear
+    && dbTeam.end_year === wikiTeam.departYear
+    && dbTeam.transfer_type === inferTransferType(wikiTeam.typeOfTransfer)
+  );
+}
 
 export function SeniorCareerCard({
   playerData,
   dbPlayerInfo,
+  dbFootballerTeams,
+  footballerId,
   chosenDataSource,
   onDataSourceChange,
+  onClubStatsUpdated,
 }: SeniorCareerCardProps) {
+  const sync = useRowSync<number>();
+
+  // Authoritative DB team rows — prefer the lifted prop (refetched after
+  // each inline sync) over the snapshot embedded in `dbPlayerInfo`.
+  const liveDbTeams: FootballerTeam[] = dbFootballerTeams ?? dbPlayerInfo?.teams_played_for ?? [];
+  const dbByTeamId = new Map<number, FootballerTeam>(liveDbTeams.map(t => [t.team_id, t]));
+
+  /** Per-row sync status keyed by wiki teamID; `null` when no actionable sync. */
+  const getClubSyncStatus = (team: Team, source: 'wikipedia' | 'database' | 'both'): ClubSyncStatus => {
+    if (source === 'database') {
+      return 'db-only';
+    }
+    if (!team.teamFound || team.teamID == null) {
+      return 'not-found';
+    }
+    const dbTeam = dbByTeamId.get(team.teamID);
+    if (!dbTeam) {
+      return 'not-in-db';
+    }
+    return isClubSynced(team, dbTeam) ? 'synced' : 'mismatch';
+  };
+
+  // `sync.run` rethrows so `runAll` can sequence a batch and `useRowSync`
+  // semantics stay consistent across single + batch callers. For single
+  // click handlers we swallow at the boundary — the failure already lives
+  // in `sync.errors` and the UI reads from there.
+  const handleAddClub = async (team: Team) => {
+    if (!footballerId || !team.teamID) {
+      return;
+    }
+    try {
+      await sync.run(team.teamID, async () => {
+        await FootballerAPI.createFootballerTeam({
+          footballer_id: footballerId,
+          team_id: team.teamID!,
+          role: 'player',
+          apps: team.appearances,
+          goals: team.goals,
+          transfer_type: inferTransferType(team.typeOfTransfer),
+          start_year: team.joinYear,
+          end_year: team.departYear,
+        });
+        onClubStatsUpdated?.();
+      }, 'Failed to add club');
+    } catch {
+      // Captured in sync.errors[team.teamID] for the UI.
+    }
+  };
+
+  const handleUpdateClub = async (team: Team) => {
+    if (!footballerId || team.teamID == null) {
+      return;
+    }
+    const dbTeam = dbByTeamId.get(team.teamID);
+    if (!dbTeam) {
+      return;
+    }
+    try {
+      await sync.run(team.teamID, async () => {
+        await FootballerAPI.updateFootballerTeam(dbTeam.id, {
+          footballer_id: footballerId,
+          team_id: dbTeam.team_id,
+          role: dbTeam.role,
+          apps: team.appearances,
+          goals: team.goals,
+          transfer_type: inferTransferType(team.typeOfTransfer),
+          start_year: team.joinYear,
+          end_year: team.departYear,
+        });
+        onClubStatsUpdated?.();
+      }, 'Failed to update club');
+    } catch {
+      // Captured in sync.errors[team.teamID] for the UI.
+    }
+  };
+
+  // Count pending operations across all wiki rows that have an actionable
+  // status. Drives the "Sync All (N)" affordance.
+  const pendingSyncCount = playerData.teams.reduce((acc, team) => {
+    const status = getClubSyncStatus(team, 'wikipedia');
+    return acc + (status === 'mismatch' || status === 'not-in-db' ? 1 : 0);
+  }, 0);
+
+  const handleSyncAll = async () => {
+    if (!footballerId) {
+      return;
+    }
+    const ops: Array<() => Promise<void>> = [];
+    for (const team of playerData.teams) {
+      const status = getClubSyncStatus(team, 'wikipedia');
+      if (status === 'mismatch') {
+        ops.push(() => handleUpdateClub(team));
+      } else if (status === 'not-in-db') {
+        ops.push(() => handleAddClub(team));
+      }
+    }
+    await sync.runAll(ops);
+  };
+
   // Generate admin links using config
   const getTeamAdminLink = (team: Team) => {
     if (!team.teamFound || !team.teamID) {
@@ -69,30 +202,70 @@ export function SeniorCareerCard({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
             <CardTitle>Senior Career</CardTitle>
-            <CardDescription>Complete club history and statistics</CardDescription>
+            <CardDescription>
+              Complete club history and statistics
+              {footballerId
+                ? (
+                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                      💡 You can sync club stats here directly, or they will be included when you click Deploy/Update Footballer below.
+                    </span>
+                  )
+                : (
+                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                      📋 Club stats will be created automatically when you deploy the footballer below.
+                    </span>
+                  )}
+            </CardDescription>
           </div>
-          {/* Data Source Buttons - Only show for players in DB with conflicts */}
-          {playerData.playerFoundInDB && dbPlayerInfo && hasAnyTeamConflicts() && (
-            <div className="flex gap-2">
-              <GraphiteButton
-                onClick={() => onDataSourceChange?.('wikipedia')}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {/* Sync All — only when a footballer exists and at least one row is actionable. */}
+            {footballerId && pendingSyncCount > 0 && (
+              <Button
                 size="sm"
-                icon={Search}
+                onClick={handleSyncAll}
+                disabled={sync.syncingAll}
+                className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
               >
-                Use Wikipedia Data
-              </GraphiteButton>
-              <ApiButton
-                onClick={() => onDataSourceChange?.('database')}
-                size="sm"
-                icon={Shield}
-              >
-                Use Database Data
-              </ApiButton>
-            </div>
-          )}
+                {sync.syncingAll
+                  ? (
+                      <>
+                        <Loader2 className="mr-1 size-4 animate-spin" />
+                        Syncing...
+                      </>
+                    )
+                  : (
+                      <>
+                        <RefreshCw className="mr-1 size-4" />
+                        Sync All (
+                        {pendingSyncCount}
+                        )
+                      </>
+                    )}
+              </Button>
+            )}
+            {/* Data Source Buttons - Only show for players in DB with conflicts */}
+            {playerData.playerFoundInDB && dbPlayerInfo && hasAnyTeamConflicts() && (
+              <>
+                <GraphiteButton
+                  onClick={() => onDataSourceChange?.('wikipedia')}
+                  size="sm"
+                  icon={Search}
+                >
+                  Use Wikipedia Data
+                </GraphiteButton>
+                <ApiButton
+                  onClick={() => onDataSourceChange?.('database')}
+                  size="sm"
+                  icon={Shield}
+                >
+                  Use Database Data
+                </ApiButton>
+              </>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -236,7 +409,7 @@ export function SeniorCareerCard({
                   Status
                 </th>
                 <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  Admin Link
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -617,21 +790,70 @@ export function SeniorCareerCard({
                       </div>
                     </td>
                     <td className="px-2 py-3">
-                      {getTeamAdminLink(team)
-                        ? (
-                            <a
-                              href={getTeamAdminLink(team)!}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-sm text-blue-600 transition-colors hover:text-blue-800 hover:underline"
-                            >
-                              Edit Team
-                              <ExternalLink className="size-3" />
-                            </a>
-                          )
-                        : (
-                            <span className="text-sm text-gray-400">No link</span>
-                          )}
+                      <div className="flex flex-col gap-1.5">
+                        {(() => {
+                          const syncStatus = getClubSyncStatus(team, source);
+                          // `team.teamID` is the row key for sync state; `null` rows
+                          // (not-found) can't be synced and skip the button entirely.
+                          const opStatus = team.teamID != null ? sync.status[team.teamID] : undefined;
+                          const opError = team.teamID != null ? sync.errors[team.teamID] : undefined;
+
+                          if (opStatus) {
+                            return (
+                              <RowSyncButton
+                                variant={syncStatus === 'not-in-db' ? 'add' : 'update'}
+                                status={opStatus}
+                                error={opError}
+                                onClick={() => { /* idle-only — never rendered when opStatus is set */ }}
+                              />
+                            );
+                          }
+                          if (footballerId && syncStatus === 'mismatch') {
+                            return (
+                              <RowSyncButton
+                                variant="update"
+                                status={undefined}
+                                onClick={() => handleUpdateClub(team)}
+                                disabled={sync.syncingAll}
+                              />
+                            );
+                          }
+                          if (footballerId && syncStatus === 'not-in-db') {
+                            return (
+                              <RowSyncButton
+                                variant="add"
+                                status={undefined}
+                                onClick={() => handleAddClub(team)}
+                                disabled={sync.syncingAll}
+                              />
+                            );
+                          }
+                          if (footballerId && syncStatus === 'synced') {
+                            return (
+                              <Badge variant="secondary" className="w-fit border-green-200 bg-green-100 text-green-800">
+                                <Check className="mr-1 size-3" />
+                                Synced
+                              </Badge>
+                            );
+                          }
+                          return null;
+                        })()}
+                        {getTeamAdminLink(team)
+                          ? (
+                              <a
+                                href={getTeamAdminLink(team)!}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                              >
+                                Edit Team
+                                <ExternalLink className="size-3" />
+                              </a>
+                            )
+                          : (
+                              <span className="text-xs text-gray-400">No link</span>
+                            )}
+                      </div>
                     </td>
                   </tr>
                 );

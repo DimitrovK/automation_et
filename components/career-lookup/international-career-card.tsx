@@ -1,11 +1,12 @@
 import type { FootballerNationStat, n8nWikiPlayerData, NationalTeam } from '@/types/player';
-import { AlertTriangle, Check, Info, Loader2, Plus, RefreshCw, Shield, ShieldOff, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { AlertTriangle, Check, Info, Loader2, RefreshCw, Shield, ShieldOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRowSync } from '@/hooks/use-row-sync';
 import { FootballerAPI } from '@/lib/footballer-api';
+import { RowSyncButton } from './shared/row-sync-button';
 
 type NationSyncStatus = 'synced' | 'mismatch' | 'not-in-db' | 'not-found';
 
@@ -50,9 +51,7 @@ export function InternationalCareerCard({
   footballerId,
   onNationStatsUpdated,
 }: InternationalCareerCardProps) {
-  const [operationStatus, setOperationStatus] = useState<Record<string, 'loading' | 'success' | 'error'>>({});
-  const [operationErrors, setOperationErrors] = useState<Record<string, string>>({});
-  const [syncingAll, setSyncingAll] = useState(false);
+  const sync = useRowSync<string>();
 
   if (!nationalTeams || nationalTeams.length === 0) {
     return null;
@@ -126,32 +125,25 @@ export function InternationalCareerCard({
     }
   };
 
+  // `sync.run` rethrows so `runAll` can sequence a batch; for single click
+  // handlers we swallow at the boundary — failure is already in sync.errors.
   const handleAddToDb = async (comparison: NationComparison) => {
     if (!footballerId || !comparison.wikiTeam.nationID) {
       return;
     }
-
     const key = `${comparison.wikiTeam.nationID}`;
-    setOperationStatus(prev => ({ ...prev, [key]: 'loading' }));
-    setOperationErrors((prev) => {
-      const next = { ...prev }; delete next[key]; return next;
-    });
-
     try {
-      await FootballerAPI.createFootballerNation({
-        footballer_id: footballerId,
-        nation_id: comparison.wikiTeam.nationID,
-        apps: comparison.wikiTeam.apps,
-        goals: comparison.wikiTeam.goals,
-      });
-      setOperationStatus(prev => ({ ...prev, [key]: 'success' }));
-      onNationStatsUpdated?.();
-    } catch (err) {
-      setOperationStatus(prev => ({ ...prev, [key]: 'error' }));
-      setOperationErrors(prev => ({
-        ...prev,
-        [key]: err instanceof Error ? err.message : 'Failed to add national team stat',
-      }));
+      await sync.run(key, async () => {
+        await FootballerAPI.createFootballerNation({
+          footballer_id: footballerId,
+          nation_id: comparison.wikiTeam.nationID!,
+          apps: comparison.wikiTeam.apps,
+          goals: comparison.wikiTeam.goals,
+        });
+        onNationStatsUpdated?.();
+      }, 'Failed to add national team stat');
+    } catch {
+      // Captured in sync.errors[key] for the UI.
     }
   };
 
@@ -159,28 +151,19 @@ export function InternationalCareerCard({
     if (!footballerId || !comparison.dbStat) {
       return;
     }
-
     const key = `${comparison.wikiTeam.nationID}`;
-    setOperationStatus(prev => ({ ...prev, [key]: 'loading' }));
-    setOperationErrors((prev) => {
-      const next = { ...prev }; delete next[key]; return next;
-    });
-
     try {
-      await FootballerAPI.updateFootballerNation(comparison.dbStat.id, {
-        footballer_id: footballerId,
-        nation_id: comparison.dbStat.nation_id,
-        apps: comparison.wikiTeam.apps,
-        goals: comparison.wikiTeam.goals,
-      });
-      setOperationStatus(prev => ({ ...prev, [key]: 'success' }));
-      onNationStatsUpdated?.();
-    } catch (err) {
-      setOperationStatus(prev => ({ ...prev, [key]: 'error' }));
-      setOperationErrors(prev => ({
-        ...prev,
-        [key]: err instanceof Error ? err.message : 'Failed to update national team stat',
-      }));
+      await sync.run(key, async () => {
+        await FootballerAPI.updateFootballerNation(comparison.dbStat!.id, {
+          footballer_id: footballerId,
+          nation_id: comparison.dbStat!.nation_id,
+          apps: comparison.wikiTeam.apps,
+          goals: comparison.wikiTeam.goals,
+        });
+        onNationStatsUpdated?.();
+      }, 'Failed to update national team stat');
+    } catch {
+      // Captured in sync.errors[key] for the UI.
     }
   };
 
@@ -188,17 +171,11 @@ export function InternationalCareerCard({
     if (!footballerId) {
       return;
     }
-    setSyncingAll(true);
-
-    for (const comparison of pendingOperations) {
-      if (comparison.status === 'not-in-db') {
-        await handleAddToDb(comparison);
-      } else if (comparison.status === 'mismatch') {
-        await handleUpdateInDb(comparison);
-      }
-    }
-
-    setSyncingAll(false);
+    await sync.runAll(
+      pendingOperations.map(comp => () =>
+        comp.status === 'not-in-db' ? handleAddToDb(comp) : handleUpdateInDb(comp),
+      ),
+    );
   };
 
   return (
@@ -229,10 +206,10 @@ export function InternationalCareerCard({
             <Button
               size="sm"
               onClick={handleSyncAll}
-              disabled={syncingAll}
+              disabled={sync.syncingAll}
               className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
             >
-              {syncingAll
+              {sync.syncingAll
                 ? (
                     <>
                       <Loader2 className="mr-1 size-4 animate-spin" />
@@ -321,8 +298,8 @@ export function InternationalCareerCard({
               {comparisons.map((comp) => {
                 const nt = comp.wikiTeam;
                 const key = `${nt.nationID ?? nt.teamName}`;
-                const opStatus = operationStatus[key];
-                const opError = operationErrors[key];
+                const opStatus = sync.status[key];
+                const opError = sync.errors[key];
 
                 return (
                   <tr
@@ -379,76 +356,63 @@ export function InternationalCareerCard({
                     </td>
                     <td className="px-2 py-3">
                       <div className="flex flex-col gap-1">
-                        {/* Action / Status rendering */}
-                        {opStatus === 'loading' && (
-                          <Badge variant="secondary" className="border-blue-200 bg-blue-100 text-blue-800">
-                            <Loader2 className="mr-1 size-3 animate-spin" />
-                            Processing...
-                          </Badge>
-                        )}
-                        {opStatus === 'success' && (
-                          <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
-                            <Check className="mr-1 size-3" />
-                            Done
-                          </Badge>
-                        )}
-                        {opStatus === 'error' && (
-                          <>
-                            <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
-                              <AlertTriangle className="mr-1 size-3" />
-                              Failed
-                            </Badge>
-                            {opError && (
-                              <span className="max-w-[200px] text-xs text-red-600 dark:text-red-400">{opError}</span>
+                        {/* Transient (loading/success/error) and action buttons live in <RowSyncButton>.
+                            Static "no action available" badges (synced / ready / mismatch w/o
+                            footballerId / nation-not-found) stay here because their wording is
+                            nation-specific. */}
+                        {opStatus
+                          ? (
+                              <RowSyncButton
+                                variant={comp.status === 'not-in-db' ? 'add' : 'update'}
+                                status={opStatus}
+                                error={opError}
+                                onClick={() => { /* idle-only — never rendered when opStatus is set */ }}
+                              />
+                            )
+                          : (
+                              <>
+                                {comp.status === 'synced' && (
+                                  <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                                    <Check className="mr-1 size-3" />
+                                    Synced
+                                  </Badge>
+                                )}
+                                {comp.status === 'mismatch' && footballerId && (
+                                  <RowSyncButton
+                                    variant="update"
+                                    status={undefined}
+                                    onClick={() => handleUpdateInDb(comp)}
+                                    disabled={sync.syncingAll}
+                                  />
+                                )}
+                                {comp.status === 'mismatch' && !footballerId && (
+                                  <Badge variant="secondary" className="border-amber-200 bg-amber-100 text-amber-800">
+                                    <AlertTriangle className="mr-1 size-3" />
+                                    Mismatch
+                                  </Badge>
+                                )}
+                                {comp.status === 'not-in-db' && footballerId && (
+                                  <RowSyncButton
+                                    variant="add"
+                                    status={undefined}
+                                    onClick={() => handleAddToDb(comp)}
+                                    disabled={sync.syncingAll}
+                                  />
+                                )}
+                                {comp.status === 'not-in-db' && !footballerId && (
+                                  <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
+                                    <Check className="mr-1 size-3" />
+                                    Ready
+                                  </Badge>
+                                )}
+                                {comp.status === 'not-found' && (
+                                  <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
+                                    <AlertTriangle className="mr-1 size-3" />
+                                    Nation not in DB
+                                  </Badge>
+                                )}
+                              </>
                             )}
-                          </>
-                        )}
-                        {!opStatus && comp.status === 'synced' && (
-                          <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
-                            <Check className="mr-1 size-3" />
-                            Synced
-                          </Badge>
-                        )}
-                        {!opStatus && comp.status === 'mismatch' && footballerId && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUpdateInDb(comp)}
-                            className="h-7 border-amber-300 text-xs text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                          >
-                            <Upload className="mr-1 size-3" />
-                            Update in DB
-                          </Button>
-                        )}
-                        {!opStatus && comp.status === 'mismatch' && !footballerId && (
-                          <Badge variant="secondary" className="border-amber-200 bg-amber-100 text-amber-800">
-                            <AlertTriangle className="mr-1 size-3" />
-                            Mismatch
-                          </Badge>
-                        )}
-                        {!opStatus && comp.status === 'not-in-db' && footballerId && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleAddToDb(comp)}
-                            className="h-7 border-blue-300 text-xs text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                          >
-                            <Plus className="mr-1 size-3" />
-                            Add to DB
-                          </Button>
-                        )}
-                        {!opStatus && comp.status === 'not-in-db' && !footballerId && (
-                          <Badge variant="secondary" className="border-green-200 bg-green-100 text-green-800">
-                            <Check className="mr-1 size-3" />
-                            Ready
-                          </Badge>
-                        )}
-                        {!opStatus && comp.status === 'not-found' && (
-                          <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
-                            <AlertTriangle className="mr-1 size-3" />
-                            Nation not in DB
-                          </Badge>
-                        )}
                       </div>
                     </td>
                   </tr>

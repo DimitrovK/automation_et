@@ -1,7 +1,8 @@
 'use client';
 
 import type React from 'react';
-import type { Footballer, FootballerNationStat, FootballerPosition, n8nWikiPlayerData } from '@/types/player';
+import type { SelectedPosition } from '@/components/career-lookup/position-card';
+import type { Footballer, FootballerNationStat, FootballerPosition, FootballerTeam, n8nWikiPlayerData } from '@/types/player';
 import {
   AlertCircle,
 } from 'lucide-react';
@@ -13,7 +14,6 @@ import { CareerLookupPlayerConfiguration } from '@/components/career-lookup/care
 import { CareerLookupSearch } from '@/components/career-lookup/career-lookup-search';
 import { ConnectionSettings } from '@/components/career-lookup/connection-settings';
 import { HelpDialog } from '@/components/career-lookup/help-dialog';
-import type { SelectedPosition } from '@/components/career-lookup/position-card';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
@@ -24,6 +24,7 @@ import config from '@/lib/config';
 import { FootballerAPI } from '@/lib/footballer-api';
 
 export default function FootballerCareerApp() {
+  // eslint-disable-next-line unused-imports/no-unused-vars -- `user` is destructured for forward compat; retained from prior implementation.
   const { user, isLoading, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
 
@@ -43,6 +44,7 @@ export default function FootballerCareerApp() {
 
   // State for database player info (fetched via API when playerDBId is available)
   const [dbPlayerInfo, setDbPlayerInfo] = useState<Footballer | null>(null);
+  // eslint-disable-next-line unused-imports/no-unused-vars -- pre-existing; setter is used, getter retained for future loading-state UI.
   const [loadingDbPlayer, setLoadingDbPlayer] = useState(false);
 
   // State for database national team stats
@@ -50,6 +52,11 @@ export default function FootballerCareerApp() {
 
   // State for database footballer positions (refetched after save, like dbNationalTeams)
   const [dbFootballerPositions, setDbFootballerPositions] = useState<FootballerPosition[]>([]);
+
+  // State for database footballer teams (refetched after per-row Senior Career
+  // sync, mirroring the dbNationalTeams pattern so `getTeamChanges` and the
+  // SeniorCareerCard comparison both see fresh state).
+  const [dbFootballerTeams, setDbFootballerTeams] = useState<FootballerTeam[]>([]);
 
   // State for selected positions from PositionCard
   const [selectedPositions, setSelectedPositions] = useState<SelectedPosition[]>([]);
@@ -66,12 +73,14 @@ export default function FootballerCareerApp() {
       setSearchMode('wikipedia_url');
       setSearchValue(url);
       setTimeout(() => {
+        // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleSearch is defined below.
         handleSearch('wikipedia_url', url);
       }, 100);
     } else if (name) {
       setSearchMode('name');
       setSearchValue(name);
       setTimeout(() => {
+        // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleSearch is defined below.
         handleSearch('name', name);
       }, 100);
     }
@@ -83,6 +92,11 @@ export default function FootballerCareerApp() {
       setLoadingDbPlayer(true);
       const footballer = await FootballerAPI.getFootballer(playerDBId);
       setDbPlayerInfo(footballer);
+
+      // Seed dbFootballerTeams from the footballer payload (already includes
+      // teams_played_for), so the page has fresh data immediately without a
+      // second round-trip. refetchTeams() uses the dedicated endpoint.
+      setDbFootballerTeams(footballer.teams_played_for ?? []);
 
       // Also fetch national team stats
       try {
@@ -101,10 +115,12 @@ export default function FootballerCareerApp() {
       }
 
       return footballer;
+      // eslint-disable-next-line unused-imports/no-unused-vars -- pre-existing; `error` is bound for shape compat.
     } catch (error) {
       setDbPlayerInfo(null);
       setDbNationalTeams([]);
       setDbFootballerPositions([]);
+      setDbFootballerTeams([]);
       return null;
     } finally {
       setLoadingDbPlayer(false);
@@ -120,6 +136,24 @@ export default function FootballerCareerApp() {
       } catch {
         setDbNationalTeams([]);
       }
+    }
+  };
+
+  // Re-fetch footballer teams (called after per-row Senior Career sync). We
+  // re-fetch the whole footballer rather than just the teams because the
+  // payload comes back denormalized (team_name, etc.) and the dedicated
+  // teams endpoint is also fine — we use the footballer endpoint because
+  // it's what populates `teams_played_for` upstream and avoids any drift.
+  const refetchTeams = async () => {
+    if (!dbPlayerInfo?.id) {
+      return;
+    }
+    try {
+      const footballer = await FootballerAPI.getFootballer(dbPlayerInfo.id);
+      setDbFootballerTeams(footballer.teams_played_for ?? []);
+    } catch {
+      // Keep prior state on transient failure — surfacing an empty array
+      // here would make the row comparison flip to "everything not in DB".
     }
   };
 
@@ -142,7 +176,9 @@ export default function FootballerCareerApp() {
       setDbPlayerInfo(null);
       setDbNationalTeams([]);
       setDbFootballerPositions([]);
+      setDbFootballerTeams([]);
       setError(null);
+      // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleSearch is defined below.
       handleSearch(searchMode, searchValue);
     }
   };
@@ -205,6 +241,7 @@ export default function FootballerCareerApp() {
 
   const handleDataSourceChosen = (dataSource: 'wikipedia' | 'database') => {
     setChosenDataSource(dataSource);
+    // eslint-disable-next-line no-console -- pre-existing debug log.
     console.log(`Data source chosen: ${dataSource}`);
   };
 
@@ -218,6 +255,7 @@ export default function FootballerCareerApp() {
         setChosenDataSource(null);
         setDbPlayerInfo(null); // Clear previous DB player info
         setDbNationalTeams([]);
+        setDbFootballerTeams([]);
       }
     }
   }, [playerData]);
@@ -300,9 +338,11 @@ export default function FootballerCareerApp() {
               playerData={playerData}
               dbPlayerInfo={dbPlayerInfo}
               dbNationalTeams={dbNationalTeams}
+              dbFootballerTeams={dbFootballerTeams}
               chosenDataSource={chosenDataSource}
               onDataSourceChange={setChosenDataSource}
               onNationStatsUpdated={refetchNationalTeams}
+              onClubStatsUpdated={refetchTeams}
               onSelectedPositionsChange={handleSelectedPositionsChange}
               onPositionsSaved={refetchPositions}
             />
@@ -315,6 +355,7 @@ export default function FootballerCareerApp() {
               onErrorChange={setError}
               onReloadPlayer={handleReloadPlayer}
               dbNationalTeams={dbNationalTeams}
+              dbFootballerTeams={dbFootballerTeams}
               onNationStatsUpdated={refetchNationalTeams}
               selectedPositions={selectedPositions}
               dbFootballerPositions={dbFootballerPositions}
