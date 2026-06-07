@@ -817,12 +817,20 @@ export function SeniorCareerCard({
                           const opError = opKey !== null ? sync.errors[opKey] : undefined;
 
                           if (opStatus) {
+                            // The transient ('loading'/'success') states render badges
+                            // that ignore onClick; the 'error' state renders a Retry
+                            // button that re-invokes the original handler. The hook's
+                            // `run()` clears the prior error on re-entry.
+                            const retryClick = syncStatus === 'not-in-db'
+                              ? () => handleAddClub(team)
+                              : () => handleUpdateClub(team);
                             return (
                               <RowSyncButton
                                 variant={syncStatus === 'not-in-db' ? 'add' : 'update'}
                                 status={opStatus}
                                 error={opError}
-                                onClick={() => { /* idle-only — never rendered when opStatus is set */ }}
+                                onClick={retryClick}
+                                disabled={sync.syncingAll}
                               />
                             );
                           }

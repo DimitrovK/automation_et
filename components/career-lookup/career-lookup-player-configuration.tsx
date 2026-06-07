@@ -271,7 +271,7 @@ export function CareerLookupPlayerConfiguration({
   // `dbPlayerInfo.teams_played_for` if the prop isn't wired yet.
   const getTeamChanges = () => {
     if (!dbPlayerInfo || chosenDataSource !== 'wikipedia' || !playerData?.teams) {
-      return { updates: [], creates: [], deletes: [] };
+      return { updates: [], creates: [], deletes: [], hadUnresolvedWikiRows: false };
     }
     const dbTeams = dbFootballerTeams ?? dbPlayerInfo.teams_played_for ?? [];
     return computeTeamChanges(playerData.teams, dbTeams, dbPlayerInfo.id);
@@ -419,6 +419,13 @@ export function CareerLookupPlayerConfiguration({
 
       // Update and create team records if there are team changes
       if (hasTeamChanges()) {
+        if (teamChanges.hadUnresolvedWikiRows) {
+          // Surface to the user that the deletes phase was suppressed —
+          // computeTeamChanges intentionally returns an empty deletes array
+          // when any wiki row had teamFound=false, to avoid destructively
+          // dropping DB rows that may correspond to the unresolved wiki spell.
+          addDeploymentLog('info', `⚠️ Deletes suppressed: some wiki rows could not be resolved to DB teams. Clean up extra DB rows via admin once the wiki parse is fixed.`);
+        }
         addDeploymentLog('info', `📊 Team operations: ${teamChanges.deletes.length} deletes, ${teamChanges.updates.length} updates, ${teamChanges.creates.length} creates`);
 
         let deletedTeams = 0;

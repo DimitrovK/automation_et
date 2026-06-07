@@ -366,7 +366,10 @@ export function InternationalCareerCard({
                                 variant={comp.status === 'not-in-db' ? 'add' : 'update'}
                                 status={opStatus}
                                 error={opError}
-                                onClick={() => { /* idle-only — never rendered when opStatus is set */ }}
+                                onClick={comp.status === 'not-in-db'
+                                  ? () => handleAddToDb(comp)
+                                  : () => handleUpdateInDb(comp)}
+                                disabled={sync.syncingAll}
                               />
                             )
                           : (

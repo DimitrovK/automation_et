@@ -210,6 +210,43 @@ describe('SeniorCareerCard — inline per-club sync', () => {
     expect(screen.getByText('Failed')).toBeInTheDocument();
   });
 
+  it('renders a Retry button after a failed sync, and clicking it re-invokes the API', async () => {
+    const user = userEvent.setup();
+    // First call rejects; second resolves so we can observe the retry path.
+    mockUpdate
+      .mockRejectedValueOnce(new Error('transient 500'))
+      .mockResolvedValueOnce(makeDbTeam({ apps: 50 }));
+    const onClubStatsUpdated = vi.fn();
+
+    render(
+      <SeniorCareerCard
+        playerData={makePlayerData({ teams: [makeWiki({ appearances: 50 })] })}
+        dbPlayerInfo={makeFootballer({ teams_played_for: [makeDbTeam({ apps: 42 })] })}
+        dbFootballerTeams={[makeDbTeam({ apps: 42 })]}
+        footballerId={99}
+        onClubStatsUpdated={onClubStatsUpdated}
+      />,
+    );
+
+    // 1. First click → fails.
+    await user.click(screen.getByRole('button', { name: /Update in DB/i }));
+
+    expect(await screen.findByText('Failed')).toBeInTheDocument();
+    expect(screen.getByText('transient 500')).toBeInTheDocument();
+
+    // 2. Retry button is visible; clicking it re-invokes the API.
+    const retryBtn = screen.getByRole('button', { name: /Retry/i });
+
+    await user.click(retryBtn);
+
+    expect(mockUpdate).toHaveBeenCalledTimes(2);
+    // Both attempts target the same DB row id with the same payload — the second
+    // is a true retry, not a different call.
+    expect(mockUpdate.mock.calls[1][0]).toBe(mockUpdate.mock.calls[0][0]);
+    // onClubStatsUpdated fires only on the successful (second) attempt.
+    expect(onClubStatsUpdated).toHaveBeenCalledTimes(1);
+  });
+
   it('renders the 💡 affordance copy when footballerId is set', () => {
     render(
       <SeniorCareerCard

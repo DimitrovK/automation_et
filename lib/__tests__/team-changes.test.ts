@@ -159,6 +159,67 @@ describe('computeTeamChanges', () => {
     expect(result.updates).toEqual([]);
   });
 
+  // --- Deletes-safety when wiki has unresolvable rows ---
+
+  it('flags hadUnresolvedWikiRows=true when ANY wiki row has teamFound=false', () => {
+    const result = computeTeamChanges(
+      [
+        makeWiki({ teamID: 1, teamName: 'Arsenal' }),
+        makeWiki({ teamFound: false, teamID: null, teamName: 'Some Club' }),
+      ],
+      [makeDb({ id: 10, team_id: 1, team_name: 'Arsenal' })],
+      99,
+    );
+
+    expect(result.hadUnresolvedWikiRows).toBe(true);
+  });
+
+  it('flags hadUnresolvedWikiRows=false when every wiki row resolves', () => {
+    const result = computeTeamChanges(
+      [makeWiki({ teamID: 1, teamFound: true })],
+      [makeDb({ team_id: 1 })],
+      99,
+    );
+
+    expect(result.hadUnresolvedWikiRows).toBe(false);
+  });
+
+  it('suppresses deletes entirely when an unresolved wiki row exists (avoids destroying DB rows that may match it)', () => {
+    // Wiki has Arsenal (resolved) + an unresolved spell. DB has Arsenal and a
+    // mystery row that COULD correspond to the unresolved wiki spell — we
+    // can't tell, so we must not emit a delete for it.
+    const result = computeTeamChanges(
+      [
+        makeWiki({ teamID: 1, teamName: 'Arsenal' }),
+        makeWiki({ teamFound: false, teamID: null, teamName: 'Unparsed Loan' }),
+      ],
+      [
+        makeDb({ id: 10, team_id: 1, team_name: 'Arsenal' }),
+        makeDb({ id: 20, team_id: 99, team_name: 'Mystery Club' }),
+      ],
+      99,
+    );
+
+    expect(result.hadUnresolvedWikiRows).toBe(true);
+    expect(result.deletes).toEqual([]);
+  });
+
+  it('still emits deletes normally when all wiki rows resolve', () => {
+    // Regression: don't accidentally suppress deletes in the common case.
+    const result = computeTeamChanges(
+      [makeWiki({ teamID: 1, teamName: 'Arsenal' })],
+      [
+        makeDb({ id: 10, team_id: 1, team_name: 'Arsenal' }),
+        makeDb({ id: 20, team_id: 99, team_name: 'Stale Club' }),
+      ],
+      99,
+    );
+
+    expect(result.hadUnresolvedWikiRows).toBe(false);
+    expect(result.deletes).toHaveLength(1);
+    expect(result.deletes[0].id).toBe(20);
+  });
+
   it('treats a transfer_type mismatch as delete+create (composite key includes transfer_type)', () => {
     // Wiki says loan; DB says permanent. The BE `unique_player_permanent_transfer`
     // constraint forbids in-place transfer_type swap for player+permanent rows,

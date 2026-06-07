@@ -139,17 +139,23 @@ export default function FootballerCareerApp() {
     }
   };
 
-  // Re-fetch footballer teams (called after per-row Senior Career sync). We
-  // re-fetch the whole footballer rather than just the teams because the
-  // payload comes back denormalized (team_name, etc.) and the dedicated
-  // teams endpoint is also fine — we use the footballer endpoint because
-  // it's what populates `teams_played_for` upstream and avoids any drift.
+  // Re-fetch the full footballer after a per-row Senior Career sync.
+  //
+  // Why getFootballer (not the cheaper getFootballerTeams): the senior-card
+  // visualization (row coloring, conflict highlighting, mismatch cells) reads
+  // from `dbPlayerInfo.teams_played_for[index]` for the *display* side, while
+  // the sync-status badge reads from `dbFootballerTeams` (composite-key map).
+  // If we refreshed only the teams array, the badge would flip to "Synced"
+  // but the row's apps/goals cells would still show the pre-sync values.
+  // Fetching the full footballer lets us update BOTH in one round-trip and
+  // keep the two views in sync.
   const refetchTeams = async () => {
     if (!dbPlayerInfo?.id) {
       return;
     }
     try {
       const footballer = await FootballerAPI.getFootballer(dbPlayerInfo.id);
+      setDbPlayerInfo(footballer);
       setDbFootballerTeams(footballer.teams_played_for ?? []);
     } catch {
       // Keep prior state on transient failure — surfacing an empty array

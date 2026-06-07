@@ -1,5 +1,5 @@
 import type { RowSyncStatus } from '@/hooks/use-row-sync';
-import { AlertTriangle, Check, Loader2, Plus, Upload } from 'lucide-react';
+import { AlertTriangle, Check, Loader2, Plus, RefreshCw, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -63,13 +63,27 @@ export function RowSyncButton({ variant, status, error, onClick, disabled, label
     );
   }
   if (status === 'error') {
+    // Surface the failure + a retry affordance. `onClick` here calls the same
+    // handler that fired the original op; `useRowSync.run` clears the prior
+    // error on re-entry, so clicking transitions the row loading→success or
+    // loading→error without a page reload.
     return (
       <>
-        <Badge variant="destructive" className="border-red-200 bg-red-100 text-red-800">
+        <Badge variant="destructive" className="w-fit border-red-200 bg-red-100 text-red-800">
           <AlertTriangle className="mr-1 size-3" />
           Failed
         </Badge>
         {error && <span className="max-w-[200px] text-xs text-red-600 dark:text-red-400">{error}</span>}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onClick}
+          disabled={disabled}
+          className="h-7 w-fit border-red-300 text-xs text-red-700 hover:bg-red-100 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/30"
+        >
+          <RefreshCw className="mr-1 size-3" />
+          Retry
+        </Button>
       </>
     );
   }

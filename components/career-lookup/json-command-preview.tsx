@@ -120,7 +120,7 @@ export function JsonCommandPreview({
   // card, and the full-deploy code path can't drift from each other.
   const getTeamChanges = useMemo(() => {
     if (!isExistingPlayer || !dbPlayerInfo || chosenDataSource !== 'wikipedia' || !playerData?.teams) {
-      return { updates: [], creates: [], deletes: [] };
+      return { updates: [], creates: [], deletes: [], hadUnresolvedWikiRows: false };
     }
     return computeTeamChanges(
       playerData.teams,
@@ -595,6 +595,22 @@ ${JSON.stringify(data, null, 2)}`;
                   {isExistingPlayer ? (
                     // Show team deletes, updates and creates for existing players
                     <div className="space-y-4">
+                      {getTeamChanges.hadUnresolvedWikiRows && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-900/20">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="mt-0.5 size-4 text-amber-600" />
+                            <div className="text-xs">
+                              <p className="font-medium text-amber-800 dark:text-amber-300">Deletes suppressed</p>
+                              <p className="text-amber-700 dark:text-amber-400">
+                                One or more wiki rows could not be resolved to a DB team. To avoid
+                                destructively dropping a DB row that may correspond to the unresolved
+                                wiki spell, no DELETE operations will be emitted. Fix the wiki parse
+                                upstream or clean up extra DB rows via admin.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       {getTeamChanges.deletes.length > 0 && (
                         <div>
                           <h5 className="mb-2 text-xs font-medium text-red-700 dark:text-red-400 sm:text-sm">

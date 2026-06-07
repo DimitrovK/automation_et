@@ -26,6 +26,13 @@ export type TeamChanges = {
   updates: TeamUpdate[];
   creates: TeamCreate[];
   deletes: TeamDelete[];
+  /**
+   * True when at least one wiki row had `teamFound=false` (n8n couldn't
+   * resolve the club to a DB team). When true, `deletes` is empty by
+   * design — see `computeTeamChanges` for the safety rationale. Surface
+   * this to the user so they know the deletes phase was suppressed.
+   */
+  hadUnresolvedWikiRows: boolean;
 };
 
 /**
@@ -177,15 +184,24 @@ export function computeTeamChanges(
     });
   }
 
-  for (const [key, { team: dbTeam, position }] of dbByKey) {
-    if (!wikiByKey.has(key)) {
-      deletes.push({
-        id: dbTeam.id,
-        teamName: dbTeam.team_name,
-        position,
-      });
+  // If ANY wiki row was unresolvable, the deletes phase is unsafe: we can't
+  // tell which DB rows correspond to the unresolved wiki spells (no team_id
+  // to match on), and the alternative — deleting every unmatched DB row —
+  // would destroy correct data. Suppress the deletes loop entirely and flag
+  // it; the user can clean up via admin once they fix the n8n parse upstream.
+  const hadUnresolvedWikiRows = wikiTeams.some(t => !t.teamFound || t.teamID == null);
+
+  if (!hadUnresolvedWikiRows) {
+    for (const [key, { team: dbTeam, position }] of dbByKey) {
+      if (!wikiByKey.has(key)) {
+        deletes.push({
+          id: dbTeam.id,
+          teamName: dbTeam.team_name,
+          position,
+        });
+      }
     }
   }
 
-  return { updates, creates, deletes };
+  return { updates, creates, deletes, hadUnresolvedWikiRows };
 }
