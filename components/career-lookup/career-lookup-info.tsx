@@ -1,8 +1,8 @@
-import type { Footballer, FootballerNationStat, n8nWikiPlayerData } from '@/types/player';
+import type { SelectedPosition } from './position-card';
+import type { Footballer, FootballerNationStat, FootballerTeam, n8nWikiPlayerData } from '@/types/player';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InternationalCareerCard } from './international-career-card';
 import { PlayerProfileCard } from './player-profile-card';
-import type { SelectedPosition } from './position-card';
 import { PositionCard } from './position-card';
 import { SeniorCareerCard } from './senior-career-card';
 
@@ -10,9 +10,11 @@ type CareerLookupInfoProps = {
   playerData: n8nWikiPlayerData;
   dbPlayerInfo?: Footballer | null;
   dbNationalTeams?: FootballerNationStat[];
+  dbFootballerTeams?: FootballerTeam[];
   chosenDataSource?: 'wikipedia' | 'database' | null;
   onDataSourceChange?: (dataSource: 'wikipedia' | 'database') => void;
   onNationStatsUpdated?: () => void;
+  onClubStatsUpdated?: () => void;
   onSelectedPositionsChange?: (positions: SelectedPosition[]) => void;
   onPositionsSaved?: () => void;
   className?: string;
@@ -22,9 +24,11 @@ export function CareerLookupInfo({
   playerData,
   dbPlayerInfo,
   dbNationalTeams,
+  dbFootballerTeams,
   chosenDataSource,
   onDataSourceChange,
   onNationStatsUpdated,
+  onClubStatsUpdated,
   onSelectedPositionsChange,
   onPositionsSaved,
   className,
@@ -46,8 +50,11 @@ export function CareerLookupInfo({
           <SeniorCareerCard
             playerData={playerData}
             dbPlayerInfo={dbPlayerInfo}
+            dbFootballerTeams={dbFootballerTeams}
+            footballerId={dbPlayerInfo?.id ?? null}
             chosenDataSource={chosenDataSource}
             onDataSourceChange={onDataSourceChange}
+            onClubStatsUpdated={onClubStatsUpdated}
           />
 
           <InternationalCareerCard

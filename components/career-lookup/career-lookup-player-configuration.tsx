@@ -1,6 +1,6 @@
 import type { DeploymentLogEntry } from '@/components/career-lookup/deployment-console';
-import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, FootballerPosition, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
 import type { SelectedPosition } from '@/components/career-lookup/position-card';
+import type { CreateFootballerNationRequest, CreateFootballerRequest, CreateFootballerTeamRequest, Footballer, FootballerNationStat, FootballerPosition, FootballerTeam, n8nWikiPlayerData, PlayerConfiguration, SetPositionsRequest } from '@/types/player';
 import { AlertTriangle, Edit, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createLogEntry, DeploymentConsole } from '@/components/career-lookup/deployment-console';
@@ -16,12 +16,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/lib/auth';
 import { FootballerAPI } from '@/lib/footballer-api';
+import { computeTeamChanges } from '@/lib/team-changes';
 
 type CareerLookupPlayerConfigurationProps = {
   // Player data
   playerData: n8nWikiPlayerData;
   dbPlayerInfo: Footballer | null;
   dbNationalTeams?: FootballerNationStat[];
+  /**
+   * Live DB team rows, lifted from the page so inline per-row syncs
+   * (SeniorCareerCard) feed back here and `getTeamChanges` re-diffs
+   * against fresh data. Falls back to `dbPlayerInfo.teams_played_for`
+   * if not provided.
+   */
+  dbFootballerTeams?: FootballerTeam[];
 
   // Data source choice for validation conflicts
   chosenDataSource?: 'wikipedia' | 'database' | null;
@@ -42,6 +50,7 @@ export function CareerLookupPlayerConfiguration({
   playerData,
   dbPlayerInfo,
   dbNationalTeams,
+  dbFootballerTeams,
   chosenDataSource,
   onErrorChange,
   onReloadPlayer,
@@ -110,6 +119,7 @@ export function CareerLookupPlayerConfiguration({
       setPlayerConfig(dbConfig);
     } else if (playerData && !dbPlayerInfo) {
       // Use default configuration and playerData when it's a new player
+      // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting, parsePlayerName is defined below.
       const { first, last } = parsePlayerName(playerData.playerName);
       const defaultConfig = {
         status: 'AWAITING_REVISION' as const,
@@ -254,141 +264,17 @@ export function CareerLookupPlayerConfiguration({
     return getPlayerChanges() !== null;
   };
 
-  // Function to analyze team changes when Wikipedia is chosen as data source
+  // Function to analyze team changes when Wikipedia is chosen as data source.
+  // Reads from the lifted `dbFootballerTeams` prop (refreshed after each inline
+  // sync from SeniorCareerCard) so already-synced rows naturally produce empty
+  // diffs and don't get re-pushed on full deploy. Falls back to the snapshot on
+  // `dbPlayerInfo.teams_played_for` if the prop isn't wired yet.
   const getTeamChanges = () => {
     if (!dbPlayerInfo || chosenDataSource !== 'wikipedia' || !playerData?.teams) {
-      return { updates: [], creates: [], deletes: [] };
+      return { updates: [], creates: [], deletes: [], hadUnresolvedWikiRows: false };
     }
-
-    const wikipediaTeams = playerData.teams.filter(team => team.teamFound && team.teamID);
-    const dbTeams = dbPlayerInfo.teams_played_for || [];
-
-    const updates: Array<{ id: number; changes: Partial<CreateFootballerTeamRequest>; teamName: string; position: number }> = [];
-    const creates: Array<{ teamData: CreateFootballerTeamRequest; teamName: string; position: number }> = [];
-    const deletes: Array<{ id: number; teamName: string; position: number }> = [];
-
-    // Position-based matching: compare teams by their position in the arrays
-    const minLength = Math.min(wikipediaTeams.length, dbTeams.length);
-
-    // Process teams that exist in both arrays (by position)
-    for (let i = 0; i < minLength; i++) {
-      const wikiTeam = wikipediaTeams[i];
-      const dbTeam = dbTeams[i];
-
-      const transferTypeString = (wikiTeam.typeOfTransfer || '').toLowerCase().trim();
-      const transferType = transferTypeString.includes('loan') ? 'loan' : 'permanent';
-
-      // Check if this is the same team (by team_id) or a completely different team
-      const isSameTeam = dbTeam.team_id === wikiTeam.teamID;
-
-      if (isSameTeam) {
-        // Same team - check for field changes
-        const changes: Partial<CreateFootballerTeamRequest> = {};
-
-        if (dbTeam.apps !== wikiTeam.appearances) {
-          changes.apps = wikiTeam.appearances;
-        }
-        if (dbTeam.goals !== wikiTeam.goals) {
-          changes.goals = wikiTeam.goals;
-        }
-        if (dbTeam.transfer_type !== transferType) {
-          changes.transfer_type = transferType;
-        }
-        if (dbTeam.start_year !== wikiTeam.joinYear) {
-          changes.start_year = wikiTeam.joinYear;
-        }
-        if (dbTeam.end_year !== wikiTeam.departYear) {
-          changes.end_year = wikiTeam.departYear;
-        }
-
-        if (Object.keys(changes).length > 0) {
-          // Include required fields for PUT requests to prevent null values
-          changes.team_id = dbTeam.team_id;
-          changes.role = dbTeam.role;
-
-          // Always include start_year and end_year if they weren't already in changes
-          // to prevent them from being set to null in the backend
-          if (!changes.hasOwnProperty('start_year')) {
-            changes.start_year = dbTeam.start_year ?? undefined;
-          }
-          if (!changes.hasOwnProperty('end_year')) {
-            changes.end_year = dbTeam.end_year;
-          }
-
-          updates.push({
-            id: dbTeam.id,
-            changes,
-            teamName: wikiTeam.teamName,
-            position: i + 1,
-          });
-        }
-      } else {
-        // Different team - delete the old one and create the new one
-        deletes.push({
-          id: dbTeam.id,
-          teamName: dbTeam.team_name,
-          position: i + 1,
-        });
-
-        const teamData: CreateFootballerTeamRequest = {
-          footballer_id: dbPlayerInfo.id,
-          team_id: wikiTeam.teamID!,
-          role: 'player',
-          apps: wikiTeam.appearances,
-          goals: wikiTeam.goals,
-          transfer_type: transferType,
-          start_year: wikiTeam.joinYear,
-          end_year: wikiTeam.departYear,
-        };
-
-        creates.push({
-          teamData,
-          teamName: wikiTeam.teamName,
-          position: i + 1,
-        });
-      }
-    }
-
-    // Handle extra Wikipedia teams (more teams in Wikipedia than in DB)
-    if (wikipediaTeams.length > dbTeams.length) {
-      for (let i = dbTeams.length; i < wikipediaTeams.length; i++) {
-        const wikiTeam = wikipediaTeams[i];
-        const transferTypeString = (wikiTeam.typeOfTransfer || '').toLowerCase().trim();
-        const transferType = transferTypeString.includes('loan') ? 'loan' : 'permanent';
-
-        const teamData: CreateFootballerTeamRequest = {
-          footballer_id: dbPlayerInfo.id,
-          team_id: wikiTeam.teamID!,
-          role: 'player',
-          apps: wikiTeam.appearances,
-          goals: wikiTeam.goals,
-          transfer_type: transferType,
-          start_year: wikiTeam.joinYear,
-          end_year: wikiTeam.departYear,
-        };
-
-        creates.push({
-          teamData,
-          teamName: wikiTeam.teamName,
-          position: i + 1,
-        });
-      }
-    }
-
-    // Handle extra DB teams (more teams in DB than in Wikipedia)
-    if (dbTeams.length > wikipediaTeams.length) {
-      for (let i = wikipediaTeams.length; i < dbTeams.length; i++) {
-        const dbTeam = dbTeams[i];
-
-        deletes.push({
-          id: dbTeam.id,
-          teamName: dbTeam.team_name,
-          position: i + 1,
-        });
-      }
-    }
-
-    return { updates, creates, deletes };
+    const dbTeams = dbFootballerTeams ?? dbPlayerInfo.teams_played_for ?? [];
+    return computeTeamChanges(playerData.teams, dbTeams, dbPlayerInfo.id);
   };
 
   const hasTeamChanges = () => {
@@ -450,14 +336,22 @@ export function CareerLookupPlayerConfiguration({
   };
 
   const hasPositionChanges = () => {
-    if (!selectedPositions || selectedPositions.length === 0) return false;
-    if (!playerData?.playerFoundInDB || !dbPlayerInfo) return selectedPositions.length > 0;
+    if (!selectedPositions || selectedPositions.length === 0) {
+      return false;
+    }
+    if (!playerData?.playerFoundInDB || !dbPlayerInfo) {
+      return selectedPositions.length > 0;
+    }
     // Compare against fresh DB data (refetched after saves)
     const dbIds = new Set(dbFootballerPositions?.map(p => p.position_id) ?? []);
     const selIds = new Set(selectedPositions.map(p => p.position_id));
-    if (selIds.size !== dbIds.size) return true;
-    if ([...selIds].some(id => !dbIds.has(id))) return true;
-    return selectedPositions.some(sp => {
+    if (selIds.size !== dbIds.size) {
+      return true;
+    }
+    if ([...selIds].some(id => !dbIds.has(id))) {
+      return true;
+    }
+    return selectedPositions.some((sp) => {
       const dbP = dbFootballerPositions?.find(d => d.position_id === sp.position_id);
       return dbP && dbP.is_primary !== sp.is_primary;
     });
@@ -519,11 +413,19 @@ export function CareerLookupPlayerConfiguration({
         updatedFootballer = await FootballerAPI.updateFootballer(dbPlayerInfo.id, updateData as CreateFootballerRequest);
 
         addDeploymentLog('response', `✅ Footballer updated successfully`, updatedFootballer);
+        // eslint-disable-next-line no-console -- pre-existing debug log; deployment console is separate.
         console.log('Footballer updated successfully:', updatedFootballer);
       }
 
       // Update and create team records if there are team changes
       if (hasTeamChanges()) {
+        if (teamChanges.hadUnresolvedWikiRows) {
+          // Surface to the user that the deletes phase was suppressed —
+          // computeTeamChanges intentionally returns an empty deletes array
+          // when any wiki row had teamFound=false, to avoid destructively
+          // dropping DB rows that may correspond to the unresolved wiki spell.
+          addDeploymentLog('info', `⚠️ Deletes suppressed: some wiki rows could not be resolved to DB teams. Clean up extra DB rows via admin once the wiki parse is fixed.`);
+        }
         addDeploymentLog('info', `📊 Team operations: ${teamChanges.deletes.length} deletes, ${teamChanges.updates.length} updates, ${teamChanges.creates.length} creates`);
 
         let deletedTeams = 0;
@@ -690,6 +592,7 @@ export function CareerLookupPlayerConfiguration({
   const handleDeployment = async () => {
     // Only allow deployment if player is not found in DB
     if (playerData?.playerFoundInDB) {
+      // eslint-disable-next-line no-alert -- pre-existing UX, kept until a toast replacement lands.
       alert('This player already exists in the database. Deployment is only available for new players.');
       return;
     }
@@ -704,6 +607,7 @@ export function CareerLookupPlayerConfiguration({
 
     // Validate required fields
     if (!playerConfig.countryID || !playerConfig.firstName.trim() || !playerConfig.lastName.trim() || !playerConfig.dateOfBirth) {
+      // eslint-disable-next-line no-alert -- pre-existing UX, kept until a toast replacement lands.
       alert('Please ensure all required fields are completed before deployment.');
       return;
     }
@@ -751,6 +655,7 @@ export function CareerLookupPlayerConfiguration({
       const createdFootballer = await FootballerAPI.createFootballer(footballerData);
 
       addDeploymentLog('response', `✅ Footballer created successfully (ID: ${createdFootballer.id})`, createdFootballer);
+      // eslint-disable-next-line no-console -- pre-existing debug log; deployment console is separate.
       console.log('Footballer created successfully:', createdFootballer);
 
       // Create team records for teams found in the database

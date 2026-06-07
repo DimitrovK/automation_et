@@ -72,6 +72,10 @@ export default antfu({
     'node/prefer-global/process': 'off', // Allow using `process.env`
     'test/padding-around-all': 'error', // Add padding in test files
     'test/prefer-lowercase-title': 'off', // Allow using uppercase titles in test titles
+    // Requires typed-linting (parserOptions.project), which we don't enable
+    // because it slows the dev loop. Disable to unblock pre-commit eslint
+    // runs — the rule otherwise errors out the entire file pipeline.
+    'react/no-implicit-key': 'off',
   },
   settings: {
     tailwindcss: {
