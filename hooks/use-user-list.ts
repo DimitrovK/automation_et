@@ -1,10 +1,11 @@
 /**
- * Loads the admin user list with server-side search, ordering and pagination
- * (DRF `?search=` / `?ordering=` / `?page=`). Page size is fixed by the BE
- * (PageNumberPagination, PAGE_SIZE=10) — we read `count` to derive totalPages.
+ * Loads the admin user list for a given filter set (server-side search,
+ * faceted filters, ordering, pagination). The page owns the filter state (and
+ * syncs it to the URL); this hook is a thin fetcher. Page size is fixed by the
+ * BE (PageNumberPagination, PAGE_SIZE=10) — we read `count` to derive totalPages.
  */
 
-import type { HubUser } from '@/types/user-hub';
+import type { HubUser, UserListFilters } from '@/types/user-hub';
 import { useCallback, useEffect, useState } from 'react';
 import { UserHubAPI } from '@/lib/user-hub-api';
 
@@ -15,34 +16,28 @@ export type UseUserList = {
   users: HubUser[];
   count: number;
   totalPages: number;
-  page: number;
-  setPage: (page: number) => void;
-  search: string;
-  setSearch: (q: string) => void;
-  ordering: string;
-  setOrdering: (o: string) => void;
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
 };
 
-export function useUserList(isAuthenticated: boolean, debouncedSearch: string): UseUserList {
+export function useUserList(isAuthenticated: boolean, filters: UserListFilters): UseUserList {
   const [users, setUsers] = useState<HubUser[]>([]);
   const [count, setCount] = useState(0);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [ordering, setOrdering] = useState('id');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Serialize the filter object so the effect re-runs on any value change
+  // without depending on referential identity of the caller's object.
+  const filterKey = JSON.stringify(filters);
 
   const load = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await UserHubAPI.listUsers({
-        search: debouncedSearch.trim() || undefined,
-        ordering,
-        page,
+        ...filters,
+        search: filters.search?.trim() || undefined,
       });
       setUsers(res.results);
       setCount(res.count ?? 0);
@@ -53,7 +48,10 @@ export function useUserList(isAuthenticated: boolean, debouncedSearch: string): 
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, ordering, page]);
+    // filterKey captures every filter value; `filters` itself is intentionally
+    // not a dep (it's a fresh object each render).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -61,25 +59,7 @@ export function useUserList(isAuthenticated: boolean, debouncedSearch: string): 
     }
   }, [isAuthenticated, load]);
 
-  // Reset to page 1 whenever the result set narrows.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, ordering]);
-
   const totalPages = Math.max(1, Math.ceil(count / USER_LIST_PAGE_SIZE));
 
-  return {
-    users,
-    count,
-    totalPages,
-    page,
-    setPage,
-    search,
-    setSearch,
-    ordering,
-    setOrdering,
-    isLoading,
-    error,
-    refetch: load,
-  };
+  return { users, count, totalPages, isLoading, error, refetch: load };
 }

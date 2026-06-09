@@ -65,21 +65,43 @@ describe('UserHubAPI', () => {
       expect(url).not.toContain('search=');
       expect(url).toContain('ordering=id');
     });
+
+    it('serialises the faceted filter params', async () => {
+      mockApiFetcher.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
+      await UserHubAPI.listUsers({
+        is_online: 'true',
+        favourite_game: 'grid',
+        has_favourites: 'true',
+        is_beta_tester: 'true',
+        suspension: 'FULL_PLATFORM',
+        is_active: 'true',
+      });
+      const url = mockApiFetcher.mock.calls[0][0] as string;
+
+      expect(url).toContain('is_online=true');
+      expect(url).toContain('favourite_game=grid');
+      expect(url).toContain('has_favourites=true');
+      expect(url).toContain('is_beta_tester=true');
+      expect(url).toContain('suspension=FULL_PLATFORM');
+      expect(url).toContain('is_active=true');
+    });
+
+    it('does NOT drop a "false" filter value', async () => {
+      mockApiFetcher.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
+      await UserHubAPI.listUsers({ is_online: 'false', is_active: 'false' });
+      const url = mockApiFetcher.mock.calls[0][0] as string;
+
+      expect(url).toContain('is_online=false');
+      expect(url).toContain('is_active=false');
+    });
   });
 
-  describe('getUser / getUserRankings', () => {
+  describe('getUser', () => {
     it('hits /accounts/users/{id}/', async () => {
       mockApiFetcher.mockResolvedValue({ id: 5 });
       await UserHubAPI.getUser(5);
 
       expect(mockApiFetcher).toHaveBeenCalledWith('accounts/users/5/');
-    });
-
-    it('hits /accounts/users/{id}/rankings/', async () => {
-      mockApiFetcher.mockResolvedValue({});
-      await UserHubAPI.getUserRankings(5);
-
-      expect(mockApiFetcher).toHaveBeenCalledWith('accounts/users/5/rankings/');
     });
   });
 });

@@ -1,8 +1,10 @@
 'use client';
 
-import type { HubUser } from '@/types/user-hub';
+import type { ChipKey } from '@/components/user-hub/ActiveFilterChips';
+import type { BoolParam, HubUser, SuspensionFilter, UserListFilters } from '@/types/user-hub';
 import { LayoutGrid, List, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
@@ -17,54 +19,89 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ActiveFilterChips } from '@/components/user-hub/ActiveFilterChips';
 import { AdminGate } from '@/components/user-hub/AdminGate';
 import { UserCard } from '@/components/user-hub/UserCard';
 import { UserDetailSheet } from '@/components/user-hub/UserDetailSheet';
 import { UserHubNav } from '@/components/user-hub/UserHubNav';
 import { UserTable } from '@/components/user-hub/UserTable';
+import { UserTableSkeleton } from '@/components/user-hub/UserTableSkeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useFavouritesUsage } from '@/hooks/use-favourites-usage';
 import { USER_LIST_PAGE_SIZE, useUserList } from '@/hooks/use-user-list';
 import { useAuth } from '@/lib/auth';
+import { readFilters, serialiseFilters } from '@/lib/user-hub-filters';
+import { prettySlug } from '@/lib/user-hub-format';
 
-const ORDERING_OPTIONS: { value: string; label: string }[] = [
+const ORDERING_OPTIONS = [
   { value: 'id', label: 'ID (oldest)' },
   { value: '-id', label: 'ID (newest)' },
   { value: 'username', label: 'Username (A–Z)' },
   { value: '-username', label: 'Username (Z–A)' },
-  { value: 'email', label: 'Email (A–Z)' },
+  { value: '-date_joined', label: 'Newest joined' },
+  { value: '-last_login', label: 'Recently active' },
 ];
 
-export default function UserHubUsersPage() {
+/** `undefined` → the "all" sentinel shadcn Select needs; and back. */
+const ALL = 'all';
+
+function UserHubUsersInner() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const isAdmin = isAuthenticated && !!user?.is_superuser;
 
-  const [q, setQ] = useState('');
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const filters = useMemo(
+    () => readFilters(new URLSearchParams(searchParams.toString())),
+    [searchParams],
+  );
+
+  // Search box stays local for snappy typing; the debounced value is what we
+  // write to the URL (avoids history spam).
+  const [q, setQ] = useState(filters.search ?? '');
   const debouncedQ = useDebouncedValue(q, 300);
+
   const [view, setView] = useState<'cards' | 'table'>('table');
-  const [presence, setPresence] = useState<'all' | 'online' | 'offline'>('all');
   const [selected, setSelected] = useState<HubUser | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const {
-    users,
-    count,
-    totalPages,
-    page,
-    setPage,
-    ordering,
-    setOrdering,
-    isLoading: listLoading,
-    error,
-  } = useUserList(isAdmin, debouncedQ);
+  const writeFilters = useCallback(
+    (next: UserListFilters) => {
+      const qs = serialiseFilters(next);
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [pathname, router],
+  );
 
-  // Presence isn't server-filterable (is_online is Redis-derived, not a DB
-  // field), so this narrows the current page client-side.
-  const visibleUsers = useMemo(() => {
-    if (presence === 'all') {
-      return users;
+  // Patch a facet and reset to page 1 (the result set changed).
+  const updateFilter = useCallback(
+    (patch: Partial<UserListFilters>) => {
+      writeFilters({ ...filters, ...patch, page: 1 });
+    },
+    [filters, writeFilters],
+  );
+
+  // Sync the debounced search term into the URL when it diverges.
+  useEffect(() => {
+    const next = debouncedQ.trim() || undefined;
+    if (next !== filters.search) {
+      writeFilters({ ...filters, search: next, page: 1 });
     }
-    return users.filter(u => (presence === 'online' ? u.is_online === true : u.is_online === false));
-  }, [users, presence]);
+    // Only react to debounced input; filters/writeFilters are stable enough here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ]);
+
+  const { users, count, totalPages, isLoading: listLoading, error } = useUserList(isAdmin, filters);
+
+  // Favourite-game picker options come from the analytics payload (games that
+  // have ≥1 favourite). Degrades gracefully if that endpoint isn't deployed.
+  const { data: favData } = useFavouritesUsage(isAdmin);
+  const gameOptions = useMemo(
+    () => (favData ? Object.keys(favData.game_popularity).sort() : []),
+    [favData],
+  );
 
   if (isLoading) {
     return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
@@ -76,6 +113,15 @@ export default function UserHubUsersPage() {
   function handleSelect(u: HubUser) {
     setSelected(u);
     setSheetOpen(true);
+  }
+
+  function clearChip(key: ChipKey) {
+    updateFilter({ [key]: undefined });
+  }
+
+  function clearAll() {
+    setQ('');
+    writeFilters({ ordering: filters.ordering, page: 1 });
   }
 
   return (
@@ -90,7 +136,7 @@ export default function UserHubUsersPage() {
             Users
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Search users and open a profile to view favourites, rankings and status. Read-only.
+            Search and filter users. Open a profile to view favourites and status. Read-only.
           </p>
         </div>
 
@@ -101,9 +147,10 @@ export default function UserHubUsersPage() {
           : (
               <>
                 <UserHubNav />
+
                 <Card>
-                  <CardContent className="grid grid-cols-1 gap-3 pt-6 md:grid-cols-4">
-                    <div className="md:col-span-2">
+                  <CardContent className="grid grid-cols-1 gap-3 pt-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="sm:col-span-2 lg:col-span-1">
                       <label htmlFor="user-search" className="mb-1 block text-xs font-medium text-gray-600">Search</label>
                       <Input
                         id="user-search"
@@ -113,21 +160,42 @@ export default function UserHubUsersPage() {
                         onChange={e => setQ(e.target.value)}
                       />
                     </div>
+
                     <div>
-                      <label htmlFor="user-presence" className="mb-1 block text-xs font-medium text-gray-600">Presence</label>
-                      <Select value={presence} onValueChange={v => setPresence(v as 'all' | 'online' | 'offline')}>
-                        <SelectTrigger id="user-presence"><SelectValue /></SelectTrigger>
+                      <label htmlFor="filter-favourite" className="mb-1 block text-xs font-medium text-gray-600">Favourited game</label>
+                      <Select
+                        value={filters.favourite_game ?? ALL}
+                        onValueChange={v => updateFilter({ favourite_game: v === ALL ? undefined : v })}
+                      >
+                        <SelectTrigger id="filter-favourite"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
-                          <SelectItem value="online">Online</SelectItem>
-                          <SelectItem value="offline">Offline</SelectItem>
+                          <SelectItem value={ALL}>Any game</SelectItem>
+                          {gameOptions.map(slug => (
+                            <SelectItem key={slug} value={slug}>{prettySlug(slug)}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
+
                     <div>
-                      <label htmlFor="user-ordering" className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
-                      <Select value={ordering} onValueChange={setOrdering}>
-                        <SelectTrigger id="user-ordering"><SelectValue /></SelectTrigger>
+                      <label htmlFor="filter-presence" className="mb-1 block text-xs font-medium text-gray-600">Presence</label>
+                      <Select
+                        value={filters.is_online ?? ALL}
+                        onValueChange={v => updateFilter({ is_online: v === ALL ? undefined : (v as BoolParam) })}
+                      >
+                        <SelectTrigger id="filter-presence"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ALL}>All</SelectItem>
+                          <SelectItem value="true">Online</SelectItem>
+                          <SelectItem value="false">Offline</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="filter-ordering" className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
+                      <Select value={filters.ordering ?? 'id'} onValueChange={v => updateFilter({ ordering: v })}>
+                        <SelectTrigger id="filter-ordering"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {ORDERING_OPTIONS.map(o => (
                             <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
@@ -135,14 +203,58 @@ export default function UserHubUsersPage() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <div>
+                      <label htmlFor="filter-suspension" className="mb-1 block text-xs font-medium text-gray-600">Suspension</label>
+                      <Select
+                        value={filters.suspension ?? ALL}
+                        onValueChange={v => updateFilter({ suspension: v === ALL ? undefined : (v as SuspensionFilter) })}
+                      >
+                        <SelectTrigger id="filter-suspension"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ALL}>Any</SelectItem>
+                          <SelectItem value="none">Not suspended</SelectItem>
+                          <SelectItem value="any">Suspended</SelectItem>
+                          <SelectItem value="FULL_PLATFORM">Full platform</SelectItem>
+                          <SelectItem value="ALL_GAMES">All games</SelectItem>
+                          <SelectItem value="MULTIPLAYER">Multiplayer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="filter-beta" className="mb-1 block text-xs font-medium text-gray-600">Beta</label>
+                      <Select
+                        value={filters.is_beta_tester ?? ALL}
+                        onValueChange={v => updateFilter({ is_beta_tester: v === ALL ? undefined : (v as BoolParam) })}
+                      >
+                        <SelectTrigger id="filter-beta"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ALL}>All</SelectItem>
+                          <SelectItem value="true">Beta testers</SelectItem>
+                          <SelectItem value="false">Non-beta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="filter-active" className="mb-1 block text-xs font-medium text-gray-600">Account</label>
+                      <Select
+                        value={filters.is_active ?? ALL}
+                        onValueChange={v => updateFilter({ is_active: v === ALL ? undefined : (v as BoolParam) })}
+                      >
+                        <SelectTrigger id="filter-active"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ALL}>All</SelectItem>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </CardContent>
                 </Card>
-                {presence !== 'all' && (
-                  <p className="-mt-3 text-center text-xs text-gray-500">
-                    Presence filter applies to the current page only (online status isn't
-                    server-side filterable yet).
-                  </p>
-                )}
+
+                <ActiveFilterChips filters={filters} onRemove={clearChip} onClearAll={clearAll} />
 
                 <div className="flex items-center justify-end">
                   <div className="flex gap-1">
@@ -174,35 +286,37 @@ export default function UserHubUsersPage() {
                   </div>
                 )}
 
-                {listLoading && <p className="text-center text-sm text-gray-500">Loading users…</p>}
-
-                {!listLoading && !error && (
-                  view === 'cards'
-                    ? (
-                        visibleUsers.length === 0
-                          ? (
-                              <div className="rounded-md border p-8 text-center text-sm text-gray-500">
-                                No users match your search.
-                              </div>
-                            )
-                          : (
-                              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                                {visibleUsers.map(u => <UserCard key={u.id} user={u} onSelect={handleSelect} />)}
-                              </div>
-                            )
-                      )
-                    : (
-                        <UserTable users={visibleUsers} onSelect={handleSelect} />
-                      )
-                )}
+                {listLoading
+                  ? (
+                      <UserTableSkeleton />
+                    )
+                  : !error && (
+                      view === 'cards'
+                        ? (
+                            users.length === 0
+                              ? (
+                                  <div className="rounded-md border p-8 text-center text-sm text-gray-500">
+                                    No users match your filters.
+                                  </div>
+                                )
+                              : (
+                                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                    {users.map(u => <UserCard key={u.id} user={u} onSelect={handleSelect} />)}
+                                  </div>
+                                )
+                          )
+                        : (
+                            <UserTable users={users} onSelect={handleSelect} />
+                          )
+                    )}
 
                 <DataPagination
-                  currentPage={page}
+                  currentPage={filters.page ?? 1}
                   totalPages={totalPages}
                   totalCount={count}
                   visibleCount={users.length}
                   pageSize={USER_LIST_PAGE_SIZE}
-                  onPageChange={setPage}
+                  onPageChange={p => writeFilters({ ...filters, page: p })}
                   disabled={listLoading}
                 />
               </>
@@ -211,5 +325,13 @@ export default function UserHubUsersPage() {
         <UserDetailSheet user={selected} open={sheetOpen} onOpenChange={setSheetOpen} />
       </div>
     </div>
+  );
+}
+
+export default function UserHubUsersPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner message="Loading" subtitle="Preparing the user list..." />}>
+      <UserHubUsersInner />
+    </Suspense>
   );
 }

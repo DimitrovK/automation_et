@@ -21,7 +21,7 @@ export function UserTable({ users, onSelect }: Props) {
   if (users.length === 0) {
     return (
       <div className="rounded-md border p-8 text-center text-sm text-gray-500">
-        No users match your search.
+        No users match your filters.
       </div>
     );
   }

@@ -64,26 +64,33 @@ export type HubUser = {
 
 export type UserListResponse = Paginated<HubUser>;
 
-/** Query params accepted by `GET /accounts/users/`. */
+/**
+ * Tri-state boolean filters use string `'true'`/`'false'` (not boolean) so they
+ *  map 1:1 to URL params and dodge `buildQuery`'s falsy-skip ambiguity.
+ */
+export type BoolParam = 'true' | 'false';
+
+/** Suspension filter values: not-suspended, any-suspension, or an exact scope. */
+export type SuspensionFilter = 'none' | 'any' | 'MULTIPLAYER' | 'ALL_GAMES' | 'FULL_PLATFORM';
+
+/** Query params accepted by `GET /accounts/users/` (mirrors AdminUserFilter). */
 export type UserListParams = {
   /** DRF SearchFilter — matches username/email/first_name/last_name/phone_number. */
   search?: string;
-  /** DRF OrderingFilter field (e.g. `id`, `-username`). */
+  /** DRF OrderingFilter field (e.g. `id`, `-username`, `-date_joined`). */
   ordering?: string;
   page?: number;
+  is_online?: BoolParam;
+  favourite_game?: string;
+  has_favourites?: BoolParam;
+  is_beta_tester?: BoolParam;
+  suspension?: SuspensionFilter;
+  is_active?: BoolParam;
+  nationality?: number;
 };
 
-// ---- per-user rankings ----------------------------------------------------
-
-/**
- * GET /accounts/users/{id}/rankings/ — the BE returns several ranking
- * sections whose inner shapes vary per game. We keep this permissive and
- * render defensively rather than over-fitting nested structures.
- */
-export type UserRankingsResponse = {
-  game_rankings?: unknown;
-  stoppage_time_rankings?: unknown;
-  scout_rankings?: unknown;
-  conquest_rankings?: unknown;
-  grid_rankings?: unknown;
-};
+/** The full filter state the Users page owns and syncs to the URL. */
+export type UserListFilters = Pick<
+  UserListParams,
+  'search' | 'ordering' | 'page' | 'is_online' | 'favourite_game' | 'has_favourites' | 'is_beta_tester' | 'suspension' | 'is_active'
+>;

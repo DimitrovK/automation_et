@@ -30,7 +30,7 @@ const OPTIONS: HubOption[] = [
   },
   {
     title: 'Users',
-    description: 'Search users and open a profile: favourites, rankings, status. Read-only.',
+    description: 'Search and filter users; open a profile to view favourites and status. Read-only.',
     icon: <Users className="size-5 text-emerald-600" />,
     href: '/user-hub/users',
     cta: 'Browse users',
@@ -57,7 +57,7 @@ export default function UserHubLandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
-      <div className="mx-auto max-w-5xl space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
         <Navigation />
 
         <div className="space-y-2 text-center">

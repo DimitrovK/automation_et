@@ -1,8 +1,7 @@
 'use client';
 
-import type { HubUser, UserRankingsResponse } from '@/types/user-hub';
+import type { HubUser } from '@/types/user-hub';
 import { ExternalLink, History, ShieldBan } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +13,6 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import config from '@/lib/config';
-import { UserHubAPI } from '@/lib/user-hub-api';
 import { prettySlug, suspensionLabel } from '@/lib/user-hub-format';
 import { BetaBadges, OnlineDot, UserAvatar } from './user-badges';
 
@@ -34,65 +32,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-/**
- * Defensively render one rankings section (shape varies per game). Game names
- *  are prettified; a rank is shown as "#N", otherwise a raw score.
- */
-function RankingsSection({ title, value }: { title: string; value: unknown }) {
-  if (!Array.isArray(value) || value.length === 0) {
-    return null;
-  }
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between border-b border-gray-100 pb-1 dark:border-gray-800">
-        <p className="text-xs font-semibold uppercase text-gray-500">{title}</p>
-        <p className="text-[10px] uppercase text-gray-400">Game · Rank</p>
-      </div>
-      {value.slice(0, 10).map((row, i) => {
-        const r = (row ?? {}) as Record<string, unknown>;
-        const rawLabel = r.game_name ?? r.game ?? r.name ?? r.label ?? r.key;
-        const label = typeof rawLabel === 'string'
-          ? prettySlug(rawLabel)
-          : rawLabel != null ? String(rawLabel) : `Entry ${i + 1}`;
-        const rank = r.rank ?? r.position;
-        const score = r.score ?? r.points ?? r.value;
-        return (
-          <div key={`${title}-${label}`} className="flex justify-between text-sm">
-            <span>{label}</span>
-            <span className="font-mono text-gray-600">
-              {rank !== undefined ? `#${String(rank)}` : score !== undefined ? String(score) : '—'}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function UserDetailSheet({ user, open, onOpenChange }: Props) {
-  const [rankings, setRankings] = useState<UserRankingsResponse | null>(null);
-  const [rankingsLoading, setRankingsLoading] = useState(false);
-  const [rankingsError, setRankingsError] = useState<string | null>(null);
-
-  const loadRankings = useCallback(async (id: number) => {
-    setRankingsLoading(true);
-    setRankingsError(null);
-    setRankings(null);
-    try {
-      setRankings(await UserHubAPI.getUserRankings(id));
-    } catch (err: unknown) {
-      setRankingsError(err instanceof Error ? err.message : 'Failed to load rankings');
-    } finally {
-      setRankingsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (open && user) {
-      loadRankings(user.id);
-    }
-  }, [open, user, loadRankings]);
-
   if (!user) {
     return null;
   }
@@ -101,8 +41,6 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
   // /admin/Accounts/user/<id>/change/.
   const adminUrl = config.getAdminUrl(`Accounts/user/${user.id}/change/`);
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || '—';
-  const hasAnyRanking = rankings
-    && Object.values(rankings).some(v => Array.isArray(v) && v.length > 0);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -134,10 +72,9 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
         </div>
 
         <Tabs defaultValue="profile" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="favourites">Favourites</TabsTrigger>
-            <TabsTrigger value="rankings">Rankings</TabsTrigger>
             <TabsTrigger value="audit">Audit</TabsTrigger>
           </TabsList>
 
@@ -176,30 +113,6 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
                     ))}
                   </ol>
                 )}
-          </TabsContent>
-
-          <TabsContent value="rankings" className="mt-3 space-y-3">
-            <p className="text-xs text-gray-500">
-              The user's current leaderboard position per game (last-30-days window;
-              <span className="font-mono"> #1</span>
-              {' '}
-              is best). Sections with no entries mean the
-              user isn't ranked there yet.
-            </p>
-            {rankingsLoading && <p className="text-sm text-gray-500">Loading rankings…</p>}
-            {rankingsError && <p className="text-sm text-red-600">{rankingsError}</p>}
-            {!rankingsLoading && !rankingsError && !hasAnyRanking && (
-              <p className="py-6 text-center text-sm text-gray-500">No ranking data for this user.</p>
-            )}
-            {rankings && (
-              <>
-                <RankingsSection title="Game rankings" value={rankings.game_rankings} />
-                <RankingsSection title="Stoppage time" value={rankings.stoppage_time_rankings} />
-                <RankingsSection title="Scout" value={rankings.scout_rankings} />
-                <RankingsSection title="Conquest" value={rankings.conquest_rankings} />
-                <RankingsSection title="Grid" value={rankings.grid_rankings} />
-              </>
-            )}
           </TabsContent>
 
           <TabsContent value="audit" className="mt-3">

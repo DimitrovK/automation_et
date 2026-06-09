@@ -3,7 +3,6 @@ import type {
   HubUser,
   UserListParams,
   UserListResponse,
-  UserRankingsResponse,
 } from '@/types/user-hub';
 import { apiFetcher } from '@/lib/api-fetcher';
 
@@ -46,10 +45,5 @@ export class UserHubAPI {
   /** GET /accounts/users/{id}/ — single user (admin detail). */
   static async getUser(id: number): Promise<HubUser> {
     return apiFetcher<HubUser>(`accounts/users/${id}/`);
-  }
-
-  /** GET /accounts/users/{id}/rankings/ — per-game rankings for the detail view. */
-  static async getUserRankings(id: number): Promise<UserRankingsResponse> {
-    return apiFetcher<UserRankingsResponse>(`accounts/users/${id}/rankings/`);
   }
 }

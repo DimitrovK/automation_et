@@ -1,11 +1,13 @@
 'use client';
 
 import { BarChart3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
 import { AdminGate } from '@/components/user-hub/AdminGate';
+import { AnalyticsSkeleton } from '@/components/user-hub/AnalyticsSkeleton';
 import { FavouritesUsageSummary } from '@/components/user-hub/FavouritesUsageSummary';
 import { GamePopularityChart } from '@/components/user-hub/GamePopularityChart';
 import { UserHubNav } from '@/components/user-hub/UserHubNav';
@@ -14,6 +16,7 @@ import { useAuth } from '@/lib/auth';
 
 export default function UserHubAnalyticsPage() {
   const { isLoading, isAuthenticated, user } = useAuth();
+  const router = useRouter();
   const { data, isLoading: dataLoading, error, notDeployed, refetch } = useFavouritesUsage(
     isAuthenticated && !!user?.is_superuser,
   );
@@ -27,7 +30,7 @@ export default function UserHubAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
-      <div className="mx-auto max-w-5xl space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
         <Navigation />
 
         <div className="space-y-2 text-center">
@@ -37,7 +40,7 @@ export default function UserHubAnalyticsPage() {
             Favourites Analytics
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            How many users have set favourite games, and which games are most favourited.
+            Favourites adoption metrics. Click a game bar to see who favourited it.
           </p>
         </div>
 
@@ -48,7 +51,7 @@ export default function UserHubAnalyticsPage() {
           : (
               <>
                 <UserHubNav />
-                {dataLoading && <p className="text-center text-sm text-gray-500">Loading analytics…</p>}
+                {dataLoading && <AnalyticsSkeleton />}
 
                 {error && (
                   <div
@@ -65,7 +68,10 @@ export default function UserHubAnalyticsPage() {
                 {data && !notDeployed && (
                   <>
                     <FavouritesUsageSummary data={data} />
-                    <GamePopularityChart gamePopularity={data.game_popularity} />
+                    <GamePopularityChart
+                      gamePopularity={data.game_popularity}
+                      onGameSelect={slug => router.push(`/user-hub/users?favourite_game=${encodeURIComponent(slug)}`)}
+                    />
                   </>
                 )}
               </>
