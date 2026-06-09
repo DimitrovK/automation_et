@@ -1,9 +1,20 @@
 'use client';
 
 import type { HubUser } from '@/types/user-hub';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { prettySlug, suspensionLabel } from '@/lib/user-hub-format';
+import { initialsFor, prettySlug, suspensionLabel } from '@/lib/user-hub-format';
 import { cn } from '@/lib/utils';
+
+/** Profile-picture avatar with initials fallback. */
+export function UserAvatar({ user, className }: { user: HubUser; className?: string }) {
+  return (
+    <Avatar className={cn('size-8', className)}>
+      {user.profile_picture_url && <AvatarImage src={user.profile_picture_url} alt={user.username} />}
+      <AvatarFallback className="text-xs">{initialsFor(user)}</AvatarFallback>
+    </Avatar>
+  );
+}
 
 /** Renders the suspension state, or null when the user is in good standing. */
 export function SuspensionBadge({ user }: { user: HubUser }) {

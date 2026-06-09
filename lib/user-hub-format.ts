@@ -1,7 +1,15 @@
 // Pure formatting helpers for the User Hub (no React) so components stay
 // fast-refresh friendly and the logic is unit-testable in isolation.
 
-import type { SuspensionScope } from '@/types/user-hub';
+import type { HubUser, SuspensionScope } from '@/types/user-hub';
+
+/** Up-to-2-char initials for an avatar fallback (first/last name, else username). */
+export function initialsFor(user: Pick<HubUser, 'first_name' | 'last_name' | 'username'>): string {
+  const first = user.first_name?.trim()?.[0] ?? '';
+  const last = user.last_name?.trim()?.[0] ?? '';
+  const initials = (first + last).toUpperCase();
+  return initials || (user.username?.slice(0, 2).toUpperCase() ?? '?');
+}
 
 /** Turn a kebab slug into a readable label until a slug→display-name map exists. */
 export function prettySlug(slug: string): string {

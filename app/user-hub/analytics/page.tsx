@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { AdminGate } from '@/components/user-hub/AdminGate';
 import { FavouritesUsageSummary } from '@/components/user-hub/FavouritesUsageSummary';
 import { GamePopularityChart } from '@/components/user-hub/GamePopularityChart';
+import { UserHubNav } from '@/components/user-hub/UserHubNav';
 import { useFavouritesUsage } from '@/hooks/use-favourites-usage';
 import { useAuth } from '@/lib/auth';
 
@@ -46,6 +47,7 @@ export default function UserHubAnalyticsPage() {
             )
           : (
               <>
+                <UserHubNav />
                 {dataLoading && <p className="text-center text-sm text-gray-500">Loading analytics…</p>}
 
                 {error && (

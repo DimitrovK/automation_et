@@ -2,7 +2,7 @@
 
 import type { HubUser } from '@/types/user-hub';
 import { LayoutGrid, List, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
@@ -20,6 +20,7 @@ import {
 import { AdminGate } from '@/components/user-hub/AdminGate';
 import { UserCard } from '@/components/user-hub/UserCard';
 import { UserDetailSheet } from '@/components/user-hub/UserDetailSheet';
+import { UserHubNav } from '@/components/user-hub/UserHubNav';
 import { UserTable } from '@/components/user-hub/UserTable';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { USER_LIST_PAGE_SIZE, useUserList } from '@/hooks/use-user-list';
@@ -40,6 +41,7 @@ export default function UserHubUsersPage() {
   const [q, setQ] = useState('');
   const debouncedQ = useDebouncedValue(q, 300);
   const [view, setView] = useState<'cards' | 'table'>('table');
+  const [presence, setPresence] = useState<'all' | 'online' | 'offline'>('all');
   const [selected, setSelected] = useState<HubUser | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -54,6 +56,15 @@ export default function UserHubUsersPage() {
     isLoading: listLoading,
     error,
   } = useUserList(isAdmin, debouncedQ);
+
+  // Presence isn't server-filterable (is_online is Redis-derived, not a DB
+  // field), so this narrows the current page client-side.
+  const visibleUsers = useMemo(() => {
+    if (presence === 'all') {
+      return users;
+    }
+    return users.filter(u => (presence === 'online' ? u.is_online === true : u.is_online === false));
+  }, [users, presence]);
 
   if (isLoading) {
     return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
@@ -89,8 +100,9 @@ export default function UserHubUsersPage() {
             )
           : (
               <>
+                <UserHubNav />
                 <Card>
-                  <CardContent className="grid grid-cols-1 gap-3 pt-6 md:grid-cols-3">
+                  <CardContent className="grid grid-cols-1 gap-3 pt-6 md:grid-cols-4">
                     <div className="md:col-span-2">
                       <label htmlFor="user-search" className="mb-1 block text-xs font-medium text-gray-600">Search</label>
                       <Input
@@ -100,6 +112,17 @@ export default function UserHubUsersPage() {
                         value={q}
                         onChange={e => setQ(e.target.value)}
                       />
+                    </div>
+                    <div>
+                      <label htmlFor="user-presence" className="mb-1 block text-xs font-medium text-gray-600">Presence</label>
+                      <Select value={presence} onValueChange={v => setPresence(v as 'all' | 'online' | 'offline')}>
+                        <SelectTrigger id="user-presence"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="online">Online</SelectItem>
+                          <SelectItem value="offline">Offline</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <label htmlFor="user-ordering" className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
@@ -114,6 +137,12 @@ export default function UserHubUsersPage() {
                     </div>
                   </CardContent>
                 </Card>
+                {presence !== 'all' && (
+                  <p className="-mt-3 text-center text-xs text-gray-500">
+                    Presence filter applies to the current page only (online status isn't
+                    server-side filterable yet).
+                  </p>
+                )}
 
                 <div className="flex items-center justify-end">
                   <div className="flex gap-1">
@@ -150,7 +179,7 @@ export default function UserHubUsersPage() {
                 {!listLoading && !error && (
                   view === 'cards'
                     ? (
-                        users.length === 0
+                        visibleUsers.length === 0
                           ? (
                               <div className="rounded-md border p-8 text-center text-sm text-gray-500">
                                 No users match your search.
@@ -158,12 +187,12 @@ export default function UserHubUsersPage() {
                             )
                           : (
                               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                                {users.map(u => <UserCard key={u.id} user={u} onSelect={handleSelect} />)}
+                                {visibleUsers.map(u => <UserCard key={u.id} user={u} onSelect={handleSelect} />)}
                               </div>
                             )
                       )
                     : (
-                        <UserTable users={users} onSelect={handleSelect} />
+                        <UserTable users={visibleUsers} onSelect={handleSelect} />
                       )
                 )}
 

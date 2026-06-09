@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import config from '@/lib/config';
 import { UserHubAPI } from '@/lib/user-hub-api';
 import { prettySlug, suspensionLabel } from '@/lib/user-hub-format';
-import { BetaBadges, OnlineDot } from './user-badges';
+import { BetaBadges, OnlineDot, UserAvatar } from './user-badges';
 
 type Props = {
   /** The row's user (list payload); null when the sheet is closed. */
@@ -34,27 +34,39 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-/** Defensively render one rankings section (shape varies per game). */
+/**
+ * Defensively render one rankings section (shape varies per game). Game names
+ *  are prettified; a rank is shown as "#N", otherwise a raw score.
+ */
 function RankingsSection({ title, value }: { title: string; value: unknown }) {
-  if (Array.isArray(value) && value.length > 0) {
-    return (
-      <div className="space-y-1">
-        <p className="text-xs font-semibold uppercase text-gray-500">{title}</p>
-        {value.slice(0, 10).map((row, i) => {
-          const r = (row ?? {}) as Record<string, unknown>;
-          const label = r.game_name ?? r.game ?? r.name ?? r.label ?? r.key ?? `#${i + 1}`;
-          const rank = r.rank ?? r.position ?? r.score ?? r.points ?? r.value;
-          return (
-            <div key={`${title}-${String(label)}`} className="flex justify-between text-sm">
-              <span>{String(label)}</span>
-              {rank !== undefined && <span className="font-mono text-gray-600">{String(rank)}</span>}
-            </div>
-          );
-        })}
-      </div>
-    );
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
   }
-  return null;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-1 dark:border-gray-800">
+        <p className="text-xs font-semibold uppercase text-gray-500">{title}</p>
+        <p className="text-[10px] uppercase text-gray-400">Game · Rank</p>
+      </div>
+      {value.slice(0, 10).map((row, i) => {
+        const r = (row ?? {}) as Record<string, unknown>;
+        const rawLabel = r.game_name ?? r.game ?? r.name ?? r.label ?? r.key;
+        const label = typeof rawLabel === 'string'
+          ? prettySlug(rawLabel)
+          : rawLabel != null ? String(rawLabel) : `Entry ${i + 1}`;
+        const rank = r.rank ?? r.position;
+        const score = r.score ?? r.points ?? r.value;
+        return (
+          <div key={`${title}-${label}`} className="flex justify-between text-sm">
+            <span>{label}</span>
+            <span className="font-mono text-gray-600">
+              {rank !== undefined ? `#${String(rank)}` : score !== undefined ? String(score) : '—'}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function UserDetailSheet({ user, open, onOpenChange }: Props) {
@@ -85,7 +97,9 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
     return null;
   }
 
-  const adminUrl = config.getAdminUrl(`accounts/user/${user.id}/change/`);
+  // Django admin URL — the app label is `Accounts` (capitalised), matching
+  // /admin/Accounts/user/<id>/change/.
+  const adminUrl = config.getAdminUrl(`Accounts/user/${user.id}/change/`);
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || '—';
   const hasAnyRanking = rankings
     && Object.values(rankings).some(v => Array.isArray(v) && v.length > 0);
@@ -95,6 +109,7 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
+            <UserAvatar user={user} className="size-9" />
             {user.username}
             {user.is_superuser && <Badge variant="secondary" className="bg-amber-100 text-amber-900">superuser</Badge>}
             {!user.is_superuser && user.is_staff && <Badge variant="secondary">staff</Badge>}
@@ -164,6 +179,13 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
           </TabsContent>
 
           <TabsContent value="rankings" className="mt-3 space-y-3">
+            <p className="text-xs text-gray-500">
+              The user's current leaderboard position per game (last-30-days window;
+              <span className="font-mono"> #1</span>
+              {' '}
+              is best). Sections with no entries mean the
+              user isn't ranked there yet.
+            </p>
             {rankingsLoading && <p className="text-sm text-gray-500">Loading rankings…</p>}
             {rankingsError && <p className="text-sm text-red-600">{rankingsError}</p>}
             {!rankingsLoading && !rankingsError && !hasAnyRanking && (

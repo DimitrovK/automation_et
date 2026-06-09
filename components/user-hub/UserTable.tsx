@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { BetaBadges, FavouriteGamesBadges, OnlineDot, SuspensionBadge } from './user-badges';
+import { BetaBadges, FavouriteGamesBadges, OnlineDot, SuspensionBadge, UserAvatar } from './user-badges';
 
 type Props = {
   users: HubUser[];
@@ -52,13 +52,18 @@ export function UserTable({ users, onSelect }: Props) {
                 {u.id}
               </TableCell>
               <TableCell className="font-medium">
-                {u.username}
-                {u.is_superuser
-                  ? <span className="ml-2 text-xs text-amber-600" title="Superuser">★</span>
-                  : u.is_staff
-                    ? <span className="ml-2 text-xs text-emerald-600" title="Staff">◆</span>
-                    : null}
-                {!u.is_active && <span className="ml-2 text-xs text-gray-400">(inactive)</span>}
+                <span className="flex items-center gap-2">
+                  <UserAvatar user={u} className="size-7" />
+                  <span>
+                    {u.username}
+                    {u.is_superuser
+                      ? <span className="ml-2 text-xs text-amber-600" title="Superuser">★</span>
+                      : u.is_staff
+                        ? <span className="ml-2 text-xs text-emerald-600" title="Staff">◆</span>
+                        : null}
+                    {!u.is_active && <span className="ml-2 text-xs text-gray-400">(inactive)</span>}
+                  </span>
+                </span>
               </TableCell>
               <TableCell className="hidden text-sm text-gray-600 dark:text-gray-300 md:table-cell">
                 {u.email || '—'}

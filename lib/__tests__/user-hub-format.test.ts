@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { prettySlug, suspensionLabel, toChartData } from '@/lib/user-hub-format';
+import { initialsFor, prettySlug, suspensionLabel, toChartData } from '@/lib/user-hub-format';
 
 describe('prettySlug', () => {
   it('title-cases a kebab slug', () => {
@@ -23,6 +23,16 @@ describe('toChartData', () => {
 
   it('returns an empty array for no data', () => {
     expect(toChartData({})).toEqual([]);
+  });
+});
+
+describe('initialsFor', () => {
+  it('uses first + last initials when present', () => {
+    expect(initialsFor({ first_name: 'Kalin', last_name: 'Dimitrov', username: 'kd' })).toBe('KD');
+  });
+
+  it('falls back to the username when no name', () => {
+    expect(initialsFor({ first_name: '', last_name: '', username: 'admin' })).toBe('AD');
   });
 });
 

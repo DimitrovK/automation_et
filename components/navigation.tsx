@@ -7,6 +7,7 @@ import {
   Database,
   FileQuestion,
   Home,
+  LayoutDashboard,
   Menu,
   MessageCircle,
   Search,
@@ -47,6 +48,7 @@ export function Navigation({ className }: NavigationProps) {
   // State to track which categories are expanded
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
     'Footballer Data': true, // Expanded by default
+    'User Hub': true,
   });
 
   // State for mobile menu
@@ -96,6 +98,12 @@ export function Navigation({ className }: NavigationProps) {
       icon: UserCog,
       description: 'User analytics and management',
       children: [
+        {
+          label: 'Overview',
+          href: '/user-hub',
+          icon: LayoutDashboard,
+          description: 'All User Hub tools',
+        },
         {
           label: 'Favourites Analytics',
           href: '/user-hub/analytics',

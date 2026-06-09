@@ -3,7 +3,7 @@
 import type { HubUser } from '@/types/user-hub';
 import { Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BetaBadges, FavouriteGamesBadges, OnlineDot, SuspensionBadge } from './user-badges';
+import { BetaBadges, FavouriteGamesBadges, OnlineDot, SuspensionBadge, UserAvatar } from './user-badges';
 
 type Props = {
   user: HubUser;
@@ -19,13 +19,16 @@ export function UserCard({ user, onSelect }: Props) {
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between gap-2 text-base">
-          <span className="truncate">
-            {user.username}
-            {user.is_superuser
-              ? <span className="ml-2 text-xs text-amber-600" title="Superuser">★</span>
-              : user.is_staff
-                ? <span className="ml-2 text-xs text-emerald-600" title="Staff">◆</span>
-                : null}
+          <span className="flex items-center gap-2 truncate">
+            <UserAvatar user={user} />
+            <span className="truncate">
+              {user.username}
+              {user.is_superuser
+                ? <span className="ml-2 text-xs text-amber-600" title="Superuser">★</span>
+                : user.is_staff
+                  ? <span className="ml-2 text-xs text-emerald-600" title="Staff">◆</span>
+                  : null}
+            </span>
           </span>
           <span className="font-mono text-xs text-gray-400">
             #

@@ -54,7 +54,7 @@ export default function DashboardPage() {
     router.push('/team-players');
   };
   const navigateToUserHub = () => {
-    router.push('/user-hub/analytics');
+    router.push('/user-hub');
   };
 
   return (
