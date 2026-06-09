@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/lib/auth';
 
 export default function DashboardPage() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   // Show loading spinner while checking authentication
@@ -52,6 +52,9 @@ export default function DashboardPage() {
   };
   const navigateToTeamPlayers = () => {
     router.push('/team-players');
+  };
+  const navigateToUserHub = () => {
+    router.push('/user-hub');
   };
 
   return (
@@ -196,24 +199,23 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="opacity-60 transition-shadow duration-200 hover:shadow-lg">
+          <Card className="transition-shadow duration-200 hover:shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="size-5 text-orange-600" />
-                User Management
+                User Hub
               </CardTitle>
               <CardDescription>
-                Manage user accounts and permissions
+                Favourites analytics and user profiles (read-only)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button
-                disabled
-                className="w-full"
-                variant="outline"
+                onClick={navigateToUserHub}
+                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
-                <Users className="mr-2 size-4" />
-                Coming Soon
+                <BarChart3 className="mr-2 size-4" />
+                Open User Hub
               </Button>
             </CardContent>
           </Card>
