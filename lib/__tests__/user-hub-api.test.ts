@@ -104,4 +104,41 @@ describe('UserHubAPI', () => {
       expect(mockApiFetcher).toHaveBeenCalledWith('accounts/users/5/');
     });
   });
+
+  describe('getAdoptionTrends', () => {
+    it('hits the trends endpoint with no granularity', async () => {
+      mockApiFetcher.mockResolvedValue({ granularity: 'day', include_backfill: false, points: [] });
+      await UserHubAPI.getAdoptionTrends();
+
+      expect(mockApiFetcher).toHaveBeenCalledWith('accounts/admin/favourites-trends/');
+    });
+
+    it('passes the granularity param', async () => {
+      mockApiFetcher.mockResolvedValue({ granularity: 'week', include_backfill: false, points: [] });
+      await UserHubAPI.getAdoptionTrends('week');
+
+      expect(mockApiFetcher).toHaveBeenCalledWith('accounts/admin/favourites-trends/?granularity=week');
+    });
+
+    it('propagates errors (e.g. 404 before deploy)', async () => {
+      mockApiFetcher.mockRejectedValueOnce(new Error('404 Not Found'));
+
+      await expect(UserHubAPI.getAdoptionTrends()).rejects.toThrow('404 Not Found');
+    });
+  });
+
+  describe('getFavouredVsPlayed', () => {
+    it('hits the favourites-vs-played endpoint', async () => {
+      mockApiFetcher.mockResolvedValue({ games: [], total_users: 0 });
+      await UserHubAPI.getFavouredVsPlayed();
+
+      expect(mockApiFetcher).toHaveBeenCalledWith('accounts/admin/favourites-vs-played/');
+    });
+
+    it('propagates errors', async () => {
+      mockApiFetcher.mockRejectedValueOnce(new Error('404 Not Found'));
+
+      await expect(UserHubAPI.getFavouredVsPlayed()).rejects.toThrow('404 Not Found');
+    });
+  });
 });
