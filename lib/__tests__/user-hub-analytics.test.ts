@@ -1,11 +1,40 @@
-import type { FavouritesUsageResponse, FavouritesUsageUser } from '@/types/user-hub';
+import type { FavouritesUsageResponse, FavouritesUsageUser, GameEngagementRow } from '@/types/user-hub';
 import { describe, expect, it } from 'vitest';
 import {
   avgFavouritesPerUser,
   favouriteDepthDistribution,
   favouritesToCsv,
   firstChoiceCounts,
+  formatTrendDate,
+  sortEngagementRows,
 } from '@/lib/user-hub-analytics';
+
+describe('formatTrendDate', () => {
+  it('formats a day tick', () => {
+    expect(formatTrendDate('2026-06-09', 'day')).toBe('9 Jun');
+  });
+
+  it('prefixes week ticks', () => {
+    expect(formatTrendDate('2026-06-09', 'week')).toBe('wk 9 Jun');
+  });
+
+  it('passes through an unparseable value', () => {
+    expect(formatTrendDate('not-a-date', 'day')).toBe('not-a-date');
+  });
+});
+
+describe('sortEngagementRows', () => {
+  it('sorts by favourited_count desc without mutating input', () => {
+    const rows: GameEngagementRow[] = [
+      { slug: 'a', favourited_count: 1, started_count: 0, finished_count: 0, play_through_pct: 0 },
+      { slug: 'b', favourited_count: 5, started_count: 0, finished_count: 0, play_through_pct: 0 },
+    ];
+    const sorted = sortEngagementRows(rows);
+
+    expect(sorted.map(r => r.slug)).toEqual(['b', 'a']);
+    expect(rows[0].slug).toBe('a'); // original untouched
+  });
+});
 
 function user(id: number, favourite_games: string[]): FavouritesUsageUser {
   return { id, username: `u${id}`, favourite_games };

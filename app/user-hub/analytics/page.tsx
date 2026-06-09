@@ -7,20 +7,25 @@ import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
 import { AdminGate } from '@/components/user-hub/AdminGate';
+import { AdoptionTrendsChart } from '@/components/user-hub/AdoptionTrendsChart';
 import { AnalyticsSkeleton } from '@/components/user-hub/AnalyticsSkeleton';
+import { FavouredVsPlayedChart } from '@/components/user-hub/FavouredVsPlayedChart';
 import { FavouriteInsights } from '@/components/user-hub/FavouriteInsights';
 import { FavouritesUsageSummary } from '@/components/user-hub/FavouritesUsageSummary';
 import { GamePopularityChart } from '@/components/user-hub/GamePopularityChart';
 import { UserHubNav } from '@/components/user-hub/UserHubNav';
+import { useAdoptionTrends } from '@/hooks/use-adoption-trends';
+import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
 import { useFavouritesUsage } from '@/hooks/use-favourites-usage';
 import { useAuth } from '@/lib/auth';
 
 export default function UserHubAnalyticsPage() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const router = useRouter();
-  const { data, isLoading: dataLoading, error, notDeployed, refetch } = useFavouritesUsage(
-    isAuthenticated && !!user?.is_superuser,
-  );
+  const isAdmin = isAuthenticated && !!user?.is_superuser;
+  const { data, isLoading: dataLoading, error, notDeployed, refetch } = useFavouritesUsage(isAdmin);
+  const trends = useAdoptionTrends(isAdmin);
+  const played = useFavouredVsPlayed(isAdmin);
 
   if (isLoading) {
     return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
@@ -76,6 +81,25 @@ export default function UserHubAnalyticsPage() {
                     <FavouriteInsights data={data} />
                   </>
                 )}
+
+                {/* Independently guarded — each degrades on its own if its BE
+                    endpoint isn't deployed yet. */}
+                <AdoptionTrendsChart
+                  data={trends.data}
+                  isLoading={trends.isLoading}
+                  error={trends.error}
+                  notDeployed={trends.notDeployed}
+                  granularity={trends.granularity}
+                  onGranularityChange={trends.setGranularity}
+                  onRetry={trends.refetch}
+                />
+                <FavouredVsPlayedChart
+                  data={played.data}
+                  isLoading={played.isLoading}
+                  error={played.error}
+                  notDeployed={played.notDeployed}
+                  onRetry={played.refetch}
+                />
               </>
             )}
       </div>

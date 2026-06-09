@@ -2,10 +2,27 @@
 // Everything here works off `users[]` (each user's ordered favourite_games)
 // plus the totals already in the response.
 
-import type { FavouritesUsageResponse, FavouritesUsageUser } from '@/types/user-hub';
+import type { FavouritesUsageResponse, FavouritesUsageUser, GameEngagementRow, TrendGranularity } from '@/types/user-hub';
 import { prettySlug } from './user-hub-format';
 
 export type SlugCount = { slug: string; label: string; count: number };
+
+/** Format a trend period (ISO date) for an axis tick. */
+export function formatTrendDate(iso: string, granularity: TrendGranularity): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    return iso;
+  }
+  // The BE sends a calendar date (no time); format in UTC so it renders as the
+  // intended day regardless of the viewer's timezone.
+  const label = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
+  return granularity === 'week' ? `wk ${label}` : label;
+}
+
+/** Engagement rows sorted by favourited count, desc. */
+export function sortEngagementRows(rows: GameEngagementRow[]): GameEngagementRow[] {
+  return [...rows].sort((a, b) => b.favourited_count - a.favourited_count);
+}
 export type DepthBucket = { bucket: string; count: number };
 
 /** Average number of favourites among users who have any. */

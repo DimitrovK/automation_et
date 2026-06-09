@@ -28,6 +28,41 @@ export type FavouritesUsageResponse = {
   users: FavouritesUsageUser[];
 };
 
+// ---- adoption-over-time trends --------------------------------------------
+
+export type TrendGranularity = 'day' | 'week';
+
+export type TrendPoint = {
+  /** ISO date (period start). */
+  date: string;
+  new_adopters: number;
+  cumulative_users: number;
+};
+
+/** GET /accounts/admin/favourites-trends/ (IsAdminUser). */
+export type AdoptionTrendsResponse = {
+  granularity: TrendGranularity;
+  include_backfill: boolean;
+  points: TrendPoint[];
+};
+
+// ---- favourited vs played -------------------------------------------------
+
+export type GameEngagementRow = {
+  slug: string;
+  favourited_count: number;
+  started_count: number;
+  finished_count: number;
+  /** Of favouriters who started, the share who finished (0–100). */
+  play_through_pct: number;
+};
+
+/** GET /accounts/admin/favourites-vs-played/ (IsAdminUser). */
+export type FavouredVsPlayedResponse = {
+  games: GameEngagementRow[];
+  total_users: number;
+};
+
 // ---- user list / detail ---------------------------------------------------
 
 /** Suspension scopes mirrored from the BE `UserSuspension.scope` choices. */

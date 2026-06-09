@@ -1,6 +1,9 @@
 import type {
+  AdoptionTrendsResponse,
+  FavouredVsPlayedResponse,
   FavouritesUsageResponse,
   HubUser,
+  TrendGranularity,
   UserListParams,
   UserListResponse,
 } from '@/types/user-hub';
@@ -45,5 +48,16 @@ export class UserHubAPI {
   /** GET /accounts/users/{id}/ — single user (admin detail). */
   static async getUser(id: number): Promise<HubUser> {
     return apiFetcher<HubUser>(`accounts/users/${id}/`);
+  }
+
+  /** GET /accounts/admin/favourites-trends/ — adoption over time. */
+  static async getAdoptionTrends(granularity?: TrendGranularity): Promise<AdoptionTrendsResponse> {
+    const qs = buildQuery(granularity ? { granularity } : undefined);
+    return apiFetcher<AdoptionTrendsResponse>(`accounts/admin/favourites-trends/${qs}`);
+  }
+
+  /** GET /accounts/admin/favourites-vs-played/ — favourited vs started/finished. */
+  static async getFavouredVsPlayed(): Promise<FavouredVsPlayedResponse> {
+    return apiFetcher<FavouredVsPlayedResponse>('accounts/admin/favourites-vs-played/');
   }
 }
