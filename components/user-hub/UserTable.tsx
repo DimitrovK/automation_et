@@ -44,7 +44,16 @@ export function UserTable({ users, onSelect }: Props) {
             <TableRow
               key={u.id}
               data-testid={`user-row-${u.id}`}
+              role="button"
+              tabIndex={0}
+              aria-label={`Open ${u.username}`}
               onClick={() => onSelect(u)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(u);
+                }
+              }}
               className="cursor-pointer"
             >
               <TableCell className="text-right font-mono text-xs text-gray-500">

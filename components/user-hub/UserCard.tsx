@@ -14,8 +14,17 @@ type Props = {
 export function UserCard({ user, onSelect }: Props) {
   return (
     <Card
+      role="button"
+      tabIndex={0}
+      aria-label={`Open ${user.username}`}
       onClick={() => onSelect(user)}
-      className="cursor-pointer transition-shadow duration-200 hover:shadow-md"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(user);
+        }
+      }}
+      className="cursor-pointer transition-shadow duration-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between gap-2 text-base">
