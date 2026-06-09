@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 /** The User Hub's sub-sections — single source of truth for the in-page nav. */
 export const USER_HUB_SECTIONS = [
   { href: '/user-hub', label: 'Overview', icon: LayoutDashboard },
-  { href: '/user-hub/analytics', label: 'Favourites Analytics', icon: BarChart3 },
   { href: '/user-hub/users', label: 'Users', icon: Users },
+  { href: '/user-hub/analytics', label: 'Favourites Analytics', icon: BarChart3 },
 ] as const;
 
 /**

@@ -105,16 +105,16 @@ export function Navigation({ className }: NavigationProps) {
           description: 'All User Hub tools',
         },
         {
-          label: 'Favourites Analytics',
-          href: '/user-hub/analytics',
-          icon: BarChart3,
-          description: 'Favourite-games adoption and popularity',
-        },
-        {
           label: 'Users',
           href: '/user-hub/users',
           icon: Users,
           description: 'Search users and view profiles',
+        },
+        {
+          label: 'Favourites Analytics',
+          href: '/user-hub/analytics',
+          icon: BarChart3,
+          description: 'Favourite-games adoption and popularity',
         },
       ],
     },

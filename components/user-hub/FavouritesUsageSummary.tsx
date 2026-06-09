@@ -1,8 +1,9 @@
 'use client';
 
 import type { FavouritesUsageResponse } from '@/types/user-hub';
-import { Star, Users } from 'lucide-react';
+import { Layers, Star, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { avgFavouritesPerUser } from '@/lib/user-hub-analytics';
 
 type Props = {
   data: FavouritesUsageResponse;
@@ -13,9 +14,10 @@ export function FavouritesUsageSummary({ data }: Props) {
   const { users_with_favourites: withFav, total_users: total, game_popularity } = data;
   const pct = total > 0 ? Math.round((withFav / total) * 100) : 0;
   const distinctGames = Object.keys(game_popularity).length;
+  const avgPerUser = avgFavouritesPerUser(data);
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -61,6 +63,19 @@ export function FavouritesUsageSummary({ data }: Props) {
         <CardContent>
           <p className="text-2xl font-bold">{distinctGames}</p>
           <p className="text-xs text-gray-500">distinct games with ≥1 favourite</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300">
+            <Layers className="size-4 text-emerald-600" />
+            Avg per user
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">{avgPerUser.toFixed(1)}</p>
+          <p className="text-xs text-gray-500">favourites per user (who has any)</p>
         </CardContent>
       </Card>
     </div>

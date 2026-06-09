@@ -8,6 +8,7 @@ import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
 import { AdminGate } from '@/components/user-hub/AdminGate';
 import { AnalyticsSkeleton } from '@/components/user-hub/AnalyticsSkeleton';
+import { FavouriteInsights } from '@/components/user-hub/FavouriteInsights';
 import { FavouritesUsageSummary } from '@/components/user-hub/FavouritesUsageSummary';
 import { GamePopularityChart } from '@/components/user-hub/GamePopularityChart';
 import { UserHubNav } from '@/components/user-hub/UserHubNav';
@@ -72,6 +73,7 @@ export default function UserHubAnalyticsPage() {
                       gamePopularity={data.game_popularity}
                       onGameSelect={slug => router.push(`/user-hub/users?favourite_game=${encodeURIComponent(slug)}`)}
                     />
+                    <FavouriteInsights data={data} />
                   </>
                 )}
               </>

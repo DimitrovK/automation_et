@@ -22,18 +22,18 @@ type HubOption = {
 
 const OPTIONS: HubOption[] = [
   {
-    title: 'Favourites Analytics',
-    description: 'Adoption of favourite games and which games are most favourited.',
-    icon: <BarChart3 className="size-5 text-emerald-600" />,
-    href: '/user-hub/analytics',
-    cta: 'Open analytics',
-  },
-  {
     title: 'Users',
     description: 'Search and filter users; open a profile to view favourites and status. Read-only.',
     icon: <Users className="size-5 text-emerald-600" />,
     href: '/user-hub/users',
     cta: 'Browse users',
+  },
+  {
+    title: 'Favourites Analytics',
+    description: 'Adoption of favourite games and which games are most favourited.',
+    icon: <BarChart3 className="size-5 text-emerald-600" />,
+    href: '/user-hub/analytics',
+    cta: 'Open analytics',
   },
   {
     title: 'Audit & moderation',
