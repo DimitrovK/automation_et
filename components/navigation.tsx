@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  BarChart3,
   ChevronDown,
   ChevronUp,
   Database,
@@ -10,6 +11,7 @@ import {
   MessageCircle,
   Search,
   Sparkles,
+  UserCog,
   Users,
   Users2,
 } from 'lucide-react';
@@ -90,6 +92,25 @@ export function Navigation({ className }: NavigationProps) {
       ],
     },
     {
+      label: 'User Hub',
+      icon: UserCog,
+      description: 'User analytics and management',
+      children: [
+        {
+          label: 'Favourites Analytics',
+          href: '/user-hub/analytics',
+          icon: BarChart3,
+          description: 'Favourite-games adoption and popularity',
+        },
+        {
+          label: 'Users',
+          href: '/user-hub/users',
+          icon: Users,
+          description: 'Search users and view profiles',
+        },
+      ],
+    },
+    {
       label: 'Discord Control',
       href: '/discord-control',
       icon: MessageCircle,
@@ -122,8 +143,13 @@ export function Navigation({ className }: NavigationProps) {
 
   const currentPage = findCurrentPage(navigationPages);
 
-  const goHome = () => {
-    router.push('/');
+  // Fire a click-style handler from keyboard activation (Enter / Space) so
+  // the clickable nav rows are operable without a mouse.
+  const onActivateKey = (handler: () => void) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handler();
+    }
   };
 
   // Toggle category expansion
@@ -147,10 +173,14 @@ export function Navigation({ className }: NavigationProps) {
         <div key={page.label} className="mb-1">
           {/* Parent category header */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-expanded={isExpanded}
             onClick={(e) => {
               e.stopPropagation();
               toggleCategory(page.label);
             }}
+            onKeyDown={onActivateKey(() => toggleCategory(page.label))}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200',
               hasActiveChild
@@ -180,11 +210,19 @@ export function Navigation({ className }: NavigationProps) {
                 return (
                   <div
                     key={child.href}
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation();
                       child.href && router.push(child.href);
                       setMobileMenuOpen(false);
                     }}
+                    onKeyDown={onActivateKey(() => {
+                      if (child.href) {
+                        router.push(child.href);
+                      }
+                      setMobileMenuOpen(false);
+                    })}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all duration-200',
                       isChildActive
@@ -207,11 +245,19 @@ export function Navigation({ className }: NavigationProps) {
     return (
       <div
         key={page.href}
+        role="button"
+        tabIndex={0}
         onClick={(e) => {
           e.stopPropagation();
           page.href && router.push(page.href);
           setMobileMenuOpen(false);
         }}
+        onKeyDown={onActivateKey(() => {
+          if (page.href) {
+            router.push(page.href);
+          }
+          setMobileMenuOpen(false);
+        })}
         className={cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200 mb-1',
           isActive
@@ -304,8 +350,12 @@ export function Navigation({ className }: NavigationProps) {
         <>
           {/* Backdrop */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-label="Close menu"
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden"
             onClick={() => setMobileMenuOpen(false)}
+            onKeyDown={onActivateKey(() => setMobileMenuOpen(false))}
           />
 
           {/* Mobile Menu Panel */}
