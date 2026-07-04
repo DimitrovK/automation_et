@@ -34,7 +34,7 @@ export async function apiFetcher<T = any>(url: string, options: ApiOptions = {})
   // Handle token refresh on 401 unauthorized
   if (response.status === 401 && token && refreshToken) {
     try {
-      const refreshResponse = await fetch(config.getApiUrl('auth/token/refresh/'), {
+      const refreshResponse = await fetch(config.getApiUrl('token/refresh/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh: refreshToken }),
