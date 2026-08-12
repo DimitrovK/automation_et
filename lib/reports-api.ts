@@ -2,6 +2,8 @@ import type {
   ActivityResponse,
   GamesResponse,
   MultiplayerResponse,
+  PatternsResponse,
+  PlayerDetailResponse,
   ReportParams,
   SummaryResponse,
   TopPlayersResponse,
@@ -55,6 +57,16 @@ export class ReportsAPI {
    */
   static async getGames(): Promise<GamesResponse> {
     return apiFetcher<GamesResponse>('core/reporting/games/');
+  }
+
+  /** GET /core/reporting/patterns/ — when people play + new vs returning. */
+  static async getPatterns(params?: ReportParams): Promise<PatternsResponse> {
+    return apiFetcher<PatternsResponse>(`core/reporting/patterns/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/players/{id}/ — one player's activity. */
+  static async getPlayerDetail(userId: number, params?: ReportParams): Promise<PlayerDetailResponse> {
+    return apiFetcher<PlayerDetailResponse>(`core/reporting/players/${userId}/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/top-players/ — busiest players over the window. */

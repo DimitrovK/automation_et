@@ -4,10 +4,12 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 describe('useDebouncedValue', () => {
   beforeEach(() => vi.useFakeTimers());
+
   afterEach(() => vi.useRealTimers());
 
   it('returns the initial value synchronously on first render', () => {
     const { result } = renderHook(() => useDebouncedValue('hello', 200));
+
     expect(result.current).toBe('hello');
   });
 
@@ -18,12 +20,19 @@ describe('useDebouncedValue', () => {
     );
 
     rerender({ value: 'ab' });
+
     expect(result.current).toBe('a'); // not yet
 
-    act(() => { vi.advanceTimersByTime(199); });
+    act(() => {
+      vi.advanceTimersByTime(199);
+    });
+
     expect(result.current).toBe('a');
 
-    act(() => { vi.advanceTimersByTime(1); });
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+
     expect(result.current).toBe('ab');
   });
 
@@ -34,13 +43,21 @@ describe('useDebouncedValue', () => {
     );
 
     rerender({ value: 'ab' });
-    act(() => { vi.advanceTimersByTime(150); });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
     rerender({ value: 'abc' });
-    act(() => { vi.advanceTimersByTime(150); });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+
     // Only 150ms after the latest change — still not settled.
     expect(result.current).toBe('a');
 
-    act(() => { vi.advanceTimersByTime(150); });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+
     expect(result.current).toBe('abc');
   });
 });
