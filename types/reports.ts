@@ -243,3 +243,30 @@ export const METRIC_OPTIONS = [
 ] as const;
 
 export type MetricKey = (typeof METRIC_OPTIONS)[number]['key'];
+
+export type RetentionCell = { returned: number; pct: number | null };
+
+export type RetentionCohort = {
+  date: string;
+  cohort_size: number;
+  /** True for the window's first day, whose "new" cohort is mostly veterans. */
+  inflated: boolean;
+  /** Null when the cohort hasn't reached that offset yet — NOT 0%. */
+  retention: Record<string, RetentionCell | null>;
+};
+
+export type RetentionSummaryCell = {
+  cohorts_measured: number;
+  players: number;
+  returned: number;
+  pct: number | null;
+};
+
+export type RetentionResponse = {
+  /** States what "new" means here — a window return rate, not lifetime retention. */
+  basis: string;
+  first_cohort_inflated: boolean;
+  offsets: number[];
+  summary: Record<string, RetentionSummaryCell>;
+  cohorts: RetentionCohort[];
+} & ResolvedRange;
