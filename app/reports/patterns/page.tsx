@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -64,7 +65,18 @@ export default function PatternsPage() {
           ? <Skeleton className="h-96 w-full" />
           : (
               <>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                  <Tile
+                    label="Busiest slot"
+                    value={data.peak_cell
+                      ? `${data.peak_cell.name.slice(0, 3)} ${String(data.peak_cell.hour).padStart(2, '0')}:00`
+                      : '—'}
+                    // The marginals give a different, wrong answer here — the
+                    // peak day and peak hour need not intersect at a busy cell.
+                    hint={data.peak_cell
+                      ? `${data.peak_cell.games_started.toLocaleString()} games · busiest single hour`
+                      : 'No activity in this window'}
+                  />
                   <Tile
                     label="Peak hour"
                     value={data.peak_hour === null ? '—' : `${String(data.peak_hour).padStart(2, '0')}:00`}
@@ -81,6 +93,16 @@ export default function PatternsPage() {
                     hint={quietestDay ? `${quietestDay.games_started.toLocaleString()} games` : '—'}
                   />
                 </div>
+
+                {/* Above the two bar charts: it answers the scheduling question
+                    they can only approximate, so reading them first would mean
+                    forming a wrong answer and then correcting it. */}
+                <ActivityHeatmap
+                  rows={data.by_hour_weekday}
+                  peakCell={data.peak_cell}
+                  busiest={data.busiest_cell_games}
+                  timezone={data.timezone}
+                />
 
                 <Card>
                   <CardHeader>
