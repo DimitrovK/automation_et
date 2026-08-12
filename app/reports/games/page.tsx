@@ -7,6 +7,7 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -18,12 +19,13 @@ import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
-const COLUMNS: { key: GameSortKey; label: string; hint: string }[] = [
-  { key: 'games_started', label: 'Played', hint: 'Sessions started in the window' },
-  { key: 'completion_pct', label: 'Finished', hint: 'Share of started sessions that were completed' },
-  { key: 'sessions_per_player', label: 'Per player', hint: 'Sessions per distinct player — depth of engagement' },
-  { key: 'repeat_rate_pct', label: 'Came back', hint: 'Share of players who returned on another day' },
-  { key: 'trend_pct', label: 'Trend', hint: 'vs the immediately preceding window of equal length' },
+/** `metric` keys into lib/metric-definitions so the column explains itself. */
+const COLUMNS: { key: GameSortKey; label: string; hint: string; metric: string }[] = [
+  { key: 'games_started', label: 'Played', hint: 'Sessions started in the window', metric: 'games_started' },
+  { key: 'completion_pct', label: 'Finished', hint: 'Share of started sessions that were completed', metric: 'completion_pct' },
+  { key: 'sessions_per_player', label: 'Per player', hint: 'Sessions per distinct player — depth of engagement', metric: 'sessions_per_player' },
+  { key: 'repeat_rate_pct', label: 'Came back', hint: 'Share of players who returned on another day', metric: 'repeat_rate_pct' },
+  { key: 'trend_pct', label: 'Trend', hint: 'vs the immediately preceding window of equal length', metric: 'trend_pct' },
 ];
 
 /**
@@ -123,6 +125,7 @@ export default function GamesIndexPage() {
                             >
                               {column.label}
                             </button>
+                            <MetricInfo metric={column.metric} />
                           </th>
                         ))}
                       </tr>

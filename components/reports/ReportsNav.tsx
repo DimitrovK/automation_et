@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Clock, Gamepad2, LayoutGrid, Repeat, Timer, Users } from 'lucide-react';
+import { BarChart3, BookOpen, Clock, Gamepad2, LayoutGrid, Repeat, Timer, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ const TABS = [
   { href: '/reports/duration', label: 'Session length', icon: Timer },
   { href: '/reports/players', label: 'Players', icon: Users },
   { href: '/reports/retention', label: 'Retention', icon: Repeat },
+  { href: '/reports/glossary', label: 'What the numbers mean', icon: BookOpen },
 ];
 
 export function ReportsNav() {

@@ -4,6 +4,7 @@ import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
+import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -14,11 +15,14 @@ import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
-function Tile({ label, value, hint }: { label: string; value: string; hint: string }) {
+function Tile({ label, value, hint, metric }: { label: string; value: string; hint: string; metric?: string }) {
   return (
     <Card>
       <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          {label}
+          {metric && <MetricInfo metric={metric} />}
+        </p>
         <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p>
       </CardContent>
@@ -68,6 +72,7 @@ export default function PatternsPage() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                   <Tile
                     label="Busiest slot"
+                    metric="peak_cell"
                     value={data.peak_cell
                       ? `${data.peak_cell.name.slice(0, 3)} ${String(data.peak_cell.hour).padStart(2, '0')}:00`
                       : '—'}
@@ -79,6 +84,7 @@ export default function PatternsPage() {
                   />
                   <Tile
                     label="Peak hour"
+                    metric="peak_hour"
                     value={data.peak_hour === null ? '—' : `${String(data.peak_hour).padStart(2, '0')}:00`}
                     hint={`${peakHourCount.toLocaleString()} games · ${data.timezone}`}
                   />
