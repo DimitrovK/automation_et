@@ -29,6 +29,22 @@ describe('reportsAPI', () => {
     ]);
   });
 
+  it('exposes the game-metadata endpoint', async () => {
+    // Colours come from here rather than a frontend palette, which would drift
+    // the first time a game is added.
+    await ReportsAPI.getGames();
+
+    expect(mockApiFetcher).toHaveBeenCalledWith('core/reporting/games/');
+  });
+
+  it('passes game_type through so a badge click filters server-side', async () => {
+    await ReportsAPI.getSummary({ window: 30, game_type: 'team_ties' });
+
+    expect(mockApiFetcher).toHaveBeenCalledWith(
+      'core/reporting/summary/?window=30&game_type=team_ties',
+    );
+  });
+
   it('serialises params into a query string', async () => {
     await ReportsAPI.getTopPlayers({ window: 30, include_bots: true, limit: 25 });
 

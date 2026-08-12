@@ -2,16 +2,17 @@
 
 import type { ReportWindow } from '@/types/reports';
 import { useMemo, useState } from 'react';
+import { GameBadge } from '@/components/reports/GameBadge';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { WindowPicker } from '@/components/reports/WindowPicker';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
 import { ReportsAPI } from '@/lib/reports-api';
-import { prettySlug } from '@/lib/user-hub-format';
 
 export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -19,10 +20,17 @@ export default function PlayersReportPage() {
 
   const [window, setWindow] = useState<ReportWindow>(7);
   const [includeBots, setIncludeBots] = useState(false);
+  const [game, setGame] = useState<string | null>(null);
+  // 'played' ranks by sessions started, 'finished' by ones seen through — the gap
+  // between them is the interesting part, so both are reachable.
+  const [sortBy, setSortBy] = useState<'played' | 'finished'>('played');
+
   const params = useMemo(
-    () => ({ window, include_bots: includeBots, limit: 25 }),
-    [window, includeBots],
+    () => ({ window, include_bots: includeBots, limit: 25, ...(game ? { game_type: game } : {}) }),
+    [window, includeBots, game],
   );
+
+  const { meta } = useGameMeta(enabled);
 
   // ReportsAPI methods are static, so the reference is already stable across
   // renders — no useCallback needed to stop useReport's effect re-firing.
@@ -44,6 +52,23 @@ export default function PlayersReportPage() {
         includeBots={includeBots}
         onIncludeBotsChange={setIncludeBots}
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-gray-600 dark:text-gray-300">Rank by</span>
+        <Button size="sm" variant={sortBy === 'played' ? 'default' : 'outline'} onClick={() => setSortBy('played')}>
+          Played
+        </Button>
+        <Button size="sm" variant={sortBy === 'finished' ? 'default' : 'outline'} onClick={() => setSortBy('finished')}>
+          Finished
+        </Button>
+      </div>
+
+      {game && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
+        </div>
+      )}
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
@@ -85,10 +110,14 @@ export default function PlayersReportPage() {
                           <td className="py-2 pr-4 text-right">{player.games_finished.toLocaleString()}</td>
                           <td className="py-2">
                             <div className="flex flex-wrap gap-1">
-                              {player.games.map(game => (
-                                <Badge key={game} variant="secondary" className="text-xs">
-                                  {prettySlug(game)}
-                                </Badge>
+                              {player.games.map(playedGame => (
+                                <GameBadge
+                                  key={playedGame}
+                                  gameKey={playedGame}
+                                  meta={meta}
+                                  active={game === playedGame}
+                                  onClick={key => setGame(game === key ? null : key)}
+                                />
                               ))}
                             </div>
                           </td>

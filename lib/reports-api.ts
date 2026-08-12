@@ -1,5 +1,6 @@
 import type {
   ActivityResponse,
+  GamesResponse,
   MultiplayerResponse,
   ReportParams,
   SummaryResponse,
@@ -45,6 +46,15 @@ export class ReportsAPI {
   /** GET /core/reporting/multiplayer/ — room funnel (rooms, not participations). */
   static async getMultiplayer(params?: ReportParams): Promise<MultiplayerResponse> {
     return apiFetcher<MultiplayerResponse>(`core/reporting/multiplayer/${buildQuery(params)}`);
+  }
+
+  /**
+   * GET /core/reporting/games/ — key, label and colour per registered game.
+   * Colours come from the BE registry so the frontend never keeps its own
+   * palette, which would drift the first time a game is added.
+   */
+  static async getGames(): Promise<GamesResponse> {
+    return apiFetcher<GamesResponse>('core/reporting/games/');
   }
 
   /** GET /core/reporting/top-players/ — busiest players over the window. */

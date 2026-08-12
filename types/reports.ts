@@ -40,7 +40,20 @@ export type Pulse = {
   metrics: Record<keyof ActivityMetrics, PulseMetric>;
 };
 
-export type GameTotals = { game_type: string } & ActivityMetrics;
+export type GameTotals = {
+  game_type: string;
+  /** finished / started. Null when nobody played — 0% would read as "everyone bailed". */
+  completion_pct: number | null;
+  sessions_per_player: number | null;
+  /** Share of platform volume. Null when the platform had no activity at all. */
+  share_pct: number | null;
+  repeat_players: number;
+  /** Share of this game's players who came back on ANOTHER day. */
+  repeat_rate_pct: number | null;
+  previous_games_started: number;
+  /** vs the immediately preceding window. */
+  trend_pct: number | null;
+} & ActivityMetrics;
 
 export type SummaryResponse = {
   pulse: Pulse;
@@ -60,6 +73,15 @@ export type MultiplayerGameRow = {
   never_started_pct: number;
 };
 
+/** One row of the multiplayer funnel split by mode. Quiz has no mode column. */
+export type MultiplayerModeRow = {
+  game_type: string;
+  mode: string | null;
+  rooms_created: number;
+  rooms_started: number;
+  rooms_finished: number;
+};
+
 export type MultiplayerResponse = {
   start: string;
   end: string;
@@ -70,6 +92,7 @@ export type MultiplayerResponse = {
   grain: string;
   totals: Omit<MultiplayerGameRow, 'game_type'>;
   by_game: MultiplayerGameRow[];
+  by_mode: MultiplayerModeRow[];
 };
 
 export type TopPlayer = {
@@ -101,3 +124,23 @@ export type ReportParams = {
   include_bots?: boolean;
   limit?: number;
 };
+
+/** Display metadata from the BE registry — the single source of truth for colours. */
+export type GameMeta = {
+  key: string;
+  label: string;
+  /** Hex, e.g. '#2563eb'. Same colour the Django admin dashboard draws the game with. */
+  color: string;
+};
+
+export type GamesResponse = { games: GameMeta[] };
+
+/** Which activity metric a chart or table is currently showing. */
+export const METRIC_OPTIONS = [
+  { key: 'games_started', label: 'Played' },
+  { key: 'games_finished', label: 'Finished' },
+  { key: 'distinct_players', label: 'Players' },
+  { key: 'mp_player_sessions', label: 'Multiplayer' },
+] as const;
+
+export type MetricKey = (typeof METRIC_OPTIONS)[number]['key'];
