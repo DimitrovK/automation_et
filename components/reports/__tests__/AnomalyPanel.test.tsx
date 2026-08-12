@@ -10,6 +10,7 @@ function build(overrides: Partial<AnomaliesResponse> = {}): AnomaliesResponse {
     start: '2026-08-01',
     end: '2026-08-14',
     days: 14,
+    window: 14,
     game_type: null,
     include_bots: false,
     window_days: 14,
