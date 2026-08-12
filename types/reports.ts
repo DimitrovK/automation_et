@@ -94,12 +94,9 @@ export type SummaryResponse = {
   /** False when the range doesn't end today — the pulse describes today only. */
   pulse_applies: boolean;
   comparison: PeriodComparison;
-  window: number;
-  game_type: string | null;
   window_totals: ActivityMetrics;
   by_game: GameTotals[];
-  include_bots: boolean;
-};
+} & ResolvedRange;
 
 export type MultiplayerGameRow = {
   game_type: string;
