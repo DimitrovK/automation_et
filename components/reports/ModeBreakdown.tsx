@@ -5,7 +5,7 @@ import type { MultiplayerModeRow } from '@/types/reports';
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FALLBACK_COLOR } from '@/hooks/use-game-meta';
+import { useGameColor } from '@/hooks/use-game-meta';
 
 /** Quiz has no mode column, so its rooms arrive as null rather than being dropped. */
 function modeLabel(mode: string | null): string {
@@ -25,6 +25,7 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
   meta: GameMetaMap;
   onSelectGame?: (gameKey: string) => void;
 }) {
+  const resolveColor = useGameColor();
   const byMode = new Map<string, { mode: string; rooms_created: number; rooms_started: number; games: MultiplayerModeRow[] }>();
   for (const row of rows) {
     const label = modeLabel(row.mode);
@@ -64,7 +65,7 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
                       <Bar dataKey="rooms_created" name="Rooms" radius={[4, 4, 0, 0]}>
                         <LabelList dataKey="rooms_created" position="top" style={{ fontSize: 11 }} />
                         {modes.map(mode => (
-                          <Cell key={mode.mode} fill={meta[mode.games[0]?.game_type ?? '']?.color ?? FALLBACK_COLOR} />
+                          <Cell key={mode.mode} fill={resolveColor(meta, mode.games[0]?.game_type ?? '')} />
                         ))}
                       </Bar>
                     </BarChart>

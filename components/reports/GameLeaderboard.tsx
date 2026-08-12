@@ -1,6 +1,7 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
+import { useGameColor } from '@/hooks/use-game-meta';
 import type { GameTotals, MetricKey } from '@/types/reports';
 import { ChevronDown, ChevronRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
@@ -60,6 +61,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
   selected: string | null;
   onSelect: (gameKey: string | null) => void;
 }) {
+  const resolveColor = useGameColor();
   const [expanded, setExpanded] = useState<string | null>(null);
   const active = rows.filter(row => row.games_started > 0);
   const max = Math.max(...active.map(row => row[metric]), 0);
@@ -92,7 +94,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
         )}
 
         {active.map((row) => {
-          const color = meta[row.game_type]?.color ?? '#94a3b8';
+          const color = resolveColor(meta, row.game_type);
           const isOpen = expanded === row.game_type;
           const isSelected = selected === row.game_type;
 
