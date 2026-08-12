@@ -16,8 +16,8 @@ import type {
   Position,
   SetPositionsRequest,
 } from '@/types/player';
-import config from '@/lib/config';
 import { apiFetcher } from '@/lib/api-fetcher';
+import config from '@/lib/config';
 
 /**
  * API service for Django footballer endpoints
@@ -288,7 +288,9 @@ export class FootballerAPI {
     onlyActive = false,
   ): Promise<FootballerPicture[]> {
     const params = new URLSearchParams({ footballer: String(footballerId) });
-    if (onlyActive) params.set('is_active', 'true');
+    if (onlyActive) {
+      params.set('is_active', 'true');
+    }
     return apiFetcher<FootballerPicture[]>(`data/footballer-pictures/?${params.toString()}`);
   }
 
@@ -322,8 +324,11 @@ export class FootballerAPI {
       let message = `HTTP ${response.status}: ${response.statusText} (POST data/footballer-pictures/)`;
       try {
         const data = await response.json();
-        if (typeof data?.detail === 'string') message = data.detail;
-        else if (typeof data?.error === 'string') message = data.error;
+        if (typeof data?.detail === 'string') {
+          message = data.detail;
+        } else if (typeof data?.error === 'string') {
+          message = data.error;
+        }
       } catch {
         // keep the default message
       }

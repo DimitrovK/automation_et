@@ -25,14 +25,9 @@ export type Coverage = {
 
 export type ActivityResponse = {
   coverage: Coverage;
-  start: string;
-  end: string;
-  window: number;
-  game_type: string | null;
-  include_bots: boolean;
   totals: ActivityMetrics;
   series: ActivityDay[];
-};
+} & ResolvedRange;
 
 /** One headline metric: today, against the same-weekday baseline. */
 export type PulseMetric = {
@@ -266,4 +261,30 @@ export type RetentionResponse = {
   offsets: number[];
   summary: Record<string, RetentionSummaryCell>;
   cohorts: RetentionCohort[];
+} & ResolvedRange;
+
+export type DurationRow = {
+  game_type: string;
+  /** False when the game records no session end time at all. */
+  supported: boolean;
+  reason: string | null;
+  sessions: number;
+  measured: number;
+  /** Share of finished sessions that could be measured — varies 69%-100%. */
+  coverage_pct: number | null;
+  median_seconds: number | null;
+  p90_seconds: number | null;
+  long_sessions: number;
+  long_sessions_pct: number | null;
+  /** False for campaign-shaped games whose "session" spans a day, not a sitting. */
+  single_sitting: boolean | null;
+};
+
+export type DurationResponse = {
+  long_session_seconds: number;
+  games_without_duration: string[];
+  long_lived_session_games: string[];
+  /** Longest among comparable games only — a campaign game would win by default. */
+  longest_single_sitting_game: string | null;
+  rows: DurationRow[];
 } & ResolvedRange;

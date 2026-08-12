@@ -3,6 +3,7 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { GameTotals, MetricKey } from '@/types/reports';
 import { ChevronDown, ChevronRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,6 +155,14 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                       <dd className="font-medium tabular-nums text-gray-900 dark:text-white">{value}</dd>
                     </div>
                   ))}
+                  <div className="col-span-2 sm:col-span-3 lg:col-span-6">
+                    <Link
+                      href={`/reports/games/${row.game_type}`}
+                      className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+                    >
+                      Open full report for this game →
+                    </Link>
+                  </div>
                 </dl>
               )}
             </div>

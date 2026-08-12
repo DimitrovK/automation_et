@@ -176,8 +176,10 @@ export type CreateFootballerRequest = {
   additional_info?: string | null;
 };
 
-/** Fields the bulk-update endpoint accepts. Subset of CreateFootballerRequest
- *  — admin-tweakable flags, no identity / DoB / nation. */
+/**
+ * Fields the bulk-update endpoint accepts. Subset of CreateFootballerRequest
+ *  — admin-tweakable flags, no identity / DoB / nation.
+ */
 export type FootballerBulkUpdates = Partial<{
   status: FootballerStatus;
   retired: boolean;

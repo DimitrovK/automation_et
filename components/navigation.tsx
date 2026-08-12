@@ -16,6 +16,7 @@ import {
   Repeat,
   Search,
   Sparkles,
+  Timer,
   UserCog,
   Users,
   Users2,
@@ -151,6 +152,12 @@ export function Navigation({ className }: NavigationProps) {
           href: '/reports/players',
           icon: Users,
           description: 'Most active players over a window',
+        },
+        {
+          label: 'Session length',
+          href: '/reports/duration',
+          icon: Timer,
+          description: 'How long people stay in each game',
         },
         {
           label: 'Retention',
