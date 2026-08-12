@@ -34,14 +34,42 @@ export function ActivityChart({ series, title, description, metric, color }: {
   /** Overrides the metric colour — used to match the selected game's badge. */
   color?: string;
 }) {
-  const data = series.map(row => ({ ...row, label: formatDay(row.date) }));
+  // An uncovered day was never computed. Feeding 0 to the chart draws a
+  // confident dip that never happened, so the value becomes null and recharts
+  // leaves a visible break instead.
+  const data = series.map(row => ({
+    ...row,
+    label: formatDay(row.date),
+    ...(row.covered
+      ? {}
+      : {
+          games_started: null,
+          games_finished: null,
+          distinct_players: null,
+          mp_player_sessions: null,
+        }),
+  }));
+  const uncovered = series.filter(row => !row.covered).length;
   const primaryColor = color ?? DEFAULT_COLORS[metric];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription>
+          {description}
+          {uncovered > 0 && (
+            <>
+              {' '}
+              <span className="text-amber-700 dark:text-amber-300">
+                {uncovered}
+                {' day'}
+                {uncovered === 1 ? '' : 's'}
+                {' in this range were never computed and are drawn as gaps, not zeroes.'}
+              </span>
+            </>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent className="h-72 sm:h-80">
         <ResponsiveContainer width="100%" height="100%">
@@ -64,6 +92,7 @@ export function ActivityChart({ series, title, description, metric, color }: {
                   strokeOpacity={isPrimary ? 1 : 0.28}
                   dot={false}
                   activeDot={isPrimary ? { r: 4 } : false}
+                  connectNulls={false}
                 />
               );
             })}

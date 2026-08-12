@@ -11,9 +11,20 @@ export type ActivityMetrics = {
   mp_player_sessions: number;
 };
 
-export type ActivityDay = { date: string } & ActivityMetrics;
+export type ActivityDay = {
+  date: string;
+  /** False = never computed. NOT the same as zero activity. */
+  covered: boolean;
+} & ActivityMetrics;
+
+export type Coverage = {
+  complete: boolean;
+  uncovered_days: string[];
+  covered_days: number;
+};
 
 export type ActivityResponse = {
+  coverage: Coverage;
   start: string;
   end: string;
   window: number;
@@ -28,7 +39,8 @@ export type PulseMetric = {
   today: number;
   yesterday: number;
   /** Mean of the previous N same weekdays. */
-  baseline_same_weekday: number;
+  /** Null when the baseline period has uncovered days. */
+  baseline_same_weekday: number | null;
   /** Null when the baseline is 0 and today is 0 — i.e. no meaningful comparison. */
   delta_pct_vs_baseline: number | null;
 };
@@ -37,6 +49,9 @@ export type Pulse = {
   date: string;
   weekday: string;
   baseline_weeks: number;
+  /** False when a baseline day was never rolled up — show "no baseline", not 0. */
+  baseline_covered: boolean;
+  baseline_missing_days: string[];
   metrics: Record<keyof ActivityMetrics, PulseMetric>;
 };
 
@@ -55,8 +70,30 @@ export type GameTotals = {
   trend_pct: number | null;
 } & ActivityMetrics;
 
+export type MetricComparison = {
+  current: number;
+  previous: number;
+  change: number;
+  /** Null when a period has gaps, or the previous period was zero. */
+  change_pct: number | null;
+};
+
+export type PeriodComparison = {
+  current: { start: string; end: string; days: number };
+  previous: { start: string; end: string; days: number };
+  coverage: {
+    complete: boolean;
+    missing_current_days: string[];
+    missing_previous_days: string[];
+  };
+  metrics: Record<keyof ActivityMetrics, MetricComparison>;
+};
+
 export type SummaryResponse = {
   pulse: Pulse;
+  /** False when the range doesn't end today — the pulse describes today only. */
+  pulse_applies: boolean;
+  comparison: PeriodComparison;
   window: number;
   game_type: string | null;
   window_totals: ActivityMetrics;
