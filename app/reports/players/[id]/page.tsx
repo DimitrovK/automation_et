@@ -1,10 +1,11 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
+import type { ReportParams } from '@/types/reports';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -40,12 +41,25 @@ export default function PlayerDetailPage() {
   const params = useMemo(() => rangeToParams(range), [range]);
 
   const { meta } = useGameMeta(enabled);
+
+  // Must be memoised. useReport keys its effect on the fetcher's identity, and
+  // every other page passes a static ReportsAPI method, which is stable for
+  // free. This is the only endpoint taking a bound argument, so an inline arrow
+  // here is a new function on every render: effect refires -> setState ->
+  // re-render -> new arrow, and the page requests the API forever.
+  const fetchPlayerDetail = useCallback(
+    (reportParams?: ReportParams) => ReportsAPI.getPlayerDetail(userId, reportParams),
+    [userId],
+  );
+
   const { data, isLoading, error, notDeployed, refetch } = useReport(
-    // Bound to this route's id, so the hook's generic fetcher signature still fits.
-    reportParams => ReportsAPI.getPlayerDetail(userId, reportParams),
+    fetchPlayerDetail,
     params,
     enabled && Number.isFinite(userId),
     'The player detail endpoint',
+    // userId lives in the path, not in params, so it has to be declared here for
+    // navigating between players to refetch.
+    String(userId),
   );
 
   return (
