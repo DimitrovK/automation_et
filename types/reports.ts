@@ -178,10 +178,34 @@ export type NewReturningRow = {
   total_players: number;
 };
 
+/**
+ * One weekday of the heatmap. `hours` is always 24 long — the BE sends it
+ *  dense so a gap can never be misread as a quiet hour.
+ */
+export type HourWeekdayRow = {
+  weekday: number;
+  name: string;
+  hours: number[];
+};
+
+export type PeakCell = {
+  weekday: number;
+  name: string;
+  hour: number;
+  games_started: number;
+};
+
 export type PatternsResponse = {
   timezone: string;
   by_hour: HourRow[];
   by_weekday: WeekdayRow[];
+  by_hour_weekday: HourWeekdayRow[];
+  /**
+   * Busiest single slot. Null when the window has no activity at all — the
+   *  argmax of an all-zero grid would otherwise render as a real finding.
+   */
+  peak_cell: PeakCell | null;
+  busiest_cell_games: number;
   peak_hour: number | null;
   peak_weekday: string | null;
   new_vs_returning: NewReturningRow[];
