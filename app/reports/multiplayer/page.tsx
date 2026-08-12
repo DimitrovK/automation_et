@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -80,6 +81,11 @@ export default function MultiplayerReportPage() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Above the per-game table: modes are shared across games, so
+                    "is Elimination working anywhere" is a question the per-game
+                    split can't answer, and it's the one you ask first. */}
+                <ModeBreakdown rows={data.by_mode} meta={meta} onSelectGame={key => setGame(game === key ? null : key)} />
 
                 <Card>
                   <CardHeader>
