@@ -2,6 +2,7 @@
 
 import type { RetentionResponse } from '@/types/reports';
 import { AlertTriangle } from 'lucide-react';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -59,15 +60,36 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Cohorts</CardTitle>
-          <CardDescription>
-            Each row is the players whose first session in this range fell on that day,
-            and how many came back later.
-            {' '}
-            {data.basis}
-            {' — so someone who has played for months but was picked up mid-range counts as new.'}
-          </CardDescription>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle>Cohorts</CardTitle>
+            <CardDescription>
+              Each row is the players whose first session in this range fell on that day,
+              and how many came back later.
+              {' '}
+              {data.basis}
+              {' — so someone who has played for months but was picked up mid-range counts as new.'}
+            </CardDescription>
+          </div>
+          <ExportButton
+            view="retention"
+            rows={data.cohorts}
+            filters={{ start: data.start, end: data.end, game: data.game_type }}
+            columns={[
+              { header: 'Cohort day', value: row => row.date },
+              { header: 'Players', value: row => row.cohort_size },
+              { header: 'Inflated', value: row => (row.inflated ? 'yes' : 'no') },
+              ...keys.map(key => ({
+                header: `${key.toUpperCase()} %`,
+                // Blank, not 0 — the cohort simply hasn't reached that milestone.
+                value: (row: typeof data.cohorts[number]) => row.retention[key]?.pct ?? null,
+              })),
+              ...keys.map(key => ({
+                header: `${key.toUpperCase()} returned`,
+                value: (row: typeof data.cohorts[number]) => row.retention[key]?.returned ?? null,
+              })),
+            ]}
+          />
         </CardHeader>
         <CardContent className="space-y-3">
           {data.first_cohort_inflated && (

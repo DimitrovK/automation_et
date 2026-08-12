@@ -1,9 +1,9 @@
 'use client';
 
-import type { RangeState } from '@/lib/report-range';
-import type { MetricKey } from '@/types/reports';
-import { useMemo, useState } from 'react';
+import type { GameTotals } from '@/types/reports';
+import { useMemo } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
 import { MetricToggle } from '@/components/reports/MetricToggle';
@@ -14,6 +14,7 @@ import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
+import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -22,10 +23,14 @@ export default function ReportsPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
-  const [range, setRange] = useState<RangeState>({ window: 30 });
-  const [includeBots, setIncludeBots] = useState(false);
-  const [metric, setMetric] = useState<MetricKey>('games_started');
-  const [game, setGame] = useState<string | null>(null);
+  // Filters live in the URL so a view can be bookmarked or shared.
+  const { filters, update } = useReportFilters({
+    range: { window: 30 },
+    includeBots: false,
+    game: null,
+    metric: 'games_started',
+  });
+  const { range, includeBots, metric, game } = filters;
 
   // The selected game narrows the pulse, the chart and the tiles together, so
   // the whole page answers "how is THIS game doing" in one click.
@@ -55,17 +60,17 @@ export default function ReportsPage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <RangePicker
           value={range}
-          onChange={setRange}
+          onChange={next => update({ range: next })}
           includeBots={includeBots}
-          onIncludeBotsChange={setIncludeBots}
+          onIncludeBotsChange={value => update({ includeBots: value })}
         />
-        <MetricToggle value={metric} onChange={setMetric} />
+        <MetricToggle value={metric} onChange={next => update({ metric: next })} />
       </div>
 
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
           <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
-          <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
+          <GameBadge gameKey={game} meta={meta} active onClick={() => update({ game: null })} />
         </div>
       )}
 
@@ -103,12 +108,36 @@ export default function ReportsPage() {
             )}
 
       {allGames.data && (
+        <div className="flex justify-end">
+          <ExportButton<GameTotals>
+            view="games"
+            rows={allGames.data.by_game}
+            filters={{ start: allGames.data.start, end: allGames.data.end, bots: includeBots }}
+            columns={[
+              { header: 'Game', value: row => row.game_type },
+              { header: 'Played', value: row => row.games_started },
+              { header: 'Finished', value: row => row.games_finished },
+              { header: 'Players', value: row => row.distinct_players },
+              { header: 'Multiplayer', value: row => row.mp_player_sessions },
+              { header: 'Solo', value: row => row.games_started - row.mp_player_sessions },
+              { header: 'Completion %', value: row => row.completion_pct },
+              { header: 'Sessions per player', value: row => row.sessions_per_player },
+              { header: 'Repeat %', value: row => row.repeat_rate_pct },
+              { header: 'Share %', value: row => row.share_pct },
+              { header: 'Trend %', value: row => row.trend_pct },
+              { header: 'Previous period played', value: row => row.previous_games_started },
+            ]}
+          />
+        </div>
+      )}
+
+      {allGames.data && (
         <GameLeaderboard
           rows={allGames.data.by_game}
           meta={meta}
           metric={metric}
           selected={game}
-          onSelect={setGame}
+          onSelect={next => update({ game: next })}
         />
       )}
     </ReportsShell>
