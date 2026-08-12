@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Gamepad2, Users } from 'lucide-react';
+import { BarChart3, Clock, Gamepad2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 const TABS = [
   { href: '/reports', label: 'Daily Pulse', icon: BarChart3 },
   { href: '/reports/multiplayer', label: 'Multiplayer', icon: Gamepad2 },
+  { href: '/reports/patterns', label: 'Patterns', icon: Clock },
   { href: '/reports/players', label: 'Players', icon: Users },
 ];
 

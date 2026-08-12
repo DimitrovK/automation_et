@@ -1,24 +1,25 @@
 'use client';
 
-import type { ReportWindow } from '@/types/reports';
+import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
-import { WindowPicker } from '@/components/reports/WindowPicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
+import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
 export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
-  const [window, setWindow] = useState<ReportWindow>(7);
+  const [range, setRange] = useState<RangeState>({ window: 7 });
   const [includeBots, setIncludeBots] = useState(false);
   const [game, setGame] = useState<string | null>(null);
   // 'played' ranks by sessions started, 'finished' by ones seen through — the gap
@@ -26,8 +27,8 @@ export default function PlayersReportPage() {
   const [sortBy, setSortBy] = useState<'played' | 'finished'>('played');
 
   const params = useMemo(
-    () => ({ window, include_bots: includeBots, limit: 25, ...(game ? { game_type: game } : {}) }),
-    [window, includeBots, game],
+    () => ({ ...rangeToParams(range), include_bots: includeBots, limit: 25, ...(game ? { game_type: game } : {}) }),
+    [range, includeBots, game],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -46,9 +47,9 @@ export default function PlayersReportPage() {
       title="Players"
       description="Who played the most. Bot/simulation accounts are excluded by default."
     >
-      <WindowPicker
-        value={window}
-        onChange={setWindow}
+      <RangePicker
+        value={range}
+        onChange={setRange}
         includeBots={includeBots}
         onIncludeBotsChange={setIncludeBots}
       />

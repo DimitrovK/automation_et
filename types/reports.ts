@@ -120,9 +120,71 @@ export type ReportWindow = (typeof REPORT_WINDOWS)[number];
 
 export type ReportParams = {
   window?: ReportWindow;
+  /** YYYY-MM-DD. Takes precedence over `window` server-side. */
+  start?: string;
+  /** YYYY-MM-DD, inclusive. Defaults to today when `start` is given. */
+  end?: string;
   game_type?: string;
   include_bots?: boolean;
   limit?: number;
+};
+
+/** Filter echo every reporting response carries. */
+export type ResolvedRange = {
+  start: string;
+  end: string;
+  days: number;
+  window: number;
+  game_type: string | null;
+  include_bots: boolean;
+};
+
+export type HourRow = { hour: number; games_started: number };
+export type WeekdayRow = { weekday: number; name: string; games_started: number };
+export type NewReturningRow = {
+  date: string;
+  new_players: number;
+  returning_players: number;
+  total_players: number;
+};
+
+export type PatternsResponse = {
+  timezone: string;
+  by_hour: HourRow[];
+  by_weekday: WeekdayRow[];
+  peak_hour: number | null;
+  peak_weekday: string | null;
+  new_vs_returning: NewReturningRow[];
+} & ResolvedRange;
+
+export type PlayerGameRow = {
+  game_type: string;
+  games_played: number;
+  games_finished: number;
+  completion_pct: number;
+};
+
+export type PlayerDetailResponse = {
+  user_id: number;
+  username: string;
+  is_bot: boolean;
+  date_joined: string;
+  start: string;
+  end: string;
+  days: number;
+  window: number;
+  totals: {
+    games_played: number;
+    games_finished: number;
+    completion_pct: number | null;
+    distinct_games: number;
+    active_days: number;
+    active_days_pct: number | null;
+    games_per_active_day: number | null;
+  };
+  favourite_game: string | null;
+  by_game: PlayerGameRow[];
+  series: { date: string; games_started: number; games_finished: number }[];
 };
 
 /** Display metadata from the BE registry — the single source of truth for colours. */

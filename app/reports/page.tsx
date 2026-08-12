@@ -1,26 +1,28 @@
 'use client';
 
-import type { MetricKey, ReportWindow } from '@/types/reports';
+import type { RangeState } from '@/lib/report-range';
+import type { MetricKey } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
 import { MetricToggle } from '@/components/reports/MetricToggle';
 import { PulseTiles } from '@/components/reports/PulseTiles';
+import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
-import { WindowPicker } from '@/components/reports/WindowPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
+import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
 export default function ReportsPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
-  const [window, setWindow] = useState<ReportWindow>(30);
+  const [range, setRange] = useState<RangeState>({ window: 30 });
   const [includeBots, setIncludeBots] = useState(false);
   const [metric, setMetric] = useState<MetricKey>('games_started');
   const [game, setGame] = useState<string | null>(null);
@@ -28,14 +30,14 @@ export default function ReportsPage() {
   // The selected game narrows the pulse, the chart and the tiles together, so
   // the whole page answers "how is THIS game doing" in one click.
   const params = useMemo(
-    () => ({ window, include_bots: includeBots, ...(game ? { game_type: game } : {}) }),
-    [window, includeBots, game],
+    () => ({ ...rangeToParams(range), include_bots: includeBots, ...(game ? { game_type: game } : {}) }),
+    [range, includeBots, game],
   );
   // The leaderboard must always show every game, otherwise selecting one would
   // hide the row you'd click to unselect it.
   const allGamesParams = useMemo(
-    () => ({ window, include_bots: includeBots }),
-    [window, includeBots],
+    () => ({ ...rangeToParams(range), include_bots: includeBots }),
+    [range, includeBots],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -51,9 +53,9 @@ export default function ReportsPage() {
       description="How today is going, measured against a typical day of the same weekday."
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <WindowPicker
-          value={window}
-          onChange={setWindow}
+        <RangePicker
+          value={range}
+          onChange={setRange}
           includeBots={includeBots}
           onIncludeBotsChange={setIncludeBots}
         />

@@ -1,16 +1,17 @@
 'use client';
 
-import type { ReportWindow } from '@/types/reports';
+import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
-import { WindowPicker } from '@/components/reports/WindowPicker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
+import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 import { prettySlug } from '@/lib/user-hub-format';
 
@@ -18,12 +19,12 @@ export default function MultiplayerReportPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
-  const [window, setWindow] = useState<ReportWindow>(30);
+  const [range, setRange] = useState<RangeState>({ window: 30 });
   const [includeBots, setIncludeBots] = useState(false);
   const [game, setGame] = useState<string | null>(null);
   const params = useMemo(
-    () => ({ window, include_bots: includeBots, ...(game ? { game_type: game } : {}) }),
-    [window, includeBots, game],
+    () => ({ ...rangeToParams(range), include_bots: includeBots, ...(game ? { game_type: game } : {}) }),
+    [range, includeBots, game],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -42,9 +43,9 @@ export default function MultiplayerReportPage() {
       title="Multiplayer"
       description="Rooms opened, started and finished. Counts rooms — not per-player participations."
     >
-      <WindowPicker
-        value={window}
-        onChange={setWindow}
+      <RangePicker
+        value={range}
+        onChange={setRange}
         includeBots={includeBots}
         onIncludeBotsChange={setIncludeBots}
       />

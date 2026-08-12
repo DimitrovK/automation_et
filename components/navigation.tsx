@@ -4,6 +4,7 @@ import {
   BarChart3,
   ChevronDown,
   ChevronUp,
+  Clock,
   Database,
   FileQuestion,
   Gamepad2,
@@ -137,6 +138,12 @@ export function Navigation({ className }: NavigationProps) {
           href: '/reports/multiplayer',
           icon: Gamepad2,
           description: 'Room funnel: created, started, finished',
+        },
+        {
+          label: 'Patterns',
+          href: '/reports/patterns',
+          icon: Clock,
+          description: 'When people play, new vs returning',
         },
         {
           label: 'Players',
