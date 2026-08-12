@@ -3,6 +3,7 @@
 import type { GameTotals } from '@/types/reports';
 import { useMemo } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
+import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
@@ -49,6 +50,9 @@ export default function ReportsPage() {
   const summary = useReport(ReportsAPI.getSummary, params, enabled, 'The reporting summary endpoint');
   const allGames = useReport(ReportsAPI.getSummary, allGamesParams, enabled, 'The reporting summary endpoint');
   const activity = useReport(ReportsAPI.getActivity, params, enabled, 'The reporting activity endpoint');
+  // Unfiltered on purpose: "what needs attention" must surface a game you
+  // haven't selected, which is exactly the one you'd otherwise miss.
+  const anomalies = useReport(ReportsAPI.getAnomalies, allGamesParams, enabled, 'The anomalies reporting endpoint');
 
   const selectedLabel = game ? (meta[game]?.label ?? game) : null;
 
@@ -73,6 +77,8 @@ export default function ReportsPage() {
           <GameBadge gameKey={game} meta={meta} active onClick={() => update({ game: null })} />
         </div>
       )}
+
+      {anomalies.data && <AnomalyPanel data={anomalies.data} meta={meta} />}
 
       {summary.error
         ? <ReportError error={summary.error} notDeployed={summary.notDeployed} onRetry={summary.refetch} />
