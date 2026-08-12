@@ -1,14 +1,18 @@
-import { apiFetcher } from '@/lib/api-fetcher';
 import type {
   TeamPlayersParams,
   TeamPlayersResponse,
   TeamSearchResult,
 } from '@/types/team';
+import { apiFetcher } from '@/lib/api-fetcher';
 
-/** Build a `?key=value&...` string from a params object, dropping `undefined`,
- *  `null`, the literal string `'all'`, and empty strings. */
+/**
+ * Build a `?key=value&...` string from a params object, dropping `undefined`,
+ *  `null`, the literal string `'all'`, and empty strings.
+ */
 function buildQuery(params: Record<string, unknown> | undefined): string {
-  if (!params) return '';
+  if (!params) {
+    return '';
+  }
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null || value === '' || value === 'all') {
@@ -34,7 +38,9 @@ export class TeamAPI {
   /** GET /data/team/search/?name=<query> */
   static async searchTeams(name: string): Promise<TeamSearchResult[]> {
     const query = name.trim();
-    if (!query) return [];
+    if (!query) {
+      return [];
+    }
     return apiFetcher<TeamSearchResult[]>(
       `data/team/search/?name=${encodeURIComponent(query)}`,
     );

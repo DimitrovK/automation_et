@@ -23,7 +23,7 @@ export type TransferType = 'permanent' | 'loan';
 export type CareerPathDifficulty = 'EASY' | 'NORMAL' | 'HARD' | 'EXTREME';
 
 export type TeamPlayerRow = {
-  id: number;            // FootballerTeam (stint) id
+  id: number; // FootballerTeam (stint) id
   footballer_id: number;
   full_name: string;
   nation_id: number | null;
@@ -55,11 +55,11 @@ export type RoleFilter = PlayerRole | 'all';
 export type TransferFilter = TransferType | 'all';
 export type StatusFilter = 'active' | 'retired' | 'all';
 
-export type TeamPlayersOrdering =
-  | 'start_year' | '-start_year'
-  | 'full_name' | '-full_name'
-  | 'apps' | '-apps'
-  | 'goals' | '-goals';
+export type TeamPlayersOrdering
+  = | 'start_year' | '-start_year'
+    | 'full_name' | '-full_name'
+    | 'apps' | '-apps'
+    | 'goals' | '-goals';
 
 export type TeamPlayersParams = {
   role?: RoleFilter;

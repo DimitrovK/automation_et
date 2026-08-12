@@ -5,8 +5,8 @@
 //   2. `http://localhost:8000` when running `next dev` so the
 //      automation app talks to a local Django by default.
 //   3. The hosted prod API for production builds.
-const DEFAULT_API_BASE_URL =
-  process.env.NODE_ENV === 'development'
+const DEFAULT_API_BASE_URL
+  = process.env.NODE_ENV === 'development'
     ? 'http://localhost:8000'
     : 'https://api.extratime.world';
 

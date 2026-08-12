@@ -1,16 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { apiFetcher } from '@/lib/api-fetcher';
+import { TeamAPI } from '@/lib/team-api';
+
 vi.mock('@/lib/api-fetcher', () => ({
   apiFetcher: vi.fn(),
 }));
-
-import { apiFetcher } from '@/lib/api-fetcher';
-import { TeamAPI } from '@/lib/team-api';
 
 const mockApiFetcher = vi.mocked(apiFetcher);
 
 describe('TeamAPI', () => {
   beforeEach(() => mockApiFetcher.mockReset());
+
   afterEach(() => vi.restoreAllMocks());
 
   // ---- searchTeams ----------------------------------------------------
@@ -27,6 +28,7 @@ describe('TeamAPI', () => {
 
     it('returns [] without hitting the network for empty queries', async () => {
       const result = await TeamAPI.searchTeams('   ');
+
       expect(result).toEqual([]);
       expect(mockApiFetcher).not.toHaveBeenCalled();
     });
@@ -34,6 +36,7 @@ describe('TeamAPI', () => {
     it('encodes special characters in the query', async () => {
       mockApiFetcher.mockResolvedValue([]);
       await TeamAPI.searchTeams('Real Madrid & Co');
+
       expect(mockApiFetcher).toHaveBeenCalledWith(
         'data/team/search/?name=Real%20Madrid%20%26%20Co',
       );
@@ -45,9 +48,14 @@ describe('TeamAPI', () => {
   describe('getTeamPlayers', () => {
     const happy = {
       team: {
-        id: 7, name: 'AC Milan', nation_name: 'Italy', nation_short: 'ITA',
-        founding_year: 1899, parent_team_name: null,
-        total_players: 100, total_managers: 20,
+        id: 7,
+        name: 'AC Milan',
+        nation_name: 'Italy',
+        nation_short: 'ITA',
+        founding_year: 1899,
+        parent_team_name: null,
+        total_players: 100,
+        total_managers: 20,
       },
       players: { count: 0, next: null, previous: null, results: [] },
     };
@@ -55,6 +63,7 @@ describe('TeamAPI', () => {
     it('builds /data/team/<id>/players/ with no params', async () => {
       mockApiFetcher.mockResolvedValue(happy);
       await TeamAPI.getTeamPlayers(7);
+
       expect(mockApiFetcher).toHaveBeenCalledWith('data/team/7/players/');
     });
 
@@ -62,16 +71,17 @@ describe('TeamAPI', () => {
       mockApiFetcher.mockResolvedValue(happy);
       await TeamAPI.getTeamPlayers(7, {
         role: 'player',
-        transfer_type: 'all',     // dropped
+        transfer_type: 'all', // dropped
         status: 'retired',
-        q: '',                    // dropped
+        q: '', // dropped
         ordering: '-start_year',
         page: 2,
         page_size: 50,
-        nation_id: undefined,     // dropped
+        nation_id: undefined, // dropped
       });
 
       const url = mockApiFetcher.mock.calls[0][0] as string;
+
       // Order is set by URLSearchParams insertion order; assert key/value pairs.
       expect(url.startsWith('data/team/7/players/?')).toBe(true);
       expect(url).toContain('role=player');
@@ -86,6 +96,7 @@ describe('TeamAPI', () => {
 
     it('propagates apiFetcher errors', async () => {
       mockApiFetcher.mockRejectedValueOnce(new Error('Forbidden — staff only.'));
+
       await expect(TeamAPI.getTeamPlayers(7)).rejects.toThrow('Forbidden — staff only.');
     });
   });

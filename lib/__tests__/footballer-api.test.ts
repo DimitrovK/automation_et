@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { apiFetcher } from '@/lib/api-fetcher';
+
 import { FootballerAPI } from '@/lib/footballer-api';
 
 // Mock the apiFetcher module
 vi.mock('@/lib/api-fetcher', () => ({
   apiFetcher: vi.fn(),
 }));
-
-import { apiFetcher } from '@/lib/api-fetcher';
 
 const mockApiFetcher = vi.mocked(apiFetcher);
 
@@ -52,10 +52,17 @@ describe('FootballerAPI — Position Methods', () => {
     it('calls GET with footballer query param', async () => {
       const mockPositions = [
         {
-          id: 10, footballer_id: 42, footballer_name: 'Lionel Messi',
-          position_id: 16, position_name: 'RW', position_full_name: 'Right Winger',
-          position_role: 'FWD', is_primary: true, sort_order: 0,
-          created_at: '2026-01-01', updated_at: '2026-01-01',
+          id: 10,
+          footballer_id: 42,
+          footballer_name: 'Lionel Messi',
+          position_id: 16,
+          position_name: 'RW',
+          position_full_name: 'Right Winger',
+          position_role: 'FWD',
+          is_primary: true,
+          sort_order: 0,
+          created_at: '2026-01-01',
+          updated_at: '2026-01-01',
         },
       ];
       mockApiFetcher.mockResolvedValue(mockPositions);
@@ -86,16 +93,30 @@ describe('FootballerAPI — Position Methods', () => {
       };
       const mockResponse = [
         {
-          id: 10, footballer_id: 42, footballer_name: 'Lionel Messi',
-          position_id: 16, position_name: 'RW', position_full_name: 'Right Winger',
-          position_role: 'FWD', is_primary: true, sort_order: 0,
-          created_at: '2026-01-01', updated_at: '2026-01-01',
+          id: 10,
+          footballer_id: 42,
+          footballer_name: 'Lionel Messi',
+          position_id: 16,
+          position_name: 'RW',
+          position_full_name: 'Right Winger',
+          position_role: 'FWD',
+          is_primary: true,
+          sort_order: 0,
+          created_at: '2026-01-01',
+          updated_at: '2026-01-01',
         },
         {
-          id: 11, footballer_id: 42, footballer_name: 'Lionel Messi',
-          position_id: 5, position_name: 'CF', position_full_name: 'Centre-Forward',
-          position_role: 'FWD', is_primary: false, sort_order: 1,
-          created_at: '2026-01-01', updated_at: '2026-01-01',
+          id: 11,
+          footballer_id: 42,
+          footballer_name: 'Lionel Messi',
+          position_id: 5,
+          position_name: 'CF',
+          position_full_name: 'Centre-Forward',
+          position_role: 'FWD',
+          is_primary: false,
+          sort_order: 1,
+          created_at: '2026-01-01',
+          updated_at: '2026-01-01',
         },
       ];
       mockApiFetcher.mockResolvedValue(mockResponse);
