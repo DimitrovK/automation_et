@@ -66,7 +66,7 @@ export function FMTableRow({ children, isEven = false, onClick, className }: FMT
         ? (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              onClick(e as any);
+              onClick();
             }
           }
         : undefined}
