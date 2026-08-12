@@ -11,7 +11,6 @@ type ApiOptions = {
  * `as MyResponse` cast. Defaults to `any` to preserve the previous
  * behaviour for untyped callers — new code should pass an explicit `T`.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function apiFetcher<T = any>(url: string, options: ApiOptions = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;

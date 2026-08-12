@@ -112,17 +112,12 @@ export type MultiplayerModeRow = {
 };
 
 export type MultiplayerResponse = {
-  start: string;
-  end: string;
-  window: number;
-  game_type: string | null;
-  include_bots: boolean;
   /** Always 'rooms' — a reminder this is a different grain from mp_player_sessions. */
   grain: string;
   totals: Omit<MultiplayerGameRow, 'game_type'>;
   by_game: MultiplayerGameRow[];
   by_mode: MultiplayerModeRow[];
-};
+} & ResolvedRange;
 
 export type TopPlayer = {
   user_id: number;
@@ -134,14 +129,9 @@ export type TopPlayer = {
 };
 
 export type TopPlayersResponse = {
-  start: string;
-  end: string;
-  window: number;
-  game_type: string | null;
-  include_bots: boolean;
   limit: number;
   players: TopPlayer[];
-};
+} & ResolvedRange;
 
 /** Windows the BE accepts (ALLOWED_WINDOWS in core/reporting_views.py). */
 export const REPORT_WINDOWS = [7, 10, 15, 30, 60, 90] as const;
@@ -158,7 +148,18 @@ export type ReportParams = {
   limit?: number;
 };
 
-/** Filter echo every reporting response carries. */
+/**
+ * The part of the echo every range-filtered response carries, including the
+ * player drill-down (which has no game/bot filter to echo back).
+ */
+export type WindowEcho = {
+  start: string;
+  end: string;
+  days: number;
+  window: number;
+};
+
+/** Filter echo every game-filtered reporting response carries. */
 export type ResolvedRange = {
   start: string;
   end: string;
@@ -198,10 +199,6 @@ export type PlayerDetailResponse = {
   username: string;
   is_bot: boolean;
   date_joined: string;
-  start: string;
-  end: string;
-  days: number;
-  window: number;
   totals: {
     games_played: number;
     games_finished: number;
@@ -214,7 +211,7 @@ export type PlayerDetailResponse = {
   favourite_game: string | null;
   by_game: PlayerGameRow[];
   series: { date: string; games_started: number; games_finished: number }[];
-};
+} & WindowEcho;
 
 /** Display metadata from the BE registry — the single source of truth for colours. */
 export type GameMeta = {
