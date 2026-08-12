@@ -1,5 +1,6 @@
 import type {
   ActivityResponse,
+  AnomaliesResponse,
   DurationResponse,
   GamesResponse,
   MultiplayerResponse,
@@ -59,6 +60,11 @@ export class ReportsAPI {
    */
   static async getGames(): Promise<GamesResponse> {
     return apiFetcher<GamesResponse>('core/reporting/games/');
+  }
+
+  /** GET /core/reporting/anomalies/ — what moved enough to be worth attention. */
+  static async getAnomalies(params?: ReportParams): Promise<AnomaliesResponse> {
+    return apiFetcher<AnomaliesResponse>(`core/reporting/anomalies/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/duration/ — median session length per game. */

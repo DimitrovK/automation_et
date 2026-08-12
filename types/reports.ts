@@ -288,3 +288,30 @@ export type DurationResponse = {
   longest_single_sitting_game: string | null;
   rows: DurationRow[];
 } & ResolvedRange;
+
+export type AnomalyFinding = {
+  scope: 'platform' | 'game';
+  game_type: string | null;
+  metric: string;
+  /** Null for findings that aren't a change (e.g. a low completion rate). */
+  change_pct: number | null;
+  current: number;
+  previous: number | null;
+  severity: 'high' | 'medium';
+  headline: string;
+  detail: string;
+};
+
+export type AnomaliesResponse = {
+  window_days: number;
+  compared_with: { start: string; end: string };
+  /** Returned so a reader can see what was filtered out, not just what survived. */
+  thresholds: {
+    min_volume: number;
+    min_change_pct: number;
+    severe_change_pct: number;
+  };
+  /** Lets an empty list mean "nothing moved" rather than "we couldn't tell". */
+  coverage: { complete: boolean; missing_days: string[] };
+  findings: AnomalyFinding[];
+} & ResolvedRange;
