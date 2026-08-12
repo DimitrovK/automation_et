@@ -13,7 +13,7 @@ import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGameMeta } from '@/hooks/use-game-meta';
+import { useGameMeta, useGameColor } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
@@ -33,6 +33,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 
 /** Everything about one game in one place, instead of filtering five pages by hand. */
 export default function GameDetailPage() {
+  const resolveColor = useGameColor();
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
   const routeParams = useParams();
@@ -118,7 +119,7 @@ export default function GameDetailPage() {
         <ActivityChart
           series={activity.data.series}
           metric="games_started"
-          color={meta[gameKey]?.color}
+          color={resolveColor(meta, gameKey)}
           title={`${label} — last ${activity.data.days} days`}
           description={`${activity.data.totals.games_started.toLocaleString()} played, ${activity.data.totals.games_finished.toLocaleString()} finished.`}
         />

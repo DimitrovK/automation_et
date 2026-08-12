@@ -1,6 +1,7 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
+import { useGameColor } from '@/hooks/use-game-meta';
 import type { DurationResponse } from '@/types/reports';
 import { Info } from 'lucide-react';
 import { ExportButton } from '@/components/reports/ExportButton';
@@ -19,6 +20,7 @@ import { cn } from '@/lib/utils';
  * shapes are split into separate tables.
  */
 export function DurationTable({ data, meta }: { data: DurationResponse; meta: GameMetaMap }) {
+  const resolveColor = useGameColor();
   const comparable = data.rows.filter(row => row.supported && row.single_sitting);
   const longLived = data.rows.filter(row => row.supported && row.single_sitting === false);
   const unsupported = data.rows.filter(row => !row.supported);
@@ -41,7 +43,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
                 className="h-full rounded-full"
                 style={{
                   width: `${maxMedian > 0 ? Math.max(2, ((row.median_seconds ?? 0) / maxMedian) * 100) : 0}%`,
-                  backgroundColor: meta[row.game_type]?.color ?? '#94a3b8',
+                  backgroundColor: resolveColor(meta, row.game_type),
                 }}
               />
             </div>

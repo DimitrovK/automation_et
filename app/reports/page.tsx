@@ -13,7 +13,7 @@ import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGameMeta } from '@/hooks/use-game-meta';
+import { useGameMeta, useGameColor } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -21,6 +21,7 @@ import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
 export default function ReportsPage() {
+  const resolveColor = useGameColor();
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
@@ -107,7 +108,7 @@ export default function ReportsPage() {
               <ActivityChart
                 series={activity.data.series}
                 metric={metric}
-                color={game ? meta[game]?.color : undefined}
+                color={game ? resolveColor(meta, game) : undefined}
                 title={`${selectedLabel ?? 'All games'} — last ${activity.data.window} days`}
                 description={`${activity.data.totals.games_started.toLocaleString()} played, ${activity.data.totals.games_finished.toLocaleString()} finished, ${activity.data.totals.distinct_players.toLocaleString()} distinct players.`}
               />

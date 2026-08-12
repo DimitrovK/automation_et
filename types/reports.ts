@@ -241,8 +241,13 @@ export type PlayerDetailResponse = {
 export type GameMeta = {
   key: string;
   label: string;
-  /** Hex, e.g. '#2563eb'. Same colour the Django admin dashboard draws the game with. */
+  /** Hex for a light surface. Same colour the Django admin dashboard draws the game with. */
   color: string;
+  /**
+   * Hex for a dark surface — the same hue re-stepped, not a computed flip.
+   * Optional so the UI keeps working against a BE that predates it.
+   */
+  color_dark?: string;
 };
 
 export type GamesResponse = { games: GameMeta[] };

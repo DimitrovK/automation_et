@@ -2,7 +2,7 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import { X } from 'lucide-react';
-import { FALLBACK_COLOR } from '@/hooks/use-game-meta';
+import { useGameColor } from '@/hooks/use-game-meta';
 import { prettySlug } from '@/lib/user-hub-format';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +22,8 @@ export function GameBadge({ gameKey, meta, active, onClick, count }: {
   onClick?: (gameKey: string) => void;
   count?: number;
 }) {
-  const color = meta[gameKey]?.color ?? FALLBACK_COLOR;
+  const resolveColor = useGameColor();
+  const color = resolveColor(meta, gameKey);
   const label = meta[gameKey]?.label ?? prettySlug(gameKey);
   const interactive = !!onClick;
 

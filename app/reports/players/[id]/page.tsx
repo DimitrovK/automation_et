@@ -13,7 +13,7 @@ import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FALLBACK_COLOR, useGameMeta } from '@/hooks/use-game-meta';
+import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
@@ -32,6 +32,7 @@ function Tile({ label, value, hint }: { label: string; value: string; hint?: str
 }
 
 export default function PlayerDetailPage() {
+  const resolveColor = useGameColor();
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
   const routeParams = useParams();
@@ -144,7 +145,7 @@ export default function PlayerDetailPage() {
                               {data.by_game.map(row => (
                                 <Cell
                                   key={row.game_type}
-                                  fill={meta[row.game_type]?.color ?? FALLBACK_COLOR}
+                                  fill={resolveColor(meta, row.game_type)}
                                 />
                               ))}
                             </Pie>

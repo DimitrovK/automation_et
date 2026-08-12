@@ -13,8 +13,11 @@ export function initialsFor(user: Pick<HubUser, 'first_name' | 'last_name' | 'us
 
 /** Turn a kebab slug into a readable label until a slug→display-name map exists. */
 export function prettySlug(slug: string): string {
+  // Splits on both separators: FE favourite-game slugs are kebab-case, but BE
+  // registry keys are snake_case, and the multiplayer table renders those —
+  // hyphen-only turned "club_connection" into "Club_connection" on screen.
   return slug
-    .split('-')
+    .split(/[-_]/)
     .map(w => (w ? w[0].toUpperCase() + w.slice(1) : w))
     .join(' ');
 }
