@@ -20,10 +20,17 @@ const TILES: { key: keyof ActivityMetrics; label: string; hint: string }[] = [
  */
 function Delta({ metric }: { metric: PulseMetric }) {
   if (metric.delta_pct_vs_baseline === null) {
+    // Three genuinely different reasons, and saying which one matters: a missing
+    // baseline is a data gap to fix, a zero baseline is real news.
+    const reason = metric.baseline_same_weekday === null
+      ? 'no baseline data'
+      : metric.baseline_same_weekday === 0
+        ? 'new — no usual level'
+        : 'no comparison';
     return (
       <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
         <Minus className="size-3" />
-        no baseline yet
+        {reason}
       </span>
     );
   }
@@ -54,30 +61,43 @@ function Delta({ metric }: { metric: PulseMetric }) {
 
 export function PulseTiles({ pulse }: { pulse: Pulse }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {TILES.map(({ key, label, hint }) => {
-        const metric = pulse.metrics[key];
-        return (
-          <Card key={key}>
-            <CardContent className="space-y-1 p-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {metric.today.toLocaleString()}
-              </p>
-              <Delta metric={metric} />
-              <p className="pt-1 text-xs text-gray-500 dark:text-gray-400">
-                {hint}
-                {' · '}
-                typical
-                {' '}
-                {pulse.weekday}
-                {': '}
-                {metric.baseline_same_weekday.toLocaleString()}
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div className="space-y-2">
+      {!pulse.baseline_covered && (
+        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
+          No baseline:
+          {' '}
+          {pulse.baseline_missing_days.length}
+          {' of the last '}
+          {pulse.baseline_weeks}
+          {' '}
+          {pulse.weekday}
+          s were never computed, so there is nothing honest to compare today with.
+          Run the reporting backfill to fill them.
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {TILES.map(({ key, label, hint }) => {
+          const metric = pulse.metrics[key];
+          return (
+            <Card key={key}>
+              <CardContent className="space-y-1 p-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {metric.today.toLocaleString()}
+                </p>
+                <Delta metric={metric} />
+                <p className="pt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {hint}
+                  {' · '}
+                  {metric.baseline_same_weekday === null
+                    ? `no typical ${pulse.weekday} to compare with yet`
+                    : `typical ${pulse.weekday}: ${metric.baseline_same_weekday.toLocaleString()}`}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }
