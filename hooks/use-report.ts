@@ -7,7 +7,7 @@
  */
 
 import type { ReportParams } from '@/types/reports';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import config from '@/lib/config';
 
 export type UseReport<T> = {
@@ -24,6 +24,12 @@ export function useReport<T>(
   params: ReportParams,
   enabled: boolean,
   endpointLabel: string,
+  /**
+   * Identity of the thing being fetched, when it isn't captured by `params` —
+   * e.g. the user id on the player drill-down, which lives in the path. Changing
+   * it refetches. Omitting it can only ever cause a missed refetch, never a loop.
+   */
+  resourceKey: string = '',
 ): UseReport<T> {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,14 +39,24 @@ export function useReport<T>(
   // Params are rebuilt on each render by callers; key on the values so the
   // effect doesn't refetch forever on an identical object.
   const key = JSON.stringify(params);
-  const stableParams = useMemo(() => params, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The fetcher is invoked through a ref and deliberately NOT an effect
+  // dependency. Callers that bind an argument (`p => getPlayerDetail(id, p)`)
+  // produce a new function every render, which made the effect refire, set
+  // state, re-render and request forever — ~2,000 calls in 400ms, in
+  // production. Refetching is driven by `key` and `resourceKey` instead, both
+  // values rather than identities, so an unmemoised fetcher can't spin.
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
 
   const load = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setNotDeployed(false);
     try {
-      setData(await fetcher(stableParams));
+      setData(await fetcherRef.current(paramsRef.current));
     } catch (err: unknown) {
       const raw = err instanceof Error ? err.message : `Failed to load ${endpointLabel}`;
       const is404 = /404|Not Found/i.test(raw);
@@ -54,7 +70,7 @@ export function useReport<T>(
     } finally {
       setIsLoading(false);
     }
-  }, [fetcher, stableParams, endpointLabel]);
+  }, [key, resourceKey, endpointLabel]);
 
   useEffect(() => {
     if (enabled) {
