@@ -5,6 +5,7 @@ import type {
   PatternsResponse,
   PlayerDetailResponse,
   ReportParams,
+  RetentionResponse,
   SummaryResponse,
   TopPlayersResponse,
 } from '@/types/reports';
@@ -67,6 +68,11 @@ export class ReportsAPI {
   /** GET /core/reporting/players/{id}/ — one player's activity. */
   static async getPlayerDetail(userId: number, params?: ReportParams): Promise<PlayerDetailResponse> {
     return apiFetcher<PlayerDetailResponse>(`core/reporting/players/${userId}/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/retention/ — D1/D7/D30 cohort retention. */
+  static async getRetention(params?: ReportParams): Promise<RetentionResponse> {
+    return apiFetcher<RetentionResponse>(`core/reporting/retention/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/top-players/ — busiest players over the window. */
