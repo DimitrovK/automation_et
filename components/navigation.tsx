@@ -6,8 +6,10 @@ import {
   ChevronUp,
   Database,
   FileQuestion,
+  Gamepad2,
   Home,
   LayoutDashboard,
+  LineChart,
   Menu,
   MessageCircle,
   Search,
@@ -49,6 +51,7 @@ export function Navigation({ className }: NavigationProps) {
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
     'Footballer Data': true, // Expanded by default
     'User Hub': true,
+    'Reports': true,
   });
 
   // State for mobile menu
@@ -115,6 +118,31 @@ export function Navigation({ className }: NavigationProps) {
           href: '/user-hub/analytics',
           icon: BarChart3,
           description: 'Favourite-games adoption and popularity',
+        },
+      ],
+    },
+    {
+      label: 'Reports',
+      icon: LineChart,
+      description: 'Platform activity and multiplayer reporting',
+      children: [
+        {
+          label: 'Daily Pulse',
+          href: '/reports',
+          icon: BarChart3,
+          description: 'How today compares with a typical day',
+        },
+        {
+          label: 'Multiplayer',
+          href: '/reports/multiplayer',
+          icon: Gamepad2,
+          description: 'Room funnel: created, started, finished',
+        },
+        {
+          label: 'Players',
+          href: '/reports/players',
+          icon: Users,
+          description: 'Most active players over a window',
         },
       ],
     },
