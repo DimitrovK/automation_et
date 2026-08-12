@@ -1,8 +1,9 @@
 'use client';
 
-import type { ActivityDay } from '@/types/reports';
+import type { ActivityDay, MetricKey } from '@/types/reports';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { METRIC_OPTIONS } from '@/types/reports';
 
 /** Day-month tick, in UTC so it renders as the intended day regardless of viewer TZ. */
 function formatDay(iso: string): string {
@@ -12,12 +13,29 @@ function formatDay(iso: string): string {
     : new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
 }
 
-export function ActivityChart({ series, title, description }: {
+const DEFAULT_COLORS: Record<MetricKey, string> = {
+  games_started: '#059669',
+  games_finished: '#2563eb',
+  distinct_players: '#f59e0b',
+  mp_player_sessions: '#8b5cf6',
+};
+
+/**
+ * Daily activity. The selected metric is drawn boldly and the others stay as
+ * faint context — showing only the selection loses the shape that makes it
+ * meaningful (a "played" line means much more next to "finished"), while giving
+ * four lines equal weight makes none of them readable.
+ */
+export function ActivityChart({ series, title, description, metric, color }: {
   series: ActivityDay[];
   title: string;
   description: string;
+  metric: MetricKey;
+  /** Overrides the metric colour — used to match the selected game's badge. */
+  color?: string;
 }) {
   const data = series.map(row => ({ ...row, label: formatDay(row.date) }));
+  const primaryColor = color ?? DEFAULT_COLORS[metric];
 
   return (
     <Card>
@@ -25,20 +43,30 @@ export function ActivityChart({ series, title, description }: {
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="h-80">
+      <CardContent className="h-72 sm:h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-            <XAxis dataKey="label" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
-            <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-            <Tooltip
-              contentStyle={{ fontSize: 12 }}
-              labelFormatter={label => `${label}`}
-            />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={24} />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Line type="monotone" dataKey="games_started" name="Started" stroke="#059669" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="games_finished" name="Finished" stroke="#2563eb" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="distinct_players" name="Players" stroke="#f59e0b" strokeWidth={2} dot={false} />
+            {METRIC_OPTIONS.map((option) => {
+              const isPrimary = option.key === metric;
+              return (
+                <Line
+                  key={option.key}
+                  type="monotone"
+                  dataKey={option.key}
+                  name={option.label}
+                  stroke={isPrimary ? primaryColor : DEFAULT_COLORS[option.key]}
+                  strokeWidth={isPrimary ? 2.5 : 1}
+                  strokeOpacity={isPrimary ? 1 : 0.28}
+                  dot={false}
+                  activeDot={isPrimary ? { r: 4 } : false}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

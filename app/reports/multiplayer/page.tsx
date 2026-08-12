@@ -2,11 +2,13 @@
 
 import type { ReportWindow } from '@/types/reports';
 import { useMemo, useState } from 'react';
+import { GameBadge } from '@/components/reports/GameBadge';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { WindowPicker } from '@/components/reports/WindowPicker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -18,7 +20,13 @@ export default function MultiplayerReportPage() {
 
   const [window, setWindow] = useState<ReportWindow>(30);
   const [includeBots, setIncludeBots] = useState(false);
-  const params = useMemo(() => ({ window, include_bots: includeBots }), [window, includeBots]);
+  const [game, setGame] = useState<string | null>(null);
+  const params = useMemo(
+    () => ({ window, include_bots: includeBots, ...(game ? { game_type: game } : {}) }),
+    [window, includeBots, game],
+  );
+
+  const { meta } = useGameMeta(enabled);
 
   // ReportsAPI methods are static, so the reference is already stable across
   // renders — no useCallback needed to stop useReport's effect re-firing.
@@ -40,6 +48,13 @@ export default function MultiplayerReportPage() {
         includeBots={includeBots}
         onIncludeBotsChange={setIncludeBots}
       />
+
+      {game && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
+        </div>
+      )}
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
