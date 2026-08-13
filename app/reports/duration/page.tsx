@@ -1,7 +1,7 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
 import { ExportButton } from '@/components/reports/ExportButton';

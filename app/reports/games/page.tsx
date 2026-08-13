@@ -2,7 +2,6 @@
 
 import type { RangeState } from '@/lib/report-range';
 import type { GameRowWithDuration, GameSortKey } from '@/lib/report-sort';
-import type { GameTotals } from '@/types/reports';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';

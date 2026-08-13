@@ -2,7 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import type { HourWeekdayRow } from '@/types/reports';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
 import { MetricInfo } from '@/components/reports/MetricInfo';
