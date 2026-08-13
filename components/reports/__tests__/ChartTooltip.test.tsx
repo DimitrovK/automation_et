@@ -89,7 +89,7 @@ describe('chartTooltip', () => {
         active
         payload={[{ name: 'Favourited', value: 7, color: '#10b981', payload: { play_through_pct: 42 } }]}
         label="Grid"
-        footer={row => `Play-through: ${row.play_through_pct}%`}
+        footer={row => (typeof row.play_through_pct === 'number' ? `Play-through: ${row.play_through_pct}%` : null)}
       />,
     );
 
@@ -100,5 +100,20 @@ describe('chartTooltip', () => {
     render(<ChartTooltip active payload={PAYLOAD} label="28 Jul" />);
 
     expect(screen.queryByText(/Play-through/)).toBeNull();
+  });
+
+  it('draws no footer rule when the datum cannot support one', () => {
+    // A formatter that returns nothing must leave no trace: an empty bordered
+    // line under the series reads as a rendering fault.
+    const { container } = render(
+      <ChartTooltip
+        active
+        payload={[{ name: 'Favourited', value: 7, color: '#10b981', payload: { slug: 'grid' } }]}
+        label="Grid"
+        footer={row => (typeof row.play_through_pct === 'number' ? `Play-through: ${row.play_through_pct}%` : null)}
+      />,
+    );
+
+    expect(container.querySelector('.border-t')).toBeNull();
   });
 });

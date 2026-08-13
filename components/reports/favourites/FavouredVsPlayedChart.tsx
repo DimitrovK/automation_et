@@ -91,7 +91,12 @@ export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, met
                       labelFormatter={slug => gameName(meta[String(slug)], String(slug))}
                       // The number the three bars are actually asked about:
                       // of those who favourited it, how many saw it through.
-                      footer={row => `Play-through: ${row.play_through_pct}%`}
+                      // Narrowed rather than interpolated: a missing field would
+                      // otherwise render "Play-through: undefined%", which reads
+                      // as a value rather than as an absence.
+                      footer={row => (typeof row.play_through_pct === 'number'
+                        ? `Play-through: ${row.play_through_pct}%`
+                        : null)}
                     />
                   )}
                 />

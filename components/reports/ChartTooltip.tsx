@@ -51,12 +51,18 @@ export function ChartTooltip({
   /**
    * A derived line below the series — a rate or a share the rows imply but
    * don't list. Given the first row, since every series shares one datum.
+   * Return a falsy value when the datum can't support it: an empty rule with
+   * nothing under it reads as a rendering fault, and "undefined%" reads as a
+   * number.
    */
   footer?: (row: Record<string, unknown>) => ReactNode;
 }) {
   if (!active || !payload?.length) {
     return null;
   }
+
+  const row = payload[0]?.payload;
+  const footerText = footer && row ? footer(row) : null;
 
   return (
     <div className="rounded-md border bg-popover px-3 py-2 text-sm shadow-md">
@@ -89,9 +95,9 @@ export function ChartTooltip({
           </span>
         </p>
       ))}
-      {footer && payload[0]?.payload && (
+      {footerText && (
         <p className="mt-1 border-t pt-1 text-xs text-muted-foreground">
-          {footer(payload[0].payload)}
+          {footerText}
         </p>
       )}
     </div>
