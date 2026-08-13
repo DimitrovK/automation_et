@@ -59,16 +59,11 @@ function Delta({ metric }: { metric: PulseMetric }) {
   );
 }
 
-/** "today to 14:00" reads better than a share, and says what was compared. */
-function elapsedLabel(share: number): string {
-  if (share >= 0.999) {
-    return 'the whole day';
-  }
-  return `${Math.round(share * 100)}% of a typical day`;
-}
-
 export function PulseTiles({ pulse }: { pulse: Pulse }) {
+  // Below 1 the day is still running, so today is only part of a day and every
+  // comparison on this panel is a partial one.
   const partial = pulse.elapsed_share < 0.999;
+  const sharePct = Math.round(pulse.elapsed_share * 100);
 
   return (
     <div className="space-y-2">
@@ -91,9 +86,9 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
           survive. */}
       {partial && (
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          {`Today so far, against the same ${elapsedLabel(pulse.elapsed_share)} — `}
+          {`Today so far, against the same ${sharePct}% of a typical day — `}
           {`by this point a typical ${pulse.weekday} has seen `}
-          {`${Math.round(pulse.elapsed_share * 100)}% of its play, so the comparison is like for like.`}
+          {`${sharePct}% of its play, so the comparison is like for like.`}
         </p>
       )}
 
@@ -113,7 +108,10 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
                   {' · '}
                   {metric.baseline_same_weekday === null
                     ? `no typical ${pulse.weekday} to compare with yet`
-                    : `typical ${pulse.weekday} by now: ${metric.baseline_same_weekday.toLocaleString()}`}
+                    // "by now" only while the day is running. Once it is over
+                    // the baseline IS the whole weekday, and saying "by now"
+                    // would keep implying a partial comparison that has ended.
+                    : `typical ${pulse.weekday}${partial ? ' by now' : ''}: ${metric.baseline_same_weekday.toLocaleString()}`}
                 </p>
                 {/* On a part-day, the whole-day figure answers a different
                     question — what today is heading for, not how it compares. */}

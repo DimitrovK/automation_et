@@ -49,7 +49,18 @@ describe('pulseTiles', () => {
     // "On track for X" is not the same question as "normal so far".
     render(<PulseTiles pulse={pulse(0.5) as never} />);
 
-    expect(screen.getByText('Full Thursday: 548.8')).toBeTruthy();
+    // Built with the same formatter the component uses: a literal "548.8"
+    // would assert the runtime's decimal separator, not the behaviour.
+    expect(screen.getByText(`Full Thursday: ${(548.8).toLocaleString()}`)).toBeTruthy();
+  });
+
+  it('drops "by now" from the baseline once the day is complete', () => {
+    // The baseline then IS the whole weekday; "by now" would keep implying a
+    // partial comparison that has already ended.
+    render(<PulseTiles pulse={pulse(1) as never} />);
+
+    expect(screen.queryByText(/by now/)).toBeNull();
+    expect(screen.getAllByText(new RegExp(`typical Thursday: ${(206.1).toLocaleString()}`)).length).toBeGreaterThan(0);
   });
 
   it('drops the basis line once the day is complete', () => {
