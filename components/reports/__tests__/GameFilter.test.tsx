@@ -16,15 +16,15 @@ describe('gameFilter', () => {
     // data-derived list would hide it precisely when it matters.
     render(<GameFilter meta={META} value={null} onChange={() => {}} />);
 
-    expect(screen.getByText('Grid')).toBeTruthy();
-    expect(screen.getByText('Quiz')).toBeTruthy();
-    expect(screen.getByText('Conquest')).toBeTruthy();
+    expect(screen.getByText('Grid')).toBeInTheDocument();
+    expect(screen.getByText('Quiz')).toBeInTheDocument();
+    expect(screen.getByText('Conquest')).toBeInTheDocument();
   });
 
   it('marks "All games" as the selected state when nothing is filtered', () => {
     render(<GameFilter meta={META} value={null} onChange={() => {}} />);
 
-    expect(screen.getByRole('button', { name: 'All games' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'All games' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('clears the filter when the active game is clicked again', async () => {
@@ -51,7 +51,7 @@ describe('gameFilter', () => {
     // Better an absent control than an empty one that looks broken.
     const { container } = render(<GameFilter meta={{}} value={null} onChange={() => {}} />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('lists games alphabetically so the control does not reorder itself', () => {

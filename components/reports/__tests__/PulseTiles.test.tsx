@@ -36,7 +36,7 @@ describe('pulseTiles', () => {
     // was being compared, which is what let that survive unnoticed.
     render(<PulseTiles pulse={pulse(0.5) as never} />);
 
-    expect(screen.getByText(/Today so far, against the same 50% of a typical day/)).toBeTruthy();
+    expect(screen.getByText(/Today so far, against the same 50% of a typical day/)).toBeInTheDocument();
   });
 
   it('says "by now" on the baseline, not just "typical Thursday"', () => {
@@ -51,7 +51,7 @@ describe('pulseTiles', () => {
 
     // Built with the same formatter the component uses: a literal "548.8"
     // would assert the runtime's decimal separator, not the behaviour.
-    expect(screen.getByText(`Full Thursday: ${(548.8).toLocaleString()}`)).toBeTruthy();
+    expect(screen.getByText(`Full Thursday: ${(548.8).toLocaleString()}`)).toBeInTheDocument();
   });
 
   it('drops "by now" from the baseline once the day is complete', () => {
@@ -59,7 +59,7 @@ describe('pulseTiles', () => {
     // partial comparison that has already ended.
     render(<PulseTiles pulse={pulse(1) as never} />);
 
-    expect(screen.queryByText(/by now/)).toBeNull();
+    expect(screen.queryByText(/by now/)).not.toBeInTheDocument();
     expect(screen.getAllByText(new RegExp(`typical Thursday: ${(206.1).toLocaleString()}`)).length).toBeGreaterThan(0);
   });
 
@@ -68,7 +68,7 @@ describe('pulseTiles', () => {
     // explanation would be noise.
     render(<PulseTiles pulse={pulse(1) as never} />);
 
-    expect(screen.queryByText(/Today so far, against/)).toBeNull();
-    expect(screen.queryByText(/Full Thursday:/)).toBeNull();
+    expect(screen.queryByText(/Today so far, against/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Full Thursday:/)).not.toBeInTheDocument();
   });
 });

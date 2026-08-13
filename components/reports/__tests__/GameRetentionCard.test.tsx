@@ -38,8 +38,8 @@ describe('gameRetentionCard', () => {
     // questions.
     render(<GameRetentionCard data={data()} gameKey="scout" gameLabel="Scout" />);
 
-    expect(screen.getByText('12.1%')).toBeTruthy();
-    expect(screen.getByText(/\+5\.5 vs median 6\.6%/)).toBeTruthy();
+    expect(screen.getByText('12.1%')).toBeInTheDocument();
+    expect(screen.getByText(/\+5\.5 vs median 6\.6%/)).toBeInTheDocument();
   });
 
   it('says why a rate is missing rather than showing a bare dash', () => {
@@ -55,7 +55,7 @@ describe('gameRetentionCard', () => {
     // sample-size problem that is really just time.
     render(<GameRetentionCard data={data()} gameKey="scout" gameLabel="Scout" />);
 
-    expect(screen.getByText(/no cohort has reached this day yet/)).toBeTruthy();
+    expect(screen.getByText(/no cohort has reached this day yet/)).toBeInTheDocument();
   });
 
   it('says so when there is no peer median to compare with', () => {
@@ -67,6 +67,6 @@ describe('gameRetentionCard', () => {
   it('renders nothing for a game the response does not carry', () => {
     const { container } = render(<GameRetentionCard data={data()} gameKey="conquest" gameLabel="Conquest" />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 });

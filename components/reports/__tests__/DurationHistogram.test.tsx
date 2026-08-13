@@ -50,8 +50,8 @@ describe('durationHistogram card', () => {
   it('draws the bands for the first measurable game', () => {
     render(<DurationHistogram data={data([row({})])} meta={META as never} />);
 
-    expect(screen.getByText('under 1.0m')).toBeTruthy();
-    expect(screen.getByText('over 2.0m')).toBeTruthy();
+    expect(screen.getByText('under 1.0m')).toBeInTheDocument();
+    expect(screen.getByText('over 2.0m')).toBeInTheDocument();
   });
 
   it('skips a game whose bands are all empty rather than drawing a blank card', () => {
@@ -65,14 +65,14 @@ describe('durationHistogram card', () => {
     });
     render(<DurationHistogram data={data([empty, row({})])} meta={META as never} />);
 
-    expect(screen.getByText('Team Ties')).toBeTruthy();
-    expect(screen.queryByText('Grid')).toBeNull();
+    expect(screen.getByText('Team Ties')).toBeInTheDocument();
+    expect(screen.queryByText('Grid')).not.toBeInTheDocument();
   });
 
   it('renders nothing when no game has anything to draw', () => {
     const empty = row({ buckets: [{ under_seconds: null, count: 0 }] });
     const { container } = render(<DurationHistogram data={data([empty])} meta={META as never} />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 });

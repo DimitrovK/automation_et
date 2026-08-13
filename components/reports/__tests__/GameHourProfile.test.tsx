@@ -34,15 +34,15 @@ describe('gameHourProfile', () => {
     // question, and counts would make every small game look flat.
     render(<GameHourProfile data={data()} gameLabel="Grid" />);
 
-    expect(screen.getByText('20:00')).toBeTruthy();
-    expect(screen.getByText(/40% of its sessions start in that hour/)).toBeTruthy();
+    expect(screen.getByText('20:00')).toBeInTheDocument();
+    expect(screen.getByText(/40% of its sessions start in that hour/)).toBeInTheDocument();
   });
 
   it('states the timezone the hours are in', () => {
     // "8pm" means nothing without it, and the platform buckets in Sofia time.
     render(<GameHourProfile data={data()} gameLabel="Grid" />);
 
-    expect(screen.getByText(/Europe\/Sofia/)).toBeTruthy();
+    expect(screen.getByText(/Europe\/Sofia/)).toBeInTheDocument();
   });
 
   it('puts each hour\'s numbers in the accessibility tree, not only in a tooltip', () => {
@@ -51,8 +51,8 @@ describe('gameHourProfile', () => {
     // this matches them.
     render(<GameHourProfile data={data()} gameLabel="Grid" />);
 
-    expect(screen.getByLabelText('20:00 — 40 sessions (40%)')).toBeTruthy();
-    expect(screen.getByLabelText('Grid sessions by hour, Europe/Sofia')).toBeTruthy();
+    expect(screen.getByLabelText('20:00 — 40 sessions (40%)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Grid sessions by hour, Europe/Sofia')).toBeInTheDocument();
   });
 
   it('renders nothing for a game with no play in the window', () => {
@@ -60,6 +60,6 @@ describe('gameHourProfile', () => {
     // confident-looking answer to a question with no data behind it.
     const { container } = render(<GameHourProfile data={data({ by_hour: hours({}) })} gameLabel="Grid" />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 });

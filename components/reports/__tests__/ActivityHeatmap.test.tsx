@@ -88,8 +88,8 @@ describe('activityHeatmap', () => {
 
     render(<ActivityHeatmap rows={rows} peakCell={null} busiest={100} timezone="Europe/Sofia" />);
 
-    expect(screen.getByText('0')).toBeTruthy();
-    expect(screen.getByText(/76–100|100/)).toBeTruthy();
+    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByText(/76–100|100/)).toBeInTheDocument();
   });
 
   it('keeps ordinary cells visible against a heavy peak', () => {

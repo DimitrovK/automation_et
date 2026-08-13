@@ -27,26 +27,26 @@ describe('chartTooltip', () => {
     // legibility; coloured text on a small tooltip does.
     render(<ChartTooltip active payload={PAYLOAD} label="28 Jul" />);
 
-    expect(screen.getByText('20,123').getAttribute('style')).toBeNull();
+    expect(screen.getByText('20,123')).not.toHaveAttribute('style');
   });
 
   it('formats numbers so long counts stay readable', () => {
     render(<ChartTooltip active payload={PAYLOAD} label="28 Jul" />);
 
-    expect(screen.getByText('20,123')).toBeTruthy();
+    expect(screen.getByText('20,123')).toBeInTheDocument();
   });
 
   it('shows a dash for a gap rather than zero', () => {
     // Uncovered days are drawn as breaks; the tooltip must not turn one into 0.
     render(<ChartTooltip active payload={[{ name: 'Played', value: null, color: '#059669' }]} label="28 Jul" />);
 
-    expect(screen.getByText('—')).toBeTruthy();
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 
   it('renders nothing when inactive', () => {
     const { container } = render(<ChartTooltip payload={PAYLOAD} label="28 Jul" />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('keeps a zero label, which is a real hour', () => {
@@ -56,7 +56,7 @@ describe('chartTooltip', () => {
     // against a mutation it should have caught.
     render(<ChartTooltip active payload={PAYLOAD} label={0} />);
 
-    expect(screen.getByText('0')).toBeTruthy();
+    expect(screen.getByText('0')).toBeInTheDocument();
   });
 
   it('draws no heading when the formatter returns nothing', () => {
@@ -71,7 +71,7 @@ describe('chartTooltip', () => {
   it('applies a label formatter when given one', () => {
     render(<ChartTooltip active payload={PAYLOAD} label={14} labelFormatter={h => `${h}:00`} />);
 
-    expect(screen.getByText('14:00')).toBeTruthy();
+    expect(screen.getByText('14:00')).toBeInTheDocument();
   });
 
   it('takes the dot colour off the datum when the series has none', () => {
@@ -112,13 +112,13 @@ describe('chartTooltip', () => {
       />,
     );
 
-    expect(screen.getByText('Play-through: 42%')).toBeTruthy();
+    expect(screen.getByText('Play-through: 42%')).toBeInTheDocument();
   });
 
   it('omits the footer when there is no formatter for it', () => {
     render(<ChartTooltip active payload={PAYLOAD} label="28 Jul" />);
 
-    expect(screen.queryByText(/Play-through/)).toBeNull();
+    expect(screen.queryByText(/Play-through/)).not.toBeInTheDocument();
   });
 
   it('draws no footer rule when the datum cannot support one', () => {

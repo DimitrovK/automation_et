@@ -37,7 +37,7 @@ describe('gameBadge', () => {
       />,
     );
 
-    expect(screen.getByText('Career Path')).toBeTruthy();
-    expect(screen.queryByText(/Game Sessions/)).toBeNull();
+    expect(screen.getByText('Career Path')).toBeInTheDocument();
+    expect(screen.queryByText(/Game Sessions/)).not.toBeInTheDocument();
   });
 });

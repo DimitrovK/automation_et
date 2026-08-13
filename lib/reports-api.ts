@@ -1,15 +1,15 @@
 import type {
   ActivityResponse,
-  RollupHealth,
-  GlossaryResponse,
   AnomaliesResponse,
   DurationResponse,
   GamesResponse,
+  GlossaryResponse,
   MultiplayerResponse,
   PatternsResponse,
   PlayerDetailResponse,
   ReportParams,
   RetentionResponse,
+  RollupHealth,
   SummaryResponse,
   TopPlayersResponse,
 } from '@/types/reports';

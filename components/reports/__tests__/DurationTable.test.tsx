@@ -62,16 +62,16 @@ describe('durationTable long-lived section', () => {
     // attention.
     render(<DurationTable data={response([row({}), SWEPT])} meta={META as never} />);
 
-    expect(screen.getByText('Idle sweep')).toBeTruthy();
-    expect(screen.getByText(/72.5% of measured sessions were closed after 24h idle/)).toBeTruthy();
-    expect(screen.queryByText(/by design/)).toBeNull();
+    expect(screen.getByText('Idle sweep')).toBeInTheDocument();
+    expect(screen.getByText(/72.5% of measured sessions were closed after 24h idle/)).toBeInTheDocument();
+    expect(screen.queryByText(/by design/)).not.toBeInTheDocument();
   });
 
   it('shows the median among sessions that played out', () => {
     // 24h is the sweeper's clock; 8 minutes is the game.
     render(<DurationTable data={response([row({}), SWEPT])} meta={META as never} />);
 
-    expect(screen.getByText('8.0m')).toBeTruthy();
+    expect(screen.getByText('8.0m')).toBeInTheDocument();
   });
 
   it('does not explain a long game the backend has not classified', () => {
@@ -80,14 +80,14 @@ describe('durationTable long-lived section', () => {
     const unexplained = row({ game_type: 'conquest', median_seconds: 86400, single_sitting: false });
     render(<DurationTable data={response([row({}), unexplained])} meta={META as never} />);
 
-    expect(screen.queryByText('Idle sweep')).toBeNull();
-    expect(screen.queryByText('Long play')).toBeNull();
+    expect(screen.queryByText('Idle sweep')).not.toBeInTheDocument();
+    expect(screen.queryByText('Long play')).not.toBeInTheDocument();
   });
 
   it('leaves the comparable table alone', () => {
     render(<DurationTable data={response([row({}), SWEPT])} meta={META as never} />);
 
-    expect(screen.getByText('How long a session lasts')).toBeTruthy();
-    expect(screen.getByText('5.5m')).toBeTruthy();
+    expect(screen.getByText('How long a session lasts')).toBeInTheDocument();
+    expect(screen.getByText('5.5m')).toBeInTheDocument();
   });
 });

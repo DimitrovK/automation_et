@@ -36,7 +36,7 @@ describe('anomalySensitivity', () => {
   it('says what the current setting means, not just its name', () => {
     render(<AnomalySensitivity value="strict" onChange={() => {}} />);
 
-    expect(screen.getByText(/only big games moving a lot/i)).toBeTruthy();
+    expect(screen.getByText(/only big games moving a lot/i)).toBeInTheDocument();
   });
 
   it('reports the chosen preset', async () => {

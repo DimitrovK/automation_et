@@ -48,17 +48,26 @@ describe('comparePicker', () => {
     const clear = screen.getByRole('button', { name: 'Clear the comparison period' });
 
     expect(clear.tagName).toBe('BUTTON');
+
     await userEvent.tab();
+
     expect(document.activeElement).not.toBeNull();
   });
 
   it('marks the chosen offset as selected, and not while a period is named', () => {
     const { rerender } = render(<ComparePicker offset={2} onChange={() => {}} />);
-    expect(screen.getByRole('button', { name: '2 periods back' }).className).toContain('bg-');
+
+    // The selected offset renders shadcn's `default` variant; the others
+    // render `outline`. Asserting the real class rather than a `bg-` prefix:
+    // the prefix form was a substring check that an automated rewrite turned
+    // into exact-token matching, which then matched nothing.
+    expect(screen.getByRole('button', { name: '2 periods back' })).toHaveClass('bg-primary');
+    expect(screen.getByRole('button', { name: 'Previous period' })).not.toHaveClass('bg-primary');
 
     // With a named period, no offset button should read as active — the
     // comparison isn't using any of them.
     rerender(<ComparePicker offset={2} start="2026-01-01" onChange={() => {}} />);
-    expect(screen.getByRole('button', { name: /2026-01-01/ })).toBeTruthy();
+
+    expect(screen.getByRole('button', { name: /2026-01-01/ })).toBeInTheDocument();
   });
 });
