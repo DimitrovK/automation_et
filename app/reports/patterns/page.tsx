@@ -5,11 +5,13 @@ import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
 import { MetricInfo } from '@/components/reports/MetricInfo';
+import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -46,11 +48,13 @@ export default function PatternsPage() {
   const { range, includeBots, game } = filters;
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
+  const setGame = (next: string | null) => update({ game: next });
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots }),
-    [range, includeBots],
+    () => ({ ...rangeToParams(range), include_bots: includeBots, ...(game ? { game_type: game } : {}) }),
+    [range, includeBots, game],
   );
 
+  const { meta } = useGameMeta(enabled);
   const { data, isLoading, error, notDeployed, refetch } = useReport(
     ReportsAPI.getPatterns,
     params,
@@ -72,6 +76,8 @@ export default function PatternsPage() {
         includeBots={includeBots}
         onIncludeBotsChange={setIncludeBots}
       />
+
+      <GameFilter meta={meta} value={game} onChange={setGame} />
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
