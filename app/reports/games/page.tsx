@@ -1,7 +1,7 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
-import type { GameSortKey } from '@/lib/report-sort';
+import type { GameRowWithDuration, GameSortKey } from '@/lib/report-sort';
 import type { GameTotals } from '@/types/reports';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
@@ -20,6 +20,8 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
+import { formatDuration } from '@/lib/format-duration';
+import { sortGameTotals } from '@/lib/report-sort';
 
 /** `metric` keys into the BE glossary so the column explains itself. */
 const COLUMNS: { key: GameSortKey; label: string; hint: string; metric: string }[] = [
@@ -28,6 +30,7 @@ const COLUMNS: { key: GameSortKey; label: string; hint: string; metric: string }
   { key: 'sessions_per_player', label: 'Per player', hint: 'Sessions per distinct player — depth of engagement', metric: 'sessions_per_player' },
   { key: 'repeat_rate_pct', label: 'Came back', hint: 'Share of players who returned on another day', metric: 'repeat_rate_pct' },
   { key: 'trend_pct', label: 'Trend', hint: 'vs the immediately preceding window of equal length', metric: 'trend_pct' },
+  { key: 'median_seconds', label: 'Typical session', hint: 'Median session length. Campaign-shaped games are marked — their sessions span days, not sittings', metric: 'median_duration' },
 ];
 
 /**
@@ -61,6 +64,10 @@ export default function GamesIndexPage() {
   );
 
   const { meta } = useGameMeta(enabled);
+  // Session length is a per-game property but lives on another endpoint, so the
+  // comparison table had to be read beside a second page to answer "which game
+  // holds attention". Merged in here instead.
+  const duration = useReport(ReportsAPI.getDuration, params, enabled, 'The session duration endpoint');
   const { data, isLoading, error, notDeployed, refetch } = useReport(
     ReportsAPI.getSummary,
     params,
@@ -72,24 +79,17 @@ export default function GamesIndexPage() {
     if (!data) {
       return [];
     }
-    // Nulls sort last regardless of direction: a game with no measurable rate
-    // isn't "worst", it's unmeasured, and floating it to either end of a
-    // ranking makes a claim the data doesn't support.
-    return [...data.by_game].sort((a, b) => {
-      const left = a[sortBy];
-      const right = b[sortBy];
-      if (left === null && right === null) {
-        return 0;
-      }
-      if (left === null) {
-        return 1;
-      }
-      if (right === null) {
-        return -1;
-      }
-      return right - left;
-    });
-  }, [data, sortBy]);
+    const byGame = new Map((duration.data?.rows ?? []).map(row => [row.game_type, row]));
+    const merged: GameRowWithDuration[] = data.by_game.map(row => ({
+      ...row,
+      median_seconds: byGame.get(row.game_type)?.median_seconds ?? null,
+      single_sitting: byGame.get(row.game_type)?.single_sitting ?? null,
+    }));
+    // The shared helper rather than a local copy: the null rule it encodes —
+    // unmeasured sorts last, never as a low value — is the part that is easy to
+    // get wrong, and it is tested in one place.
+    return sortGameTotals(merged, sortBy);
+  }, [data, duration.data, sortBy]);
 
   return (
     <ReportsShell
@@ -159,7 +159,7 @@ export default function GamesIndexPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rows.map((row: GameTotals) => (
+                      {rows.map((row: GameRowWithDuration) => (
                         <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
                           <td className="py-2 pr-4">
                             <Link href={`/reports/games/${row.game_type}`}>
@@ -172,6 +172,21 @@ export default function GamesIndexPage() {
                           <td className="py-2 pr-4 text-right">{num(row.completion_pct, '%')}</td>
                           <td className="py-2 pr-4 text-right">{num(row.sessions_per_player)}</td>
                           <td className="py-2 pr-4 text-right">{num(row.repeat_rate_pct, '%')}</td>
+                          <td className="py-2 pr-4 text-right">
+                            {row.median_seconds === null || row.median_seconds === undefined
+                              ? <span className="text-gray-400">—</span>
+                              : (
+                                  <span
+                                    className={row.single_sitting === false ? 'text-amber-700 dark:text-amber-300' : undefined}
+                                    title={row.single_sitting === false
+                                      ? 'A session here spans days, not a sitting — not comparable with the others'
+                                      : undefined}
+                                  >
+                                    {formatDuration(row.median_seconds)}
+                                    {row.single_sitting === false && ' *'}
+                                  </span>
+                                )}
+                          </td>
                           <td className="py-2 pr-4 text-right">
                             {row.trend_pct === null
                               ? <span className="text-gray-400">—</span>
