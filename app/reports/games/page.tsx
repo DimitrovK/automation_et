@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
+import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -40,8 +41,17 @@ export default function GamesIndexPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
-  const [range, setRange] = useState<RangeState>({ window: 30 });
-  const [includeBots, setIncludeBots] = useState(false);
+  // Filters live in the URL so a view can be bookmarked, shared or reloaded
+  // without losing what was selected.
+  const { filters, update } = useReportFilters({
+    range: { window: 30 },
+    includeBots: false,
+    game: null,
+    metric: 'games_started',
+  });
+  const { range, includeBots, game } = filters;
+  const setRange = (next: RangeState) => update({ range: next });
+  const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const [sortBy, setSortBy] = useState<GameSortKey>('games_started');
 
   const params = useMemo(

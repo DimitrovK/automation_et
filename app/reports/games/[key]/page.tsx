@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta, useGameColor } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
+import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -39,8 +40,17 @@ export default function GameDetailPage() {
   const routeParams = useParams();
   const gameKey = String(routeParams?.key ?? '');
 
-  const [range, setRange] = useState<RangeState>({ window: 30 });
-  const [includeBots, setIncludeBots] = useState(false);
+  // Filters live in the URL so a view can be bookmarked, shared or reloaded
+  // without losing what was selected.
+  const { filters, update } = useReportFilters({
+    range: { window: 30 },
+    includeBots: false,
+    game: null,
+    metric: 'games_started',
+  });
+  const { range, includeBots } = filters;
+  const setRange = (next: RangeState) => update({ range: next });
+  const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const params = useMemo(
     () => ({ ...rangeToParams(range), include_bots: includeBots, game_type: gameKey }),
     [range, includeBots, gameKey],

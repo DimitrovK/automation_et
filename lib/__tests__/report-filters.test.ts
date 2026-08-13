@@ -41,3 +41,41 @@ describe('report filter URL state', () => {
     expect(parsed.includeBots).toBe(true);
   });
 });
+
+describe('every report page keeps its filters in the URL', () => {
+  it('has no page falling back to local-only state', async () => {
+    // useReportFilters existed for months and was wired into exactly one page,
+    // so eight report views could not be shared, bookmarked, or survive a
+    // refresh. Nothing failed — the pages worked, they just quietly forgot.
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+
+    const root = join(process.cwd(), 'app', 'reports');
+
+    function pages(dir: string): string[] {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) return pages(full);
+        return entry.name === 'page.tsx' ? [full] : [];
+      });
+    }
+
+    const found = pages(root);
+    expect(found.length).toBeGreaterThan(5);
+
+    const offenders = found.filter((file) => {
+      const source = readFileSync(file, 'utf8');
+      // A page with no range picker has no filters to share.
+      if (!source.includes('RangePicker')) return false;
+      // Holding the range in local state is the actual anti-pattern, and the
+      // shape a new page naturally reaches for. Checking only for the hook's
+      // name matched even after its import was removed.
+      return /useState<RangeState>/.test(source) || !/useReportFilters\(/.test(source);
+    });
+
+    expect(
+      offenders.map(f => f.replace(process.cwd(), '')),
+      'Report pages holding filters in local state only — they cannot be shared or bookmarked',
+    ).toEqual([]);
+  });
+});
