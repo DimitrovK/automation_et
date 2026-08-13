@@ -18,9 +18,10 @@ ones I found while verifying that list or building the reports.
 | A1 | **[K]** Player rows on `/reports/players` aren't clickable | The drill-down at `/reports/players/[id]` exists and works — nothing links to it. Verified: no `Link` in the table. | TODO |
 | A2 | **[K]** Chart text is white-on-white in dark mode | Recharts axis/legend/tooltip text doesn't follow the theme. Affects every chart page. | TODO |
 | A3 | **[K]** Heatmap colours are too close to read | A single-hue ramp can't separate many active cells. Needs re-derivation with the validator, likely more steps or a different scale. | TODO |
-| A4 | **[C]** Scout reports **100.0% completion** over 942 sessions | No game has zero abandonment. Almost certainly `is_finished` set at session start. Corrupts every completion comparison until fixed. | TODO |
-| A5 | **[C]** Conquest median session is **exactly 1,440.4 min** (24h) | A timeout artifact, not play. Makes the duration report misleading for the one campaign game. | TODO |
-| A6 | **[C]** Avatar of Football median session is **0.3 min** (18s) | Either genuinely trivial or the duration measurement is wrong. Needs a decision either way. | TODO |
+| A7 | **[C]** Duration rows for unsupported games omit `single_sitting` | The FE type declares it, so it arrives `undefined` for Quiz and Missing Team. Found while probing A5/A6. Row-level shapes aren't covered by the response-shape guard. | TODO |
+| A4 | **[C]** Scout reports **100.0% completion** | Confirmed: 15,260 rows, every one `is_finished=True`; 0 unfinished in the window. Ranked top of the games comparison as though it were an achievement. Now reports no rate. App #1451. | DONE |
+| A5 | **[C]** Conquest median session is **1,440.4 min** (24h) | **Not a report bug** — already flagged `single_sitting: False`; I quoted it without that caveat. Real cause is a 24h expiry job (p10 2.7 min, values cluster at 1440/1441/1444). Worth surfacing *why* a game is long: expiry vs genuine campaign. | TODO |
+| A6 | **[C]** Avatar of Football median **0.3 min** | **Withdrawn** — legitimate. 86.7% coverage in that window; sessions really are ~18s. My claim came from a whole-table probe and was over-stated. | DONE |
 
 ## B. Missing capability Kalin asked for
 
