@@ -22,9 +22,12 @@ import { FootballerAPI } from '@/lib/footballer-api';
 import { TeamAPI } from '@/lib/team-api';
 import { toast } from 'sonner';
 
-const api = vi.mocked(FootballerAPI);
+// `deep: true` because FootballerAPI is a class and these are its statics:
+// without it `vi.mocked` types the properties as the real functions, so
+// `.mockResolvedValueOnce` doesn't exist on them.
+const api = vi.mocked(FootballerAPI, { deep: true });
 const mockTeamSearch = vi.mocked(TeamAPI.searchTeams);
-const mockToast = vi.mocked(toast);
+const mockToast = vi.mocked(toast, { deep: true });
 
 function teamRow(over = {}) {
   return {

@@ -18,8 +18,8 @@ import { PicturesEditor } from '@/components/footballer-management/sub-editors/P
 import { FootballerAPI } from '@/lib/footballer-api';
 import { toast } from 'sonner';
 
-const api = vi.mocked(FootballerAPI);
-const mockToast = vi.mocked(toast);
+const api = vi.mocked(FootballerAPI, { deep: true });
+const mockToast = vi.mocked(toast, { deep: true });
 
 function pic(overrides = {}) {
   return {
