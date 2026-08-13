@@ -46,6 +46,30 @@ describe('abandonedSessions', () => {
     expect(clear.lever?.game_type).toBe('big');
   });
 
+  it('names no lever at exactly the margin', () => {
+    // "Within five points" has to include five, or the boundary case is decided
+    // by which side of it the arithmetic happens to land on.
+    const { rows, lever } = abandonedSessions([game('a', 105, 0), game('b', 95, 0)]);
+
+    expect(rows[0].share_of_abandoned_pct - rows[1].share_of_abandoned_pct).toBe(5);
+    expect(lever).toBeNull();
+  });
+
+  it('decides on the raw shares, not the rounded ones', () => {
+    // 5248 against 4752 is a 4.96-point gap — under the margin. Displayed, it
+    // rounds to 52.5 and 47.5, which reads as exactly 5.0; deciding on those
+    // would name a lever off a rounding artefact.
+    const { lever } = abandonedSessions([game('a', 5248, 0), game('b', 4752, 0)]);
+
+    expect(lever).toBeNull();
+  });
+
+  it('names a lever once the gap clears the margin', () => {
+    const { lever } = abandonedSessions([game('a', 106, 0), game('b', 94, 0)]);
+
+    expect(lever?.game_type).toBe('a');
+  });
+
   it('names no lever when the top two are close', () => {
     // 51% against 49% is a coin toss. Calling one of them "the" lever would
     // dress it up as a finding.

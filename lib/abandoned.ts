@@ -38,8 +38,8 @@ export type AbandonedSummary = {
 
 /**
  * How much clear water the top game needs over the second before it is worth
- * naming as *the* lever. Below this they are two comparable pools and the
- * ranked list already says so.
+ * naming as *the* lever. Within this — including exactly this — they are two
+ * comparable pools and the ranked list already says so.
  */
 const LEVER_MARGIN_PCT = 5;
 
@@ -66,8 +66,14 @@ export function abandonedSessions(games: GameTotals[]): AbandonedSummary {
       : 0;
   }
 
+  // Compared on the raw shares, and strictly: the displayed percentages are
+  // rounded to 0.1, so a 4.96-point gap prints as 52.5 against 47.5 and a
+  // >= test on those would name a lever off a rounding artefact. "Within five
+  // points" has to include exactly five, or the boundary case is decided by
+  // which side of it the arithmetic happens to land.
   const [first, second] = rows;
-  const clear = !second || first.share_of_abandoned_pct - second.share_of_abandoned_pct >= LEVER_MARGIN_PCT;
+  const share = (row: AbandonedRow) => (totalAbandoned > 0 ? (row.abandoned / totalAbandoned) * 100 : 0);
+  const clear = !second || share(first) - share(second) > LEVER_MARGIN_PCT;
 
   return { rows, totalAbandoned, lever: first && clear ? first : null };
 }

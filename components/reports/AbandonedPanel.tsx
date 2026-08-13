@@ -17,9 +17,14 @@ import { abandonedSessions, sessionsPerPoint } from '@/lib/abandoned';
  * pool on the platform. Ranked by rate it looks ordinary; ranked by volume it
  * looks healthy; the pool itself was on no screen at all.
  *
- * Bars are the share of *abandoned* sessions rather than of play, because that
- * is the quantity being compared. Completion rate rides alongside as context,
- * not as the ranking — a poor rate on a small game is not a lever.
+ * Bars encode the pool itself — abandoned sessions, not sessions played —
+ * scaled to the largest pool, so the comparison between games uses the full
+ * width available. Each game's share of all abandonment is the % column beside
+ * it; putting that on the bar instead would leave even the biggest one at a
+ * third of the track and make the smaller games unreadable.
+ *
+ * Completion rate rides alongside as context, not as the ranking — a poor rate
+ * on a small game is not a lever.
  */
 export function AbandonedPanel({ rows, meta }: { rows: GameTotals[]; meta: GameMetaMap }) {
   const resolveColor = useGameColor();
