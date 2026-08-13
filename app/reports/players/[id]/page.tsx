@@ -14,6 +14,7 @@ import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
+import { playStyle } from '@/lib/play-style';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -80,6 +81,11 @@ export default function PlayerDetailPage() {
     String(userId),
   );
 
+  // Derived here rather than inside the tile so the tile can be omitted
+  // entirely when the backend hasn't sent a count — a tile reading "—" would
+  // claim we know, and that the answer is none.
+  const style = playStyle(data?.totals.games_played ?? 0, data?.totals.mp_sessions);
+
   return (
     <ReportsShell
       title={data ? data.username : 'Player'}
@@ -137,6 +143,17 @@ export default function PlayerDetailPage() {
                     value={data.totals.games_per_active_day?.toString() ?? '—'}
                     hint="Habit vs one big session"
                   />
+                  {/* Who they play with, which the session count alone cannot
+                      say: the same 41 sessions belong to a solo grinder and to
+                      a lobby regular, and only one of them stops when their
+                      friends do. */}
+                  {style && (
+                    <Tile
+                      label="Play style"
+                      value={style.label ?? '—'}
+                      hint={`${style.mp.toLocaleString()} multiplayer · ${style.solo.toLocaleString()} solo`}
+                    />
+                  )}
                 </div>
 
                 {data.totals.games_played === 0 && (
@@ -197,6 +214,16 @@ export default function PlayerDetailPage() {
                               {' played · '}
                               {row.completion_pct}
                               % finished
+                              {/* Per game, because the split moves: someone can
+                                  be a lobby regular in one game and play the
+                                  rest alone. */}
+                              {row.mp_sessions !== undefined && row.mp_sessions > 0 && (
+                                <>
+                                  {' · '}
+                                  {row.mp_sessions.toLocaleString()}
+                                  {' multiplayer'}
+                                </>
+                              )}
                             </span>
                           </div>
                         ))}

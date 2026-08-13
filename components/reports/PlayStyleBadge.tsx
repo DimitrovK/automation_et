@@ -1,0 +1,39 @@
+'use client';
+
+import { playStyle } from '@/lib/play-style';
+import { cn } from '@/lib/utils';
+
+/**
+ * Whether a player's sessions were solo or against other people.
+ *
+ * A word rather than a percentage: "63% multiplayer" is a number still waiting
+ * to be interpreted, and a column of them is a column of arithmetic. The exact
+ * figure is in the tooltip and the CSV for anyone who wants it.
+ *
+ * Renders nothing when the backend hasn't sent the count — a dash would read as
+ * "we know, and it's none", which is a different claim from "we don't know".
+ */
+export function PlayStyleBadge({ played, mp }: { played: number; mp?: number }) {
+  const style = playStyle(played, mp);
+  if (!style) {
+    return null;
+  }
+
+  // Multiplayer earns the accent; solo is the ordinary case and stays quiet.
+  // A palette per band would make five colours out of one fact.
+  const emphasised = style.label === 'Multiplayer' || style.label === 'Mostly multiplayer';
+
+  return (
+    <span
+      title={`${style.mp.toLocaleString()} multiplayer · ${style.solo.toLocaleString()} solo (${style.mpPct}%)`}
+      className={cn(
+        'inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium',
+        emphasised
+          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+          : 'bg-gray-100 text-gray-600 dark:bg-slate-700/60 dark:text-gray-300',
+      )}
+    >
+      {style.label}
+    </span>
+  );
+}
