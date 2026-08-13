@@ -382,7 +382,25 @@ export type RetentionSummaryCell = {
   players: number;
   returned: number;
   pct: number | null;
+  /**
+   * True when the sample is too small to state a rate. The counts are still
+   * reported — only the percentage is withheld, because "1 of 3 came back" is
+   * 33% and reads as a finding beside a game with 400 players.
+   */
+  below_threshold?: boolean;
 };
+
+/**
+ * One game's own retention: its cohorts, its returns.
+ *
+ * Keyed by offset (`d1`, `d7`, `d30`) and optional, because which offsets are
+ * present follows `offsets` in the response. A plain `Record<string, …>` would
+ * claim every string key exists and admit any field at all, so a typo'd offset
+ * would type-check and read as missing data at runtime.
+ */
+export type RetentionGameRow = {
+  game_type: string;
+} & Partial<Record<`d${number}`, RetentionSummaryCell>>;
 
 export type RetentionResponse = {
   /** States what "new" means here — a window return rate, not lifetime retention. */
@@ -391,6 +409,21 @@ export type RetentionResponse = {
   offsets: number[];
   summary: Record<string, RetentionSummaryCell>;
   cohorts: RetentionCohort[];
+  /**
+   * Per-game retention, best keeper first. A game's cohort is players whose
+   * first day in THAT game was X, returning to THAT game — a different question
+   * from the platform summary, which counts a return to anything.
+   * Optional so a backend predating it renders the platform view alone.
+   */
+  by_game?: RetentionGameRow[];
+  /** Players a game needs before its rate is stated rather than withheld. */
+  min_players?: number;
+  /**
+   * The median across games, per offset — the reference a game should be read
+   * against. Not the platform figure: that counts different cohorts and
+   * different returns, so a game can sit either side of it.
+   */
+  game_median?: Record<string, number | null>;
 } & ResolvedRange;
 
 export type DurationRow = {
