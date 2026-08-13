@@ -1,9 +1,11 @@
 'use client';
 
+import type { Sensitivity } from '@/components/reports/AnomalySensitivity';
 import type { GameTotals } from '@/types/reports';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
 import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
+import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/AnomalySensitivity';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
@@ -53,7 +55,19 @@ export default function ReportsPage() {
   const activity = useReport(ReportsAPI.getActivity, params, enabled, 'The reporting activity endpoint');
   // Unfiltered on purpose: "what needs attention" must surface a game you
   // haven't selected, which is exactly the one you'd otherwise miss.
-  const anomalies = useReport(ReportsAPI.getAnomalies, allGamesParams, enabled, 'The anomalies reporting endpoint');
+  // Kept local rather than in the URL: it changes what counts as worth
+  // reporting, not what the report covers, so a shared link should carry the
+  // period and games — not the reader's tolerance for noise.
+  const [sensitivity, setSensitivity] = useState<Sensitivity>('default');
+  const anomalyParams = useMemo(
+    () => ({
+      ...allGamesParams,
+      min_volume: SENSITIVITY_PRESETS[sensitivity].min_volume,
+      min_change_pct: SENSITIVITY_PRESETS[sensitivity].min_change_pct,
+    }),
+    [allGamesParams, sensitivity],
+  );
+  const anomalies = useReport(ReportsAPI.getAnomalies, anomalyParams, enabled, 'The anomalies reporting endpoint');
 
   const selectedLabel = game ? (meta[game]?.label ?? game) : null;
 
@@ -79,7 +93,12 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {anomalies.data && <AnomalyPanel data={anomalies.data} meta={meta} />}
+      {anomalies.data && (
+        <div className="space-y-2">
+          <AnomalyPanel data={anomalies.data} meta={meta} />
+          <AnomalySensitivity value={sensitivity} onChange={setSensitivity} />
+        </div>
+      )}
 
       {summary.error
         ? <ReportError error={summary.error} notDeployed={summary.notDeployed} onRetry={summary.refetch} />
