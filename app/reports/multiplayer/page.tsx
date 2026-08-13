@@ -4,6 +4,7 @@ import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
+import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -85,6 +86,11 @@ export default function MultiplayerReportPage() {
                 {/* Above the per-game table: modes are shared across games, so
                     "is Elimination working anywhere" is a question the per-game
                     split can't answer, and it's the one you ask first. */}
+                {/* Ahead of the mode split and the table: "which stage loses
+                    people" is the first question, and both of those make you do
+                    the subtraction yourself. */}
+                <MultiplayerFunnel rows={data.by_game} meta={meta} />
+
                 <ModeBreakdown rows={data.by_mode} meta={meta} onSelectGame={key => setGame(game === key ? null : key)} />
 
                 <Card>
