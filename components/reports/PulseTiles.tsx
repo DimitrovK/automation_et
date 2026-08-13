@@ -59,7 +59,17 @@ function Delta({ metric }: { metric: PulseMetric }) {
   );
 }
 
+/** "today to 14:00" reads better than a share, and says what was compared. */
+function elapsedLabel(share: number): string {
+  if (share >= 0.999) {
+    return 'the whole day';
+  }
+  return `${Math.round(share * 100)}% of a typical day`;
+}
+
 export function PulseTiles({ pulse }: { pulse: Pulse }) {
+  const partial = pulse.elapsed_share < 0.999;
+
   return (
     <div className="space-y-2">
       {!pulse.baseline_covered && (
@@ -75,6 +85,18 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
           Run the reporting backfill to fill them.
         </p>
       )}
+      {/* The basis, stated. The comparison used to weigh today-so-far against
+          four COMPLETE weekdays, so every metric read as down all morning — and
+          nothing on screen said what it was comparing, which is what let that
+          survive. */}
+      {partial && (
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {`Today so far, against the same ${elapsedLabel(pulse.elapsed_share)} — `}
+          {`by this point a typical ${pulse.weekday} has seen `}
+          {`${Math.round(pulse.elapsed_share * 100)}% of its play, so the comparison is like for like.`}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {TILES.map(({ key, label, hint }) => {
           const metric = pulse.metrics[key];
@@ -91,8 +113,15 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
                   {' · '}
                   {metric.baseline_same_weekday === null
                     ? `no typical ${pulse.weekday} to compare with yet`
-                    : `typical ${pulse.weekday}: ${metric.baseline_same_weekday.toLocaleString()}`}
+                    : `typical ${pulse.weekday} by now: ${metric.baseline_same_weekday.toLocaleString()}`}
                 </p>
+                {/* On a part-day, the whole-day figure answers a different
+                    question — what today is heading for, not how it compares. */}
+                {partial && metric.baseline_full_day !== null && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                    {`Full ${pulse.weekday}: ${metric.baseline_full_day.toLocaleString()}`}
+                  </p>
+                )}
               </CardContent>
             </Card>
           );
