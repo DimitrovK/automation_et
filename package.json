@@ -11,6 +11,7 @@
     "start": "next start",
     "check-types": "tsc --noEmit",
     "check-types:app": "node scripts/check-types.mjs",
+    "check-lockfile": "node scripts/check-lockfile.mjs",
     "type-check": "npm run check-types",
     "lint": "next lint",
     "test": "vitest",
