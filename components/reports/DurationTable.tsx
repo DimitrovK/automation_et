@@ -8,16 +8,22 @@ import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDuration } from '@/lib/format-duration';
+import { longSessionReason } from '@/lib/long-session-reason';
 import { cn } from '@/lib/utils';
 
 /**
  * Session length per game.
  *
- * Deliberately does NOT present one ranking. Conquest's median is 24 hours
- * because a session there is a day-long campaign; Team Ties' is 5 minutes
- * because a session is a sitting. Ranking them together would read as "Conquest
- * holds attention 280x better", which is not what the number means — so the two
+ * Deliberately does NOT present one ranking. Conquest's median is 24 hours and
+ * Team Ties' is 5 minutes; ranking them together would read as "Conquest holds
+ * attention 280x better", which is not what the number means — so the two
  * shapes are split into separate tables.
+ *
+ * The second table used to explain itself once, for everyone: these games "span
+ * a day or more by design". That is true of a campaign game and false of
+ * Conquest, whose 24 hours is its idle sweeper closing abandoned sessions —
+ * housekeeping, quoted as attention. So the reason is now per row, and each one
+ * carries the median among sessions that actually played out.
  */
 export function DurationTable({ data, meta }: { data: DurationResponse; meta: GameMetaMap }) {
   const resolveColor = useGameColor();
@@ -27,7 +33,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
 
   const maxMedian = Math.max(...comparable.map(row => row.median_seconds ?? 0), 0);
 
-  const renderRows = (rows: typeof data.rows, showBar: boolean) => rows.map(row => (
+  const renderRows = (rows: typeof data.rows) => rows.map(row => (
     <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
       <td className="py-2 pr-4">
         <GameBadge gameKey={row.game_type} meta={meta} />
@@ -37,17 +43,15 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
           <span className="w-14 text-right font-medium tabular-nums text-gray-900 dark:text-white">
             {formatDuration(row.median_seconds)}
           </span>
-          {showBar && (
-            <div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
+          <div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${maxMedian > 0 ? Math.max(2, ((row.median_seconds ?? 0) / maxMedian) * 100) : 0}%`,
                   backgroundColor: resolveColor(meta, row.game_type),
                 }}
-              />
-            </div>
-          )}
+            />
+          </div>
         </div>
       </td>
       <td className="py-2 pr-4 text-right tabular-nums">{formatDuration(row.p90_seconds)}</td>
@@ -63,6 +67,49 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
       </td>
     </tr>
   ));
+
+  const longLivedHead = (
+    <thead>
+      <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+        <th className="py-2 pr-4 font-medium">Game</th>
+        <th className="py-2 pr-4 font-medium">Median</th>
+        <th className="py-2 pr-4 font-medium">Why it's long</th>
+        <th className="py-2 pr-4 text-right font-medium">Played out</th>
+        <th className="py-2 text-right font-medium">Sessions</th>
+      </tr>
+    </thead>
+  );
+
+  const renderLongLived = (rows: typeof data.rows) => rows.map((row) => {
+    const why = longSessionReason(row);
+    return (
+      <tr key={row.game_type} className="border-b align-top last:border-0 dark:border-slate-700">
+        <td className="py-2 pr-4">
+          <GameBadge gameKey={row.game_type} meta={meta} />
+        </td>
+        <td className="py-2 pr-4 font-medium tabular-nums text-gray-900 dark:text-white">
+          {formatDuration(row.median_seconds)}
+        </td>
+        <td className="max-w-md py-2 pr-4">
+          {why === null
+            ? <span className="text-gray-500 dark:text-gray-400">—</span>
+            : (
+                <>
+                  <span className="font-medium text-gray-900 dark:text-white">{why.label}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{why.detail}</p>
+                </>
+              )}
+        </td>
+        {/* The comparable number, where the headline one isn't: a swept game's
+            median is the sweeper's clock, and this is the median among the
+            sessions that actually played out. */}
+        <td className="py-2 pr-4 text-right font-medium tabular-nums text-gray-900 dark:text-white">
+          {why?.playedOut ?? '—'}
+        </td>
+        <td className="py-2 text-right tabular-nums">{row.measured.toLocaleString()}</td>
+      </tr>
+    );
+  });
 
   const head = (
     <thead>
@@ -107,13 +154,18 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
               { header: 'Long sessions', value: row => row.long_sessions },
               { header: 'Long sessions %', value: row => row.long_sessions_pct },
               { header: 'Single sitting', value: row => (row.single_sitting === null ? null : String(row.single_sitting)) },
+              { header: 'Why long', value: row => row.long_reason ?? '' },
+              { header: 'Idle sweep after seconds', value: row => row.idle_finish_seconds ?? '' },
+              { header: 'Swept sessions', value: row => row.swept_sessions ?? '' },
+              { header: 'Swept %', value: row => row.swept_pct ?? '' },
+              { header: 'Median excluding swept seconds', value: row => row.median_excluding_swept_seconds ?? '' },
             ]}
           />
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-sm">
             {head}
-            <tbody>{renderRows(comparable, true)}</tbody>
+            <tbody>{renderRows(comparable)}</tbody>
           </table>
           {comparable.length === 0 && (
             <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
@@ -130,16 +182,20 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             <CardDescription className="flex items-start gap-2">
               <Info className="mt-0.5 size-3.5 shrink-0" />
               <span>
-                A session in these games spans a day or more by design, so their length
-                isn't comparable with per-round games — listed separately rather than
-                ranked alongside them, where they'd win by definition.
+                Sessions here run past
+                {' '}
+                {formatDuration(data.long_session_seconds)}
+                , so they aren't comparable with per-round games and are listed apart
+                rather than ranked alongside them, where they'd win by definition.
+                Long for two different reasons, though — played that way, or closed by
+                a timeout — so each row says which.
               </span>
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-sm">
-              {head}
-              <tbody>{renderRows(longLived, false)}</tbody>
+              {longLivedHead}
+              <tbody>{renderLongLived(longLived)}</tbody>
             </table>
           </CardContent>
         </Card>
