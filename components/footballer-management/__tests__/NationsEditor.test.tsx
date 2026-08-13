@@ -19,8 +19,8 @@ import { NationsEditor } from '@/components/footballer-management/sub-editors/Na
 import { FootballerAPI } from '@/lib/footballer-api';
 import { toast } from 'sonner';
 
-const api = vi.mocked(FootballerAPI);
-const mockToast = vi.mocked(toast);
+const api = vi.mocked(FootballerAPI, { deep: true });
+const mockToast = vi.mocked(toast, { deep: true });
 
 const POR = { id: 1, name: 'Portugal', nationality: 'Portuguese', short: 'POR' };
 const BRA = { id: 2, name: 'Brazil', nationality: 'Brazilian', short: 'BRA' };
