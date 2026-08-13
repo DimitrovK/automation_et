@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { METRIC_DEFINITIONS, METRICS_BY_KEY } from '@/lib/metric-definitions';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGlossary } from '@/hooks/use-glossary';
+import { useAuth } from '@/lib/auth';
 
 /**
  * The same definitions the inline info popovers show, in one place.
@@ -13,6 +15,10 @@ import { METRIC_DEFINITIONS, METRICS_BY_KEY } from '@/lib/metric-definitions';
  * something to point at in a conversation.
  */
 export default function GlossaryPage() {
+  const { isAuthenticated, user } = useAuth();
+  const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
+  const { metrics, byKey, isLoading, failed } = useGlossary(enabled);
+
   return (
     <ReportsShell
       title="What the numbers mean"
@@ -24,8 +30,18 @@ export default function GlossaryPage() {
         Europe/Sofia.
       </p>
 
+      {isLoading && <Skeleton className="h-96 w-full" />}
+
+      {failed && (
+        <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-gray-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-gray-100">
+          Could not load the definitions from the API. They are served from the
+          backend, beside the queries that compute them — showing a local copy
+          here would risk describing maths that has since changed.
+        </p>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
-        {METRIC_DEFINITIONS.map(definition => (
+        {metrics.map(definition => (
           <Card key={definition.key} id={definition.key} className="scroll-mt-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">{definition.label}</CardTitle>
@@ -47,7 +63,7 @@ export default function GlossaryPage() {
                 </p>
               )}
 
-              {definition.related && definition.related.length > 0 && (
+              {definition.related.length > 0 && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Read with
                   {' '}
@@ -55,7 +71,7 @@ export default function GlossaryPage() {
                     <span key={key}>
                       {index > 0 && ', '}
                       <Link href={`#${key}`} className="text-emerald-700 hover:underline dark:text-emerald-400">
-                        {METRICS_BY_KEY[key]?.label ?? key}
+                        {byKey[key]?.label ?? key}
                       </Link>
                     </span>
                   ))}

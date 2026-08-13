@@ -252,6 +252,20 @@ export type GameMeta = {
 
 export type GamesResponse = { games: GameMeta[] };
 
+/** A metric explained, from the BE registry that sits beside the query. */
+export type MetricDefinition = {
+  key: string;
+  label: string;
+  counts: string;
+  /** Empty string when nothing is excluded — that is a claim too, not a gap. */
+  excludes: string;
+  /** How the number can be misread. Empty when there is genuinely no trap. */
+  caveat: string;
+  related: string[];
+};
+
+export type GlossaryResponse = { metrics: MetricDefinition[] };
+
 /** Which activity metric a chart or table is currently showing. */
 export const METRIC_OPTIONS = [
   { key: 'games_started', label: 'Played' },
