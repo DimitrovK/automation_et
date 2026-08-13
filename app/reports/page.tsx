@@ -1,13 +1,10 @@
 'use client';
 
-import type { Sensitivity } from '@/components/reports/AnomalySensitivity';
 import type { GameTotals } from '@/types/reports';
 import type { Granularity } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
-import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
 import { RollupHealthBanner } from '@/components/reports/RollupHealthBanner';
-import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/AnomalySensitivity';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
@@ -64,19 +61,6 @@ export default function ReportsPage() {
   const activity = useReport(ReportsAPI.getActivity, activityParams, enabled, 'The reporting activity endpoint');
   // Unfiltered on purpose: "what needs attention" must surface a game you
   // haven't selected, which is exactly the one you'd otherwise miss.
-  // Kept local rather than in the URL: it changes what counts as worth
-  // reporting, not what the report covers, so a shared link should carry the
-  // period and games — not the reader's tolerance for noise.
-  const [sensitivity, setSensitivity] = useState<Sensitivity>('default');
-  const anomalyParams = useMemo(
-    () => ({
-      ...allGamesParams,
-      min_volume: SENSITIVITY_PRESETS[sensitivity].min_volume,
-      min_change_pct: SENSITIVITY_PRESETS[sensitivity].min_change_pct,
-    }),
-    [allGamesParams, sensitivity],
-  );
-  const anomalies = useReport(ReportsAPI.getAnomalies, anomalyParams, enabled, 'The anomalies reporting endpoint');
 
   const selectedLabel = game ? (meta[game]?.label ?? game) : null;
 
@@ -102,21 +86,10 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* Above the anomalies: if the rollup is incomplete, "nothing moved" is
-          not a finding, and every panel below inherits that doubt. */}
+      {/* First on the page: if the rollup is incomplete, every number below
+          inherits that doubt — a quiet day and an uncomputed one look the
+          same. */}
       <RollupHealthBanner />
-
-      {/* Was `anomalies.data && …`, so a failed request made the panel vanish
-          without saying so — the one panel whose silence reads as "nothing
-          moved". It now reports its own failure. */}
-      <ReportPanel state={anomalies} skeletonClassName="h-24 w-full">
-        {data => (
-          <div className="space-y-2">
-            <AnomalyPanel data={data} meta={meta} />
-            <AnomalySensitivity value={sensitivity} onChange={setSensitivity} />
-          </div>
-        )}
-      </ReportPanel>
 
       <ReportPanel state={summary} skeletonClassName="h-32 w-full">
         {data => (
