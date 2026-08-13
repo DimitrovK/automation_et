@@ -11,6 +11,7 @@ const defaults = {
   metric: 'games_started' as const,
   limit: 25,
   search: '',
+  compareOffset: 1,
 };
 
 describe('report filter URL state', () => {
@@ -66,6 +67,38 @@ describe('report filter URL state', () => {
 
     expect(parsed.game).toBe('grid');
     expect(parsed.includeBots).toBe(true);
+  });
+
+  it('carries a chosen comparison offset, and drops it when it is the default', () => {
+    // Only the summary compares periods, so the other pages never mention it.
+    expect(__test.serialise({ ...defaults, compareOffset: 3 }, defaults)).toBe('?compare_offset=3');
+    expect(__test.serialise({ ...defaults, compareOffset: 1 }, defaults)).toBe('');
+    expect(__test.parse('?compare_offset=3', defaults).compareOffset).toBe(3);
+  });
+
+  it('falls back to the default for an offset the API would reject', () => {
+    // A shared link with a typo should degrade to the default view rather than
+    // to an error panel.
+    for (const bad of ['0', '-2', '13', 'lots', '1.5']) {
+      expect(__test.parse(`?compare_offset=${bad}`, defaults).compareOffset).toBe(1);
+    }
+  });
+
+  it('carries an explicitly named comparison period instead of the offset', () => {
+    // The API ignores the offset when explicit dates are given, so a link
+    // carrying both would suggest otherwise.
+    const named = { ...defaults, compareOffset: 4, compareStart: '2026-01-01', compareEnd: '2026-01-31' };
+
+    expect(__test.serialise(named, defaults)).toBe('?compare_start=2026-01-01&compare_end=2026-01-31');
+    expect(__test.parse('?compare_start=2026-01-01&compare_end=2026-01-31', defaults)).toMatchObject({
+      compareStart: '2026-01-01',
+      compareEnd: '2026-01-31',
+    });
+  });
+
+  it('ignores half a comparison range rather than sending a request the API rejects', () => {
+    expect(__test.parse('?compare_start=nonsense&compare_end=2026-01-31', defaults).compareStart).toBeUndefined();
+    expect(__test.parse('?compare_start=2026-01-01&compare_end=nonsense', defaults).compareStart).toBeUndefined();
   });
 });
 

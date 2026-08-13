@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
+import { ComparePicker } from '@/components/reports/ComparePicker';
 import { ComparisonTiles } from '@/components/reports/ComparisonTiles';
 import { DurationTable } from '@/components/reports/DurationTable';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -18,7 +19,7 @@ import { useGameMeta, useGameColor } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
-import { rangeToParams } from '@/lib/report-range';
+import { compareToParams, rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -52,12 +53,18 @@ export default function GameDetailPage() {
     game: null,
     metric: 'games_started',
   });
-  const { range, includeBots } = filters;
+  const { range, includeBots, compareOffset, compareStart, compareEnd } = filters;
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots, game_type: gameKey , granularity }),
-    [range, includeBots, gameKey, granularity],
+    () => ({
+      ...rangeToParams(range),
+      include_bots: includeBots,
+      game_type: gameKey,
+      granularity,
+      ...compareToParams(compareOffset, compareStart, compareEnd),
+    }),
+    [range, includeBots, gameKey, granularity, compareOffset, compareStart, compareEnd],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -102,6 +109,15 @@ export default function GameDetailPage() {
           ? <Skeleton className="h-32 w-full" />
           : (
               <>
+                {/* The picker sits with the tiles it changes, not up with the
+                    range: it answers "compared with what", which is a question
+                    about these four numbers and nothing else on the page. */}
+                <ComparePicker
+                  offset={compareOffset}
+                  start={compareStart}
+                  end={compareEnd}
+                  onChange={update}
+                />
                 <ComparisonTiles comparison={summary.data.comparison} />
                 {row && (
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

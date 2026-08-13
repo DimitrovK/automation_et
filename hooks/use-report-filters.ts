@@ -26,12 +26,23 @@ export type ReportFilters = {
   limit: number;
   /** Username fragment on the players view. Empty means no filter, not "match nothing". */
   search: string;
+  /**
+   * Which earlier period the summary compares against: 1 is the one immediately
+   * before, 2 the one before that. Ignored when `compare` names explicit dates.
+   */
+  compareOffset: number;
+  /** An explicitly named comparison period, for "this month vs launch month". */
+  compareStart?: string;
+  compareEnd?: string;
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** MAX_LIMIT in core/reporting_views.py — a larger value is rejected with a 400. */
 const MAX_LIMIT = 100;
+
+/** MAX_COMPARE_OFFSET in core/reporting_queries.py; beyond it the API 400s. */
+const MAX_COMPARE_OFFSET = 12;
 
 /** Only the leaderboard views paginate, so the rest never mention a limit. */
 const DEFAULT_LIMIT = 25;
@@ -63,6 +74,18 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
     ? rawLimit
     : fallback.limit;
 
+  const rawOffset = Number(params.get('compare_offset'));
+  const compareOffset = Number.isInteger(rawOffset) && rawOffset >= 1 && rawOffset <= MAX_COMPARE_OFFSET
+    ? rawOffset
+    : fallback.compareOffset;
+
+  // Both halves must be shaped like dates before either is used: half a valid
+  // comparison range would send the API a request it rejects, turning a typo in
+  // a shared link into an error panel.
+  const compareStart = params.get('compare_start');
+  const compareEnd = params.get('compare_end');
+  const hasCompare = !!compareStart && ISO_DATE.test(compareStart) && (!compareEnd || ISO_DATE.test(compareEnd));
+
   return {
     range: hasRange ? { window, start, end: end ?? undefined } : { window },
     includeBots: params.get('bots') === '1',
@@ -70,6 +93,9 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
     metric: (params.get('metric') as MetricKey) || fallback.metric,
     limit,
     search: searchTerm,
+    compareOffset,
+    compareStart: hasCompare ? compareStart : undefined,
+    compareEnd: hasCompare ? (compareEnd ?? undefined) : undefined,
   };
 }
 
@@ -101,6 +127,16 @@ function serialise(filters: ReportFilters, defaults: ReportFilters): string {
   if (filters.search) {
     params.set('search', filters.search);
   }
+  // An explicit comparison period wins, so the offset isn't also written — the
+  // API ignores it there, and a link carrying both would suggest otherwise.
+  if (filters.compareStart) {
+    params.set('compare_start', filters.compareStart);
+    if (filters.compareEnd) {
+      params.set('compare_end', filters.compareEnd);
+    }
+  } else if (filters.compareOffset !== defaults.compareOffset) {
+    params.set('compare_offset', String(filters.compareOffset));
+  }
   const query = params.toString();
   return query ? `?${query}` : '';
 }
@@ -109,9 +145,19 @@ export function useReportFilters(
   // `limit` is optional: only the leaderboard views paginate, and requiring it
   // on the other seven pages would put a number in front of readers that means
   // nothing there.
-  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search'> & { limit?: number; search?: string },
+  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search' | 'compareOffset'> & {
+    limit?: number;
+    search?: string;
+    compareOffset?: number;
+  },
 ) {
-  const defaults: ReportFilters = { limit: DEFAULT_LIMIT, search: '', ...suppliedDefaults };
+  const defaults: ReportFilters = {
+    limit: DEFAULT_LIMIT,
+    search: '',
+    // Only the summary compares periods; the other pages never mention it.
+    compareOffset: 1,
+    ...suppliedDefaults,
+  };
   const [filters, setFilters] = useState<ReportFilters>(defaults);
   const [hydrated, setHydrated] = useState(false);
 
