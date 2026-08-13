@@ -1,12 +1,45 @@
 'use client';
 
 import type { HourWeekdayRow, PeakCell } from '@/types/reports';
+import { useTheme } from 'next-themes';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 /** Every third hour, so the axis stays readable on a phone. */
 const HOUR_TICKS = [0, 3, 6, 9, 12, 15, 18, 21];
+
+/**
+ * Discrete buckets, not a continuous ramp.
+ *
+ * The first version scaled opacity continuously. Nobody can tell 60% opacity
+ * from 70%, so on a week where most hours have some play the whole grid read as
+ * one wash of green — the exact complaint. Four steps can be told apart, and a
+ * legend can state what each one means.
+ *
+ * Both ramps validated against their own surface: single hue, monotone
+ * lightness, adjacent steps at least 0.06 apart, lightest step clearing 2:1 so
+ * it is distinguishable from an empty cell.
+ */
+const RAMP_LIGHT = ['#10b981', '#059669', '#047857', '#064e3b'];
+const RAMP_DARK = ['#047857', '#059669', '#34d399', '#a7f3d0'];
+
+/** Exported so the per-surface choice is testable rather than implicit. */
+export function heatmapRamp(isDark: boolean): string[] {
+  return isDark ? RAMP_DARK : RAMP_LIGHT;
+}
+
+/** Quartile-style thresholds as a share of the busiest cell. */
+const BUCKET_EDGES = [0.25, 0.5, 0.75];
+
+function bucketOf(value: number, busiest: number): number {
+  if (value <= 0 || busiest <= 0) return -1;
+  const share = value / busiest;
+  for (let i = 0; i < BUCKET_EDGES.length; i++) {
+    if (share <= BUCKET_EDGES[i]) return i;
+  }
+  return BUCKET_EDGES.length;
+}
 
 /**
  * Sessions by weekday × hour.
@@ -27,23 +60,14 @@ export function ActivityHeatmap({
   timezone: string;
 }) {
   const [hovered, setHovered] = useState<{ row: HourWeekdayRow; hour: number } | null>(null);
+  const { resolvedTheme } = useTheme();
+  const ramp = heatmapRamp(resolvedTheme === 'dark');
 
   const total = useMemo(
     () => rows.reduce((sum, row) => sum + row.hours.reduce((a, b) => a + b, 0), 0),
     [rows],
   );
 
-  /**
-   * Square-root scale, not linear. Play is heavily peaked, so a linear ramp
-   * renders everything except the top few cells as near-empty and hides the
-   * shape of an ordinary week — which is the thing you're looking at.
-   */
-  function intensity(value: number) {
-    if (value <= 0 || busiest <= 0) {
-      return 0;
-    }
-    return Math.sqrt(value / busiest);
-  }
 
   if (total === 0) {
     return (
@@ -105,8 +129,8 @@ export function ActivityHeatmap({
                         isPeak && 'ring-1 ring-emerald-500 ring-offset-1 dark:ring-offset-slate-900',
                       )}
                       style={{
-                        backgroundColor: value > 0
-                          ? `rgba(16, 185, 129, ${0.12 + intensity(value) * 0.88})`
+                        backgroundColor: bucketOf(value, busiest) >= 0
+                          ? ramp[bucketOf(value, busiest)]
                           : undefined,
                       }}
                     />
@@ -123,16 +147,22 @@ export function ActivityHeatmap({
               ? `${hovered.row.name} ${String(hovered.hour).padStart(2, '0')}:00 — ${hovered.row.hours[hovered.hour].toLocaleString()} sessions`
               : 'Hover a cell for the exact count.'}
           </span>
-          <span className="flex items-center gap-1">
-            0
-            {[0.15, 0.4, 0.65, 1].map(step => (
-              <span
-                key={step}
-                className="size-3 rounded-[2px]"
-                style={{ backgroundColor: `rgba(16, 185, 129, ${0.12 + step * 0.88})` }}
-              />
-            ))}
-            {busiest.toLocaleString()}
+          <span className="flex flex-wrap items-center gap-1">
+            <span className="mr-1">Sessions</span>
+            <span className="size-3 rounded-[2px] border border-gray-300 dark:border-slate-600" />
+            <span className="mr-1">0</span>
+            {ramp.map((colour, index) => {
+              const low = index === 0 ? 1 : Math.round(BUCKET_EDGES[index - 1] * busiest) + 1;
+              const high = index === ramp.length - 1 ? busiest : Math.round(BUCKET_EDGES[index] * busiest);
+              return (
+                <span key={colour} className="flex items-center gap-1">
+                  <span className="size-3 rounded-[2px]" style={{ backgroundColor: colour }} />
+                  {/* The counts are stated, so the colour never has to be
+                      decoded by eye against a gradient. */}
+                  <span>{low === high ? low : `${low}–${high}`}</span>
+                </span>
+              );
+            })}
           </span>
         </div>
       </CardContent>
