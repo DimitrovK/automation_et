@@ -21,7 +21,14 @@ import { durationHistogram } from '@/lib/duration-histogram';
  */
 export function DurationHistogram({ data, meta }: { data: DurationResponse; meta: GameMetaMap }) {
   const resolveColor = useGameColor();
-  const measurable = data.rows.filter(row => row.supported && row.measured > 0 && (row.buckets?.length ?? 0) > 0);
+  // Summed counts, not just "has bands": a row whose bands are all zero would
+  // put a chip in the selector and then draw an empty card, which reads as a
+  // broken chart. The backend's bands sum to `measured` today, so this can only
+  // trigger on a response that breaks that — which is exactly when a component
+  // should not be relying on the invariant.
+  const measurable = data.rows.filter(
+    row => row.supported && (row.buckets ?? []).reduce((sum, bucket) => sum + bucket.count, 0) > 0,
+  );
   const [selected, setSelected] = useState<string | null>(null);
 
   if (measurable.length === 0) {

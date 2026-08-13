@@ -48,11 +48,25 @@ describe('durationHistogram', () => {
     expect(durationHistogram(row(BANDS))[3].label).toBe('over 5.0m');
   });
 
-  it('computes each share against the total, so they sum to 100', () => {
+  it('computes each share against the total', () => {
     const bands = durationHistogram(row(BANDS));
 
     expect(bands.map(b => b.pct)).toEqual([10, 20, 40, 30]);
-    expect(bands.reduce((sum, b) => sum + b.pct, 0)).toBe(100);
+  });
+
+  it('rounds each band on its own, even when the column then misses 100', () => {
+    // Three equal bands are 33.3% each and total 99.9%. Nudging one of them to
+    // 33.4% would buy a tidy total at the cost of a figure its own count
+    // doesn't support — and a reader checking 33.3% against 1 of 3 would find
+    // the adjusted one wrong. This is a shape, not a budget.
+    const bands = durationHistogram(row([
+      { under_seconds: 60, count: 1 },
+      { under_seconds: 120, count: 1 },
+      { under_seconds: null, count: 1 },
+    ]));
+
+    expect(bands.map(b => b.pct)).toEqual([33.3, 33.3, 33.3]);
+    expect(bands.reduce((sum, b) => sum + b.pct, 0)).toBeCloseTo(99.9, 5);
   });
 
   it('has nothing to draw when nothing was measured', () => {

@@ -14,7 +14,15 @@ export type HistogramBand = {
   /** "1–2m", "over 6h" — what the band covers, in words. */
   label: string;
   count: number;
-  /** Share of measured sessions, 0..100. */
+  /**
+   * This band's share of measured sessions, rounded on its own.
+   *
+   * Deliberately NOT adjusted to make the column total exactly 100: each figure
+   * is the honest rounding of its own band, so a reader can check 12.5% against
+   * the count beside it. Shifting a remainder into the last band would buy a
+   * tidy total at the cost of one band saying something its own numbers don't
+   * support — and this is a shape, not a budget.
+   */
   pct: number;
 };
 
