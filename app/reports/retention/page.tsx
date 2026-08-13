@@ -69,21 +69,21 @@ export default function RetentionPage() {
           view="retention"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
-                    { header: 'Cohort date', value: row => row.date },
-                    { header: 'Cohort size', value: row => row.cohort_size },
-                    { header: 'Inflated', value: row => row.inflated },
-                    // One column per offset, because a JSON blob in a cell is
-                    // not something a spreadsheet can chart. Null stays empty
-                    // rather than 0: the cohort hasn't reached that day yet.
-                    ...(data?.offsets ?? []).map(offset => ({
-                      header: `D${offset} %`,
-                      value: (row: RetentionCohort) => row.retention[String(offset)]?.pct ?? '',
-                    })),
-                    ...(data?.offsets ?? []).map(offset => ({
-                      header: `D${offset} returned`,
-                      value: (row: RetentionCohort) => row.retention[String(offset)]?.returned ?? '',
-                    })),
-                  ]}
+            { header: 'Cohort date', value: row => row.date },
+            { header: 'Cohort size', value: row => row.cohort_size },
+            { header: 'Inflated', value: row => row.inflated },
+            // One column per offset, because a JSON blob in a cell is
+            // not something a spreadsheet can chart. Null stays empty
+            // rather than 0: the cohort hasn't reached that day yet.
+            ...(data?.offsets ?? []).map(offset => ({
+              header: `D${offset} %`,
+              value: (row: RetentionCohort) => row.retention[String(offset)]?.pct ?? '',
+            })),
+            ...(data?.offsets ?? []).map(offset => ({
+              header: `D${offset} returned`,
+              value: (row: RetentionCohort) => row.retention[String(offset)]?.returned ?? '',
+            })),
+          ]}
         />
       </div>
 

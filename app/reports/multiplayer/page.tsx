@@ -2,10 +2,10 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
-import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -17,7 +17,6 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-
 
 export default function MultiplayerReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -76,13 +75,13 @@ export default function MultiplayerReportPage() {
           view="multiplayer"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
-                    { header: 'Game', value: row => row.game_type },
-                    { header: 'Rooms created', value: row => row.rooms_created },
-                    { header: 'Started', value: row => row.rooms_started },
-                    { header: 'Finished', value: row => row.rooms_finished },
-                    { header: 'Cancelled', value: row => row.rooms_cancelled },
-                    { header: 'Never started %', value: row => row.never_started_pct },
-                  ]}
+            { header: 'Game', value: row => row.game_type },
+            { header: 'Rooms created', value: row => row.rooms_created },
+            { header: 'Started', value: row => row.rooms_started },
+            { header: 'Finished', value: row => row.rooms_finished },
+            { header: 'Cancelled', value: row => row.rooms_cancelled },
+            { header: 'Never started %', value: row => row.never_started_pct },
+          ]}
         />
       </div>
 

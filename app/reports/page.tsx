@@ -1,10 +1,8 @@
 'use client';
 
-import type { GameTotals } from '@/types/reports';
-import type { Granularity } from '@/types/reports';
+import type { GameTotals, Granularity } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
-import { RollupHealthBanner } from '@/components/reports/RollupHealthBanner';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
@@ -13,7 +11,8 @@ import { PulseTiles } from '@/components/reports/PulseTiles';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
-import { useGameMeta, useGameColor } from '@/hooks/use-game-meta';
+import { RollupHealthBanner } from '@/components/reports/RollupHealthBanner';
+import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -94,34 +93,34 @@ export default function ReportsPage() {
       <ReportPanel state={summary} skeletonClassName="h-32 w-full">
         {data => (
           <>
-                {/* The pulse always describes TODAY, whatever range is selected —
+            {/* The pulse always describes TODAY, whatever range is selected —
                     the BE sends pulse_applies to say so. Rendering it beside
                     comparison tiles that DO follow the range invites reading
                     today's numbers as the selected period's. */}
             {data.pulse_applies
-                  ? (
-                      <>
-                <PulseTiles pulse={data.pulse} />
-                        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                          {selectedLabel ? `${selectedLabel} · ` : ''}
-                          compared with the mean of the last
-                          {' '}
-                  {data.pulse.baseline_weeks}
-                          {' '}
-                  {data.pulse.weekday}
-                          s — not with yesterday, which would make every Monday look like a crash.
-                        </p>
-                      </>
-                    )
-                  : (
-                      <p className="rounded-md border border-gray-200 bg-gray-50 p-3 text-center text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300">
-                        Today's pulse is hidden because this range ends on
-                        {' '}
-                {data.end}
-                        . It only ever describes today, so showing it here would
-                        read as the selected period. Everything below follows your range.
-                      </p>
-              )}
+              ? (
+                  <>
+                    <PulseTiles pulse={data.pulse} />
+                    <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                      {selectedLabel ? `${selectedLabel} · ` : ''}
+                      compared with the mean of the last
+                      {' '}
+                      {data.pulse.baseline_weeks}
+                      {' '}
+                      {data.pulse.weekday}
+                      s — not with yesterday, which would make every Monday look like a crash.
+                    </p>
+                  </>
+                )
+              : (
+                  <p className="rounded-md border border-gray-200 bg-gray-50 p-3 text-center text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300">
+                    Today's pulse is hidden because this range ends on
+                    {' '}
+                    {data.end}
+                    . It only ever describes today, so showing it here would
+                    read as the selected period. Everything below follows your range.
+                  </p>
+                )}
           </>
         )}
       </ReportPanel>

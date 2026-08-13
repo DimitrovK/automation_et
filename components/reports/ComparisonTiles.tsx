@@ -100,7 +100,7 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
         {named
           ? ', a period you named'
           : offset === 1 ? ', immediately before' : `, ${offset} periods back`}
-        {').'}
+        ).
         {comparison.same_length === false
           && ' The periods differ in length, so totals are shown without percentages — a rate across unequal spans describes the calendar, not the platform.'}
         {!comparison.coverage.complete

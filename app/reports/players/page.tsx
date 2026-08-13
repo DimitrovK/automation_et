@@ -1,26 +1,26 @@
 'use client';
 
-import Link from 'next/link';
 import type { RangeState } from '@/lib/report-range';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
-import { playStyle } from '@/lib/play-style';
-import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
+import { playStyle } from '@/lib/play-style';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 
 export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -146,18 +146,18 @@ export default function PlayersReportPage() {
           view="players"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
-                    { header: 'User ID', value: row => row.user_id },
-                    { header: 'Username', value: row => row.username },
-                    { header: 'Played', value: row => row.games_played },
-                    { header: 'Finished', value: row => row.games_finished },
-                    // Through the same helper the table uses, so the CSV cannot
-                    // contradict the screen: subtracting the raw count would
-                    // export a negative solo figure the UI clamps away.
-                    { header: 'Multiplayer sessions', value: row => playStyle(row.games_played, row.mp_sessions)?.mp ?? '' },
-                    { header: 'Solo sessions', value: row => playStyle(row.games_played, row.mp_sessions)?.solo ?? '' },
-                    { header: 'Distinct games', value: row => row.distinct_games },
-                    { header: 'Games', value: row => row.games.join(' | ') },
-                  ]}
+            { header: 'User ID', value: row => row.user_id },
+            { header: 'Username', value: row => row.username },
+            { header: 'Played', value: row => row.games_played },
+            { header: 'Finished', value: row => row.games_finished },
+            // Through the same helper the table uses, so the CSV cannot
+            // contradict the screen: subtracting the raw count would
+            // export a negative solo figure the UI clamps away.
+            { header: 'Multiplayer sessions', value: row => playStyle(row.games_played, row.mp_sessions)?.mp ?? '' },
+            { header: 'Solo sessions', value: row => playStyle(row.games_played, row.mp_sessions)?.solo ?? '' },
+            { header: 'Distinct games', value: row => row.distinct_games },
+            { header: 'Games', value: row => row.games.join(' | ') },
+          ]}
         />
       </div>
 
@@ -233,8 +233,8 @@ export default function PlayersReportPage() {
                   {data.players.length === 0 && (
                     <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                       {search
-                      ? `No player matching "${search}" played in this window.`
-                      : 'Nobody played in this window.'}
+                        ? `No player matching "${search}" played in this window.`
+                        : 'Nobody played in this window.'}
                     </p>
                   )}
                 </CardContent>

@@ -29,7 +29,15 @@ describe('useGlossary', () => {
     // shared request that is a burst of identical calls on every page render.
     const spy = vi.spyOn(ReportsAPI, 'getGlossary').mockResolvedValue({ metrics: [METRIC] });
 
-    render(<><Consumer /><Consumer /><Consumer /><Consumer /><Consumer /></>);
+    render(
+      <>
+        <Consumer />
+        <Consumer />
+        <Consumer />
+        <Consumer />
+        <Consumer />
+      </>,
+    );
     await screen.findAllByText('count-1');
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -59,7 +67,7 @@ describe('metricInfo', () => {
     vi.spyOn(ReportsAPI, 'getGlossary').mockResolvedValue({ metrics: [METRIC] });
 
     expect(() => render(<MetricInfo metric="distinct_players" />)).not.toThrow();
-    expect(await screen.findByLabelText(/What "Players" means/)).toBeTruthy();
+    expect(await screen.findByLabelText(/What "Players" means/)).toBeInTheDocument();
   });
 
   it('says nothing rather than guessing when the glossary cannot load', async () => {
@@ -70,6 +78,6 @@ describe('metricInfo', () => {
     render(<MetricInfo metric="distinct_players" />);
     (await screen.findByLabelText(/means/)).click();
 
-    expect(await screen.findByText(/might no longer match how this is calculated/)).toBeTruthy();
+    expect(await screen.findByText(/might no longer match how this is calculated/)).toBeInTheDocument();
   });
 });

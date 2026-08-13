@@ -35,7 +35,7 @@ describe('longSessionReason', () => {
     // "24h", not formatDuration's "1.0d": this is a configured timeout, and
     // whoever checks it against the sweeper task will look for 24 hours.
     expect(why?.detail).toContain('24h');
-    expect(why?.detail).toContain("sweeper's clock");
+    expect(why?.detail).toContain('sweeper\'s clock');
   });
 
   it('offers the played-out median as the comparable number', () => {
@@ -72,7 +72,7 @@ describe('longSessionReason', () => {
     const why = longSessionReason(row({ long_reason: 'idle_sweep', swept_pct: 72 }));
 
     expect(why?.detail).toBe(
-      "72% of measured sessions were closed by an idle timeout, so their length is the sweeper's clock rather than time spent playing.",
+      '72% of measured sessions were closed by an idle timeout, so their length is the sweeper\'s clock rather than time spent playing.',
     );
   });
 
@@ -80,7 +80,7 @@ describe('longSessionReason', () => {
     const why = longSessionReason(row({ long_reason: 'idle_sweep', swept_pct: null }));
 
     expect(why?.detail).toBe(
-      "Sessions left idle are closed by an idle timeout, so their length is the sweeper's clock rather than time spent playing.",
+      'Sessions left idle are closed by an idle timeout, so their length is the sweeper\'s clock rather than time spent playing.',
     );
   });
 

@@ -29,7 +29,7 @@ describe('rollupHealthBanner', () => {
     const { container } = render(<RollupHealthBanner />);
     await new Promise(resolve => setTimeout(resolve, 30));
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('warns about holes inside the covered range', async () => {
@@ -40,8 +40,8 @@ describe('rollupHealthBanner', () => {
 
     render(<RollupHealthBanner />);
 
-    expect(await screen.findByText(/3 days inside the covered range were never computed/)).toBeTruthy();
-    expect(screen.getByText(/--start 2026-06-01/)).toBeTruthy();
+    expect(await screen.findByText(/3 days inside the covered range were never computed/)).toBeInTheDocument();
+    expect(screen.getByText(/--start 2026-06-01/)).toBeInTheDocument();
   });
 
   it('distinguishes a stale rollup from one with holes', async () => {
@@ -54,31 +54,34 @@ describe('rollupHealthBanner', () => {
 
     render(<RollupHealthBanner />);
 
-    expect(await screen.findByText(/6 days behind/)).toBeTruthy();
+    expect(await screen.findByText(/6 days behind/)).toBeInTheDocument();
   });
 
   it('says an empty rollup makes every figure unknown, not zero', async () => {
     vi.spyOn(ReportsAPI, 'getRollupHealth').mockResolvedValue(health({
-      has_data: false, days_covered: 0, stale_days: null,
+      has_data: false,
+      days_covered: 0,
+      stale_days: null,
       suggested_command: 'python manage.py backfill_daily_game_activity --days 90',
     }) as never);
 
     render(<RollupHealthBanner />);
 
-    expect(await screen.findByText(/unknown rather than zero/)).toBeTruthy();
+    expect(await screen.findByText(/unknown rather than zero/)).toBeInTheDocument();
   });
 
   it('bounds the warning by saying what IS covered', async () => {
     // Three missing days out of ninety is a very different problem from three
     // days being the entire dataset.
     vi.spyOn(ReportsAPI, 'getRollupHealth').mockResolvedValue(health({
-      gap_count: 3, suggested_command: 'python manage.py backfill_daily_game_activity',
+      gap_count: 3,
+      suggested_command: 'python manage.py backfill_daily_game_activity',
     }) as never);
 
     render(<RollupHealthBanner />);
 
-    expect(await screen.findByText(/90 days computed/)).toBeTruthy();
-    expect(screen.getByText(/2026-05-14/)).toBeTruthy();
+    expect(await screen.findByText(/90 days computed/)).toBeInTheDocument();
+    expect(screen.getByText(/2026-05-14/)).toBeInTheDocument();
   });
 
   it('does not take the page down when the check itself fails', async () => {
@@ -88,6 +91,6 @@ describe('rollupHealthBanner', () => {
     const { container } = render(<RollupHealthBanner />);
     await new Promise(resolve => setTimeout(resolve, 30));
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 });

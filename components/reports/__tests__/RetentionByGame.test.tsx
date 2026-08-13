@@ -44,9 +44,9 @@ describe('retentionByGame', () => {
     // nobody starts.
     render(<RetentionByGame data={data()} meta={META as never} />);
 
-    expect(screen.getByText('12.1%')).toBeTruthy();
-    expect(screen.getByText('15.9%')).toBeTruthy();
-    expect(screen.getByText('1.1%')).toBeTruthy();
+    expect(screen.getByText('12.1%')).toBeInTheDocument();
+    expect(screen.getByText('15.9%')).toBeInTheDocument();
+    expect(screen.getByText('1.1%')).toBeInTheDocument();
   });
 
   it('says these do not decompose the platform figure', () => {
@@ -55,45 +55,56 @@ describe('retentionByGame', () => {
     // two questions.
     render(<RetentionByGame data={data()} meta={META as never} />);
 
-    expect(screen.getByText(/don't sum to the platform figure/)).toBeTruthy();
+    expect(screen.getByText(/don't sum to the platform figure/)).toBeInTheDocument();
   });
 
   it('withholds a rate for too small a sample and explains the dash', () => {
     render(<RetentionByGame data={data()} meta={META as never} />);
 
     const dashes = screen.getAllByText('—');
+
     expect(dashes.length).toBeGreaterThan(0);
-    expect(dashes[0].getAttribute('title')).toBe('Only 3 players — too few to state a rate');
-    expect(screen.getByText(/fewer than 20 measurable players/)).toBeTruthy();
+    expect(dashes[0]).toHaveAttribute('title', 'Only 3 players — too few to state a rate');
+    expect(screen.getByText(/fewer than 20 measurable players/)).toBeInTheDocument();
   });
 
   it('carries the peer median as the reference, not the platform number', () => {
     render(<RetentionByGame data={data()} meta={META as never} />);
 
-    expect(screen.getByText('Median across games')).toBeTruthy();
-    expect(screen.getByText('6.6%')).toBeTruthy();
+    expect(screen.getByText('Median across games')).toBeInTheDocument();
+    expect(screen.getByText('6.6%')).toBeInTheDocument();
   });
 
   it('renders a dash for an offset the rows do not carry', () => {
     // The response lists which offsets exist; a row can still be missing one.
     // Reading through it must blank that cell, not the whole table.
-    render(<RetentionByGame data={data({
-      offsets: [1, 7, 30, 90],
-      game_median: { d1: 11, d7: 6.6, d30: 0, d90: null },
-    })} meta={META as never} />);
+    render(
+      <RetentionByGame
+        data={data({
+          offsets: [1, 7, 30, 90],
+          game_median: { d1: 11, d7: 6.6, d30: 0, d90: null },
+        })}
+        meta={META as never}
+      />,
+    );
 
-    expect(screen.getByText('12.1%')).toBeTruthy();
+    expect(screen.getByText('12.1%')).toBeInTheDocument();
     expect(screen.getAllByText('—').length).toBeGreaterThan(3);
   });
 
   it('reads the cohort size from whichever offset the row carries', () => {
     // Taking it from the first offset LISTED would report a cohort of zero for
     // a game that plainly has players, because the row need not carry that one.
-    render(<RetentionByGame data={data({
-      by_game: [{ game_type: 'scout', d7: summaryCell(12.1, 33), d30: summaryCell(0, 33) }],
-    })} meta={META as never} />);
+    render(
+      <RetentionByGame
+        data={data({
+          by_game: [{ game_type: 'scout', d7: summaryCell(12.1, 33), d30: summaryCell(0, 33) }],
+        })}
+        meta={META as never}
+      />,
+    );
 
-    expect(screen.getByText('33')).toBeTruthy();
+    expect(screen.getByText('33')).toBeInTheDocument();
   });
 
   it('renders nothing when the backend predates the per-game view', () => {
@@ -101,6 +112,6 @@ describe('retentionByGame', () => {
     // a failure.
     const { container } = render(<RetentionByGame data={data({ by_game: undefined })} meta={META as never} />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 });
