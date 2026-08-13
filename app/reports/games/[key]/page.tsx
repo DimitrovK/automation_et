@@ -9,7 +9,10 @@ import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
 import { ComparePicker } from '@/components/reports/ComparePicker';
 import { ComparisonTiles } from '@/components/reports/ComparisonTiles';
+import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
+import { GameHourProfile } from '@/components/reports/GameHourProfile';
+import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -72,6 +75,17 @@ export default function GameDetailPage() {
   const summary = useReport(ReportsAPI.getSummary, params, ready, 'The reporting summary endpoint');
   const activity = useReport(ReportsAPI.getActivity, params, ready, 'The reporting activity endpoint');
   const duration = useReport(ReportsAPI.getDuration, params, ready, 'The duration reporting endpoint');
+  // Deliberately UNFILTERED: one call carries both this game's row and the
+  // median across the others, and the peer median is the only reference this
+  // number can be read against. A game-filtered call would return a median of
+  // one game — itself.
+  const retention = useReport(
+    ReportsAPI.getRetention,
+    useMemo(() => ({ ...rangeToParams(range), include_bots: includeBots }), [range, includeBots]),
+    ready,
+    'The retention reporting endpoint',
+  );
+  const patterns = useReport(ReportsAPI.getPatterns, params, ready, 'The patterns reporting endpoint');
   const players = useReport(
     ReportsAPI.getTopPlayers,
     useMemo(() => ({ ...params, limit: 10 }), [params]),
@@ -157,7 +171,19 @@ export default function GameDetailPage() {
         />
       )}
 
+      {retention.data && (
+        <GameRetentionCard data={retention.data} gameKey={gameKey} gameLabel={label} />
+      )}
+
+      {patterns.data && <GameHourProfile data={patterns.data} gameLabel={label} />}
+
       {duration.data && <DurationTable data={duration.data} meta={meta} />}
+
+      {/* Same data as the table above, drawn as a shape: the table says where
+          the middle half sits, this says whether there is one kind of session
+          here or several. No extra request — the response is already filtered
+          to this game. */}
+      {duration.data && <DurationHistogram data={duration.data} meta={meta} />}
 
       {players.data && (
         <Card>
