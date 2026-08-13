@@ -4,6 +4,8 @@ import Link from 'next/link';
 import type { RangeState } from '@/lib/report-range';
 import { useEffect, useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
+import { playStyle } from '@/lib/play-style';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
@@ -148,6 +150,11 @@ export default function PlayersReportPage() {
                     { header: 'Username', value: row => row.username },
                     { header: 'Played', value: row => row.games_played },
                     { header: 'Finished', value: row => row.games_finished },
+                    // Through the same helper the table uses, so the CSV cannot
+                    // contradict the screen: subtracting the raw count would
+                    // export a negative solo figure the UI clamps away.
+                    { header: 'Multiplayer sessions', value: row => playStyle(row.games_played, row.mp_sessions)?.mp ?? '' },
+                    { header: 'Solo sessions', value: row => playStyle(row.games_played, row.mp_sessions)?.solo ?? '' },
                     { header: 'Distinct games', value: row => row.distinct_games },
                     { header: 'Games', value: row => row.games.join(' | ') },
                   ]}
@@ -170,6 +177,9 @@ export default function PlayersReportPage() {
                   </CardTitle>
                   <CardDescription>
                     Games played counts sessions started, matching the Daily Pulse.
+                    Multiplayer sessions are included in that total — the Style column
+                    says how much of it they are, which is the difference between a solo
+                    grinder and a lobby regular.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
@@ -180,6 +190,7 @@ export default function PlayersReportPage() {
                         <th className="py-2 pr-4 font-medium">Player</th>
                         <th className="py-2 pr-4 text-right font-medium">Played</th>
                         <th className="py-2 pr-4 text-right font-medium">Finished</th>
+                        <th className="py-2 pr-4 font-medium">Style</th>
                         <th className="py-2 font-medium">Games</th>
                       </tr>
                     </thead>
@@ -199,6 +210,9 @@ export default function PlayersReportPage() {
                           </td>
                           <td className="py-2 pr-4 text-right">{player.games_played.toLocaleString()}</td>
                           <td className="py-2 pr-4 text-right">{player.games_finished.toLocaleString()}</td>
+                          <td className="py-2 pr-4">
+                            <PlayStyleBadge played={player.games_played} mp={player.mp_sessions} />
+                          </td>
                           <td className="py-2">
                             <div className="flex flex-wrap gap-1">
                               {player.games.map(playedGame => (

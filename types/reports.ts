@@ -134,6 +134,12 @@ export type TopPlayer = {
   username: string;
   games_played: number;
   games_finished: number;
+  /**
+   * How many of those sessions were played against other people. Solo is the
+   * difference — derived, never sent, so the two can't disagree with the total.
+   * Optional so a backend predating it shows no split rather than claiming 0.
+   */
+  mp_sessions?: number;
   distinct_games: number;
   games: string[];
 };
@@ -250,6 +256,8 @@ export type PlayerGameRow = {
   games_played: number;
   games_finished: number;
   completion_pct: number;
+  /** Multiplayer sessions in this game. Solo is games_played minus this. */
+  mp_sessions?: number;
 };
 
 export type PlayerDetailResponse = {
@@ -262,6 +270,12 @@ export type PlayerDetailResponse = {
     games_finished: number;
     completion_pct: number | null;
     distinct_games: number;
+    mp_sessions?: number;
+    /**
+     * Share of this player's sessions played against other people. Null when
+     * they played nothing — 0% would claim they played solo.
+     */
+    mp_share_pct?: number | null;
     active_days: number;
     active_days_pct: number | null;
     games_per_active_day: number | null;
