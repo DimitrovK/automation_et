@@ -1,5 +1,6 @@
 import type {
   ActivityResponse,
+  GlossaryResponse,
   AnomaliesResponse,
   DurationResponse,
   GamesResponse,
@@ -60,6 +61,11 @@ export class ReportsAPI {
    */
   static async getGames(): Promise<GamesResponse> {
     return apiFetcher<GamesResponse>('core/reporting/games/');
+  }
+
+  /** GET /core/reporting/glossary/ — what every reported number means. */
+  static async getGlossary(): Promise<GlossaryResponse> {
+    return apiFetcher<GlossaryResponse>('core/reporting/glossary/');
   }
 
   /** GET /core/reporting/anomalies/ — what moved enough to be worth attention. */

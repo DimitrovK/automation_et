@@ -19,7 +19,7 @@ import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
-/** `metric` keys into lib/metric-definitions so the column explains itself. */
+/** `metric` keys into the BE glossary so the column explains itself. */
 const COLUMNS: { key: GameSortKey; label: string; hint: string; metric: string }[] = [
   { key: 'games_started', label: 'Played', hint: 'Sessions started in the window', metric: 'games_started' },
   { key: 'completion_pct', label: 'Finished', hint: 'Share of started sessions that were completed', metric: 'completion_pct' },
