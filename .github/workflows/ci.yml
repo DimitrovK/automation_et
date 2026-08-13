@@ -1,39 +1,63 @@
-name: CI/CD Pipeline
+name: CI
 
+# `production` is this repo's trunk. The previous version of this file listened
+# for `main` and `develop`, which do not exist here, so it had never run once —
+# every merge to date was verified by Vercel's build and by whatever the author
+# ran locally.
 on:
   push:
-    branches: [main, develop]
+    branches: [production]
   pull_request:
-    branches: [main]
+    branches: [production]
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # pnpm, because that is what Vercel installs with. The previous version
+      # ran `npm ci`, and this repo has no package-lock.json — it was deleted
+      # deliberately so the lockfile Vercel reads is the only one. That step
+      # could only ever have failed.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
+          cache: pnpm
 
-      - name: Install dependencies
-        run: npm ci
+      # --frozen-lockfile, exactly as Vercel does it: a lockfile that has
+      # drifted from package.json fails here rather than at deploy time, which
+      # is how production silently stopped deploying for several merges in
+      # August.
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run type check
-        run: npm run type-check
+      - name: Lockfile in sync
+        run: pnpm run check-lockfile
 
-      - name: Run linting
-        run: npm run lint
+      # The gate, not raw tsc: it fails closed if tsc cannot run, and it checks
+      # the reporting surface for unused declarations.
+      - name: Types
+        run: pnpm run check-types:app
 
-      - name: Run tests
-        run: npm run test:run
+      - name: Tests
+        run: pnpm run test:run
 
-      - name: Build project
-        run: npm run build
+      - name: Build
+        run: pnpm run build
         env:
           NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
           NEXT_PUBLIC_N8N_WEBHOOK_URL: ${{ secrets.NEXT_PUBLIC_N8N_WEBHOOK_URL }}
           NEXT_PUBLIC_ADMIN_BASE_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_BASE_URL }}
+
+      # Lint is deliberately absent. `next lint` was removed in Next 16, so the
+      # old step invoked `next <dir>` and would have failed; and running eslint
+      # directly currently cannot resolve eslint-plugin-format under pnpm's
+      # layout. Both are real and are filed separately — a step that cannot pass
+      # would make this pipeline red on arrival and get switched off again,
+      # which is how the previous one ended up unread.
