@@ -437,6 +437,20 @@ export type DurationRow = {
   coverage_pct: number | null;
   median_seconds: number | null;
   p90_seconds: number | null;
+  /**
+   * The quartiles either side of the median. Half of all sessions fall between
+   * them, so "5 minutes" reads very differently at 4–6 than at 1–40.
+   * Optional so a backend predating them shows the median alone.
+   */
+  p25_seconds?: number | null;
+  p75_seconds?: number | null;
+  /**
+   * Session lengths per band, over fixed boundaries. Per-band counts, not
+   * cumulative — they sum to `measured`. The final band has `under_seconds:
+   * null`: everything past the last boundary, which is where a 24-hour session
+   * lands.
+   */
+  buckets?: { under_seconds: number | null; count: number }[];
   long_sessions: number;
   long_sessions_pct: number | null;
   /** False for campaign-shaped games whose "session" spans a day, not a sitting. */
