@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -68,6 +69,22 @@ export default function MultiplayerReportPage() {
           <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
         </div>
       )}
+
+      <div className="flex justify-end">
+        <ExportButton
+          rows={data?.by_game ?? []}
+          view="multiplayer"
+          filters={{ ...rangeToParams(range), bots: includeBots, game }}
+          columns={[
+                    { header: 'Game', value: row => row.game_type },
+                    { header: 'Rooms created', value: row => row.rooms_created },
+                    { header: 'Started', value: row => row.rooms_started },
+                    { header: 'Finished', value: row => row.rooms_finished },
+                    { header: 'Cancelled', value: row => row.rooms_cancelled },
+                    { header: 'Never started %', value: row => row.never_started_pct },
+                  ]}
+        />
+      </div>
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />

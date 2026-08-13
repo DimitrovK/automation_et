@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -80,6 +81,22 @@ export default function PlayersReportPage() {
           <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
         </div>
       )}
+
+      <div className="flex justify-end">
+        <ExportButton
+          rows={data?.players ?? []}
+          view="players"
+          filters={{ ...rangeToParams(range), bots: includeBots, game }}
+          columns={[
+                    { header: 'User ID', value: row => row.user_id },
+                    { header: 'Username', value: row => row.username },
+                    { header: 'Played', value: row => row.games_played },
+                    { header: 'Finished', value: row => row.games_finished },
+                    { header: 'Distinct games', value: row => row.distinct_games },
+                    { header: 'Games', value: row => row.games.join(' | ') },
+                  ]}
+        />
+      </div>
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />

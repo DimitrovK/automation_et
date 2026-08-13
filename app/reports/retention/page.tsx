@@ -1,7 +1,9 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
+import type { RetentionCohort } from '@/types/reports';
 import { useMemo, useState } from 'react';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
@@ -59,6 +61,30 @@ export default function RetentionPage() {
       />
 
       <GameFilter meta={meta} value={game} onChange={setGame} />
+
+      <div className="flex justify-end">
+        <ExportButton
+          rows={data?.cohorts ?? []}
+          view="retention"
+          filters={{ ...rangeToParams(range), bots: includeBots, game }}
+          columns={[
+                    { header: 'Cohort date', value: row => row.date },
+                    { header: 'Cohort size', value: row => row.cohort_size },
+                    { header: 'Inflated', value: row => row.inflated },
+                    // One column per offset, because a JSON blob in a cell is
+                    // not something a spreadsheet can chart. Null stays empty
+                    // rather than 0: the cohort hasn't reached that day yet.
+                    ...(data?.offsets ?? []).map(offset => ({
+                      header: `D${offset} %`,
+                      value: (row: RetentionCohort) => row.retention[String(offset)]?.pct ?? '',
+                    })),
+                    ...(data?.offsets ?? []).map(offset => ({
+                      header: `D${offset} returned`,
+                      value: (row: RetentionCohort) => row.retention[String(offset)]?.returned ?? '',
+                    })),
+                  ]}
+        />
+      </div>
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
