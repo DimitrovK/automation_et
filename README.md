@@ -35,8 +35,12 @@ A Next.js application for managing footballer career data with Django backend in
 
 2. Install dependencies:
    \`\`\`bash
-   npm install
+   pnpm install
    \`\`\`
+   pnpm, not npm — Vercel installs with \`pnpm install --frozen-lockfile\`, and
+   \`pnpm-lock.yaml\` is the only tracked lockfile. Installing with npm would
+   create a second one that Vercel never reads, which silently stopped
+   deploys once already.
 
 3. Create environment variables:
    \`\`\`bash

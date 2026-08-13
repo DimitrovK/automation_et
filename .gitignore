@@ -44,3 +44,7 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# npm's lockfile is deliberately not tracked: Vercel installs with pnpm, and a
+# second lockfile silently stopped deploys once already. Use `pnpm install`.
+package-lock.json
