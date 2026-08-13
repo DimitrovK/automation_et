@@ -216,12 +216,16 @@ export default function PlayerDetailPage() {
                               % finished
                               {/* Per game, because the split moves: someone can
                                   be a lobby regular in one game and play the
-                                  rest alone. */}
-                              {row.mp_sessions !== undefined && row.mp_sessions > 0 && (
+                                  rest alone. A known zero says "all solo" rather
+                                  than nothing — hiding it would make it
+                                  indistinguishable from a field the backend
+                                  never sent. */}
+                              {row.mp_sessions !== undefined && (
                                 <>
                                   {' · '}
-                                  {row.mp_sessions.toLocaleString()}
-                                  {' multiplayer'}
+                                  {row.mp_sessions === 0
+                                    ? 'all solo'
+                                    : `${row.mp_sessions.toLocaleString()} multiplayer`}
                                 </>
                               )}
                             </span>

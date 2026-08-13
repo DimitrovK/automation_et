@@ -23,9 +23,15 @@ export function PlayStyleBadge({ played, mp }: { played: number; mp?: number }) 
   // A palette per band would make five colours out of one fact.
   const emphasised = style.label === 'Multiplayer' || style.label === 'Mostly multiplayer';
 
+  // `title` is a hover affordance: unreliable for screen readers and absent on
+  // touch. The same sentence goes in aria-label so the numbers behind the word
+  // are available rather than merely discoverable with a mouse.
+  const breakdown = `${style.label}: ${style.mp.toLocaleString()} multiplayer, ${style.solo.toLocaleString()} solo (${style.mpPct}%)`;
+
   return (
     <span
-      title={`${style.mp.toLocaleString()} multiplayer · ${style.solo.toLocaleString()} solo (${style.mpPct}%)`}
+      title={breakdown}
+      aria-label={breakdown}
       className={cn(
         'inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium',
         emphasised

@@ -50,6 +50,16 @@ describe('playStyle', () => {
     expect(playStyle(0, 0)).toBeNull();
   });
 
+  it('clamps the derived pair, which is what the CSV exports too', () => {
+    // The export subtracts through this helper rather than doing its own
+    // arithmetic on the raw field: a negative "Solo sessions" column would
+    // contradict the screen, where the clamp already applies.
+    const style = playStyle(10, 12);
+
+    expect(style!.mp + style!.solo).toBe(10);
+    expect(style!.solo).toBeGreaterThanOrEqual(0);
+  });
+
   it('never reports more multiplayer than was played', () => {
     // Defensive: the two counts come from separate queries, and a split that
     // exceeds its total would render a negative solo count.

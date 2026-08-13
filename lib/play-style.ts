@@ -16,8 +16,13 @@ export type PlayStyle = {
   solo: number;
   /** Share of sessions played against other people, 0..100. */
   mpPct: number;
-  /** A word for the split, or null when there is nothing to characterise. */
-  label: 'Multiplayer' | 'Mostly multiplayer' | 'Mixed' | 'Mostly solo' | 'Solo' | null;
+  /**
+   * A word for the split. Never null: `playStyle` returns null in its entirety
+   * when there is nothing to characterise, so a style that exists always has a
+   * label, and keeping null in the type would force call sites to handle a case
+   * this cannot produce.
+   */
+  label: 'Multiplayer' | 'Mostly multiplayer' | 'Mixed' | 'Mostly solo' | 'Solo';
 };
 
 /**
