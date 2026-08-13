@@ -49,4 +49,36 @@ describe('bots control', () => {
 
     expect(onIncludeBotsChange).toHaveBeenCalledWith(true);
   });
+
+  it('offers today and yesterday by name, and only once', () => {
+    // "1d" beside a "Today" button would be the same range under two names.
+    render(<RangePicker value={{ window: 30 }} onChange={() => {}} includeBots={false} onIncludeBotsChange={() => {}} />);
+
+    expect(screen.getByRole('button', { name: 'Today' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Yesterday' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '1d' })).toBeNull();
+  });
+
+  it('asks for a one-day window when Today is picked', async () => {
+    const onChange = vi.fn();
+    render(<RangePicker value={{ window: 30 }} onChange={onChange} includeBots={false} onIncludeBotsChange={() => {}} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Today' }));
+
+    expect(onChange).toHaveBeenCalledWith({ window: 1 });
+  });
+
+  it('asks for explicit dates when Yesterday is picked', async () => {
+    // A window counts back from today, so yesterday has to be dates.
+    const onChange = vi.fn();
+    render(<RangePicker value={{ window: 30 }} onChange={onChange} includeBots={false} onIncludeBotsChange={() => {}} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Yesterday' }));
+
+    const arg = onChange.mock.calls[0][0];
+    expect(arg.start).toBe(arg.end);
+    expect(arg.start).not.toBeUndefined();
+    // The previous preset survives, so clearing the range returns to it.
+    expect(arg.window).toBe(30);
+  });
 });

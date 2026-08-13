@@ -145,8 +145,13 @@ export type TopPlayersResponse = {
   players: TopPlayer[];
 } & ResolvedRange;
 
-/** Windows the BE accepts (ALLOWED_WINDOWS in core/reporting_views.py). */
-export const REPORT_WINDOWS = [7, 10, 15, 30, 60, 90] as const;
+/**
+ * Windows the BE accepts (ALLOWED_WINDOWS in core/reporting_views.py).
+ *
+ * 1 is here so "today" is a preset rather than two identical dates picked by
+ * hand. It is rendered as a named button, not as "1d" — see `RangePicker`.
+ */
+export const REPORT_WINDOWS = [1, 7, 10, 15, 30, 60, 90] as const;
 export type ReportWindow = (typeof REPORT_WINDOWS)[number];
 
 export type ReportParams = {
