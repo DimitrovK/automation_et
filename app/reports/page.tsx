@@ -87,16 +87,34 @@ export default function ReportsPage() {
           ? <Skeleton className="h-32 w-full" />
           : (
               <>
-                <PulseTiles pulse={summary.data.pulse} />
-                <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                  {selectedLabel ? `${selectedLabel} · ` : ''}
-                  compared with the mean of the last
-                  {' '}
-                  {summary.data.pulse.baseline_weeks}
-                  {' '}
-                  {summary.data.pulse.weekday}
-                  s — not with yesterday, which would make every Monday look like a crash.
-                </p>
+                {/* The pulse always describes TODAY, whatever range is selected —
+                    the BE sends pulse_applies to say so. Rendering it beside
+                    comparison tiles that DO follow the range invites reading
+                    today's numbers as the selected period's. */}
+                {summary.data.pulse_applies
+                  ? (
+                      <>
+                        <PulseTiles pulse={summary.data.pulse} />
+                        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                          {selectedLabel ? `${selectedLabel} · ` : ''}
+                          compared with the mean of the last
+                          {' '}
+                          {summary.data.pulse.baseline_weeks}
+                          {' '}
+                          {summary.data.pulse.weekday}
+                          s — not with yesterday, which would make every Monday look like a crash.
+                        </p>
+                      </>
+                    )
+                  : (
+                      <p className="rounded-md border border-gray-200 bg-gray-50 p-3 text-center text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300">
+                        Today's pulse is hidden because this range ends on
+                        {' '}
+                        {summary.data.end}
+                        . It only ever describes today, so showing it here would
+                        read as the selected period. Everything below follows your range.
+                      </p>
+                    )}
               </>
             )}
 
