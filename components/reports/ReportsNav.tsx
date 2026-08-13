@@ -1,7 +1,7 @@
 'use client';
 
 import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
-import { BarChart3, BookOpen, Clock, Gamepad2, LayoutGrid, Repeat, Timer, Users } from 'lucide-react';
+import { BarChart3, BookOpen, Clock, Gamepad2, LayoutGrid, Repeat, Timer, TriangleAlert, Users } from 'lucide-react';
 
 /**
  * Reports, grouped by the question each page answers.
@@ -16,6 +16,7 @@ export const REPORT_NAV_GROUPS: NavGroup[] = [
     heading: 'Overview',
     items: [
       { href: '/reports', label: 'Daily Pulse', icon: BarChart3 },
+      { href: '/reports/anomalies', label: 'Needs attention', icon: TriangleAlert },
       { href: '/reports/patterns', label: 'Patterns', icon: Clock },
     ],
   },
