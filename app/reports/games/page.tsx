@@ -10,6 +10,7 @@ import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
+import { AbandonedPanel } from '@/components/reports/AbandonedPanel';
 import { ReachDepthChart } from '@/components/reports/ReachDepthChart';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -132,6 +133,11 @@ export default function GamesIndexPage() {
                   audience next to one with a small devoted one and says
                   nothing about the difference. */}
               <ReachDepthChart rows={data.by_game} meta={meta} />
+              {/* Reach and depth say which games are worth attention; this says
+                  where the recoverable sessions actually are, which is a
+                  different question and the one nobody could answer from a
+                  completion-rate column. */}
+              <AbandonedPanel rows={data.by_game} meta={meta} />
               <Card>
                 <CardHeader>
                   <CardTitle>Comparison</CardTitle>
