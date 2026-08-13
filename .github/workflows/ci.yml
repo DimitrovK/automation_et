@@ -21,13 +21,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # pnpm, because that is what Vercel installs with. The previous version
       # ran `npm ci`, and this repo has no package-lock.json — it was deleted
       # deliberately so the lockfile Vercel reads is the only one. That step
       # could only ever have failed.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10
 
@@ -35,7 +35,7 @@ jobs:
       # package.json declares — oxfmt, pulled in by eslint-plugin-format, needs
       # it. Pinning a lower 22.x here would install fine and then fail for
       # anyone matching it locally.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: pnpm
