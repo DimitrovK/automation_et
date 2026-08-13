@@ -244,6 +244,12 @@ export type PlayerDetailResponse = {
 export type GameMeta = {
   key: string;
   label: string;
+  /**
+   * The game's own name — "Grid", not "Grid Game Sessions". Use this wherever a
+   * game is named; `label` is a dashboard card title that reads as a metric.
+   * Optional so a backend predating it degrades to `label` rather than to a slug.
+   */
+  display_name?: string;
   /** Hex for a light surface. Same colour the Django admin dashboard draws the game with. */
   color: string;
   /**

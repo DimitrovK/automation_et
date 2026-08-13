@@ -2,6 +2,7 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { gameName } from '@/hooks/use-game-meta';
 
 /**
  * Pick one game, or all of them.
@@ -20,7 +21,11 @@ export function GameFilter({ meta, value, onChange }: {
   value: string | null;
   onChange: (game: string | null) => void;
 }) {
-  const games = Object.values(meta).sort((a, b) => a.label.localeCompare(b.label));
+  // Sorted by what is displayed. Sorting by `label` put games in an order the
+  // reader can't see, because the visible names differ from it.
+  const games = Object.values(meta).sort(
+    (a, b) => gameName(a, a.key).localeCompare(gameName(b, b.key)),
+  );
 
   if (games.length === 0) {
     return null;

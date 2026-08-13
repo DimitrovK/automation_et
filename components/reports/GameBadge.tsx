@@ -2,7 +2,7 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import { X } from 'lucide-react';
-import { useGameColor } from '@/hooks/use-game-meta';
+import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import { prettySlug } from '@/lib/user-hub-format';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +24,7 @@ export function GameBadge({ gameKey, meta, active, onClick, count }: {
 }) {
   const resolveColor = useGameColor();
   const color = resolveColor(meta, gameKey);
-  const label = meta[gameKey]?.label ?? prettySlug(gameKey);
+  const label = gameName(meta[gameKey], gameKey);
   const interactive = !!onClick;
 
   const style = active
