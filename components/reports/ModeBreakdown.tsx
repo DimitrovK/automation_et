@@ -6,6 +6,8 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Too
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
+import { useTheme } from 'next-themes';
+import { chartTheme } from '@/lib/chart-theme';
 
 /** Quiz has no mode column, so its rooms arrive as null rather than being dropped. */
 function modeLabel(mode: string | null): string {
@@ -25,6 +27,8 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
   meta: GameMetaMap;
   onSelectGame?: (gameKey: string) => void;
 }) {
+  const { resolvedTheme } = useTheme();
+  const theme = chartTheme(resolvedTheme === 'dark');
   const resolveColor = useGameColor();
   const byMode = new Map<string, { mode: string; rooms_created: number; rooms_started: number; games: MultiplayerModeRow[] }>();
   for (const row of rows) {
@@ -58,10 +62,12 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={modes} margin={{ top: 16, right: 8, bottom: 8, left: -12 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-                      <XAxis dataKey="mode" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
-                      <Tooltip contentStyle={{ fontSize: 12 }} cursor={{ fillOpacity: 0.1 }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                      <XAxis dataKey="mode" tick={theme.tick} />
+                      <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+                      <Tooltip contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle} cursor={theme.tooltip.cursor} />
                       <Bar dataKey="rooms_created" name="Rooms" radius={[4, 4, 0, 0]}>
                         <LabelList dataKey="rooms_created" position="top" style={{ fontSize: 11 }} />
                         {modes.map(mode => (

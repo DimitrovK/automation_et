@@ -4,6 +4,8 @@ import type { ActivityDay, MetricKey } from '@/types/reports';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { METRIC_OPTIONS } from '@/types/reports';
+import { useTheme } from 'next-themes';
+import { chartTheme } from '@/lib/chart-theme';
 
 /** Day-month tick, in UTC so it renders as the intended day regardless of viewer TZ. */
 function formatDay(iso: string): string {
@@ -34,6 +36,8 @@ export function ActivityChart({ series, title, description, metric, color }: {
   /** Overrides the metric colour — used to match the selected game's badge. */
   color?: string;
 }) {
+  const { resolvedTheme } = useTheme();
+  const theme = chartTheme(resolvedTheme === 'dark');
   // An uncovered day was never computed. Feeding 0 to the chart draws a
   // confident dip that never happened, so the value becomes null and recharts
   // leaves a visible break instead.
@@ -74,10 +78,12 @@ export function ActivityChart({ series, title, description, metric, color }: {
       <CardContent className="h-72 sm:h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={24} />
-            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+            <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
+            <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+            <Tooltip contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             {METRIC_OPTIONS.map((option) => {
               const isPrimary = option.key === metric;
