@@ -8,6 +8,7 @@ import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { RetentionByGame } from '@/components/reports/RetentionByGame';
 import { RetentionTable } from '@/components/reports/RetentionTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
@@ -90,7 +91,15 @@ export default function RetentionPage() {
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
         : isLoading || !data
           ? <Skeleton className="h-96 w-full" />
-          : <RetentionTable data={data} />}
+          : (
+              <>
+                {/* Before the cohort grid: "which games keep people" is the
+                    question someone arrives with, and the grid answers "which
+                    days did". */}
+                <RetentionByGame data={data} meta={meta} />
+                <RetentionTable data={data} />
+              </>
+            )}
     </ReportsShell>
   );
 }
