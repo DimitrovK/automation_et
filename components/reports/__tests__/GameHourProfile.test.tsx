@@ -45,6 +45,16 @@ describe('gameHourProfile', () => {
     expect(screen.getByText(/Europe\/Sofia/)).toBeTruthy();
   });
 
+  it('puts each hour\'s numbers in the accessibility tree, not only in a tooltip', () => {
+    // `title` is a hover affordance: unreliable for screen readers, absent on
+    // touch. The heatmap and the multiplayer funnel already label their marks;
+    // this matches them.
+    render(<GameHourProfile data={data()} gameLabel="Grid" />);
+
+    expect(screen.getByLabelText('20:00 — 40 sessions (40%)')).toBeTruthy();
+    expect(screen.getByLabelText('Grid sessions by hour, Europe/Sofia')).toBeTruthy();
+  });
+
   it('renders nothing for a game with no play in the window', () => {
     // An all-zero chart is 24 empty bars and a peak hour of midnight — a
     // confident-looking answer to a question with no data behind it.
