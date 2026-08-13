@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
@@ -145,8 +146,15 @@ export default function PlayersReportPage() {
                       {data.players.map((player, index) => (
                         <tr key={player.user_id} className="border-b last:border-0 dark:border-slate-700">
                           <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{index + 1}</td>
-                          <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">
-                            {player.username}
+                          <td className="py-2 pr-4 font-medium">
+                            {/* The drill-down existed and worked; nothing linked
+                                to it, so the only way in was typing a URL. */}
+                            <Link
+                              href={`/reports/players/${player.user_id}`}
+                              className="text-emerald-700 hover:underline dark:text-emerald-400"
+                            >
+                              {player.username}
+                            </Link>
                           </td>
                           <td className="py-2 pr-4 text-right">{player.games_played.toLocaleString()}</td>
                           <td className="py-2 pr-4 text-right">{player.games_finished.toLocaleString()}</td>

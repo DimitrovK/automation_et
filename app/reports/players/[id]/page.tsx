@@ -19,6 +19,8 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
+import { useTheme } from 'next-themes';
+import { chartTheme } from '@/lib/chart-theme';
 
 function Tile({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -33,6 +35,8 @@ function Tile({ label, value, hint }: { label: string; value: string; hint?: str
 }
 
 export default function PlayerDetailPage() {
+  const { resolvedTheme } = useTheme();
+  const theme = chartTheme(resolvedTheme === 'dark');
   const resolveColor = useGameColor();
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
@@ -154,7 +158,9 @@ export default function PlayerDetailPage() {
                       <CardContent className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
-                            <Tooltip contentStyle={{ fontSize: 12 }} />
+                            <Tooltip contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle} />
                             <Pie
                               data={data.by_game}
                               dataKey="games_played"
@@ -210,10 +216,12 @@ export default function PlayerDetailPage() {
                   <CardContent className="h-64 sm:h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={data.series} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-                        <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={24} />
-                        <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
-                        <Tooltip contentStyle={{ fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                        <XAxis dataKey="date" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
+                        <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+                        <Tooltip contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle} />
                         <Area type="monotone" dataKey="games_started" name="Played" stroke="#059669" fill="#059669" fillOpacity={0.35} />
                         <Area type="monotone" dataKey="games_finished" name="Finished" stroke="#2563eb" fill="#2563eb" fillOpacity={0.25} />
                       </AreaChart>

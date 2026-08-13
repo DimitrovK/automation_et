@@ -45,3 +45,16 @@ describe('game marks', () => {
     expect(screen.getByText('Brand New Game')).toBeTruthy();
   });
 });
+
+
+describe('players table', () => {
+  it('links each row to the drill-down that already exists', async () => {
+    // players table links — the page at /reports/players/[id] worked from the
+    // start; nothing pointed at it, so the only way in was typing a URL.
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const source = readFileSync(join(process.cwd(), 'app', 'reports', 'players', 'page.tsx'), 'utf8');
+
+    expect(source).toMatch(/\/reports\/players\/\$\{player\.user_id\}/);
+  });
+});

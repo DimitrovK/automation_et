@@ -19,6 +19,8 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
+import { useTheme } from 'next-themes';
+import { chartTheme } from '@/lib/chart-theme';
 
 function Tile({ label, value, hint, metric }: { label: string; value: string; hint: string; metric?: string }) {
   return (
@@ -36,6 +38,8 @@ function Tile({ label, value, hint, metric }: { label: string; value: string; hi
 }
 
 export default function PatternsPage() {
+  const { resolvedTheme } = useTheme();
+  const theme = chartTheme(resolvedTheme === 'dark');
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
@@ -160,11 +164,13 @@ export default function PatternsPage() {
                   <CardContent className="h-64 sm:h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={data.by_hour} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-                        <XAxis dataKey="hour" tick={{ fontSize: 11 }} tickFormatter={h => `${h}:00`} interval={1} />
-                        <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                        <XAxis dataKey="hour" tick={theme.tick} tickFormatter={h => `${h}:00`} interval={1} />
+                        <YAxis tick={theme.tick} allowDecimals={false} width={44} />
                         <Tooltip
-                          contentStyle={{ fontSize: 12 }}
+                          contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle}
                           labelFormatter={h => `${String(h).padStart(2, '0')}:00`}
                         />
                         <Bar dataKey="games_started" name="Games" radius={[3, 3, 0, 0]}>
@@ -192,10 +198,12 @@ export default function PatternsPage() {
                   <CardContent className="h-56 sm:h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={data.by_weekday} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-                        <XAxis dataKey="name" tick={{ fontSize: 11 }} tickFormatter={name => name.slice(0, 3)} />
-                        <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
-                        <Tooltip contentStyle={{ fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                        <XAxis dataKey="name" tick={theme.tick} tickFormatter={name => name.slice(0, 3)} />
+                        <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+                        <Tooltip contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle} />
                         <Bar dataKey="games_started" name="Games" radius={[3, 3, 0, 0]}>
                           {data.by_weekday.map(row => (
                             <Cell
@@ -221,10 +229,12 @@ export default function PatternsPage() {
                   <CardContent className="h-64 sm:h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={data.new_vs_returning} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-slate-700" />
-                        <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={24} />
-                        <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={44} />
-                        <Tooltip contentStyle={{ fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                        <XAxis dataKey="date" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
+                        <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+                        <Tooltip contentStyle={theme.tooltip.contentStyle}
+                          labelStyle={theme.tooltip.labelStyle}
+                          itemStyle={theme.tooltip.itemStyle} />
                         <Area
                           type="monotone"
                           dataKey="returning_players"
