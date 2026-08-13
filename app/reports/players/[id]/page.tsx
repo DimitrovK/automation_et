@@ -94,6 +94,15 @@ export default function PlayerDetailPage() {
           includeBots={false}
           onIncludeBotsChange={() => undefined}
         />
+
+        {/* Bot accounts are filtered out of every other report, so landing here
+            from a direct link is the one way to read simulation traffic as real
+            play. The BE already flags it; nothing was showing it. */}
+        {data?.is_bot && (
+          <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
+            Bot / simulation account — excluded from every other report
+          </span>
+        )}
       </div>
 
       {error
