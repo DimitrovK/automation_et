@@ -93,10 +93,15 @@ describe('comparisonTiles', () => {
     expect(screen.queryByText(/periods differ in length/)).toBeNull();
   });
 
-  it('falls back to a neutral label when the backend predates the field', () => {
+  it('reads a backend predating the field as the immediately preceding period', () => {
+    // null and undefined mean different things: null is a period the reader
+    // named, undefined is a backend that only ever compared with the period
+    // before. Conflating them captions a legacy response "a period you named",
+    // which nobody did.
     const { compare_offset: _dropped, ...legacy } = comparison();
     render(<ComparisonTiles comparison={legacy as PeriodComparison} />);
 
-    expect(screen.getAllByText(/vs the period shown/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/vs previous/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/a period you named/)).toBeNull();
   });
 });

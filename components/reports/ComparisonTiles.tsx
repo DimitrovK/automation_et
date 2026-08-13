@@ -25,11 +25,18 @@ const TILES: { key: keyof ActivityMetrics; label: string }[] = [
  * with it would be a caption describing a different chart.
  */
 export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }) {
-  const offset = comparison.compare_offset;
+  // null and undefined mean different things here. `null` is a period the
+  // reader named, which no offset describes. `undefined` is a backend that
+  // predates the field — and that backend always compared with the period
+  // immediately before, so it reads as offset 1 rather than as something
+  // unknown. Conflating them would caption a legacy response "a period you
+  // named", which nobody did.
+  const offset = comparison.compare_offset === undefined ? 1 : comparison.compare_offset;
+  const named = offset === null;
   // "vs previous" was accurate while the comparison was always the preceding
   // period. Now it isn't, and a tile reading "-50% vs previous" against a
   // period three back is the kind of wrong that looks right.
-  const offsetLabel = offset === null || offset === undefined
+  const offsetLabel = named
     ? 'the period shown'
     : offset === 1 ? 'previous' : `${offset} periods back`;
 
@@ -90,7 +97,7 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
         {' ('}
         {comparison.previous.days}
         {comparison.previous.days === 1 ? ' day' : ' days'}
-        {offset === null || offset === undefined
+        {named
           ? ', a period you named'
           : offset === 1 ? ', immediately before' : `, ${offset} periods back`}
         {').'}

@@ -51,7 +51,11 @@ export function ComparePicker({ offset, start, end, onChange }: {
           key={value}
           size="sm"
           variant={!named && value === offset ? 'default' : 'outline'}
-          onClick={() => onChange({ compareOffset: value })}
+          // The named period must be cleared explicitly. `update` merges
+          // patches, and an explicit period outranks the offset everywhere
+          // downstream — so leaving it set would make this button do nothing
+          // while looking selected.
+          onClick={() => onChange({ compareOffset: value, compareStart: undefined, compareEnd: undefined })}
         >
           {label}
         </Button>
@@ -65,17 +69,24 @@ export function ComparePicker({ offset, start, end, onChange }: {
       >
         <CalendarDays className="mr-1 size-3.5" />
         {named ? `${start} → ${end ?? start}` : 'Specific period'}
-        {named && (
-          <X
-            className="ml-1 size-3"
-            onClick={(event) => {
-              event.stopPropagation();
-              onChange({ compareOffset: offset });
-              setOpen(false);
-            }}
-          />
-        )}
       </Button>
+
+      {/* A real button, not an icon inside one. Nesting it made clearing
+          mouse-only — no tab stop, no name for a screen reader — and a
+          <button> inside a <button> is invalid markup besides. */}
+      {named && (
+        <Button
+          size="sm"
+          variant="ghost"
+          aria-label="Clear the comparison period"
+          onClick={() => {
+            onChange({ compareOffset: offset, compareStart: undefined, compareEnd: undefined });
+            setOpen(false);
+          }}
+        >
+          <X className="size-3.5" />
+        </Button>
+      )}
 
       {open && (
         <div className="flex w-full flex-wrap items-end gap-2 rounded-md border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
