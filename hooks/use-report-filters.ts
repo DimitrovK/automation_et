@@ -22,9 +22,17 @@ export type ReportFilters = {
   includeBots: boolean;
   game: string | null;
   metric: MetricKey;
+  /** Rows on the leaderboard views. Bounded by the API's own cap. */
+  limit: number;
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** MAX_LIMIT in core/reporting_views.py — a larger value is rejected with a 400. */
+const MAX_LIMIT = 100;
+
+/** Only the leaderboard views paginate, so the rest never mention a limit. */
+const DEFAULT_LIMIT = 25;
 
 function parse(search: string, fallback: ReportFilters): ReportFilters {
   const params = new URLSearchParams(search);
@@ -41,11 +49,20 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
   // rather than to an error panel.
   const hasRange = !!start && ISO_DATE.test(start) && (!end || ISO_DATE.test(end));
 
+  // Out-of-range or non-numeric limits fall back to the default rather than
+  // being passed on: the API rejects them with a 400, and a shared link with a
+  // typo should degrade to the default view rather than to an error panel.
+  const rawLimit = Number(params.get('limit'));
+  const limit = Number.isInteger(rawLimit) && rawLimit >= 1 && rawLimit <= MAX_LIMIT
+    ? rawLimit
+    : fallback.limit;
+
   return {
     range: hasRange ? { window, start, end: end ?? undefined } : { window },
     includeBots: params.get('bots') === '1',
     game: params.get('game') || null,
     metric: (params.get('metric') as MetricKey) || fallback.metric,
+    limit,
   };
 }
 
@@ -70,11 +87,20 @@ function serialise(filters: ReportFilters, defaults: ReportFilters): string {
   if (filters.metric !== defaults.metric) {
     params.set('metric', filters.metric);
   }
+  if (filters.limit !== defaults.limit) {
+    params.set('limit', String(filters.limit));
+  }
   const query = params.toString();
   return query ? `?${query}` : '';
 }
 
-export function useReportFilters(defaults: ReportFilters) {
+export function useReportFilters(
+  // `limit` is optional: only the leaderboard views paginate, and requiring it
+  // on the other seven pages would put a number in front of readers that means
+  // nothing there.
+  suppliedDefaults: Omit<ReportFilters, 'limit'> & { limit?: number },
+) {
+  const defaults: ReportFilters = { limit: DEFAULT_LIMIT, ...suppliedDefaults };
   const [filters, setFilters] = useState<ReportFilters>(defaults);
   const [hydrated, setHydrated] = useState(false);
 

@@ -28,8 +28,9 @@ export default function PlayersReportPage() {
     includeBots: false,
     game: null,
     metric: 'games_started',
+    limit: 25,
   });
-  const { range, includeBots, game } = filters;
+  const { range, includeBots, game, limit } = filters;
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const setGame = (next: string | null) => update({ game: next });
@@ -38,8 +39,8 @@ export default function PlayersReportPage() {
   const [sortBy, setSortBy] = useState<'played' | 'finished'>('played');
 
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots, limit: 25, ...(game ? { game_type: game } : {}) }),
-    [range, includeBots, game],
+    () => ({ ...rangeToParams(range), include_bots: includeBots, limit, ...(game ? { game_type: game } : {}) }),
+    [range, includeBots, game, limit],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -66,7 +67,20 @@ export default function PlayersReportPage() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-gray-600 dark:text-gray-300">Rank by</span>
+        <span className="text-sm text-gray-600 dark:text-gray-300">Show</span>
+        {/* 100 is the API's own cap (MAX_LIMIT); offering more would 400. */}
+        {[25, 50, 100].map(size => (
+          <Button
+            key={size}
+            size="sm"
+            variant={limit === size ? 'default' : 'outline'}
+            onClick={() => update({ limit: size })}
+          >
+            {size}
+          </Button>
+        ))}
+
+        <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Rank by</span>
         <Button size="sm" variant={sortBy === 'played' ? 'default' : 'outline'} onClick={() => setSortBy('played')}>
           Played
         </Button>

@@ -9,9 +9,25 @@ const defaults = {
   includeBots: false,
   game: null,
   metric: 'games_started' as const,
+  limit: 25,
 };
 
 describe('report filter URL state', () => {
+  it('carries a chosen row limit, and drops it when it is the default', () => {
+    expect(__test.serialise({ ...defaults, limit: 100 }, defaults)).toBe('?limit=100');
+    expect(__test.serialise({ ...defaults, limit: 25 }, defaults)).toBe('');
+    expect(__test.parse('?limit=100', defaults).limit).toBe(100);
+  });
+
+  it('ignores a limit the API would reject rather than passing it on', () => {
+    // MAX_LIMIT is 100 server-side; anything else 400s. A shared link with a
+    // silly value should degrade to the default view, like a malformed date.
+    expect(__test.parse('?limit=9999', defaults).limit).toBe(25);
+    expect(__test.parse('?limit=0', defaults).limit).toBe(25);
+    expect(__test.parse('?limit=abc', defaults).limit).toBe(25);
+    expect(__test.parse('?limit=12.5', defaults).limit).toBe(25);
+  });
+
   it('round-trips a custom range', () => {
     const filters = { ...defaults, range: { window: 30 as const, start: '2026-06-01', end: '2026-06-30' } };
     const query = __test.serialise(filters, defaults);
