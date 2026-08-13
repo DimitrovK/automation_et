@@ -1,5 +1,6 @@
 import type {
   ActivityResponse,
+  RollupHealth,
   GlossaryResponse,
   AnomaliesResponse,
   DurationResponse,
@@ -61,6 +62,11 @@ export class ReportsAPI {
    */
   static async getGames(): Promise<GamesResponse> {
     return apiFetcher<GamesResponse>('core/reporting/games/');
+  }
+
+  /** GET /core/reporting/rollup-health/ — is the rollup complete and current. */
+  static async getRollupHealth(): Promise<RollupHealth> {
+    return apiFetcher<RollupHealth>('core/reporting/rollup-health/');
   }
 
   /** GET /core/reporting/glossary/ — what every reported number means. */

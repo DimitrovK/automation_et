@@ -5,6 +5,7 @@ import type { GameTotals } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
 import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
+import { RollupHealthBanner } from '@/components/reports/RollupHealthBanner';
 import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/AnomalySensitivity';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
@@ -92,6 +93,10 @@ export default function ReportsPage() {
           <GameBadge gameKey={game} meta={meta} active onClick={() => update({ game: null })} />
         </div>
       )}
+
+      {/* Above the anomalies: if the rollup is incomplete, "nothing moved" is
+          not a finding, and every panel below inherits that doubt. */}
+      <RollupHealthBanner />
 
       {anomalies.data && (
         <div className="space-y-2">

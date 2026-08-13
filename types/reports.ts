@@ -269,6 +269,22 @@ export type MetricDefinition = {
 
 export type GlossaryResponse = { metrics: MetricDefinition[] };
 
+/** State of the rollup every report is built on. Not range-filtered. */
+export type RollupHealth = {
+  has_data: boolean;
+  earliest: string | null;
+  latest: string | null;
+  days_covered: number;
+  gap_count: number;
+  /** Capped server-side; `gaps_truncated` says when there are more. */
+  gaps: string[];
+  gaps_truncated: boolean;
+  /** Days behind yesterday. Null when nothing has ever been computed. */
+  stale_days: number | null;
+  /** The exact backfill command, or null when there is nothing to run. */
+  suggested_command: string | null;
+};
+
 /** Which activity metric a chart or table is currently showing. */
 export const METRIC_OPTIONS = [
   { key: 'games_started', label: 'Played' },
