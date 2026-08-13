@@ -1,7 +1,7 @@
 'use client';
 
 import type { ActivityDay, MetricKey } from '@/types/reports';
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { METRIC_OPTIONS } from '@/types/reports';
 import { useTheme } from 'next-themes';
