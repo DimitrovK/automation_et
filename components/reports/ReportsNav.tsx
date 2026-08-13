@@ -53,8 +53,9 @@ export const REPORT_NAV_TRAILING: NavItem = {
  * moving, not to enumerate. These four are the questions asked on arrival —
  * how is today, what needs looking at, how are the games, who is playing.
  *
- * Every entry must be a real nav destination; `ReportsNav` tests that, so a
- * shortcut cannot outlive the page it points at.
+ * Every entry must be a real nav destination — enforced in
+ * `components/admin/__tests__/SectionNav.test.tsx`, which owns the guards for
+ * both sections' navs — so a shortcut cannot outlive the page it points at.
  */
 export const REPORT_QUICK_LINKS: NavItem[] = [
   { href: '/reports', label: 'Daily Pulse', icon: BarChart3 },
