@@ -2,6 +2,7 @@
 
 import type { AdoptionTrendsResponse, TrendGranularity } from '@/types/user-hub';
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,37 +20,6 @@ type Props = {
   onGranularityChange: (g: TrendGranularity) => void;
   onRetry: () => void;
 };
-
-/** Theme-aware tooltip (default recharts tooltip is unreadable in dark mode). */
-function TrendTooltip({
-  active,
-  payload,
-  label,
-  granularity,
-}: {
-  active?: boolean;
-  payload?: { name?: string; value?: number; color?: string }[];
-  label?: string;
-  granularity: TrendGranularity;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
-  return (
-    <div className="rounded-md border bg-popover px-3 py-2 text-sm text-popover-foreground shadow-md">
-      <p className="mb-1 font-medium">{label ? formatTrendDate(label, granularity) : ''}</p>
-      {payload.map(p => (
-        <p key={p.name} className="flex items-center gap-1.5 text-muted-foreground">
-          <span className="size-2 rounded-full" style={{ backgroundColor: p.color }} />
-          {p.name}
-          :
-          {' '}
-          <span className="font-mono text-foreground">{p.value}</span>
-        </p>
-      ))}
-    </div>
-  );
-}
 
 const PILLS: TrendGranularity[] = ['day', 'week'];
 
@@ -109,8 +79,11 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
                   <XAxis dataKey="date" tick={theme.tick} tickFormatter={v => formatTrendDate(v, granularity)} minTickGap={24} />
                   <YAxis allowDecimals={false} tick={theme.tick} width={36} />
-                  <Tooltip content={<TrendTooltip granularity={granularity} />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  {/* The same tooltip every report chart uses — this page had
+                      its own near-identical copy, one of three that drifted
+                      apart while favourites lived outside Reports. */}
+                  <Tooltip content={<ChartTooltip labelFormatter={v => formatTrendDate(String(v), granularity)} />} />
+                  <Legend wrapperStyle={theme.legend} />
                   <Area type="monotone" dataKey="cumulative_users" name="Cumulative users" stroke="#10b981" fill="#10b981" fillOpacity={0.2} />
                   <Area type="monotone" dataKey="new_adopters" name="New adopters" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} />
                 </AreaChart>

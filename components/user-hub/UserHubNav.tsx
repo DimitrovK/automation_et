@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, LayoutDashboard, Users } from 'lucide-react';
+import { LayoutDashboard, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils';
 export const USER_HUB_SECTIONS = [
   { href: '/user-hub', label: 'Overview', icon: LayoutDashboard },
   { href: '/user-hub/users', label: 'Users', icon: Users },
-  { href: '/user-hub/analytics', label: 'Favourites Analytics', icon: BarChart3 },
+  // Favourites analytics moved to /reports/favourites: every chart on it was
+  // about games, not about users.
 ] as const;
 
 /**

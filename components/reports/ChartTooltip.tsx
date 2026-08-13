@@ -2,7 +2,25 @@
 
 import type { ReactNode } from 'react';
 
-type Entry = { name?: string; value?: number | string | null; color?: string; dataKey?: string | number };
+type Entry = {
+  name?: string;
+  value?: number | string | null;
+  color?: string;
+  dataKey?: string | number;
+  /** The whole row behind this point — what a footer or a per-datum colour reads. */
+  payload?: Record<string, unknown>;
+};
+
+/**
+ * A bar coloured per-`<Cell>` reports no series colour: recharts fills the
+ * entry's `color` from the `<Bar>`'s own `fill`, which such a chart doesn't
+ * set. The row carries it instead, so the dot falls back to that rather than
+ * rendering as an invisible gap where the identity mark should be.
+ */
+function markColor(entry: Entry): string | undefined {
+  const fill = entry.payload?.fill;
+  return entry.color ?? (typeof fill === 'string' ? fill : undefined);
+}
 
 /**
  * The tooltip every report chart uses.
@@ -23,12 +41,18 @@ export function ChartTooltip({
   label,
   labelFormatter,
   valueFormatter,
+  footer,
 }: {
   active?: boolean;
   payload?: Entry[];
   label?: string | number;
   labelFormatter?: (label: string | number) => ReactNode;
   valueFormatter?: (value: number | string, entry: Entry) => ReactNode;
+  /**
+   * A derived line below the series — a rate or a share the rows imply but
+   * don't list. Given the first row, since every series shares one datum.
+   */
+  footer?: (row: Record<string, unknown>) => ReactNode;
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -50,7 +74,7 @@ export function ChartTooltip({
         >
           <span
             className="size-2 shrink-0 rounded-full"
-            style={{ backgroundColor: entry.color }}
+            style={{ backgroundColor: markColor(entry) }}
             aria-hidden
           />
           {entry.name}
@@ -65,6 +89,11 @@ export function ChartTooltip({
           </span>
         </p>
       ))}
+      {footer && payload[0]?.payload && (
+        <p className="mt-1 border-t pt-1 text-xs text-muted-foreground">
+          {footer(payload[0].payload)}
+        </p>
+      )}
     </div>
   );
 }
