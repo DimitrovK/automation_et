@@ -5,7 +5,7 @@ import type { ReportParams } from '@/types/reports';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { RangePicker } from '@/components/reports/RangePicker';

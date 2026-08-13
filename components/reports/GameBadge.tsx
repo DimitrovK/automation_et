@@ -3,7 +3,6 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import { X } from 'lucide-react';
 import { gameName, useGameColor } from '@/hooks/use-game-meta';
-import { prettySlug } from '@/lib/user-hub-format';
 import { cn } from '@/lib/utils';
 
 /**

@@ -1,7 +1,7 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';

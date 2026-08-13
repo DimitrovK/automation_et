@@ -1,4 +1,3 @@
-import type { GameTotals } from '@/types/reports';
 import { describe, expect, it } from 'vitest';
 import type { GameRowWithDuration } from '@/lib/report-sort';
 import { sortGameTotals } from '@/lib/report-sort';

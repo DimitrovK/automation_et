@@ -2,7 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import type { RetentionCohort } from '@/types/reports';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
