@@ -1,0 +1,68 @@
+version: 2
+
+# Notes
+# - Security updates run automatically once Dependabot is enabled at the repo
+#   level (Settings → Code security → Dependabot). No YAML needed for those —
+#   this file controls **version updates** (the routine "X.Y.Z is out" PRs).
+# - Schedule is weekly Monday so routine bumps land at the start of the week
+#   rather than piling onto a Friday.
+# - Patch + minor are grouped into one PR per ecosystem per week to keep review
+#   overhead low. Majors arrive separately because they need a closer look.
+#
+# - IMPORTANT, and the reason a bot PR here needs a human step: Vercel does not
+#   build pull requests opened by Dependabot, so a bump lands with no preview
+#   and no proof it still compiles. The established handling in this project is
+#   to mirror the change onto a `chore/` branch cut from `production`, let
+#   Vercel build that, and merge the mirror. A Dependabot PR merged on a green
+#   test suite alone has never been built by anything.
+#
+# - This repo installs with pnpm and Vercel uses `--frozen-lockfile`, so
+#   `pnpm-lock.yaml` must be regenerated with pnpm in the same commit as any
+#   package.json change. A lockfile edited by npm, or left stale, fails the
+#   install step before a single line is compiled — which is how production
+#   silently stopped deploying for several merges in August.
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - javascript
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Framework majors need a coordinated upgrade across the stack, not an
+      # auto-PR: a Next or React major moves the build, the router and the type
+      # surface at once.
+      - dependency-name: next
+        update-types: ['version-update:semver-major']
+      - dependency-name: react
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-dom
+        update-types: ['version-update:semver-major']
+
+      # The typecheck gate (scripts/check-types.mjs) and the pre-commit hook
+      # both run against this TypeScript. A major lands in every commit's path
+      # at once, so it goes in deliberately rather than on a Monday morning.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions:
+        patterns:
+          - '*'
