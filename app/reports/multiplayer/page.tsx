@@ -11,13 +11,13 @@ import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGameMeta } from '@/hooks/use-game-meta';
+import { gameName, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-import { prettySlug } from '@/lib/user-hub-format';
+
 
 export default function MultiplayerReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -145,7 +145,7 @@ export default function MultiplayerReportPage() {
                         {data.by_game.map(row => (
                           <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
                             <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">
-                              {prettySlug(row.game_type)}
+                              {gameName(meta[row.game_type], row.game_type)}
                             </td>
                             <td className="py-2 pr-4 text-right">{row.rooms_created.toLocaleString()}</td>
                             <td className="py-2 pr-4 text-right">{row.rooms_started.toLocaleString()}</td>

@@ -1,7 +1,7 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
-import { useGameColor } from '@/hooks/use-game-meta';
+import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import type { DurationResponse } from '@/types/reports';
 import { Info } from 'lucide-react';
 import { ExportButton } from '@/components/reports/ExportButton';
@@ -87,7 +87,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
               {data.longest_single_sitting_game && (
                 <>
                   {' Longest single sitting: '}
-                  <strong>{meta[data.longest_single_sitting_game]?.label ?? data.longest_single_sitting_game}</strong>
+                  <strong>{gameName(meta[data.longest_single_sitting_game], data.longest_single_sitting_game)}</strong>
                   .
                 </>
               )}
@@ -149,7 +149,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
         <p className="text-xs text-gray-500 dark:text-gray-400">
           No session length available for
           {' '}
-          {unsupported.map(row => meta[row.game_type]?.label ?? row.game_type).join(' and ')}
+          {unsupported.map(row => gameName(meta[row.game_type], row.game_type)).join(' and ')}
           {' — '}
           {unsupported[0]?.reason}
           .

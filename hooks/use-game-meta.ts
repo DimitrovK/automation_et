@@ -10,6 +10,7 @@ import type { GameMeta } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useState } from 'react';
 import { ReportsAPI } from '@/lib/reports-api';
+import { prettySlug } from '@/lib/user-hub-format';
 
 export type GameMetaMap = Record<string, GameMeta>;
 
@@ -24,6 +25,17 @@ export const FALLBACK_COLOR = '#94a3b8';
  * reads as a smudge rather than a colour. `color_dark` is optional, so a BE
  * that predates it degrades to the light colour rather than to grey.
  */
+/**
+ * What to call a game on screen.
+ *
+ * Prefers `display_name` ("Grid"). Falls back to `label` ("Grid Game Sessions")
+ * only while a backend predating display_name is deployed — a clumsy name beats
+ * a raw slug. Falls back to the prettified key when the game is unknown.
+ */
+export function gameName(meta: GameMeta | undefined, gameKey: string): string {
+  return meta?.display_name || meta?.label || prettySlug(gameKey);
+}
+
 export function gameColor(meta: GameMeta | undefined, isDark: boolean): string {
   if (!meta) {
     return FALLBACK_COLOR;
