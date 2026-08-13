@@ -146,6 +146,9 @@ export type ReportParams = {
   game_type?: string;
   include_bots?: boolean;
   limit?: number;
+  /** Anomaly knobs. Bounded server-side; out-of-range values are rejected. */
+  min_volume?: number;
+  min_change_pct?: number;
 };
 
 /**
