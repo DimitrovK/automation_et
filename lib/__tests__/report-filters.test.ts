@@ -79,3 +79,41 @@ describe('every report page keeps its filters in the URL', () => {
     ).toEqual([]);
   });
 });
+
+describe('every report page can be exported', () => {
+  it('has no data page without a CSV export', async () => {
+    // ExportButton and the CSV helper existed and were wired into one page out
+    // of seven, so six reports could be read but not taken anywhere. Nothing
+    // failed — the pages simply had no way out of the browser.
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+
+    const root = join(process.cwd(), 'app', 'reports');
+
+    function pages(dir: string): string[] {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) return pages(full);
+        return entry.name === 'page.tsx' ? [full] : [];
+      });
+    }
+
+    const found = pages(root);
+    expect(found.length).toBeGreaterThan(5);
+
+    const offenders = found.filter((file) => {
+      const source = readFileSync(file, 'utf8');
+      // The glossary is reference text, and the drill-downs are a single
+      // record — neither is a dataset anyone would take to a spreadsheet.
+      if (file.includes('glossary') || file.includes('[id]') || file.includes('[key]')) return false;
+      // A page with no range picker isn't a data view.
+      if (!source.includes('RangePicker')) return false;
+      return !source.includes('ExportButton');
+    });
+
+    expect(
+      offenders.map(f => f.replace(process.cwd(), '')),
+      'Report pages with no CSV export — the data can be read but not taken anywhere',
+    ).toEqual([]);
+  });
+});

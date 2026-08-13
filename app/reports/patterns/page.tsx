@@ -1,10 +1,12 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
+import type { HourWeekdayRow } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
 import { MetricInfo } from '@/components/reports/MetricInfo';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
@@ -78,6 +80,24 @@ export default function PatternsPage() {
       />
 
       <GameFilter meta={meta} value={game} onChange={setGame} />
+
+      <div className="flex justify-end">
+        <ExportButton
+          // The grid is the page's real dataset; the two bar charts are its
+          // margins. Exported one row per weekday with 24 hour columns, which
+          // is the shape a spreadsheet can pivot.
+          rows={data?.by_hour_weekday ?? []}
+          view="patterns"
+          filters={{ ...rangeToParams(range), bots: includeBots, game }}
+          columns={[
+            { header: 'Weekday', value: row => row.name },
+            ...Array.from({ length: 24 }, (_, hour) => ({
+              header: `${String(hour).padStart(2, '0')}:00`,
+              value: (row: HourWeekdayRow) => row.hours[hour],
+            })),
+          ]}
+        />
+      </div>
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />

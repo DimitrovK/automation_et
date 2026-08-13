@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
+import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -101,6 +102,23 @@ export default function GamesIndexPage() {
         includeBots={includeBots}
         onIncludeBotsChange={setIncludeBots}
       />
+
+      <div className="flex justify-end">
+        <ExportButton
+          rows={rows}
+          view="games"
+          filters={{ ...rangeToParams(range), bots: includeBots, game }}
+          columns={[
+                    { header: 'Game', value: row => row.game_type },
+                    { header: 'Played', value: row => row.games_started },
+                    { header: 'Finished', value: row => row.games_finished },
+                    { header: 'Completion %', value: row => row.completion_pct },
+                    { header: 'Sessions per player', value: row => row.sessions_per_player },
+                    { header: 'Came back %', value: row => row.repeat_rate_pct },
+                    { header: 'Trend %', value: row => row.trend_pct },
+                  ]}
+        />
+      </div>
 
       {error
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
