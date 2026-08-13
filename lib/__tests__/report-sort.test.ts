@@ -1,8 +1,9 @@
 import type { GameTotals } from '@/types/reports';
 import { describe, expect, it } from 'vitest';
+import type { GameRowWithDuration } from '@/lib/report-sort';
 import { sortGameTotals } from '@/lib/report-sort';
 
-function game(game_type: string, overrides: Partial<GameTotals> = {}): GameTotals {
+function game(game_type: string, overrides: Partial<GameRowWithDuration> = {}): GameRowWithDuration {
   return {
     game_type,
     games_started: 0,
@@ -17,7 +18,7 @@ function game(game_type: string, overrides: Partial<GameTotals> = {}): GameTotal
     previous_games_started: 0,
     trend_pct: null,
     ...overrides,
-  } as GameTotals;
+  } as GameRowWithDuration;
 }
 
 describe('sortGameTotals', () => {
@@ -51,6 +52,28 @@ describe('sortGameTotals', () => {
 
     expect(sortGameTotals(rows, 'trend_pct').map(r => r.game_type))
       .toEqual(['slipping', 'falling', 'unmeasured']);
+  });
+
+  it('sorts by session length with campaign games included', () => {
+    // Session length lives on a different endpoint and is merged in, so it can
+    // be absent for a game the duration report can't measure. Absent must sort
+    // last, like every other unmeasured value.
+    const rows = [
+      game('grid', { median_seconds: 192 }),
+      game('conquest', { median_seconds: 86_424 }),
+      game('quiz', { median_seconds: null }),
+    ];
+
+    expect(sortGameTotals(rows, 'median_seconds').map(r => r.game_type))
+      .toEqual(['conquest', 'grid', 'quiz']);
+  });
+
+  it('treats a missing session length as unmeasured, not as zero', () => {
+    // `undefined` reaches this when the duration request hasn't landed yet —
+    // sorting it as 0 would reshuffle the table as the second request arrives.
+    const rows = [game('a', { median_seconds: 60 }), game('b', {})];
+
+    expect(sortGameTotals(rows, 'median_seconds').map(r => r.game_type)).toEqual(['a', 'b']);
   });
 
   it('does not mutate the input', () => {
