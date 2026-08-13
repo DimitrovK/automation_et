@@ -11,12 +11,14 @@ import {
   Users,
   Users2,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 
 import { Navigation } from '@/components/navigation';
+import { REPORT_QUICK_LINKS } from '@/components/reports/ReportsNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
@@ -206,7 +208,8 @@ export default function DashboardPage() {
                 User Hub
               </CardTitle>
               <CardDescription>
-                Favourites analytics and user profiles (read-only)
+                Search users and open a profile — favourites, status, activity (read-only).
+                Favourites analytics moved to Reports.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -220,25 +223,42 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="opacity-60 transition-shadow duration-200 hover:shadow-lg">
+          {/* Reports has been live for months; this card still said "Coming
+              Soon", which is worse than saying nothing — it tells people the
+              section doesn't exist. It now opens onto the questions someone
+              actually arrives with, rather than one button into a section with
+              ten pages. */}
+          <Card className="transition-shadow duration-200 hover:shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="size-5 text-red-600" />
                 Reports
               </CardTitle>
               <CardDescription>
-                Generate and view various reports and exports
+                How the platform is doing: today against a typical day, per-game health,
+                who is playing and whether they come back.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <Button
-                disabled
-                className="w-full"
-                variant="outline"
+                onClick={() => router.push('/reports')}
+                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <FileText className="mr-2 size-4" />
-                Coming Soon
+                Open Reports
               </Button>
+              <div className="flex flex-wrap gap-1">
+                {REPORT_QUICK_LINKS.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60"
+                  >
+                    <Icon className="size-3.5 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </CardContent>
           </Card>
 

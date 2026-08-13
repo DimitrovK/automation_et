@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { BarChart3, BookOpen, Users } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { SectionNav } from '@/components/admin/SectionNav';
-import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING } from '@/components/reports/ReportsNav';
+import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING, REPORT_QUICK_LINKS } from '@/components/reports/ReportsNav';
 import { USER_HUB_NAV_GROUPS, USER_HUB_NAV_TRAILING } from '@/components/user-hub/UserHubShell';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/reports/players' }));
@@ -75,6 +75,22 @@ describe('report nav groups', () => {
     for (const group of REPORT_NAV_GROUPS) {
       expect(items, `group "${group.heading}" repeats a page name`).not.toContain(group.heading);
     }
+  });
+
+  it('offers only dashboard shortcuts that are real destinations', () => {
+    // The dashboard card duplicates a handful of hrefs. A shortcut outliving
+    // the page it points at is a 404 reached from the front door, and nothing
+    // else would catch it.
+    const linked = new Set(REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)));
+    const orphans = REPORT_QUICK_LINKS.filter(link => !linked.has(link.href));
+
+    expect(orphans.map(o => o.href), 'quick links pointing nowhere').toEqual([]);
+  });
+
+  it('keeps the dashboard shortlist short', () => {
+    // A card reprinting the whole nav is the nav with worse typography. The
+    // dashboard's job is to get someone moving, not to enumerate.
+    expect(REPORT_QUICK_LINKS.length).toBeLessThanOrEqual(4);
   });
 
   it('covers every report page', async () => {

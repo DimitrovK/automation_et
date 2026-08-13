@@ -44,3 +44,21 @@ export const REPORT_NAV_TRAILING: NavItem = {
   label: 'What the numbers mean',
   icon: BookOpen,
 };
+
+/**
+ * The handful of reports worth offering from the dashboard.
+ *
+ * Deliberately a shortlist, not the nav: a card that reprints ten destinations
+ * is the nav with worse typography, and the dashboard's job is to get someone
+ * moving, not to enumerate. These four are the questions asked on arrival —
+ * how is today, what needs looking at, how are the games, who is playing.
+ *
+ * Every entry must be a real nav destination; `ReportsNav` tests that, so a
+ * shortcut cannot outlive the page it points at.
+ */
+export const REPORT_QUICK_LINKS: NavItem[] = [
+  { href: '/reports', label: 'Daily Pulse', icon: BarChart3 },
+  { href: '/reports/anomalies', label: 'Needs attention', icon: TriangleAlert },
+  { href: '/reports/games', label: 'Games', icon: LayoutGrid },
+  { href: '/reports/players', label: 'Players', icon: Users },
+];
