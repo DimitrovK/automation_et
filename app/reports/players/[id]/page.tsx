@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
+import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -38,7 +39,18 @@ export default function PlayerDetailPage() {
   const routeParams = useParams();
   const userId = Number(routeParams?.id);
 
-  const [range, setRange] = useState<RangeState>({ window: 30 });
+  // Filters live in the URL so a view can be bookmarked, shared or reloaded
+  // without losing what was selected.
+  const { filters, update } = useReportFilters({
+    range: { window: 30 },
+    includeBots: false,
+    game: null,
+    metric: 'games_started',
+  });
+  // No bot or game filter here: this endpoint is scoped to one user, so neither
+  // applies — echoing them back would imply a filter the query ignores.
+  const { range } = filters;
+  const setRange = (next: RangeState) => update({ range: next });
   const params = useMemo(() => rangeToParams(range), [range]);
 
   const { meta } = useGameMeta(enabled);

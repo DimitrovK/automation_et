@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
+import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -19,9 +20,18 @@ export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
 
-  const [range, setRange] = useState<RangeState>({ window: 7 });
-  const [includeBots, setIncludeBots] = useState(false);
-  const [game, setGame] = useState<string | null>(null);
+  // Filters live in the URL so a view can be bookmarked, shared or reloaded
+  // without losing what was selected.
+  const { filters, update } = useReportFilters({
+    range: { window: 7 },
+    includeBots: false,
+    game: null,
+    metric: 'games_started',
+  });
+  const { range, includeBots, game } = filters;
+  const setRange = (next: RangeState) => update({ range: next });
+  const setIncludeBots = (next: boolean) => update({ includeBots: next });
+  const setGame = (next: string | null) => update({ game: next });
   // 'played' ranks by sessions started, 'finished' by ones seen through — the gap
   // between them is the interesting part, so both are reachable.
   const [sortBy, setSortBy] = useState<'played' | 'finished'>('played');

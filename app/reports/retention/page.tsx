@@ -8,6 +8,7 @@ import { ReportsShell } from '@/components/reports/ReportsShell';
 import { RetentionTable } from '@/components/reports/RetentionTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReport } from '@/hooks/use-report';
+import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -18,8 +19,17 @@ export default function RetentionPage() {
 
   // 60 days by default: D30 needs a month of runway before any cohort can even
   // reach it, so a 7-day default would show a table of dashes.
-  const [range, setRange] = useState<RangeState>({ window: 60 });
-  const [includeBots, setIncludeBots] = useState(false);
+  // Filters live in the URL so a view can be bookmarked, shared or reloaded
+  // without losing what was selected.
+  const { filters, update } = useReportFilters({
+    range: { window: 60 },
+    includeBots: false,
+    game: null,
+    metric: 'games_started',
+  });
+  const { range, includeBots, game } = filters;
+  const setRange = (next: RangeState) => update({ range: next });
+  const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const params = useMemo(
     () => ({ ...rangeToParams(range), include_bots: includeBots }),
     [range, includeBots],
