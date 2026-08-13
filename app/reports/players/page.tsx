@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { RangeState } from '@/lib/report-range';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -18,6 +18,7 @@ import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -32,7 +33,19 @@ export default function PlayersReportPage() {
     metric: 'games_started',
     limit: 25,
   });
-  const { range, includeBots, game, limit } = filters;
+  const { range, includeBots, game, limit, search } = filters;
+  // Local copy so typing stays responsive; the committed value is what the
+  // request keys on. Without the split, every keystroke would refetch — and
+  // useReport keys on params by value, so it genuinely would fire each time.
+  const [draftSearch, setDraftSearch] = useState(search);
+  useEffect(() => setDraftSearch(search), [search]);
+  useEffect(() => {
+    if (draftSearch === search) {
+      return;
+    }
+    const timer = setTimeout(() => update({ search: draftSearch.trim() }), 300);
+    return () => clearTimeout(timer);
+  }, [draftSearch, search, update]);
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const setGame = (next: string | null) => update({ game: next });
@@ -41,8 +54,14 @@ export default function PlayersReportPage() {
   const [sortBy, setSortBy] = useState<'played' | 'finished'>('played');
 
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots, limit, ...(game ? { game_type: game } : {}) }),
-    [range, includeBots, game, limit],
+    () => ({
+      ...rangeToParams(range),
+      include_bots: includeBots,
+      limit,
+      ...(game ? { game_type: game } : {}),
+      ...(search ? { search } : {}),
+    }),
+    [range, includeBots, game, limit, search],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -69,6 +88,20 @@ export default function PlayersReportPage() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
+        <label htmlFor="player-search" className="text-sm text-gray-600 dark:text-gray-300">Find</label>
+        <Input
+          id="player-search"
+          value={draftSearch}
+          onChange={event => setDraftSearch(event.target.value)}
+          placeholder="Username"
+          className="h-8 w-48"
+        />
+        {search && (
+          <Button size="sm" variant="ghost" onClick={() => setDraftSearch('')}>
+            Clear
+          </Button>
+        )}
+
         <label htmlFor="row-limit" className="text-sm text-gray-600 dark:text-gray-300">Show</label>
         {/* A dropdown, not three buttons. Row count is a single choice from a
             closed set, which is what a select is for — and three more filled/
@@ -181,7 +214,9 @@ export default function PlayersReportPage() {
                   </table>
                   {data.players.length === 0 && (
                     <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Nobody played in this window.
+                      {search
+                      ? `No player matching "${search}" played in this window.`
+                      : 'Nobody played in this window.'}
                     </p>
                   )}
                 </CardContent>

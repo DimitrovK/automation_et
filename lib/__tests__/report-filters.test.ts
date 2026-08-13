@@ -10,9 +10,20 @@ const defaults = {
   game: null,
   metric: 'games_started' as const,
   limit: 25,
+  search: '',
 };
 
 describe('report filter URL state', () => {
+  it('carries a player search, and treats blank as no filter', () => {
+    // In the URL so "find this player" is a link that can be sent. Trimmed,
+    // because "  " in a shared link would show a filtered-looking box while
+    // matching everyone.
+    expect(__test.serialise({ ...defaults, search: 'kalin' }, defaults)).toBe('?search=kalin');
+    expect(__test.serialise({ ...defaults, search: '' }, defaults)).toBe('');
+    expect(__test.parse('?search=kalin', defaults).search).toBe('kalin');
+    expect(__test.parse('?search=%20%20', defaults).search).toBe('');
+  });
+
   it('carries a chosen row limit, and drops it when it is the default', () => {
     expect(__test.serialise({ ...defaults, limit: 100 }, defaults)).toBe('?limit=100');
     expect(__test.serialise({ ...defaults, limit: 25 }, defaults)).toBe('');
