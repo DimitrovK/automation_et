@@ -24,28 +24,35 @@ export type LongSessionReason = {
 };
 
 /**
- * The sweeper's ceiling in the units it was configured in.
+ * The sweeper's ceiling in the units it was configured in, or null if unknown.
  *
  * `formatDuration` renders 86,400s as "1.0d", which is right for a measured
  * session and wrong for a setting: the timeout is 24 hours, and someone
- * checking it against the task will look for that number.
+ * checking it against the sweeper task will look for that number.
+ *
+ * Null rather than a dash when it's missing. The dash belongs in a table cell,
+ * where a column header says what is absent; dropped into a sentence it reads
+ * "closed after —", which is worse than not naming the timeout at all.
  */
-function ceilingLabel(seconds: number | null | undefined): string {
-  if (seconds && seconds % 3600 === 0) {
-    return `${seconds / 3600}h`;
+function ceilingLabel(seconds: number | null | undefined): string | null {
+  if (typeof seconds !== 'number' || seconds <= 0) {
+    return null;
   }
-  return formatDuration(seconds ?? null);
+  return seconds % 3600 === 0 ? `${seconds / 3600}h` : formatDuration(seconds);
 }
 
 export function longSessionReason(row: DurationRow): LongSessionReason | null {
   if (row.long_reason === 'idle_sweep') {
     const ceiling = ceilingLabel(row.idle_finish_seconds);
-    const share = row.swept_pct === null || row.swept_pct === undefined ? null : `${row.swept_pct}%`;
+    const share = typeof row.swept_pct === 'number' ? `${row.swept_pct}%` : null;
+    // Each half of the sentence is optional, because either number can be
+    // missing and the claim — the length is the sweeper's, not the player's —
+    // is worth making with whichever of them arrived.
+    const subject = share === null ? 'Sessions left idle are closed' : `${share} of measured sessions were closed`;
+    const when = ceiling === null ? 'by an idle timeout' : `after ${ceiling} idle`;
     return {
       label: 'Idle sweep',
-      detail: share === null
-        ? `Sessions left idle are closed after ${ceiling}, so their length is the sweeper's clock rather than time spent playing.`
-        : `${share} of measured sessions were closed after ${ceiling} idle, so their length is the sweeper's clock rather than time spent playing.`,
+      detail: `${subject} ${when}, so their length is the sweeper's clock rather than time spent playing.`,
       playedOut: row.median_excluding_swept_seconds === null || row.median_excluding_swept_seconds === undefined
         ? null
         : formatDuration(row.median_excluding_swept_seconds),

@@ -379,8 +379,9 @@ export type DurationRow = {
   single_sitting: boolean | null;
   /**
    * Seconds of idleness after which a sweeper task closes an unfinished session,
-   * or null for games with no such job. Optional so a backend predating it
-   * degrades to the old "long by design" reading rather than breaking.
+   * or null for games with no such job. Optional because a backend predating
+   * these fields sends none of them — such a row explains nothing rather than
+   * guessing which of two opposite explanations applies.
    */
   idle_finish_seconds?: number | null;
   /** Measured sessions sitting at or past that ceiling — timed by the sweeper. */

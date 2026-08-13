@@ -65,6 +65,33 @@ describe('longSessionReason', () => {
     expect(longSessionReason(row({ long_reason: null }))).toBeNull();
   });
 
+  it('names the timeout without inventing a duration for it', () => {
+    // The backend always sends the ceiling with an idle_sweep, but the type
+    // allows its absence — and formatDuration(null) is "—", so the sentence
+    // would have read "closed after —", which is worse than not naming it.
+    const why = longSessionReason(row({ long_reason: 'idle_sweep', swept_pct: 72 }));
+
+    expect(why?.detail).toBe(
+      "72% of measured sessions were closed by an idle timeout, so their length is the sweeper's clock rather than time spent playing.",
+    );
+  });
+
+  it('still makes the claim when neither number arrived', () => {
+    const why = longSessionReason(row({ long_reason: 'idle_sweep', swept_pct: null }));
+
+    expect(why?.detail).toBe(
+      "Sessions left idle are closed by an idle timeout, so their length is the sweeper's clock rather than time spent playing.",
+    );
+  });
+
+  it('treats a zero ceiling as no ceiling', () => {
+    // "closed after 0h idle" is not a fact about anything.
+    const why = longSessionReason(row({ long_reason: 'idle_sweep', idle_finish_seconds: 0, swept_pct: 50 }));
+
+    expect(why?.detail).toContain('by an idle timeout');
+    expect(why?.detail).not.toContain('0h');
+  });
+
   it('still explains a sweep whose played-out median is unknown', () => {
     // Every session swept: there is no played-out median to show, but the
     // reason is still the most important thing on the row.
