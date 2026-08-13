@@ -21,6 +21,7 @@ import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 function Tile({ label, value, hint, metric }: { label: string; value: string; hint: string; metric?: string }) {
   return (
@@ -168,10 +169,8 @@ export default function PatternsPage() {
                         <XAxis dataKey="hour" tick={theme.tick} tickFormatter={h => `${h}:00`} interval={1} />
                         <YAxis tick={theme.tick} allowDecimals={false} width={44} />
                         <Tooltip
-                          contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle}
-                          labelFormatter={h => `${String(h).padStart(2, '0')}:00`}
+                          cursor={theme.tooltip.cursor}
+                          content={<ChartTooltip labelFormatter={h => `${String(h).padStart(2, '0')}:00`} />}
                         />
                         <Bar dataKey="games_started" name="Games" radius={[3, 3, 0, 0]}>
                           {data.by_hour.map(row => (
@@ -201,9 +200,7 @@ export default function PatternsPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
                         <XAxis dataKey="name" tick={theme.tick} tickFormatter={name => name.slice(0, 3)} />
                         <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-                        <Tooltip contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle} />
+                        <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                         <Bar dataKey="games_started" name="Games" radius={[3, 3, 0, 0]}>
                           {data.by_weekday.map(row => (
                             <Cell
@@ -232,9 +229,7 @@ export default function PatternsPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
                         <XAxis dataKey="date" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
                         <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-                        <Tooltip contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle} />
+                        <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                         <Area
                           type="monotone"
                           dataKey="returning_players"

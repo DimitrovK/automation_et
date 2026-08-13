@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useGameColor } from '@/hooks/use-game-meta';
 import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 /** Quiz has no mode column, so its rooms arrive as null rather than being dropped. */
 function modeLabel(mode: string | null): string {
@@ -65,9 +66,7 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
                       <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
                       <XAxis dataKey="mode" tick={theme.tick} />
                       <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-                      <Tooltip contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle} cursor={theme.tooltip.cursor} />
+                      <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                       <Bar dataKey="rooms_created" name="Rooms" radius={[4, 4, 0, 0]}>
                         <LabelList dataKey="rooms_created" position="top" style={{ fontSize: 11 }} />
                         {modes.map(mode => (

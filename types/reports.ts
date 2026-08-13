@@ -24,6 +24,8 @@ export type Coverage = {
 };
 
 export type ActivityResponse = {
+  /** Echoes the bucket size used, so a chart can label its axis correctly. */
+  granularity: Granularity;
   coverage: Coverage;
   totals: ActivityMetrics;
   series: ActivityDay[];
@@ -149,7 +151,19 @@ export type ReportParams = {
   /** Anomaly knobs. Bounded server-side; out-of-range values are rejected. */
   min_volume?: number;
   min_change_pct?: number;
+  /** Bucket size for the activity series. Rejected server-side if unknown. */
+  granularity?: Granularity;
 };
+
+/**
+ * Buckets the activity series can be rolled up into.
+ *
+ * Server-side, because distinct players are not additive: a week's figure has
+ * to be computed, not summed from its days.
+ */
+export type Granularity = 'day' | 'week' | 'month';
+
+export const GRANULARITIES: Granularity[] = ['day', 'week', 'month'];
 
 /**
  * The part of the echo every range-filtered response carries, including the

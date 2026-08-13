@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { METRIC_OPTIONS } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
-import type { Granularity } from '@/lib/report-granularity';
-import { useState } from 'react';
-import { aggregateSeries, canAggregate, GRANULARITIES } from '@/lib/report-granularity';
+import type { Granularity } from '@/types/reports';
+import { GRANULARITIES } from '@/types/reports';
 import { cn } from '@/lib/utils';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 /** Day-month tick, in UTC so it renders as the intended day regardless of viewer TZ. */
 /** Labels follow the bucket: a month bar labelled "1 Aug" reads as one day. */
@@ -38,25 +38,28 @@ const DEFAULT_COLORS: Record<MetricKey, string> = {
  * meaningful (a "played" line means much more next to "finished"), while giving
  * four lines equal weight makes none of them readable.
  */
-export function ActivityChart({ series, title, description, metric, color }: {
+export function ActivityChart({ series, title, description, metric, color, granularity, onGranularityChange }: {
   series: ActivityDay[];
   title: string;
   description: string;
   metric: MetricKey;
   /** Overrides the metric colour — used to match the selected game's badge. */
   color?: string;
+  /**
+   * Controlled, because the bucketing happens server-side: a week's distinct
+   * players must be computed, not summed, so changing this refetches rather
+   * than regrouping what is already on screen.
+   */
+  granularity: Granularity;
+  onGranularityChange: (next: Granularity) => void;
 }) {
   const { resolvedTheme } = useTheme();
   const theme = chartTheme(resolvedTheme === 'dark');
-  // Chart-owned, not page-owned: it changes how this chart reads and nothing
-  // else on the page, so it belongs in this header rather than the filter bar.
-  const [granularity, setGranularity] = useState<Granularity>('day');
-  const aggregatable = canAggregate(metric);
-  // Distinct players cannot be summed across days, so the control falls back to
-  // daily rather than drawing an inflated line. Silently ignoring the choice
-  // would be worse: the button would look selected and the data wouldn't match.
-  const effective: Granularity = aggregatable ? granularity : 'day';
-  const rows = aggregateSeries(series, effective);
+  // The control lives in this header — it changes how this chart reads and
+  // nothing else on the page — but the state lives with the request, because
+  // the server does the bucketing.
+  const rows = series;
+  const effective = granularity;
   // An uncovered day was never computed. Feeding 0 to the chart draws a
   // confident dip that never happened, so the value becomes null and recharts
   // leaves a visible break instead.
@@ -85,17 +88,14 @@ export function ActivityChart({ series, title, description, metric, color }: {
               <button
                 key={option}
                 type="button"
-                disabled={!aggregatable && option !== 'day'}
                 aria-pressed={effective === option}
-                title={aggregatable
-                  ? `Group by ${option}`
-                  : 'Distinct players cannot be added up across days, so this metric is only shown daily'}
-                onClick={() => setGranularity(option)}
+                title={`Group by ${option}`}
+                onClick={() => onGranularityChange(option)}
                 className={cn(
                   'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
                   effective === option
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-slate-700/50',
+                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700/50',
                 )}
               >
                 {option}
@@ -105,15 +105,6 @@ export function ActivityChart({ series, title, description, metric, color }: {
         </div>
         <CardDescription>
           {description}
-          {!aggregatable && (
-            <>
-              {' '}
-              <span className="text-gray-500 dark:text-gray-400">
-                Shown daily: distinct players can't be added up across days, so a
-                weekly total would count the same person more than once.
-              </span>
-            </>
-          )}
           {uncovered > 0 && (
             <>
               {' '}
@@ -133,9 +124,7 @@ export function ActivityChart({ series, title, description, metric, color }: {
             <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
             <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
             <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-            <Tooltip contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle} />
+            <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             {METRIC_OPTIONS.map((option) => {
               const isPrimary = option.key === metric;
