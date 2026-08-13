@@ -7,6 +7,7 @@ import { Info } from 'lucide-react';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DurationSpread } from '@/components/reports/DurationSpread';
 import { formatDuration } from '@/lib/format-duration';
 import { longSessionReason } from '@/lib/long-session-reason';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,10 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
           </div>
         </div>
       </td>
+      {/* Where the middle half of sessions actually sit. The median beside it
+          is one number, and two games with the same median can be a tight
+          five-minute game and a sprawl. */}
+      <td className="py-2 pr-4"><DurationSpread row={row} /></td>
       <td className="py-2 pr-4 text-right tabular-nums">{formatDuration(row.p90_seconds)}</td>
       <td className="py-2 pr-4 text-right tabular-nums">{row.measured.toLocaleString()}</td>
       <td className="py-2 text-right">
@@ -116,6 +121,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
       <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
         <th className="py-2 pr-4 font-medium">Game</th>
         <th className="py-2 pr-4 font-medium">Median</th>
+        <th className="py-2 pr-4 font-medium" title="Where the middle half of sessions sit — p25 to p75, median marked">Middle half</th>
         <th className="py-2 pr-4 text-right font-medium">p90</th>
         <th className="py-2 pr-4 text-right font-medium">Sessions</th>
         <th className="py-2 text-right font-medium">Coverage</th>
@@ -146,7 +152,9 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             filters={{ start: data.start, end: data.end }}
             columns={[
               { header: 'Game', value: row => row.game_type },
+              { header: 'p25 seconds', value: row => row.p25_seconds ?? '' },
               { header: 'Median seconds', value: row => row.median_seconds },
+              { header: 'p75 seconds', value: row => row.p75_seconds ?? '' },
               { header: 'p90 seconds', value: row => row.p90_seconds },
               { header: 'Sessions measured', value: row => row.measured },
               { header: 'Finished sessions', value: row => row.sessions },

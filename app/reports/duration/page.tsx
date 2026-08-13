@@ -2,6 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
+import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -77,7 +78,14 @@ export default function DurationPage() {
         ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
         : isLoading || !data
           ? <Skeleton className="h-80 w-full" />
-          : <DurationTable data={data} meta={meta} />}
+          : (
+              <>
+                <DurationTable data={data} meta={meta} />
+                {/* After the comparison, because "which game holds attention"
+                    comes before "what does this one look like". */}
+                <DurationHistogram data={data} meta={meta} />
+              </>
+            )}
     </ReportsShell>
   );
 }
