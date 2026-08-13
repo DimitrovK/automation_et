@@ -2,16 +2,21 @@
 /**
  * Fails when pnpm-lock.yaml has drifted from package.json.
  *
- * This repo tracks BOTH package-lock.json and pnpm-lock.yaml, and only the pnpm
- * one is authoritative: Vercel installs with `pnpm install --frozen-lockfile`.
- * So a dependency change made with npm updates package.json and
- * package-lock.json, passes every local check, and then fails the deploy at the
- * install step — before the build even starts, with the site still serving the
- * previous version so nothing looks broken.
+ * pnpm-lock.yaml is the only lockfile: Vercel installs with
+ * `pnpm install --frozen-lockfile`, so that is the one that decides whether a
+ * deploy happens.
  *
- * That happened: production stopped deploying and stayed that way, because a
- * clean `npm ci` plus a production build both passed against a lockfile Vercel
- * never reads.
+ * This repo used to track package-lock.json alongside it. A dependency change
+ * made with npm updated package.json and package-lock.json, passed every local
+ * check, and then failed the deploy at the install step — before the build even
+ * started, with the site still serving the previous version so nothing looked
+ * broken. Production stopped deploying and stayed that way, because a clean
+ * `npm ci` plus a production build both passed against a lockfile Vercel never
+ * reads.
+ *
+ * The second lockfile is gone, so that specific trap cannot recur. This check
+ * stays because package.json can still drift from pnpm-lock.yaml on its own —
+ * a hand-edited version, or a merge that takes one side of each file.
  *
  * The check is the same one pnpm makes ("specifiers in the lockfile don't match
  * specifiers in package.json"), done locally in milliseconds with no network
