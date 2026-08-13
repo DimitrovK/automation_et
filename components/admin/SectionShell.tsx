@@ -84,11 +84,14 @@ export function SectionShell({
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <AlertTriangle className="size-5 text-amber-600" />
-                      {requireSuperuser ? 'Admin access required' : 'Staff access required'}
+                      {requireSuperuser ? 'Superuser access required' : 'Staff access required'}
                     </CardTitle>
                     <CardDescription>
                       {requireSuperuser
-                        ? 'This section is limited to administrator accounts.'
+                        // The reason, not just the rule: this section shows
+                        // private per-user data, which is why the bar is higher
+                        // here than everywhere else in the tool.
+                        ? 'This section surfaces private user data, so it is limited to superusers.'
                         : 'Reports are limited to staff accounts.'}
                     </CardDescription>
                   </CardHeader>
