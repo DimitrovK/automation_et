@@ -1,13 +1,13 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
-import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import type { DurationResponse } from '@/types/reports';
 import { Info } from 'lucide-react';
+import { DurationSpread } from '@/components/reports/DurationSpread';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DurationSpread } from '@/components/reports/DurationSpread';
+import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import { formatDuration } from '@/lib/format-duration';
 import { longSessionReason } from '@/lib/long-session-reason';
 import { cn } from '@/lib/utils';
@@ -45,12 +45,12 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             {formatDuration(row.median_seconds)}
           </span>
           <div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${maxMedian > 0 ? Math.max(2, ((row.median_seconds ?? 0) / maxMedian) * 100) : 0}%`,
-                  backgroundColor: resolveColor(meta, row.game_type),
-                }}
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${maxMedian > 0 ? Math.max(2, ((row.median_seconds ?? 0) / maxMedian) * 100) : 0}%`,
+                backgroundColor: resolveColor(meta, row.game_type),
+              }}
             />
           </div>
         </div>

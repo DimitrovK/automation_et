@@ -34,7 +34,7 @@ describe('game marks', () => {
     // the mark becomes unreadable for anyone who can't resolve the hue.
     render(<GameBadge gameKey="grid" meta={{ grid: GRID }} />);
 
-    expect(screen.getByText('Grid')).toBeTruthy();
+    expect(screen.getByText('Grid')).toBeInTheDocument();
   });
 
   it('names an unknown game readably rather than showing a bare swatch', () => {
@@ -42,10 +42,9 @@ describe('game marks', () => {
     // multiplayer table was rendering "Club_connection" on screen.
     render(<GameBadge gameKey="brand_new_game" meta={{}} />);
 
-    expect(screen.getByText('Brand New Game')).toBeTruthy();
+    expect(screen.getByText('Brand New Game')).toBeInTheDocument();
   });
 });
-
 
 describe('players table', () => {
   it('links each row to the drill-down that already exists', async () => {

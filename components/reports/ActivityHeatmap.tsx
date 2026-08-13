@@ -33,10 +33,14 @@ export function heatmapRamp(isDark: boolean): string[] {
 const BUCKET_EDGES = [0.25, 0.5, 0.75];
 
 function bucketOf(value: number, busiest: number): number {
-  if (value <= 0 || busiest <= 0) return -1;
+  if (value <= 0 || busiest <= 0) {
+    return -1;
+  }
   const share = value / busiest;
   for (let i = 0; i < BUCKET_EDGES.length; i++) {
-    if (share <= BUCKET_EDGES[i]) return i;
+    if (share <= BUCKET_EDGES[i]) {
+      return i;
+    }
   }
   return BUCKET_EDGES.length;
 }
@@ -67,7 +71,6 @@ export function ActivityHeatmap({
     () => rows.reduce((sum, row) => sum + row.hours.reduce((a, b) => a + b, 0), 0),
     [rows],
   );
-
 
   if (total === 0) {
     return (

@@ -51,7 +51,7 @@ export function DurationSpread({ row }: { row: DurationRow }) {
       </span>
       <span className="whitespace-nowrap text-xs tabular-nums text-gray-500 dark:text-gray-400">
         {formatDuration(p25)}
-        {'–'}
+        –
         {formatDuration(p75)}
       </span>
     </span>

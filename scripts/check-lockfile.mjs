@@ -44,7 +44,9 @@ function parseRootImporter(text) {
   let pendingName = null;
 
   for (const line of lines) {
-    if (/^importers:/.test(line)) { inImporters = true; continue; }
+    if (/^importers:/.test(line)) {
+      inImporters = true; continue;
+    }
     if (!inImporters) continue;
 
     // A new top-level key ends the importers block.
@@ -58,11 +60,15 @@ function parseRootImporter(text) {
     if (!inRoot) continue;
 
     const sectionMatch = /^ {4}(dependencies|devDependencies):/.exec(line);
-    if (sectionMatch) { section = sectionMatch[1]; pendingName = null; continue; }
+    if (sectionMatch) {
+      section = sectionMatch[1]; pendingName = null; continue;
+    }
     if (!section) continue;
 
     const nameMatch = /^ {6}'?([^':]+)'?:\s*$/.exec(line);
-    if (nameMatch) { pendingName = nameMatch[1]; continue; }
+    if (nameMatch) {
+      pendingName = nameMatch[1]; continue;
+    }
 
     const specMatch = /^ {8}specifier:\s*(.+?)\s*$/.exec(line);
     if (specMatch && pendingName) {

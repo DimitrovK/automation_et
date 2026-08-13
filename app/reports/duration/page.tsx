@@ -62,15 +62,15 @@ export default function DurationPage() {
           view="duration"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
-                    { header: 'Game', value: row => row.game_type },
-                    { header: 'Supported', value: row => row.supported },
-                    { header: 'Sessions', value: row => row.sessions },
-                    { header: 'Measured', value: row => row.measured },
-                    { header: 'Coverage %', value: row => row.coverage_pct },
-                    { header: 'Median seconds', value: row => row.median_seconds },
-                    { header: 'Long sessions', value: row => row.long_sessions },
-                    { header: 'Single sitting', value: row => row.single_sitting },
-                  ]}
+            { header: 'Game', value: row => row.game_type },
+            { header: 'Supported', value: row => row.supported },
+            { header: 'Sessions', value: row => row.sessions },
+            { header: 'Measured', value: row => row.measured },
+            { header: 'Coverage %', value: row => row.coverage_pct },
+            { header: 'Median seconds', value: row => row.median_seconds },
+            { header: 'Long sessions', value: row => row.long_sessions },
+            { header: 'Single sitting', value: row => row.single_sitting },
+          ]}
         />
       </div>
 
