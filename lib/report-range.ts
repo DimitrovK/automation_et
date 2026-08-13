@@ -66,3 +66,22 @@ export function activePreset(range: RangeState, today: Date): 'today' | 'yesterd
 export function rangeToParams(range: RangeState): ReportParams {
   return range.start ? { start: range.start, end: range.end } : { window: range.window };
 }
+
+/**
+ * Query params for the comparison the summary should make.
+ *
+ * Explicit dates win, exactly as the BE resolves them — sending both would
+ * imply the offset still applied, and it doesn't. The default offset is
+ * omitted rather than sent as 1: an unchanged default has no business in a
+ * request or in a shared URL.
+ */
+export function compareToParams(
+  compareOffset: number,
+  compareStart?: string,
+  compareEnd?: string,
+): { compare_offset?: number; compare_start?: string; compare_end?: string } {
+  if (compareStart) {
+    return { compare_start: compareStart, ...(compareEnd ? { compare_end: compareEnd } : {}) };
+  }
+  return compareOffset === 1 ? {} : { compare_offset: compareOffset };
+}

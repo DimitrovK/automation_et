@@ -86,6 +86,18 @@ export type MetricComparison = {
 export type PeriodComparison = {
   current: { start: string; end: string; days: number };
   previous: { start: string; end: string; days: number };
+  /**
+   * How many periods back the comparison reached: 1 is the one immediately
+   * before. Null when a period was named outright, which no offset describes.
+   * Optional so a backend predating it reads as the old always-1 behaviour.
+   */
+  compare_offset?: number | null;
+  /**
+   * False when the two periods differ in length. Their totals still compare;
+   * their percentages don't — a rate across unequal spans describes the
+   * calendar rather than the platform, so `change_pct` is withheld.
+   */
+  same_length?: boolean;
   coverage: {
     complete: boolean;
     missing_current_days: string[];
