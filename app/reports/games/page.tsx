@@ -10,6 +10,7 @@ import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { RangePicker } from '@/components/reports/RangePicker';
+import { ReachDepthChart } from '@/components/reports/ReachDepthChart';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -125,6 +126,12 @@ export default function GamesIndexPage() {
         : isLoading || !data
           ? <Skeleton className="h-96 w-full" />
           : (
+            <>
+              {/* Before the table, because it answers a question the table
+                  can't: a ranking by volume puts a game with a wide shallow
+                  audience next to one with a small devoted one and says
+                  nothing about the difference. */}
+              <ReachDepthChart rows={data.by_game} meta={meta} />
               <Card>
                 <CardHeader>
                   <CardTitle>Comparison</CardTitle>
@@ -212,6 +219,7 @@ export default function GamesIndexPage() {
                   )}
                 </CardContent>
               </Card>
+            </>
             )}
     </ReportsShell>
   );
