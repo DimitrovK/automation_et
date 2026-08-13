@@ -97,6 +97,17 @@ describe('reachDepth', () => {
 });
 
 describe('reachDepthContrast', () => {
+  it('picks the extremes by reach and by depth, not by a combined score', () => {
+    // Grid is second on both axes, so any "most divergent overall" rule could
+    // pick it. The card names the two extremes and prints both figures for
+    // each, leaving the weighing of reach against depth to the reader.
+    const { points } = reachDepth([game('quiz', 227, 7.2), game('grid', 150, 20), game('team_ties', 77, 38.6)]);
+    const contrast = reachDepthContrast(points);
+
+    expect(contrast?.broadest.game_type).toBe('quiz');
+    expect(contrast?.deepest.game_type).toBe('team_ties');
+  });
+
   it('names the widest-reaching and the most-played-per-person', () => {
     const { points } = reachDepth([game('quiz', 227, 7.2), game('team_ties', 77, 38.6)]);
     const contrast = reachDepthContrast(points);

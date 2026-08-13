@@ -89,12 +89,18 @@ export function reachDepth(rows: GameTotals[]): ReachDepth {
 }
 
 /**
- * The two games furthest apart in shape, named.
+ * The two extremes, named: the game that reached the most players, and the one
+ * played most per person.
  *
  * A quadrant chart is only as useful as the sentence someone takes away from
- * it, and the pair worth reading is the widest-reach-shallowest against the
- * narrowest-deepest — the two opposite problems the platform actually has.
- * Returns null when there aren't two games to contrast.
+ * it. The sentence states both figures for each game, so "reached 227 players,
+ * 7.2 sessions each" against "77 players, 38.6 each" carries the contrast
+ * without needing a combined score to rank divergence by — one that would be a
+ * judgement about how to weigh reach against depth, which is the reader's to
+ * make.
+ *
+ * Null when one game is both extremes: that is not a contrast, and printing it
+ * as one would be filler. Null too when there aren't two games at all.
  */
 export function reachDepthContrast(points: ReachDepthPoint[]): { broadest: ReachDepthPoint; deepest: ReachDepthPoint } | null {
   if (points.length < 2) {
