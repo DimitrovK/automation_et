@@ -5,7 +5,7 @@ import { CalendarDays, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { isoDay } from '@/lib/report-range';
+import { activePreset, isoDay, yesterdayRange } from '@/lib/report-range';
 import { REPORT_WINDOWS } from '@/types/reports';
 import { Switch } from '@/components/ui/switch';
 
@@ -17,6 +17,12 @@ import { Switch } from '@/components/ui/switch';
  * validated the same way the server does (start <= end, end not in the future)
  * before being applied, so a mistake shows up as a disabled button rather than
  * a red error panel.
+ *
+ * Today and Yesterday are named rather than numbered. "1d" is technically the
+ * same range and reads as a duration — "how is today going" is the question
+ * this section is asked most often, and it deserves a word, not an arithmetic
+ * exercise. Yesterday is an explicit start=end, because a window only ever
+ * counts back from today.
  */
 export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange }: {
   value: RangeState;
@@ -24,23 +30,45 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
   includeBots: boolean;
   onIncludeBotsChange: (v: boolean) => void;
 }) {
-  const today = isoDay(new Date());
+  // One clock reading for the whole render. Two `new Date()` calls can land
+  // either side of midnight, and the validation bounds and the lit button would
+  // then be describing different days.
+  const now = new Date();
+  const today = isoDay(now);
   const [open, setOpen] = useState(false);
   const [draftStart, setDraftStart] = useState(value.start ?? '');
   const [draftEnd, setDraftEnd] = useState(value.end ?? today);
 
-  const custom = !!value.start;
+  const active = activePreset(value, now);
+  const custom = active === 'custom';
   const invalid = !draftStart || draftStart > draftEnd || draftEnd > today;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm text-gray-600 dark:text-gray-300">Range</span>
 
-      {REPORT_WINDOWS.map(w => (
+      <Button
+        size="sm"
+        variant={active === 'today' ? 'default' : 'outline'}
+        onClick={() => onChange({ window: 1 })}
+      >
+        Today
+      </Button>
+      <Button
+        size="sm"
+        variant={active === 'yesterday' ? 'default' : 'outline'}
+        onClick={() => onChange(yesterdayRange(now, value.window))}
+      >
+        Yesterday
+      </Button>
+
+      {/* 1 is excluded: it is the Today button above, and "1d" beside it would
+          be the same range offered twice under two names. */}
+      {REPORT_WINDOWS.filter(w => w > 1).map(w => (
         <Button
           key={w}
           size="sm"
-          variant={!custom && w === value.window ? 'default' : 'outline'}
+          variant={active === w ? 'default' : 'outline'}
           onClick={() => onChange({ window: w })}
         >
           {w}

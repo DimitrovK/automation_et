@@ -1,5 +1,12 @@
 import type { ReportParams, ReportWindow } from '@/types/reports';
 
+/**
+ * The windows that render as a number of days. 1 is excluded because it is the
+ * "Today" button — offering it as "1d" as well would be one range under two
+ * names.
+ */
+export type NumericWindow = Exclude<ReportWindow, 1>;
+
 /** A selected reporting range: a preset window, or explicit dates. */
 export type RangeState = {
   window: ReportWindow;
@@ -20,6 +27,39 @@ export function isoDay(date: Date): string {
   const month = `${date.getMonth() + 1}`.padStart(2, '0');
   const day = `${date.getDate()}`.padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+/**
+ * Yesterday, as an explicit single-day range.
+ *
+ * Explicit dates rather than a second window value: "yesterday" is a shifted
+ * day, and a `window` only ever counts back from today. The backend already
+ * resolves start=end, so this needs nothing new there.
+ *
+ * `window` is carried along unchanged so clearing the range returns to whatever
+ * preset was selected before, rather than to a default nobody chose.
+ */
+export function yesterdayRange(today: Date, window: ReportWindow): RangeState {
+  const date = new Date(today);
+  date.setDate(date.getDate() - 1);
+  const day = isoDay(date);
+  return { window, start: day, end: day };
+}
+
+/**
+ * Which preset a range corresponds to, if any.
+ *
+ * The picker has to answer this to show what is selected, and getting it wrong
+ * is the kind of bug nobody reports: two buttons lit, or none, while the data
+ * is correct. Named presets are checked before numeric ones because "today" is
+ * also `window: 1`.
+ */
+export function activePreset(range: RangeState, today: Date): 'today' | 'yesterday' | 'custom' | NumericWindow {
+  if (range.start) {
+    const yesterday = yesterdayRange(today, range.window);
+    return range.start === yesterday.start && range.end === yesterday.end ? 'yesterday' : 'custom';
+  }
+  return range.window === 1 ? 'today' : (range.window as NumericWindow);
 }
 
 /** Query params for a range — explicit dates win, exactly as the BE resolves them. */
