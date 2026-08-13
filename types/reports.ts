@@ -33,6 +33,8 @@ export type ActivityResponse = {
 
 /** One headline metric: today, against the same-weekday baseline. */
 export type PulseMetric = {
+  /** The whole-day figure — "on track for X", as opposed to "normal so far". */
+  baseline_full_day: number | null;
   today: number;
   yesterday: number;
   /** Mean of the previous N same weekdays. */
@@ -49,6 +51,12 @@ export type Pulse = {
   /** False when a baseline day was never rolled up — show "no baseline", not 0. */
   baseline_covered: boolean;
   baseline_missing_days: string[];
+  /**
+   * How much of a typical day has happened, 0..1 — from the observed hour
+   * distribution, not the clock. The baseline is scaled by it so today-so-far
+   * is compared with the same share of a typical day rather than four whole ones.
+   */
+  elapsed_share: number;
   metrics: Record<keyof ActivityMetrics, PulseMetric>;
 };
 
