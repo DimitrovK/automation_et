@@ -10,6 +10,12 @@ on:
   pull_request:
     branches: [production]
 
+# Read-only by default. Nothing here writes to the repo, and install/test/build
+# all execute third-party code, so the token they run beside should be able to
+# do as little as possible.
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -30,15 +36,19 @@ jobs:
           node-version: '22'
           cache: pnpm
 
-      # --frozen-lockfile, exactly as Vercel does it: a lockfile that has
-      # drifted from package.json fails here rather than at deploy time, which
-      # is how production silently stopped deploying for several merges in
-      # August.
+      # BEFORE the install, not after. --frozen-lockfile already rejects a
+      # drifted lockfile, so running this second would mean it never spoke: the
+      # install would have failed first, with pnpm's message instead of the one
+      # written for this exact trap. The script only reads two files with node
+      # builtins, so it needs no node_modules and costs milliseconds.
+      - name: Lockfile in sync
+        run: node scripts/check-lockfile.mjs
+
+      # The same install Vercel performs. A lockfile that has drifted fails here
+      # rather than at deploy time, which is how production silently stopped
+      # deploying for several merges in August.
       - name: Install
         run: pnpm install --frozen-lockfile
-
-      - name: Lockfile in sync
-        run: pnpm run check-lockfile
 
       # The gate, not raw tsc: it fails closed if tsc cannot run, and it checks
       # the reporting surface for unused declarations.
