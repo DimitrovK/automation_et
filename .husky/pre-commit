@@ -7,5 +7,6 @@
 set -e
 
 npx lint-staged
+npm run check-lockfile
 npm run check-types:app
 npm run test:run
