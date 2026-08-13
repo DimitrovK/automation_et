@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatTrendDate } from '@/lib/user-hub-analytics';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
+import { chartTheme } from '@/lib/chart-theme';
 
 type Props = {
   data: AdoptionTrendsResponse | null;
@@ -52,6 +54,8 @@ function TrendTooltip({
 const PILLS: TrendGranularity[] = ['day', 'week'];
 
 export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granularity, onGranularityChange, onRetry }: Props) {
+  const { resolvedTheme } = useTheme();
+  const theme = chartTheme(resolvedTheme === 'dark');
   if (notDeployed) {
     return null;
   }
@@ -102,9 +106,9 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={points} margin={{ left: 4, right: 8, top: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} tickFormatter={v => formatTrendDate(v, granularity)} minTickGap={24} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} width={36} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                  <XAxis dataKey="date" tick={theme.tick} tickFormatter={v => formatTrendDate(v, granularity)} minTickGap={24} />
+                  <YAxis allowDecimals={false} tick={theme.tick} width={36} />
                   <Tooltip content={<TrendTooltip granularity={granularity} />} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Area type="monotone" dataKey="cumulative_users" name="Cumulative users" stroke="#10b981" fill="#10b981" fillOpacity={0.2} />

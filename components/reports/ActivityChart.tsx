@@ -6,13 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { METRIC_OPTIONS } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
+import type { Granularity } from '@/lib/report-granularity';
+import { useState } from 'react';
+import { aggregateSeries, canAggregate, GRANULARITIES } from '@/lib/report-granularity';
+import { cn } from '@/lib/utils';
 
 /** Day-month tick, in UTC so it renders as the intended day regardless of viewer TZ. */
-function formatDay(iso: string): string {
+/** Labels follow the bucket: a month bar labelled "1 Aug" reads as one day. */
+function formatBucket(iso: string, granularity: Granularity): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? iso
-    : new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
+  if (Number.isNaN(d.getTime())) {
+    return iso;
+  }
+  if (granularity === 'month') {
+    return new Intl.DateTimeFormat('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(d);
+  }
+  const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
+  return granularity === 'week' ? `w/c ${day}` : day;
 }
 
 const DEFAULT_COLORS: Record<MetricKey, string> = {
@@ -38,12 +48,21 @@ export function ActivityChart({ series, title, description, metric, color }: {
 }) {
   const { resolvedTheme } = useTheme();
   const theme = chartTheme(resolvedTheme === 'dark');
+  // Chart-owned, not page-owned: it changes how this chart reads and nothing
+  // else on the page, so it belongs in this header rather than the filter bar.
+  const [granularity, setGranularity] = useState<Granularity>('day');
+  const aggregatable = canAggregate(metric);
+  // Distinct players cannot be summed across days, so the control falls back to
+  // daily rather than drawing an inflated line. Silently ignoring the choice
+  // would be worse: the button would look selected and the data wouldn't match.
+  const effective: Granularity = aggregatable ? granularity : 'day';
+  const rows = aggregateSeries(series, effective);
   // An uncovered day was never computed. Feeding 0 to the chart draws a
   // confident dip that never happened, so the value becomes null and recharts
   // leaves a visible break instead.
-  const data = series.map(row => ({
+  const data = rows.map(row => ({
     ...row,
-    label: formatDay(row.date),
+    label: formatBucket(row.date, effective),
     ...(row.covered
       ? {}
       : {
@@ -53,15 +72,48 @@ export function ActivityChart({ series, title, description, metric, color }: {
           mp_player_sessions: null,
         }),
   }));
-  const uncovered = series.filter(row => !row.covered).length;
+  const uncovered = rows.filter(row => !row.covered).length;
   const primaryColor = color ?? DEFAULT_COLORS[metric];
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+      <CardHeader className="space-y-2">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <CardTitle>{title}</CardTitle>
+          <div className="flex gap-1 rounded-md border p-0.5 dark:border-slate-700">
+            {GRANULARITIES.map(option => (
+              <button
+                key={option}
+                type="button"
+                disabled={!aggregatable && option !== 'day'}
+                aria-pressed={effective === option}
+                title={aggregatable
+                  ? `Group by ${option}`
+                  : 'Distinct players cannot be added up across days, so this metric is only shown daily'}
+                onClick={() => setGranularity(option)}
+                className={cn(
+                  'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
+                  effective === option
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                    : 'text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-slate-700/50',
+                )}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
         <CardDescription>
           {description}
+          {!aggregatable && (
+            <>
+              {' '}
+              <span className="text-gray-500 dark:text-gray-400">
+                Shown daily: distinct players can't be added up across days, so a
+                weekly total would count the same person more than once.
+              </span>
+            </>
+          )}
           {uncovered > 0 && (
             <>
               {' '}
