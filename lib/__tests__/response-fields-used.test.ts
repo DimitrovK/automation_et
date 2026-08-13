@@ -25,7 +25,6 @@ const ROOT = process.cwd();
  */
 const NOT_RENDERED: Record<string, string> = {
   grain: 'A reminder in the payload that multiplayer counts rooms; the card description says it in prose.',
-  long_session_seconds: 'The threshold behind the per-row single_sitting flag, which is what the table renders.',
   games_without_duration: 'Derived per row as `supported`, which DurationTable already groups by.',
   long_lived_session_games: 'Derived per row as `single_sitting`, which DurationTable already groups by.',
   window_totals: 'The comparison tiles render the same window from `comparison`, with movement attached.',

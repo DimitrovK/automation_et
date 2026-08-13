@@ -377,6 +377,27 @@ export type DurationRow = {
   long_sessions_pct: number | null;
   /** False for campaign-shaped games whose "session" spans a day, not a sitting. */
   single_sitting: boolean | null;
+  /**
+   * Seconds of idleness after which a sweeper task closes an unfinished session,
+   * or null for games with no such job. Optional because a backend predating
+   * these fields sends none of them — such a row explains nothing rather than
+   * guessing which of two opposite explanations applies.
+   */
+  idle_finish_seconds?: number | null;
+  /** Measured sessions sitting at or past that ceiling — timed by the sweeper. */
+  swept_sessions?: number;
+  swept_pct?: number | null;
+  /**
+   * Median among sessions that ended by play rather than by the sweeper. For a
+   * swept game this is the only comparable number it has.
+   */
+  median_excluding_swept_seconds?: number | null;
+  /**
+   * Why the sessions are long. 'idle_sweep' means the length is a housekeeping
+   * job's clock; 'long_play' means the game really is played in long stretches.
+   * A median cannot tell these apart, and they mean opposite things.
+   */
+  long_reason?: 'idle_sweep' | 'long_play' | null;
 };
 
 export type DurationResponse = {
