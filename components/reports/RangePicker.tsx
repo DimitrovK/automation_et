@@ -30,12 +30,15 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
   includeBots: boolean;
   onIncludeBotsChange: (v: boolean) => void;
 }) {
-  const today = isoDay(new Date());
+  // One clock reading for the whole render. Two `new Date()` calls can land
+  // either side of midnight, and the validation bounds and the lit button would
+  // then be describing different days.
+  const now = new Date();
+  const today = isoDay(now);
   const [open, setOpen] = useState(false);
   const [draftStart, setDraftStart] = useState(value.start ?? '');
   const [draftEnd, setDraftEnd] = useState(value.end ?? today);
 
-  const now = new Date();
   const active = activePreset(value, now);
   const custom = active === 'custom';
   const invalid = !draftStart || draftStart > draftEnd || draftEnd > today;

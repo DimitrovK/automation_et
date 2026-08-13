@@ -1,5 +1,12 @@
 import type { ReportParams, ReportWindow } from '@/types/reports';
 
+/**
+ * The windows that render as a number of days. 1 is excluded because it is the
+ * "Today" button — offering it as "1d" as well would be one range under two
+ * names.
+ */
+export type NumericWindow = Exclude<ReportWindow, 1>;
+
 /** A selected reporting range: a preset window, or explicit dates. */
 export type RangeState = {
   window: ReportWindow;
@@ -47,12 +54,12 @@ export function yesterdayRange(today: Date, window: ReportWindow): RangeState {
  * is correct. Named presets are checked before numeric ones because "today" is
  * also `window: 1`.
  */
-export function activePreset(range: RangeState, today: Date): 'today' | 'yesterday' | 'custom' | number {
+export function activePreset(range: RangeState, today: Date): 'today' | 'yesterday' | 'custom' | NumericWindow {
   if (range.start) {
     const yesterday = yesterdayRange(today, range.window);
     return range.start === yesterday.start && range.end === yesterday.end ? 'yesterday' : 'custom';
   }
-  return range.window === 1 ? 'today' : range.window;
+  return range.window === 1 ? 'today' : (range.window as NumericWindow);
 }
 
 /** Query params for a range — explicit dates win, exactly as the BE resolves them. */

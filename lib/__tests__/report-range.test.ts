@@ -77,4 +77,19 @@ describe('activePreset', () => {
   it('returns the number for a numeric preset', () => {
     expect(activePreset({ window: 30 }, NOW)).toBe(30);
   });
+
+  it('reads the same clock for the preset and for yesterday', () => {
+    // The picker used to take two `new Date()` readings — one for the
+    // validation bounds, one for preset matching. Across midnight they describe
+    // different days, and the lit button stops matching the data. Passing the
+    // clock in is what makes that impossible rather than unlikely.
+    const justBeforeMidnight = new Date(2026, 7, 13, 23, 59, 59);
+    const range = yesterdayRange(justBeforeMidnight, 30);
+
+    expect(activePreset(range, justBeforeMidnight)).toBe('yesterday');
+    // One second later it is a different day, and the same range is no longer
+    // yesterday — which is correct, and only knowable because both sides read
+    // the clock the caller passed.
+    expect(activePreset(range, new Date(2026, 7, 14, 0, 0, 1))).toBe('custom');
+  });
 });
