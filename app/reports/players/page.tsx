@@ -40,10 +40,14 @@ export default function PlayersReportPage() {
   const [draftSearch, setDraftSearch] = useState(search);
   useEffect(() => setDraftSearch(search), [search]);
   useEffect(() => {
-    if (draftSearch === search) {
+    // Compare what will actually be committed. Comparing the raw draft meant
+    // typing a trailing space scheduled an update to a value already held —
+    // a wasted state change and a pointless replaceState.
+    const next = draftSearch.trim();
+    if (next === search) {
       return;
     }
-    const timer = setTimeout(() => update({ search: draftSearch.trim() }), 300);
+    const timer = setTimeout(() => update({ search: next }), 300);
     return () => clearTimeout(timer);
   }, [draftSearch, search, update]);
   const setRange = (next: RangeState) => update({ range: next });
