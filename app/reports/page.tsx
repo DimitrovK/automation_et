@@ -13,9 +13,8 @@ import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
 import { MetricToggle } from '@/components/reports/MetricToggle';
 import { PulseTiles } from '@/components/reports/PulseTiles';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta, useGameColor } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -98,34 +97,36 @@ export default function ReportsPage() {
           not a finding, and every panel below inherits that doubt. */}
       <RollupHealthBanner />
 
-      {anomalies.data && (
-        <div className="space-y-2">
-          <AnomalyPanel data={anomalies.data} meta={meta} />
-          <AnomalySensitivity value={sensitivity} onChange={setSensitivity} />
-        </div>
-      )}
+      {/* Was `anomalies.data && …`, so a failed request made the panel vanish
+          without saying so — the one panel whose silence reads as "nothing
+          moved". It now reports its own failure. */}
+      <ReportPanel state={anomalies} skeletonClassName="h-24 w-full">
+        {data => (
+          <div className="space-y-2">
+            <AnomalyPanel data={data} meta={meta} />
+            <AnomalySensitivity value={sensitivity} onChange={setSensitivity} />
+          </div>
+        )}
+      </ReportPanel>
 
-      {summary.error
-        ? <ReportError error={summary.error} notDeployed={summary.notDeployed} onRetry={summary.refetch} />
-        : summary.isLoading || !summary.data
-          ? <Skeleton className="h-32 w-full" />
-          : (
-              <>
+      <ReportPanel state={summary} skeletonClassName="h-32 w-full">
+        {data => (
+          <>
                 {/* The pulse always describes TODAY, whatever range is selected —
                     the BE sends pulse_applies to say so. Rendering it beside
                     comparison tiles that DO follow the range invites reading
                     today's numbers as the selected period's. */}
-                {summary.data.pulse_applies
+            {data.pulse_applies
                   ? (
                       <>
-                        <PulseTiles pulse={summary.data.pulse} />
+                <PulseTiles pulse={data.pulse} />
                         <p className="text-center text-xs text-gray-500 dark:text-gray-400">
                           {selectedLabel ? `${selectedLabel} · ` : ''}
                           compared with the mean of the last
                           {' '}
-                          {summary.data.pulse.baseline_weeks}
+                  {data.pulse.baseline_weeks}
                           {' '}
-                          {summary.data.pulse.weekday}
+                  {data.pulse.weekday}
                           s — not with yesterday, which would make every Monday look like a crash.
                         </p>
                       </>
@@ -134,27 +135,26 @@ export default function ReportsPage() {
                       <p className="rounded-md border border-gray-200 bg-gray-50 p-3 text-center text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300">
                         Today's pulse is hidden because this range ends on
                         {' '}
-                        {summary.data.end}
+                {data.end}
                         . It only ever describes today, so showing it here would
                         read as the selected period. Everything below follows your range.
                       </p>
-                    )}
-              </>
-            )}
+              )}
+          </>
+        )}
+      </ReportPanel>
 
-      {activity.error
-        ? <ReportError error={activity.error} notDeployed={activity.notDeployed} onRetry={activity.refetch} />
-        : activity.isLoading || !activity.data
-          ? <Skeleton className="h-80 w-full" />
-          : (
-              <ActivityChart
-                series={activity.data.series}
-                metric={metric}
-                color={game ? resolveColor(meta, game) : undefined}
-                title={`${selectedLabel ?? 'All games'} — last ${activity.data.window} days`}
-                description={`${activity.data.totals.games_started.toLocaleString()} played, ${activity.data.totals.games_finished.toLocaleString()} finished, ${activity.data.totals.distinct_players.toLocaleString()} distinct players.`}
-              />
-            )}
+      <ReportPanel state={activity} skeletonClassName="h-80 w-full">
+        {data => (
+          <ActivityChart
+            series={data.series}
+            metric={metric}
+            color={game ? resolveColor(meta, game) : undefined}
+            title={`${selectedLabel ?? 'All games'} — last ${data.window} days`}
+            description={`${data.totals.games_started.toLocaleString()} played, ${data.totals.games_finished.toLocaleString()} finished, ${data.totals.distinct_players.toLocaleString()} distinct players.`}
+          />
+        )}
+      </ReportPanel>
 
       {allGames.data && (
         <div className="flex justify-end">
