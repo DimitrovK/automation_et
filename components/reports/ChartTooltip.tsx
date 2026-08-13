@@ -63,12 +63,18 @@ export function ChartTooltip({
 
   const row = payload[0]?.payload;
   const footerText = footer && row ? footer(row) : null;
+  // A scatter has no meaningful shared label — its identity is the point, not
+  // an x-value — so a formatter may return nothing. Rendering the heading
+  // anyway leaves an empty line with its own margin above the series. Checked
+  // against '' rather than falsiness: hour 0 is a real label.
+  const labelText = label === undefined ? undefined : labelFormatter ? labelFormatter(label) : label;
+  const hasLabel = labelText !== undefined && labelText !== null && labelText !== '';
 
   return (
     <div className="rounded-md border bg-popover px-3 py-2 text-sm shadow-md">
-      {label !== undefined && (
+      {hasLabel && (
         <p className="mb-1 font-medium text-popover-foreground">
-          {labelFormatter ? labelFormatter(label) : label}
+          {labelText}
         </p>
       )}
       {payload.map((entry, index) => (

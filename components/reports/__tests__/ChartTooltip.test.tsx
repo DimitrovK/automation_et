@@ -49,6 +49,25 @@ describe('chartTooltip', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('keeps a zero label, which is a real hour', () => {
+    // Midnight is a value, not an absence — a falsiness check would drop it.
+    // Unformatted on purpose: a formatter turns 0 into a truthy "0:00" and the
+    // check is never exercised, which is exactly how this test first passed
+    // against a mutation it should have caught.
+    render(<ChartTooltip active payload={PAYLOAD} label={0} />);
+
+    expect(screen.getByText('0')).toBeTruthy();
+  });
+
+  it('draws no heading when the formatter returns nothing', () => {
+    // A scatter's identity is the point, not a shared x-value, so its label
+    // formatter returns ''. The heading would otherwise be an empty line with
+    // a margin above the series.
+    const { container } = render(<ChartTooltip active payload={PAYLOAD} label="28 Jul" labelFormatter={() => ''} />);
+
+    expect(container.querySelector('.mb-1')).toBeNull();
+  });
+
   it('applies a label formatter when given one', () => {
     render(<ChartTooltip active payload={PAYLOAD} label={14} labelFormatter={h => `${h}:00`} />);
 
