@@ -276,6 +276,14 @@ export type GameMeta = {
    * Optional so a backend predating it degrades to `label` rather than to a slug.
    */
   display_name?: string;
+  /**
+   * The same game's id in the FRONTEND's vocabulary — the kebab slug stored in
+   * `User.favourite_games` ("line-up-game" for missing11, "tenagoal" for
+   * tenable). A second naming system, not a formatting of `key`, so favourites
+   * data can only be joined to this registry through it. Optional so a backend
+   * predating it leaves favourites uncoloured rather than breaking the page.
+   */
+  favourite_slug?: string;
   /** Hex for a light surface. Same colour the Django admin dashboard draws the game with. */
   color: string;
   /**

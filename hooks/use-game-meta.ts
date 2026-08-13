@@ -59,6 +59,26 @@ export function useGameColor() {
   );
 }
 
+/**
+ * The registry re-keyed by the frontend's favourites slug.
+ *
+ * Favourites are stored as FE game ids ("line-up-game", "tenagoal") while
+ * reporting keys off registry keys ("missing11", "tenable"), and no transform
+ * turns one into the other — the backend declares the pairing on each game's
+ * spec, so a favourites view joins through it instead of carrying its own
+ * eleven-game table.
+ *
+ * A game whose backend predates `favourite_slug` is simply absent here, which
+ * degrades to the neutral colour and a prettified slug.
+ */
+export function byFavouriteSlug(meta: GameMetaMap): GameMetaMap {
+  return Object.fromEntries(
+    Object.values(meta)
+      .filter(game => !!game.favourite_slug)
+      .map(game => [game.favourite_slug as string, game]),
+  );
+}
+
 export function useGameMeta(enabled: boolean) {
   const [meta, setMeta] = useState<GameMetaMap>({});
   const { resolvedTheme } = useTheme();

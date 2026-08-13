@@ -16,6 +16,7 @@ import {
   Repeat,
   Search,
   Sparkles,
+  Star,
   Timer,
   UserCog,
   Users,
@@ -116,12 +117,6 @@ export function Navigation({ className }: NavigationProps) {
           icon: Users,
           description: 'Search users and view profiles',
         },
-        {
-          label: 'Favourites Analytics',
-          href: '/user-hub/analytics',
-          icon: BarChart3,
-          description: 'Favourite-games adoption and popularity',
-        },
       ],
     },
     {
@@ -164,6 +159,12 @@ export function Navigation({ className }: NavigationProps) {
           href: '/reports/retention',
           icon: Repeat,
           description: 'Do players come back? D1/D7/D30 cohorts',
+        },
+        {
+          label: 'Favourites',
+          href: '/reports/favourites',
+          icon: Star,
+          description: 'Which games players save, and whether they play them',
         },
       ],
     },

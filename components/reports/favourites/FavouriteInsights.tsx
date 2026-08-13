@@ -1,10 +1,12 @@
 'use client';
 
+import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { FavouritesUsageResponse } from '@/types/user-hub';
 import { Crown, Download } from 'lucide-react';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { gameName } from '@/hooks/use-game-meta';
 import {
   favouriteDepthDistribution,
   favouritesToCsv,
@@ -13,6 +15,8 @@ import {
 
 type Props = {
   data: FavouritesUsageResponse;
+  /** The game registry, keyed by favourites slug (see `byFavouriteSlug`). */
+  meta: GameMetaMap;
 };
 
 type Row = { key: string; label: string; count: number };
@@ -35,7 +39,7 @@ function BarRow({ row, max }: { row: Row; max: number }) {
  * Deeper favourites analytics derived from the per-user payload: which game is
  *  most often the #1 pick, how many games people favourite, and a CSV export.
  */
-export function FavouriteInsights({ data }: Props) {
+export function FavouriteInsights({ data, meta }: Props) {
   const firstChoice = useMemo(() => firstChoiceCounts(data.users).slice(0, 8), [data.users]);
   const depth = useMemo(() => favouriteDepthDistribution(data.users), [data.users]);
 
@@ -78,7 +82,9 @@ export function FavouriteInsights({ data }: Props) {
             : (
                 <div className="space-y-1.5 pt-1">
                   {firstChoice.map(r => (
-                    <BarRow key={r.slug} row={{ key: r.slug, label: r.label, count: r.count }} max={firstChoiceMax} />
+                    // The registry's name, not the slug prettified: "Guess The
+                    // Line Up", not "Line Up Game".
+                    <BarRow key={r.slug} row={{ key: r.slug, label: gameName(meta[r.slug], r.slug), count: r.count }} max={firstChoiceMax} />
                   ))}
                 </div>
               )}
