@@ -132,6 +132,8 @@ export type TopPlayer = {
 
 export type TopPlayersResponse = {
   limit: number;
+  /** Echoed so an empty list reads as "no matches" rather than "no data". */
+  search: string | null;
   players: TopPlayer[];
 } & ResolvedRange;
 
@@ -153,6 +155,8 @@ export type ReportParams = {
   min_change_pct?: number;
   /** Bucket size for the activity series. Rejected server-side if unknown. */
   granularity?: Granularity;
+  /** Username fragment, case-insensitive. Narrows who is counted, not who survives. */
+  search?: string;
 };
 
 /**

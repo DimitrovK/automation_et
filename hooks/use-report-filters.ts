@@ -24,6 +24,8 @@ export type ReportFilters = {
   metric: MetricKey;
   /** Rows on the leaderboard views. Bounded by the API's own cap. */
   limit: number;
+  /** Username fragment on the players view. Empty means no filter, not "match nothing". */
+  search: string;
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -52,6 +54,10 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
   // Out-of-range or non-numeric limits fall back to the default rather than
   // being passed on: the API rejects them with a 400, and a shared link with a
   // typo should degrade to the default view rather than to an error panel.
+  // Trimmed here as well as server-side: "  " in a shared link would otherwise
+  // put the box in a filtered-looking state while matching everyone.
+  const searchTerm = (params.get('search') ?? '').trim();
+
   const rawLimit = Number(params.get('limit'));
   const limit = Number.isInteger(rawLimit) && rawLimit >= 1 && rawLimit <= MAX_LIMIT
     ? rawLimit
@@ -63,6 +69,7 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
     game: params.get('game') || null,
     metric: (params.get('metric') as MetricKey) || fallback.metric,
     limit,
+    search: searchTerm,
   };
 }
 
@@ -90,6 +97,10 @@ function serialise(filters: ReportFilters, defaults: ReportFilters): string {
   if (filters.limit !== defaults.limit) {
     params.set('limit', String(filters.limit));
   }
+  // In the URL so "find this player" is a link someone can be sent.
+  if (filters.search) {
+    params.set('search', filters.search);
+  }
   const query = params.toString();
   return query ? `?${query}` : '';
 }
@@ -98,9 +109,9 @@ export function useReportFilters(
   // `limit` is optional: only the leaderboard views paginate, and requiring it
   // on the other seven pages would put a number in front of readers that means
   // nothing there.
-  suppliedDefaults: Omit<ReportFilters, 'limit'> & { limit?: number },
+  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search'> & { limit?: number; search?: string },
 ) {
-  const defaults: ReportFilters = { limit: DEFAULT_LIMIT, ...suppliedDefaults };
+  const defaults: ReportFilters = { limit: DEFAULT_LIMIT, search: '', ...suppliedDefaults };
   const [filters, setFilters] = useState<ReportFilters>(defaults);
   const [hydrated, setHydrated] = useState(false);
 
