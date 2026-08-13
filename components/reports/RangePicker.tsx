@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { isoDay } from '@/lib/report-range';
 import { REPORT_WINDOWS } from '@/types/reports';
+import { Switch } from '@/components/ui/switch';
 
 /**
  * Presets for the common case, explicit dates for everything else.
@@ -67,14 +68,24 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
         )}
       </Button>
 
-      <Button
-        size="sm"
-        variant={includeBots ? 'default' : 'outline'}
-        onClick={() => onIncludeBotsChange(!includeBots)}
-        title="Bot/simulation accounts (is_dummy) are excluded by default"
+      {/* A switch, not a button. Button labels read as actions, so "Bots
+          excluded" in an unfilled style read as "click to exclude bots" —
+          implying they currently weren't. A switch reads as state: off means
+          off, and the label never has to be interpreted as an instruction. It
+          also stops the control competing with the window presets beside it,
+          where filled genuinely does mean "selected". */}
+      <label
+        htmlFor="include-bots"
+        className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
+        title="Bot and simulation accounts (is_dummy). Off by default — Anonymous players are real people and are always counted."
       >
-        {includeBots ? 'Bots included' : 'Bots excluded'}
-      </Button>
+        <Switch
+          id="include-bots"
+          checked={includeBots}
+          onCheckedChange={onIncludeBotsChange}
+        />
+        Include bots
+      </label>
 
       {open && (
         <div className="flex w-full flex-wrap items-end gap-2 rounded-md border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">

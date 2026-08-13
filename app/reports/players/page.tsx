@@ -17,6 +17,7 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -68,18 +69,21 @@ export default function PlayersReportPage() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-gray-600 dark:text-gray-300">Show</span>
-        {/* 100 is the API's own cap (MAX_LIMIT); offering more would 400. */}
-        {[25, 50, 100].map(size => (
-          <Button
-            key={size}
-            size="sm"
-            variant={limit === size ? 'default' : 'outline'}
-            onClick={() => update({ limit: size })}
-          >
-            {size}
-          </Button>
-        ))}
+        <label htmlFor="row-limit" className="text-sm text-gray-600 dark:text-gray-300">Show</label>
+        {/* A dropdown, not three buttons. Row count is a single choice from a
+            closed set, which is what a select is for — and three more filled/
+            outlined buttons beside the range presets made it read as another
+            filter rather than a page size. 100 is the API's own cap. */}
+        <Select value={String(limit)} onValueChange={next => update({ limit: Number(next) })}>
+          <SelectTrigger id="row-limit" className="h-8 w-[88px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[25, 50, 100].map(size => (
+              <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Rank by</span>
         <Button size="sm" variant={sortBy === 'played' ? 'default' : 'outline'} onClick={() => setSortBy('played')}>
