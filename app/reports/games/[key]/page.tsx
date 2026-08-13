@@ -1,6 +1,7 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
+import type { Granularity } from '@/types/reports';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -34,6 +35,9 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 
 /** Everything about one game in one place, instead of filtering five pages by hand. */
 export default function GameDetailPage() {
+  // Server-side bucketing: a week's distinct players is computed, not
+  // summed, so changing this refetches rather than regrouping.
+  const [granularity, setGranularity] = useState<Granularity>('day');
   const resolveColor = useGameColor();
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
@@ -52,8 +56,8 @@ export default function GameDetailPage() {
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots, game_type: gameKey }),
-    [range, includeBots, gameKey],
+    () => ({ ...rangeToParams(range), include_bots: includeBots, game_type: gameKey , granularity }),
+    [range, includeBots, gameKey, granularity],
   );
 
   const { meta } = useGameMeta(enabled);
@@ -127,6 +131,8 @@ export default function GameDetailPage() {
 
       {activity.data && (
         <ActivityChart
+          granularity={granularity}
+          onGranularityChange={setGranularity}
           series={activity.data.series}
           metric="games_started"
           color={resolveColor(meta, gameKey)}

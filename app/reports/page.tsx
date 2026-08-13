@@ -2,6 +2,7 @@
 
 import type { Sensitivity } from '@/components/reports/AnomalySensitivity';
 import type { GameTotals } from '@/types/reports';
+import type { Granularity } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
 import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
@@ -23,6 +24,9 @@ import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
 export default function ReportsPage() {
+  // Server-side bucketing: a week's distinct players is computed, not
+  // summed, so changing this refetches rather than regrouping.
+  const [granularity, setGranularity] = useState<Granularity>('day');
   const resolveColor = useGameColor();
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
@@ -49,10 +53,15 @@ export default function ReportsPage() {
     [range, includeBots],
   );
 
+  // Granularity belongs only to the activity request. Folding it into `params`
+  // would refetch the summary every time the chart regrouped, for a parameter
+  // that endpoint doesn't have.
+  const activityParams = useMemo(() => ({ ...params, granularity }), [params, granularity]);
+
   const { meta } = useGameMeta(enabled);
   const summary = useReport(ReportsAPI.getSummary, params, enabled, 'The reporting summary endpoint');
   const allGames = useReport(ReportsAPI.getSummary, allGamesParams, enabled, 'The reporting summary endpoint');
-  const activity = useReport(ReportsAPI.getActivity, params, enabled, 'The reporting activity endpoint');
+  const activity = useReport(ReportsAPI.getActivity, activityParams, enabled, 'The reporting activity endpoint');
   // Unfiltered on purpose: "what needs attention" must surface a game you
   // haven't selected, which is exactly the one you'd otherwise miss.
   // Kept local rather than in the URL: it changes what counts as worth
@@ -147,6 +156,8 @@ export default function ReportsPage() {
       <ReportPanel state={activity} skeletonClassName="h-80 w-full">
         {data => (
           <ActivityChart
+            granularity={granularity}
+            onGranularityChange={setGranularity}
             series={data.series}
             metric={metric}
             color={game ? resolveColor(meta, game) : undefined}

@@ -21,6 +21,7 @@ import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 function Tile({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -158,9 +159,7 @@ export default function PlayerDetailPage() {
                       <CardContent className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
-                            <Tooltip contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle} />
+                            <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                             <Pie
                               data={data.by_game}
                               dataKey="games_played"
@@ -219,9 +218,7 @@ export default function PlayerDetailPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
                         <XAxis dataKey="date" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
                         <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-                        <Tooltip contentStyle={theme.tooltip.contentStyle}
-                          labelStyle={theme.tooltip.labelStyle}
-                          itemStyle={theme.tooltip.itemStyle} />
+                        <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                         <Area type="monotone" dataKey="games_started" name="Played" stroke="#059669" fill="#059669" fillOpacity={0.35} />
                         <Area type="monotone" dataKey="games_finished" name="Finished" stroke="#2563eb" fill="#2563eb" fillOpacity={0.25} />
                       </AreaChart>
