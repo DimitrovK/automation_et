@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { METRIC_OPTIONS } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
+import { metricPanels } from '@/lib/metric-panels';
 import type { Granularity } from '@/types/reports';
 import { GRANULARITIES } from '@/types/reports';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,12 @@ function formatBucket(iso: string, granularity: Granularity): string {
   return granularity === 'week' ? `w/c ${day}` : day;
 }
 
+/** A metric's total over the window, skipping uncovered days rather than
+ *  counting them as zero — the same rule the chart draws by. */
+function total(rows: { [key: string]: unknown }[], key: MetricKey): number {
+  return rows.reduce((sum, row) => sum + (typeof row[key] === 'number' ? (row[key] as number) : 0), 0);
+}
+
 const DEFAULT_COLORS: Record<MetricKey, string> = {
   games_started: '#059669',
   games_finished: '#2563eb',
@@ -33,10 +40,20 @@ const DEFAULT_COLORS: Record<MetricKey, string> = {
 };
 
 /**
- * Daily activity. The selected metric is drawn boldly and the others stay as
- * faint context — showing only the selection loses the shape that makes it
- * meaningful (a "played" line means much more next to "finished"), while giving
- * four lines equal weight makes none of them readable.
+ * Daily activity: the selected metric large, the other three beneath it.
+ *
+ * All four used to share one y-axis, with the unselected ones drawn faint. That
+ * was two problems wearing one coat. A shared axis across metrics of different
+ * magnitudes flattens the small ones into a line along the bottom — distinct
+ * players runs in the tens where games played runs in the thousands, so the
+ * shape of the most interesting series was never visible. And a shared axis
+ * *asserts* comparability: it invites reading the gap between two lines as if
+ * it meant something, when one counts sessions and the other counts people.
+ *
+ * Small multiples instead. Each panel keeps its own scale, they share the
+ * x-axis, and nobody is invited to subtract one from another. The two-axis
+ * alternative is the one thing worse than both — it lets the author choose
+ * where the lines cross.
  */
 export function ActivityChart({ series, title, description, metric, color, granularity, onGranularityChange }: {
   series: ActivityDay[];
@@ -77,6 +94,8 @@ export function ActivityChart({ series, title, description, metric, color, granu
   }));
   const uncovered = rows.filter(row => !row.covered).length;
   const primaryColor = color ?? DEFAULT_COLORS[metric];
+  const panels = metricPanels(metric);
+  const primaryOption = METRIC_OPTIONS.find(option => option.key === panels.primary)!;
 
   return (
     <Card>
@@ -125,26 +144,57 @@ export function ActivityChart({ series, title, description, metric, color, granu
             <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
             <YAxis tick={theme.tick} allowDecimals={false} width={44} />
             <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            {METRIC_OPTIONS.map((option) => {
-              const isPrimary = option.key === metric;
-              return (
-                <Line
-                  key={option.key}
-                  type="monotone"
-                  dataKey={option.key}
-                  name={option.label}
-                  stroke={isPrimary ? primaryColor : DEFAULT_COLORS[option.key]}
-                  strokeWidth={isPrimary ? 2.5 : 1}
-                  strokeOpacity={isPrimary ? 1 : 0.28}
-                  dot={false}
-                  activeDot={isPrimary ? { r: 4 } : false}
-                  connectNulls={false}
-                />
-              );
-            })}
+            {/* One line, its own axis. The others are below at their own
+                scales rather than squashed onto this one. */}
+            <Line
+              type="monotone"
+              dataKey={primaryOption.key}
+              name={primaryOption.label}
+              stroke={primaryColor}
+              strokeWidth={2.5}
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls={false}
+            />
           </LineChart>
         </ResponsiveContainer>
+      </CardContent>
+
+      {/* The other three, each on its own scale. Same x-axis, no shared y —
+          so the shapes can be compared without the numbers being implied to
+          be comparable. */}
+      <CardContent className="grid grid-cols-1 gap-4 pt-0 sm:grid-cols-3">
+        {panels.context.map(key => METRIC_OPTIONS.find(option => option.key === key)!).map(option => (
+          <div key={option.key} className="space-y-1">
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
+              {option.label}
+              <span className="ml-1 font-normal tabular-nums text-gray-400 dark:text-gray-500">
+                {total(data, option.key).toLocaleString()}
+              </span>
+            </p>
+            <div className="h-20">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <XAxis dataKey="label" hide />
+                  {/* Its own domain, which is the entire point: on the shared
+                      axis above, a series in the tens beside one in the
+                      thousands was a flat line along the bottom. */}
+                  <YAxis hide domain={['dataMin', 'dataMax']} />
+                  <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
+                  <Line
+                    type="monotone"
+                    dataKey={option.key}
+                    name={option.label}
+                    stroke={DEFAULT_COLORS[option.key]}
+                    strokeWidth={1.5}
+                    dot={false}
+                    connectNulls={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
