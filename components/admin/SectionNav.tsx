@@ -6,6 +6,11 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
+/**
+ * `heading` is empty for a section with a single group. Headings earn their
+ * place by telling groups apart; one heading over one group only labels the
+ * obvious, and a lone "Sections" caption is noise.
+ */
 export type NavGroup = { heading: string; items: NavItem[] };
 
 /**
@@ -32,10 +37,12 @@ export function SectionNav({ groups, trailing }: {
     <nav aria-label="Section" className="rounded-lg border bg-white/60 p-2 dark:border-slate-700 dark:bg-slate-800/60">
       <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
         {groups.map(group => (
-          <div key={group.heading} className="min-w-[10rem] flex-1">
-            <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-              {group.heading}
-            </p>
+          <div key={group.heading || 'ungrouped'} className="min-w-[10rem] flex-1">
+            {group.heading && (
+              <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                {group.heading}
+              </p>
+            )}
             <div className="flex flex-wrap gap-1">
               {group.items.map(({ href, label, icon: Icon }) => (
                 <Link

@@ -3,6 +3,7 @@ import { BarChart3, BookOpen, Users } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { SectionNav } from '@/components/admin/SectionNav';
 import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING } from '@/components/reports/ReportsNav';
+import { USER_HUB_NAV_GROUPS, USER_HUB_NAV_TRAILING } from '@/components/user-hub/UserHubShell';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/reports/players' }));
 
@@ -39,6 +40,18 @@ describe('sectionNav', () => {
 
     const current = screen.getAllByRole('link').filter(link => link.getAttribute('aria-current') === 'page');
     expect(current).toHaveLength(1);
+  });
+
+  it('omits the caption for a section with a single group', () => {
+    // A heading earns its place by telling groups apart. Over one group it only
+    // labels the obvious, and User Hub has two destinations where Reports has
+    // ten — so the same nav has to work without captions.
+    const { container } = render(<SectionNav groups={[{ heading: '', items: GROUPS[0].items }]} />);
+
+    expect(screen.getByRole('link', { name: /Daily Pulse/ })).toBeTruthy();
+    // No caption element at all — an empty one still takes its line height and
+    // margin, so the group would sit oddly low for no visible reason.
+    expect(container.querySelector('p')).toBeNull();
   });
 
   it('keeps reference material out of the groups', () => {
@@ -89,5 +102,38 @@ describe('report nav groups', () => {
 
     const missing = [...routes].filter(route => !linked.has(route));
     expect(missing, `Report pages not in the nav: ${missing.join(', ')}`).toEqual([]);
+  });
+});
+
+describe('user hub nav groups', () => {
+  it('covers every user hub page', async () => {
+    // Same guard as Reports: a page missing from the nav is unreachable except
+    // by URL. Redirect stubs are excluded — /user-hub/analytics exists only to
+    // forward its old bookmarks to /reports/favourites, and linking it would
+    // send people out of the section on purpose.
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const { join } = await import('node:path');
+
+    const root = join(process.cwd(), 'app', 'user-hub');
+    const routes: string[] = ['/user-hub'];
+    for (const entry of readdirSync(root, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name === '__tests__') continue;
+      const page = join(root, entry.name, 'page.tsx');
+      if (readFileSync(page, 'utf8').includes('permanentRedirect')) continue;
+      routes.push(`/user-hub/${entry.name}`);
+    }
+
+    const linked = new Set([
+      ...USER_HUB_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
+      USER_HUB_NAV_TRAILING.href,
+    ]);
+
+    const missing = routes.filter(route => !linked.has(route));
+    expect(missing, `User Hub pages not in the nav: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  it('points at where favourites went', () => {
+    // The section lost a tab. A pointer beats a page that quietly disappears.
+    expect(USER_HUB_NAV_TRAILING.href).toBe('/reports/favourites');
   });
 });

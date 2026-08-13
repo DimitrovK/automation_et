@@ -2,12 +2,11 @@
 
 import type { ChipKey } from '@/components/user-hub/ActiveFilterChips';
 import type { BoolParam, HubUser, SuspensionFilter, UserListFilters } from '@/types/user-hub';
-import { LayoutGrid, List, Users } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
-import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DataPagination } from '@/components/ui/data-pagination';
@@ -20,10 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ActiveFilterChips } from '@/components/user-hub/ActiveFilterChips';
-import { AdminGate } from '@/components/user-hub/AdminGate';
 import { UserCard } from '@/components/user-hub/UserCard';
 import { UserDetailSheet } from '@/components/user-hub/UserDetailSheet';
-import { UserHubNav } from '@/components/user-hub/UserHubNav';
+import { UserHubShell } from '@/components/user-hub/UserHubShell';
 import { UserTable } from '@/components/user-hub/UserTable';
 import { UserTableSkeleton } from '@/components/user-hub/UserTableSkeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -125,28 +123,11 @@ function UserHubUsersInner() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <Navigation />
-
-        <div className="space-y-2 text-center">
-          <h1 className="flex items-center justify-center gap-2 text-3xl font-bold text-gray-900 dark:text-white">
-            <Users className="size-7 text-emerald-600" />
-            {' '}
-            Users
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Search and filter users. Open a profile to view favourites and status. Read-only.
-          </p>
-        </div>
-
-        {!isAdmin
-          ? (
-              <AdminGate />
-            )
-          : (
-              <>
-                <UserHubNav />
+    <UserHubShell
+      title="Users"
+      description="Search and filter users. Open a profile to view favourites and status. Read-only."
+    >
+      <>
 
                 <Card>
                   <CardContent className="grid grid-cols-1 gap-3 pt-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -319,12 +300,10 @@ function UserHubUsersInner() {
                   onPageChange={p => writeFilters({ ...filters, page: p })}
                   disabled={listLoading}
                 />
-              </>
-            )}
 
         <UserDetailSheet user={selected} open={sheetOpen} onOpenChange={setSheetOpen} />
-      </div>
-    </div>
+      </>
+    </UserHubShell>
   );
 }
 
