@@ -1,14 +1,21 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
-import type { RetentionResponse, RetentionSummaryCell } from '@/types/reports';
+import type { RetentionGameRow, RetentionResponse, RetentionSummaryCell } from '@/types/reports';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-function cell(row: Record<string, unknown>, key: string): RetentionSummaryCell | null {
-  const value = row[key];
-  return value && typeof value === 'object' ? (value as RetentionSummaryCell) : null;
+/**
+ * One offset's cell, or null when the backend didn't send that offset.
+ *
+ * The lookup is by a string built from `offsets`, so it has to be widened to
+ * the row's key type — and the null branch is real: a response can list an
+ * offset the rows don't carry, and reading `undefined.pct` would blank the
+ * whole table rather than one cell.
+ */
+function cell(row: RetentionGameRow, key: string): RetentionSummaryCell | null {
+  return row[key as `d${number}`] ?? null;
 }
 
 /**
@@ -59,7 +66,14 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
           </thead>
           <tbody>
             {rows.map((row) => {
-              const players = cell(row, offsets[0])?.players ?? 0;
+              // The first offset the row actually carries, not the first one
+              // listed: they are the same set today, and a row missing the
+              // leading offset would otherwise report a cohort of zero for a
+              // game that has players.
+              const players = offsets.reduce<number>(
+                (found, key) => found || (cell(row, key)?.players ?? 0),
+                0,
+              );
               return (
                 <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
                   <td className="py-2 pr-4">

@@ -390,10 +390,17 @@ export type RetentionSummaryCell = {
   below_threshold?: boolean;
 };
 
-/** One game's own retention: its cohorts, its returns. */
+/**
+ * One game's own retention: its cohorts, its returns.
+ *
+ * Keyed by offset (`d1`, `d7`, `d30`) and optional, because which offsets are
+ * present follows `offsets` in the response. A plain `Record<string, …>` would
+ * claim every string key exists and admit any field at all, so a typo'd offset
+ * would type-check and read as missing data at runtime.
+ */
 export type RetentionGameRow = {
   game_type: string;
-} & Record<string, RetentionSummaryCell | string>;
+} & Partial<Record<`d${number}`, RetentionSummaryCell>>;
 
 export type RetentionResponse = {
   /** States what "new" means here — a window return rate, not lifetime retention. */

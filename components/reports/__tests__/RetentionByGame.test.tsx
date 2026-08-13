@@ -74,6 +74,28 @@ describe('retentionByGame', () => {
     expect(screen.getByText('6.6%')).toBeTruthy();
   });
 
+  it('renders a dash for an offset the rows do not carry', () => {
+    // The response lists which offsets exist; a row can still be missing one.
+    // Reading through it must blank that cell, not the whole table.
+    render(<RetentionByGame data={data({
+      offsets: [1, 7, 30, 90],
+      game_median: { d1: 11, d7: 6.6, d30: 0, d90: null },
+    })} meta={META as never} />);
+
+    expect(screen.getByText('12.1%')).toBeTruthy();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(3);
+  });
+
+  it('reads the cohort size from whichever offset the row carries', () => {
+    // Taking it from the first offset LISTED would report a cohort of zero for
+    // a game that plainly has players, because the row need not carry that one.
+    render(<RetentionByGame data={data({
+      by_game: [{ game_type: 'scout', d7: summaryCell(12.1, 33), d30: summaryCell(0, 33) }],
+    })} meta={META as never} />);
+
+    expect(screen.getByText('33')).toBeTruthy();
+  });
+
   it('renders nothing when the backend predates the per-game view', () => {
     // The platform table still stands on its own; a blank card would read as
     // a failure.
