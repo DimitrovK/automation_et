@@ -52,6 +52,12 @@ describe('no panel writes its own empty state', () => {
       walk(root);
     }
 
+    // A walk that silently found nothing would let this guard pass forever.
+    // Verified: pointing the roots at a directory with no .tsx files made it
+    // report 4 passing assertions over zero files.
+    expect(files.length, 'walk found no files — this guard would pass vacuously')
+      .toBeGreaterThan(10);
+
     const offenders = files
       .filter(file => !file.endsWith('EmptyState.tsx'))
       .filter(file => /<p className="[^"]*\bpy-\d[^"]*text-center text-sm text-muted-foreground/.test(readFileSync(file, 'utf8')));

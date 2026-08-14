@@ -85,6 +85,12 @@ describe('no table is hand-rolled', () => {
       walk(root);
     }
 
+    // A walk that silently found nothing would let this guard pass forever.
+    // Verified: pointing the roots at a directory with no .tsx files made it
+    // report 4 passing assertions over zero files.
+    expect(files.length, 'walk found no files — this guard would pass vacuously')
+      .toBeGreaterThan(10);
+
     const offenders = files
       // The primitive is where the raw elements are supposed to live.
       .filter(file => !file.endsWith('ReportTable.tsx'))
