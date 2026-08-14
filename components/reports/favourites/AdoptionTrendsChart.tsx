@@ -84,8 +84,8 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
                       apart while favourites lived outside Reports. */}
                   <Tooltip content={<ChartTooltip labelFormatter={v => formatTrendDate(String(v), granularity)} />} />
                   <Legend wrapperStyle={theme.legend} />
-                  <Area type="monotone" dataKey="cumulative_users" name="Cumulative users" stroke="#10b981" fill="#10b981" fillOpacity={0.2} />
-                  <Area type="monotone" dataKey="new_adopters" name="New adopters" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} />
+                  <Area type="monotone" dataKey="cumulative_users" name="Cumulative users" stroke={theme.series[0]} fill={theme.series[0]} fillOpacity={0.2} />
+                  <Area type="monotone" dataKey="new_adopters" name="New adopters" stroke={theme.series[1]} fill={theme.series[1]} fillOpacity={0.15} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

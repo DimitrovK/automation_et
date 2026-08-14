@@ -1,5 +1,6 @@
 'use client';
 
+import type { ChartTheme } from '@/lib/chart-theme';
 import type { ActivityDay, Granularity, MetricKey } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -32,12 +33,24 @@ function total(rows: { [key: string]: unknown }[], key: MetricKey): number {
   return rows.reduce((sum, row) => sum + (typeof row[key] === 'number' ? (row[key] as number) : 0), 0);
 }
 
-const DEFAULT_COLORS: Record<MetricKey, string> = {
-  games_started: '#059669',
-  games_finished: '#2563eb',
-  distinct_players: '#f59e0b',
-  mp_player_sessions: '#8b5cf6',
+/**
+ * Metric -> slot in the shared categorical series.
+ *
+ * A metric keeps its slot regardless of which one is selected, so "blue" means
+ * finished-sessions on the large chart and on the three small ones beneath it.
+ * Assigning by position in the rendered list would repaint every metric as soon
+ * as the selection changed.
+ */
+const METRIC_SLOT: Record<MetricKey, number> = {
+  games_started: 0,
+  games_finished: 1,
+  distinct_players: 2,
+  mp_player_sessions: 3,
 };
+
+function metricColor(theme: ChartTheme, metric: MetricKey): string {
+  return theme.series[METRIC_SLOT[metric]];
+}
 
 /**
  * Daily activity: the selected metric large, the other three beneath it.
@@ -93,7 +106,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
         }),
   }));
   const uncovered = rows.filter(row => !row.covered).length;
-  const primaryColor = color ?? DEFAULT_COLORS[metric];
+  const primaryColor = color ?? metricColor(theme, metric);
   const panels = metricPanels(metric);
   const primaryOption = METRIC_OPTIONS.find(option => option.key === panels.primary)!;
 
@@ -185,7 +198,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
                     type="monotone"
                     dataKey={option.key}
                     name={option.label}
-                    stroke={DEFAULT_COLORS[option.key]}
+                    stroke={metricColor(theme, option.key)}
                     strokeWidth={1.5}
                     dot={false}
                     connectNulls={false}

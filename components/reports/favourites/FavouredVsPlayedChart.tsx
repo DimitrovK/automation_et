@@ -31,14 +31,20 @@ type Props = {
  * its own steps, and the light ramp inverts there (on dark, brighter reads as
  * deeper, not lighter).
  */
-const FUNNEL_LIGHT = ['#10b981', '#047857', '#064e3b'];
-const FUNNEL_DARK = ['#065f46', '#10b981', '#6ee7b7'];
+/*
+ * Strongest first — see MultiplayerFunnel.stageRamp. Both funnels now derive
+ * from the one shared ramp instead of keeping a local copy each, which is how
+ * they came to disagree about what a later stage should look like in dark mode.
+ */
+function funnelRamp(isDark: boolean): string[] {
+  return [...chartTheme(isDark).ramp].reverse().slice(0, 3);
+}
 
 export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, meta, onRetry }: Props) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   const theme = chartTheme(isDark);
-  const funnel = isDark ? FUNNEL_DARK : FUNNEL_LIGHT;
+  const funnel = funnelRamp(isDark);
 
   const rows = useMemo(() => (data ? sortEngagementRows(data.games) : []), [data]);
 

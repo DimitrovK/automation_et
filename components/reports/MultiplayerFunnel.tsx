@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { chartTheme } from '@/lib/chart-theme';
 
 /**
  * Where multiplayer rooms are lost, per game.
@@ -21,8 +22,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
  * against their own surface; the dark one re-anchors rather than flipping the
  * light one.
  */
-const STAGE_RAMP_LIGHT = ['#10b981', '#047857', '#064e3b'];
-const STAGE_RAMP_DARK = ['#6ee7b7', '#34d399', '#10b981'];
+/**
+ * Stage colours: strongest first, because stage one is the largest count.
+ *
+ * The shared ramp is ordered weakest-to-strongest in BOTH modes ("stronger"
+ * meaning further from the surface — darker on light, lighter on dark), so
+ * reversing it is all that is needed and it stays correct per surface.
+ *
+ * This replaces two locally-defined ramps that had drifted into disagreeing
+ * with each other: in light mode a later stage got stronger, while in dark mode
+ * this component made it weaker and FavouredVsPlayedChart made it stronger. The
+ * same funnel therefore changed meaning when you flipped the theme.
+ */
+function stageRamp(isDark: boolean): string[] {
+  return [...chartTheme(isDark).ramp].reverse().slice(0, 3);
+}
 
 /** Null, never 0, when there is nothing to divide by — no rooms means no rate. */
 function share(value: number, total: number): number | null {
@@ -31,7 +45,7 @@ function share(value: number, total: number): number | null {
 
 export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; meta: GameMetaMap }) {
   const { resolvedTheme } = useTheme();
-  const ramp = resolvedTheme === 'dark' ? STAGE_RAMP_DARK : STAGE_RAMP_LIGHT;
+  const ramp = stageRamp(resolvedTheme === 'dark');
 
   const played = [...rows]
     .filter(row => row.rooms_created > 0)

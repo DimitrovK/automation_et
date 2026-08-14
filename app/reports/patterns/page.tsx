@@ -238,8 +238,8 @@ export default function PatternsPage() {
                           dataKey="returning_players"
                           name="Returning"
                           stackId="players"
-                          stroke="#2563eb"
-                          fill="#2563eb"
+                          stroke={theme.series[1]}
+                          fill={theme.series[1]}
                           fillOpacity={0.5}
                         />
                         <Area
@@ -247,8 +247,8 @@ export default function PatternsPage() {
                           dataKey="new_players"
                           name="New"
                           stackId="players"
-                          stroke="#059669"
-                          fill="#059669"
+                          stroke={theme.series[0]}
+                          fill={theme.series[0]}
                           fillOpacity={0.8}
                         />
                       </AreaChart>

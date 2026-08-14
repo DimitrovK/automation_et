@@ -4,6 +4,7 @@ import type { HourWeekdayRow, PeakCell } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { chartTheme } from '@/lib/chart-theme';
 import { cn } from '@/lib/utils';
 
 /** Every third hour, so the axis stays readable on a phone. */
@@ -21,16 +22,16 @@ const HOUR_TICKS = [0, 3, 6, 9, 12, 15, 18, 21];
  * lightness, adjacent steps at least 0.06 apart, lightest step clearing 2:1 so
  * it is distinguishable from an empty cell.
  */
-const RAMP_LIGHT = ['#10b981', '#059669', '#047857', '#064e3b'];
-const RAMP_DARK = ['#047857', '#059669', '#34d399', '#a7f3d0'];
-
 /** Exported so the per-surface choice is testable rather than implicit. */
 // Exported beside its component on purpose: a recharts tree renders nothing
 // measurable in jsdom, so the pure part has to be reachable from a test. The
 // cost is fast-refresh reloading this file rather than hot-swapping it.
 // eslint-disable-next-line react-refresh/only-export-components
 export function heatmapRamp(isDark: boolean): string[] {
-  return isDark ? RAMP_DARK : RAMP_LIGHT;
+  // The steps themselves now live in chart-theme beside the categorical series,
+  // because three components had each grown their own emerald ramp and they had
+  // already drifted to different values.
+  return chartTheme(isDark).ramp;
 }
 
 /** Quartile-style thresholds as a share of the busiest cell. */

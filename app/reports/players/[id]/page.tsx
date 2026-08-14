@@ -253,8 +253,8 @@ export default function PlayerDetailPage() {
                         <XAxis dataKey="date" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
                         <YAxis tick={theme.tick} allowDecimals={false} width={44} />
                         <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
-                        <Area type="monotone" dataKey="games_started" name="Played" stroke="#059669" fill="#059669" fillOpacity={0.35} />
-                        <Area type="monotone" dataKey="games_finished" name="Finished" stroke="#2563eb" fill="#2563eb" fillOpacity={0.25} />
+                        <Area type="monotone" dataKey="games_started" name="Played" stroke={theme.series[0]} fill={theme.series[0]} fillOpacity={0.35} />
+                        <Area type="monotone" dataKey="games_finished" name="Finished" stroke={theme.series[1]} fill={theme.series[1]} fillOpacity={0.25} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </CardContent>
