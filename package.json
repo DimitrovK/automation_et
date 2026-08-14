@@ -69,7 +69,7 @@
     "@antfu/eslint-config": "^6.7.1",
     "@eslint-react/eslint-plugin": "^2.3.13",
     "@eslint/eslintrc": "^3.3.6",
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^9.39.5",
     "@hookform/resolvers": "^5.7.1",
     "@next/eslint-plugin-next": "^16.3.0",
     "@testing-library/jest-dom": "^6.9.1",
