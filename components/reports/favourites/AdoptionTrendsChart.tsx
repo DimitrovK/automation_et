@@ -4,6 +4,7 @@ import type { AdoptionTrendsResponse, TrendGranularity } from '@/types/user-hub'
 import { useTheme } from 'next-themes';
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -68,7 +69,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
         )}
 
         {!isLoading && !error && points.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">No adoption data yet.</p>
+          <EmptyState hint="Try a wider date range.">No favourites were added in this window.</EmptyState>
         )}
 
         {!isLoading && !error && points.length > 0 && (

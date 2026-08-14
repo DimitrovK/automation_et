@@ -5,6 +5,7 @@ import type { MultiplayerModeRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
@@ -54,9 +55,9 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
       <CardContent className="space-y-6">
         {modes.length === 0
           ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
+              <EmptyState>
                 No multiplayer rooms in this window.
-              </p>
+              </EmptyState>
             )
           : (
               <>

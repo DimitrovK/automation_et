@@ -11,6 +11,7 @@ import { ComparePicker } from '@/components/reports/ComparePicker';
 import { ComparisonTiles } from '@/components/reports/ComparisonTiles';
 import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameHourProfile } from '@/components/reports/GameHourProfile';
 import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
@@ -212,9 +213,9 @@ export default function GameDetailPage() {
               </tbody>
             </ReportTable>
             {players.data.players.length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">
+              <EmptyState>
                 Nobody played this game in the selected range.
-              </p>
+              </EmptyState>
             )}
           </CardContent>
         </Card>

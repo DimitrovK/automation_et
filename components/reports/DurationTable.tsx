@@ -4,6 +4,7 @@ import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { DurationResponse } from '@/types/reports';
 import { Info } from 'lucide-react';
 import { DurationSpread } from '@/components/reports/DurationSpread';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
@@ -173,9 +174,9 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             <tbody>{renderRows(comparable)}</tbody>
           </ReportTable>
           {comparable.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">
+            <EmptyState>
               No comparable games in this range.
-            </p>
+            </EmptyState>
           )}
         </CardContent>
       </Card>

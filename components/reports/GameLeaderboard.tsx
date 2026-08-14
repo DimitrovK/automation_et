@@ -5,6 +5,7 @@ import type { GameTotals, MetricKey } from '@/types/reports';
 import { ChevronDown, ChevronRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
@@ -88,9 +89,9 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
         </div>
 
         {active.length === 0 && (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <EmptyState>
             No games played in this window.
-          </p>
+          </EmptyState>
         )}
 
         {active.map((row) => {

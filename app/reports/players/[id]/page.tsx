@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -149,9 +150,9 @@ export default function PlayerDetailPage() {
                 </div>
 
                 {data.totals.games_played === 0 && (
-                  <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                  <EmptyState className="rounded-md border border-dashed">
                     This player didn't play anything in the selected range.
-                  </p>
+                  </EmptyState>
                 )}
 
                 {data.by_game.length > 0 && (

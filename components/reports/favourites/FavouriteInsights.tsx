@@ -4,6 +4,7 @@ import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { FavouritesUsageResponse } from '@/types/user-hub';
 import { Crown, Download } from 'lucide-react';
 import { useMemo } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { gameName } from '@/hooks/use-game-meta';
@@ -77,7 +78,7 @@ export function FavouriteInsights({ data, meta }: Props) {
           <p className="text-xs text-muted-foreground">Which game users favourite first.</p>
           {firstChoice.length === 0
             ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">No data yet.</p>
+                <EmptyState>No favourites recorded yet.</EmptyState>
               )
             : (
                 <div className="space-y-1.5 pt-1">

@@ -2,6 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
@@ -155,9 +156,9 @@ export default function MultiplayerReportPage() {
                       </tbody>
                     </ReportTable>
                     {data.by_game.length === 0 && (
-                      <p className="py-6 text-center text-sm text-muted-foreground">
+                      <EmptyState>
                         No multiplayer rooms in this window.
-                      </p>
+                      </EmptyState>
                     )}
                   </CardContent>
                 </Card>

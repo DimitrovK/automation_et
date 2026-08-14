@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar, FilterGroup, Segmented } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
@@ -254,11 +255,11 @@ export default function PlayersReportPage() {
                     </tbody>
                   </ReportTable>
                   {data.players.length === 0 && (
-                    <p className="py-6 text-center text-sm text-muted-foreground">
+                    <EmptyState>
                       {search
                         ? `No player matching "${search}" played in this window.`
                         : 'Nobody played in this window.'}
-                    </p>
+                    </EmptyState>
                   )}
                 </CardContent>
               </Card>

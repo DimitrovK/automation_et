@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { AbandonedPanel } from '@/components/reports/AbandonedPanel';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
@@ -220,9 +221,9 @@ export default function GamesIndexPage() {
                       </tbody>
                     </ReportTable>
                     {rows.length === 0 && (
-                      <p className="py-6 text-center text-sm text-muted-foreground">
+                      <EmptyState>
                         No game activity in this window.
-                      </p>
+                      </EmptyState>
                     )}
                   </CardContent>
                 </Card>

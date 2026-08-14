@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -75,7 +76,7 @@ export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, met
         )}
 
         {!isLoading && !error && rows.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">No engagement data yet.</p>
+          <EmptyState hint="Try a wider date range.">No favourited games were played in this window.</EmptyState>
         )}
 
         {!isLoading && !error && rows.length > 0 && (

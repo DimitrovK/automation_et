@@ -3,6 +3,7 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { MultiplayerGameRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,9 +71,9 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
       </CardHeader>
       <CardContent className="space-y-5">
         {played.length === 0 && (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <EmptyState>
             No multiplayer rooms in this window.
-          </p>
+          </EmptyState>
         )}
 
         {played.map((row) => {
