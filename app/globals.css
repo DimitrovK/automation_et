@@ -13,12 +13,13 @@
 
 @layer base {
   /*
-   * "Floodlit pitch" — the house palette.
+   * The house palette.
    *
-   * The neutral ramp is green-cast rather than flat gray. `gray-500` on white
-   * is what every admin tool ships with; tilting the neutrals a few degrees
-   * toward the brand hue reads as a deliberate house style and costs nothing in
-   * legibility, because the lightness steps are unchanged.
+   * Surfaces are gray, carrying 3–8% of the brand hue: a cast you would not
+   * name, not a colour. An earlier pass pushed this to 20%+ on the theory that a
+   * green-tinted neutral would read as a house style rather than as the default
+   * every admin tool ships with. It read as green cards instead. The hue is not
+   * where a surface earns its character; its lightness steps are.
    *
    * Emerald is the ACCENT and is spent only on interactive state — active
    * filters, links, focus rings, the primary action. It is never decorative and
@@ -29,26 +30,26 @@
    * below serve the charts with no game dimension (new-vs-returning, modes).
    */
   :root {
-    --background: 150 17% 98%;
-    --foreground: 150 13% 9%;
+    --background: 120 7% 97%;
+    --foreground: 135 10% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 150 13% 9%;
+    --card-foreground: 135 10% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 150 13% 9%;
+    --popover-foreground: 135 10% 8%;
     /* emerald-600, not -500: white on -500 is 2.5:1, which fails on every
        button the accent exists to make obvious. */
     --primary: 161 94% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 140 12% 95%;
-    --secondary-foreground: 153 13% 13%;
-    --muted: 140 12% 95%;
-    --muted-foreground: 152 6% 41%;
-    --accent: 140 17% 93%;
-    --accent-foreground: 153 13% 13%;
+    --secondary: 120 7% 95%;
+    --secondary-foreground: 135 10% 8%;
+    --muted: 120 7% 95%;
+    --muted-foreground: 155 6% 42%;
+    --accent: 140 8% 92%;
+    --accent-foreground: 135 10% 8%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 140 12% 91%;
-    --input: 140 12% 91%;
+    --border: 140 5% 89%;
+    --input: 140 5% 89%;
     --ring: 161 94% 30%;
     /* Validated as a set, not picked by eye: OKLCH lightness band, chroma
        floor, adjacent-pair separation under deutan/protan/tritan simulation,
@@ -59,41 +60,46 @@
     --chart-4: 263 70% 58%;
     --chart-5: 347 77% 50%;
     --radius: 0.625rem;
-    --sidebar-background: 140 12% 95%;
-    --sidebar-foreground: 153 13% 13%;
+    --sidebar-background: 120 7% 95%;
+    --sidebar-foreground: 135 10% 8%;
     --sidebar-primary: 161 94% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 140 17% 93%;
-    --sidebar-accent-foreground: 153 13% 13%;
-    --sidebar-border: 140 12% 91%;
+    --sidebar-accent: 140 8% 92%;
+    --sidebar-accent-foreground: 135 10% 8%;
+    --sidebar-border: 140 5% 89%;
     --sidebar-ring: 161 94% 30%;
   }
   .dark {
     /*
-     * Near-neutral on purpose. A green-tinted card was the first attempt and it
-     * read as "a green card" rather than as a surface — at 20%+ saturation the
-     * hue stops being a cast and becomes the colour of the thing. Surfaces here
-     * sit at 5–8% saturation: enough that they are not sterile flat gray, not
-     * enough to compete with the emerald that marks what you can act on.
+     * Gray, with a whisper of the brand hue — 3–5% saturation, which is a cast
+     * you would not name rather than a colour. The first attempt ran 20%+ and
+     * the card read as "a green card" instead of as a surface.
+     *
+     * Lightness matters more than hue here, and it was the real fault in the
+     * attempt before this one: card at 8% against a background at 5% is three
+     * points of separation, so cards sat flat on the page and the whole surface
+     * read as murky. Background 4%, card 10% — six points — plus a border at
+     * 18%, so a card has both a lift and an edge. Depth is the thing dark UIs
+     * get wrong, and it is spent on lightness steps, not on saturation.
      */
-    --background: 150 8% 5%;
-    --foreground: 140 11% 95%;
-    --card: 140 7% 8%;
-    --card-foreground: 140 11% 95%;
-    --popover: 140 7% 8%;
-    --popover-foreground: 140 11% 95%;
+    --background: 120 5% 4%;
+    --foreground: 120 7% 95%;
+    --card: 120 4% 10%;
+    --card-foreground: 120 7% 95%;
+    --popover: 120 4% 10%;
+    --popover-foreground: 120 7% 95%;
     --primary: 160 84% 39%;
-    --primary-foreground: 150 8% 5%;
-    --secondary: 150 7% 12%;
-    --secondary-foreground: 140 11% 95%;
-    --muted: 150 7% 12%;
-    --muted-foreground: 150 5% 63%;
-    --accent: 135 6% 13%;
-    --accent-foreground: 140 11% 95%;
+    --primary-foreground: 120 5% 4%;
+    --secondary: 120 4% 14%;
+    --secondary-foreground: 120 7% 95%;
+    --muted: 120 4% 14%;
+    --muted-foreground: 140 5% 62%;
+    --accent: 120 4% 14%;
+    --accent-foreground: 120 7% 95%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 144 6% 16%;
-    --input: 144 6% 16%;
+    --border: 140 3% 18%;
+    --input: 140 3% 18%;
     --ring: 160 84% 39%;
     /* Deliberately NOT the light steps brightened. The validator's dark
        lightness band is 0.48–0.67 — *below* the light band, not above it — so
@@ -106,13 +112,13 @@
     --chart-3: 32 95% 44%;
     --chart-4: 258 90% 66%;
     --chart-5: 350 89% 60%;
-    --sidebar-background: 140 7% 7%;
-    --sidebar-foreground: 140 11% 95%;
+    --sidebar-background: 120 4% 8%;
+    --sidebar-foreground: 120 7% 95%;
     --sidebar-primary: 160 84% 39%;
-    --sidebar-primary-foreground: 150 8% 5%;
-    --sidebar-accent: 135 6% 13%;
-    --sidebar-accent-foreground: 140 11% 95%;
-    --sidebar-border: 144 6% 16%;
+    --sidebar-primary-foreground: 120 5% 4%;
+    --sidebar-accent: 120 4% 14%;
+    --sidebar-accent-foreground: 120 7% 95%;
+    --sidebar-border: 140 3% 18%;
     --sidebar-ring: 160 84% 39%;
   }
 }
