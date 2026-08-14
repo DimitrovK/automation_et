@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
@@ -55,13 +56,15 @@ export default function MultiplayerReportPage() {
       title="Multiplayer"
       description="Rooms opened, started and finished. Counts rooms — not per-player participations."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
+        />
 
+      </FilterBar>
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
           <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>

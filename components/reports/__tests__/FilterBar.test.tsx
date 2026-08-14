@@ -45,3 +45,41 @@ describe('filterGroup', () => {
     expect(spacer).toHaveAttribute('aria-hidden');
   });
 });
+
+describe('every filtered report page uses the bar', () => {
+  it('has no page laying filters out by hand', async () => {
+    // The filters were a bare row of buttons on ten pages, each spacing itself
+    // slightly differently. A page that renders RangePicker outside FilterBar
+    // drifts back to that — and nothing else would notice, because it still
+    // works.
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+
+    const root = join(process.cwd(), 'app', 'reports');
+    const pages: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+        } else if (entry.name === 'page.tsx') {
+          pages.push(full);
+        }
+      }
+    };
+    walk(root);
+
+    const offenders = pages.filter((file) => {
+      const source = readFileSync(file, 'utf8');
+      if (!source.includes('<RangePicker')) {
+        return false;
+      }
+      return !source.includes('<FilterBar>');
+    });
+
+    expect(
+      offenders.map(f => f.replace(process.cwd(), '')),
+      'Report pages with filters outside FilterBar',
+    ).toEqual([]);
+  });
+});

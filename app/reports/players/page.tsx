@@ -4,6 +4,7 @@ import type { RangeState } from '@/lib/report-range';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar, FilterGroup, Segmented } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -21,6 +22,7 @@ import { useAuth } from '@/lib/auth';
 import { playStyle } from '@/lib/play-style';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
+import { cn } from '@/lib/utils';
 
 export default function PlayersReportPage() {
   const { isAuthenticated, user } = useAuth();
@@ -90,52 +92,70 @@ export default function PlayersReportPage() {
       title="Players"
       description="Who played the most. Bot/simulation accounts are excluded by default."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="player-search" className="text-sm text-gray-600 dark:text-gray-300">Find</label>
-        <Input
-          id="player-search"
-          value={draftSearch}
-          onChange={event => setDraftSearch(event.target.value)}
-          placeholder="Username"
-          className="h-8 w-48"
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
         />
-        {search && (
-          <Button size="sm" variant="ghost" onClick={() => setDraftSearch('')}>
-            Clear
-          </Button>
-        )}
 
-        <label htmlFor="row-limit" className="text-sm text-gray-600 dark:text-gray-300">Show</label>
+        <FilterGroup label="Find a player" hint="Narrows who is counted, not who survives the ranking — searching a quiet player still finds them.">
+          <div className="flex items-center gap-1.5">
+            <Input
+              id="player-search"
+              aria-label="Find a player by username"
+              value={draftSearch}
+              onChange={event => setDraftSearch(event.target.value)}
+              placeholder="Username"
+              className="h-8 w-48"
+            />
+            {search && (
+              <Button size="sm" variant="ghost" onClick={() => setDraftSearch('')}>
+                Clear
+              </Button>
+            )}
+          </div>
+        </FilterGroup>
+
         {/* A dropdown, not three buttons. Row count is a single choice from a
             closed set, which is what a select is for — and three more filled/
             outlined buttons beside the range presets made it read as another
             filter rather than a page size. 100 is the API's own cap. */}
-        <Select value={String(limit)} onValueChange={next => update({ limit: Number(next) })}>
-          <SelectTrigger id="row-limit" className="h-8 w-[88px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {[25, 50, 100].map(size => (
-              <SelectItem key={size} value={String(size)}>{size}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <FilterGroup label="Rows">
+          <Select value={String(limit)} onValueChange={next => update({ limit: Number(next) })}>
+            <SelectTrigger id="row-limit" className="h-8 w-[88px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[25, 50, 100].map(size => (
+                <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterGroup>
 
-        <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Rank by</span>
-        <Button size="sm" variant={sortBy === 'played' ? 'default' : 'outline'} onClick={() => setSortBy('played')}>
-          Played
-        </Button>
-        <Button size="sm" variant={sortBy === 'finished' ? 'default' : 'outline'} onClick={() => setSortBy('finished')}>
-          Finished
-        </Button>
-      </div>
+        <FilterGroup label="Rank by">
+          <Segmented>
+            {([['played', 'Played'], ['finished', 'Finished']] as const).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={sortBy === key}
+                onClick={() => setSortBy(key)}
+                className={cn(
+                  'rounded px-2.5 py-1 text-sm font-medium transition-colors',
+                  sortBy === key
+                    ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
+                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </Segmented>
+        </FilterGroup>
+      </FilterBar>
 
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">

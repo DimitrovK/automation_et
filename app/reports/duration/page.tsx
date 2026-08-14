@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -49,13 +50,15 @@ export default function DurationPage() {
       title="Session length"
       description="How long people stay in a game — the closest proxy we have for what holds attention."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
+        />
 
+      </FilterBar>
       <div className="flex justify-end">
         <ExportButton
           rows={data?.rows ?? []}

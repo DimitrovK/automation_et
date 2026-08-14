@@ -11,6 +11,7 @@ import { ComparePicker } from '@/components/reports/ComparePicker';
 import { ComparisonTiles } from '@/components/reports/ComparisonTiles';
 import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameHourProfile } from '@/components/reports/GameHourProfile';
 import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -109,13 +110,16 @@ export default function GameDetailPage() {
           <ArrowLeft className="size-4" />
           All games
         </Link>
+      </div>
+
+      <FilterBar>
         <RangePicker
           value={range}
           onChange={setRange}
           includeBots={includeBots}
           onIncludeBotsChange={setIncludeBots}
         />
-      </div>
+      </FilterBar>
 
       {summary.error
         ? <ReportError error={summary.error} notDeployed={summary.notDeployed} onRetry={summary.refetch} />
