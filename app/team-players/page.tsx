@@ -1,5 +1,12 @@
 'use client';
 
+import type {
+  RoleFilter,
+  StatusFilter,
+  TeamPlayersOrdering,
+  TeamPlayersResponse,
+  TransferFilter,
+} from '@/types/team';
 import { LayoutGrid, List, Users2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,13 +32,6 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useAuth } from '@/lib/auth';
 import config from '@/lib/config';
 import { TeamAPI } from '@/lib/team-api';
-import type {
-  RoleFilter,
-  StatusFilter,
-  TeamPlayersOrdering,
-  TeamPlayersResponse,
-  TransferFilter,
-} from '@/types/team';
 
 const PAGE_SIZE = 50;
 
@@ -57,7 +57,9 @@ export default function TeamPlayersPage() {
 
   // ---- effects -----------------------------------------------------------
   useEffect(() => {
-    if (teamId === null) return;
+    if (teamId === null) {
+      return;
+    }
     let cancelled = false;
     setDataLoading(true);
     setError(null);
@@ -71,10 +73,14 @@ export default function TeamPlayersPage() {
       page_size: PAGE_SIZE,
     })
       .then((res) => {
-        if (!cancelled) setData(res);
+        if (!cancelled) {
+          setData(res);
+        }
       })
       .catch((err: unknown) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         const raw = err instanceof Error ? err.message : 'Failed to load team players';
         // 404 from this endpoint means one of two things:
         //  1. The team id genuinely doesn't exist in the DB.
@@ -88,7 +94,9 @@ export default function TeamPlayersPage() {
         setData(null);
       })
       .finally(() => {
-        if (!cancelled) setDataLoading(false);
+        if (!cancelled) {
+          setDataLoading(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -102,7 +110,9 @@ export default function TeamPlayersPage() {
 
   // ---- derived -----------------------------------------------------------
   const totalPages = useMemo(() => {
-    if (!data) return 1;
+    if (!data) {
+      return 1;
+    }
     return Math.max(1, Math.ceil(data.players.count / PAGE_SIZE));
   }, [data]);
 
@@ -110,7 +120,9 @@ export default function TeamPlayersPage() {
   if (isLoading) {
     return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
   }
-  if (!isAuthenticated) return <LoginForm />;
+  if (!isAuthenticated) {
+    return <LoginForm />;
+  }
 
   // ---- handlers ----------------------------------------------------------
   function handleTeamSelect(id: number) {
@@ -130,7 +142,9 @@ export default function TeamPlayersPage() {
 
         <div className="space-y-2 text-center">
           <h1 className="flex items-center justify-center gap-2 text-3xl font-bold text-gray-900 dark:text-white">
-            <Users2 className="size-7 text-emerald-600" /> Team Players
+            <Users2 className="size-7 text-emerald-600" />
+            {' '}
+            Team Players
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             Look up the squad assigned to a team. Search by name or paste a team ID.
@@ -159,9 +173,9 @@ export default function TeamPlayersPage() {
             <Card>
               <CardContent className="grid grid-cols-1 gap-3 pt-6 md:grid-cols-2 lg:grid-cols-6">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Role</label>
-                  <Select value={role} onValueChange={(v) => setRole(v as RoleFilter)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <label htmlFor="filter-role" className="mb-1 block text-xs font-medium text-gray-600">Role</label>
+                  <Select value={role} onValueChange={v => setRole(v as RoleFilter)}>
+                    <SelectTrigger id="filter-role"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="player">Players</SelectItem>
                       <SelectItem value="manager">Managers</SelectItem>
@@ -171,12 +185,12 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Transfer</label>
+                  <label htmlFor="filter-transfer" className="mb-1 block text-xs font-medium text-gray-600">Transfer</label>
                   <Select
                     value={transferType}
-                    onValueChange={(v) => setTransferType(v as TransferFilter)}
+                    onValueChange={v => setTransferType(v as TransferFilter)}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="filter-transfer"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="permanent">Permanent</SelectItem>
@@ -186,12 +200,12 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Status</label>
+                  <label htmlFor="filter-status" className="mb-1 block text-xs font-medium text-gray-600">Status</label>
                   <Select
                     value={statusFilter}
-                    onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+                    onValueChange={v => setStatusFilter(v as StatusFilter)}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="filter-status"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
@@ -201,24 +215,24 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div className="md:col-span-1 lg:col-span-2">
-                  <label className="mb-1 block text-xs font-medium text-gray-600">
+                  <label htmlFor="filter-player-name" className="mb-1 block text-xs font-medium text-gray-600">
                     Player name
                   </label>
                   <Input
-                    aria-label="Filter by player name"
+                    id="filter-player-name"
                     placeholder="Filter by name…"
                     value={q}
-                    onChange={(e) => setQ(e.target.value)}
+                    onChange={e => setQ(e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
+                  <label htmlFor="filter-sort" className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
                   <Select
                     value={ordering}
-                    onValueChange={(v) => setOrdering(v as TeamPlayersOrdering)}
+                    onValueChange={v => setOrdering(v as TeamPlayersOrdering)}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="filter-sort"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-start_year">Start year (newest)</SelectItem>
                       <SelectItem value="start_year">Start year (oldest)</SelectItem>
@@ -255,21 +269,25 @@ export default function TeamPlayersPage() {
             </div>
 
             {/* Results */}
-            {view === 'cards' ? (
-              data.players.results.length === 0 ? (
-                <div className="rounded-md border p-8 text-center text-sm text-gray-500">
-                  No players match the current filters.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {data.players.results.map((p) => (
-                    <PlayerCard key={p.id} player={p} onEdit={handleEditFootballer} />
-                  ))}
-                </div>
-              )
-            ) : (
-              <PlayerTable players={data.players.results} onEdit={handleEditFootballer} />
-            )}
+            {view === 'cards'
+              ? (
+                  data.players.results.length === 0
+                    ? (
+                        <div className="rounded-md border p-8 text-center text-sm text-gray-500">
+                          No players match the current filters.
+                        </div>
+                      )
+                    : (
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                          {data.players.results.map(p => (
+                            <PlayerCard key={p.id} player={p} onEdit={handleEditFootballer} />
+                          ))}
+                        </div>
+                      )
+                )
+              : (
+                  <PlayerTable players={data.players.results} onEdit={handleEditFootballer} />
+                )}
 
             <DataPagination
               currentPage={page}

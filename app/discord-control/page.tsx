@@ -9,7 +9,7 @@ import { Navigation } from '@/components/navigation';
 import { useAuth } from '@/lib/auth';
 
 export default function DiscordControlPageWrapper() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   // Authentication check
   if (isLoading) {

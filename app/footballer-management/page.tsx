@@ -1,12 +1,11 @@
 'use client';
 
-import type { CreateFootballerRequest, Footballer, FootballerNation, FootballersResponse, FootballerTeam } from '@/types/player';
+import type { CreateFootballerRequest, Footballer, FootballerNation, FootballersResponse } from '@/types/player';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import { BulkUpdateToolbar } from '@/components/footballer-management/BulkUpdateToolbar';
 import { CreateFootballer } from '@/components/footballer-management/create-footballer';
-import { DeleteFootballer } from '@/components/footballer-management/delete-footballer';
 import { FootballerCard } from '@/components/footballer-management/footballer-card';
 import { GetAllFootballers } from '@/components/footballer-management/get-all-footballers';
 import { GetSingleFootballer } from '@/components/footballer-management/get-single-footballer';
@@ -33,7 +32,7 @@ import { useAuth } from '@/lib/auth';
 import { FootballerAPI } from '@/lib/footballer-api';
 
 export default function FootballerManagementPage() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   // Track whether we've already consumed the ``?edit=<id>`` deep-link
@@ -82,6 +81,10 @@ export default function FootballerManagementPage() {
 
   // Delete footballer states
   const [deleteFootballerId, setDeleteFootballerId] = useState('');
+  // Part of a delete-by-id flow that is fully written but never rendered:
+  // nothing mounts a trigger for handleDeleteFootballer below. Kept rather than
+  // deleted because it is an unfinished feature, not stray code.
+  // eslint-disable-next-line unused-imports/no-unused-vars -- unreachable, see above
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deletedFootballerId, setDeletedFootballerId] = useState<number | null>(null);
 
@@ -137,6 +140,7 @@ export default function FootballerManagementPage() {
 
   // Load nations on component mount
   useEffect(() => {
+    // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleLoadNations is defined below.
     handleLoadNations();
   }, []);
 
@@ -203,7 +207,7 @@ export default function FootballerManagementPage() {
     }
 
     const id = Number.parseInt(footballerId.trim());
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       setError('Please enter a valid footballer ID (number)');
       return;
     }
@@ -311,6 +315,8 @@ export default function FootballerManagementPage() {
     }
   };
 
+  // Unreachable: see the note on deleteLoading above.
+  // eslint-disable-next-line unused-imports/no-unused-vars -- unreachable, see above
   const handleDeleteFootballer = async () => {
     if (!deleteFootballerId.trim()) {
       setError('Please enter a footballer ID to delete');
@@ -318,7 +324,7 @@ export default function FootballerManagementPage() {
     }
 
     const id = Number.parseInt(deleteFootballerId.trim());
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       setError('Please enter a valid footballer ID (number)');
       return;
     }
@@ -386,7 +392,7 @@ export default function FootballerManagementPage() {
       available_for_grid: footballer.available_for_grid,
       available_for_scout: footballer.available_for_scout,
       career_path_difficulty: footballer.career_path_difficulty,
-      other_nation_ids: (footballer.other_nations ?? []).map((n) => n.id),
+      other_nation_ids: (footballer.other_nations ?? []).map(n => n.id),
       additional_info: footballer.additional_info ?? null,
     });
 
@@ -423,11 +429,17 @@ export default function FootballerManagementPage() {
   // persists across the strict-mode pair) ensures we don't fetch twice;
   // the state setters are idempotent.
   useEffect(() => {
-    if (consumedEditParam.current || !isAuthenticated) return;
+    if (consumedEditParam.current || !isAuthenticated) {
+      return;
+    }
     const editId = searchParams?.get('edit');
-    if (!editId) return;
+    if (!editId) {
+      return;
+    }
     const parsed = Number(editId);
-    if (!Number.isInteger(parsed) || parsed <= 0) return;
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return;
+    }
 
     consumedEditParam.current = true;
     (async () => {
@@ -454,7 +466,7 @@ export default function FootballerManagementPage() {
     }
 
     const id = Number.parseInt(updateFootballerId.trim());
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       setError('Please enter a valid footballer ID (number)');
       return;
     }
@@ -493,7 +505,7 @@ export default function FootballerManagementPage() {
         available_for_grid: footballer.available_for_grid,
         available_for_scout: footballer.available_for_scout,
         career_path_difficulty: footballer.career_path_difficulty,
-        other_nation_ids: (footballer.other_nations ?? []).map((n) => n.id),
+        other_nation_ids: (footballer.other_nations ?? []).map(n => n.id),
         additional_info: footballer.additional_info ?? null,
       });
     } catch (err) {
@@ -674,6 +686,8 @@ export default function FootballerManagementPage() {
     }
   };
 
+  // Superseded by the inline row markup below, which is what actually renders.
+  // eslint-disable-next-line unused-imports/no-unused-vars -- unused, see above
   const renderFootballer = (footballer: Footballer) => (
     <FootballerCard
       key={footballer.id}
@@ -1072,7 +1086,7 @@ export default function FootballerManagementPage() {
                 {/* Bulk-update toolbar — operates on whichever rows are
                     currently checked. Hidden until a list is loaded. */}
                 <BulkUpdateToolbar
-                  visibleIds={footballers.map((f) => f.id)}
+                  visibleIds={footballers.map(f => f.id)}
                   selectedIds={bulkSelection}
                   onSelectionChange={setBulkSelection}
                   onApplied={() => handleGetFootballers(currentPage)}
@@ -1086,10 +1100,10 @@ export default function FootballerManagementPage() {
                       <div
                         key={footballer.id}
                         className={
-                          'flex items-start gap-2 rounded-md transition-colors '
-                          + (checked
-                            ? 'bg-emerald-50/40 dark:bg-emerald-900/10'
-                            : '')
+                          `flex items-start gap-2 rounded-md transition-colors ${
+                            checked
+                              ? 'bg-emerald-50/40 dark:bg-emerald-900/10'
+                              : ''}`
                         }
                       >
                         <div className="pl-2 pt-4">
@@ -1098,8 +1112,11 @@ export default function FootballerManagementPage() {
                             onCheckedChange={(v) => {
                               setBulkSelection((prev) => {
                                 const next = new Set(prev);
-                                if (v) next.add(footballer.id);
-                                else next.delete(footballer.id);
+                                if (v) {
+                                  next.add(footballer.id);
+                                } else {
+                                  next.delete(footballer.id);
+                                }
                                 return next;
                               });
                             }}
