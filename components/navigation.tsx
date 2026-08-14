@@ -343,7 +343,7 @@ export function Navigation({ className }: NavigationProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hidden items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-card/10 hover:text-white sm:flex"
+                    className="hidden items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:flex"
                   >
                     <Menu className="size-4" />
                     <span className="hidden md:inline">
@@ -365,7 +365,7 @@ export function Navigation({ className }: NavigationProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-card/10 hover:text-white sm:hidden"
+                className="flex items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:hidden"
               >
                 <Menu className="size-5" />
               </Button>
@@ -373,7 +373,7 @@ export function Navigation({ className }: NavigationProps) {
 
             {/* Center - Brand */}
             <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-card/15 p-1.5">
+              <div className="rounded-lg bg-white/15 p-1.5">
                 <Sparkles className="size-4 text-white" />
               </div>
               <div className="hidden md:block">

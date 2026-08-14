@@ -16,13 +16,13 @@ export function OperationNavigation({ activeTab, onTabChange }: OperationNavigat
       <div className="hidden md:block">
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-3 border border-border bg-gradient-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
-            <TabsTrigger value="read" className="duration-400 text-sm transition-all hover:bg-card/30 data-[state=active]:border data-[state=active]:border-emerald-200/50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 dark:data-[state=active]:text-white">
+            <TabsTrigger value="read" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
               Read
             </TabsTrigger>
-            <TabsTrigger value="create" className="duration-400 text-sm transition-all hover:bg-card/30 data-[state=active]:border data-[state=active]:border-emerald-200/50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 dark:data-[state=active]:text-white">
+            <TabsTrigger value="create" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
               Create
             </TabsTrigger>
-            <TabsTrigger value="update" className="duration-400 text-sm transition-all hover:bg-card/30 data-[state=active]:border data-[state=active]:border-emerald-200/50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-300/60 data-[state=active]:to-emerald-400/70 data-[state=active]:text-emerald-900 data-[state=active]:shadow-sm data-[state=active]:backdrop-blur-md dark:data-[state=active]:from-emerald-400/70 dark:data-[state=active]:to-emerald-500/80 dark:data-[state=active]:text-white">
+            <TabsTrigger value="update" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
               Update
             </TabsTrigger>
           </TabsList>
