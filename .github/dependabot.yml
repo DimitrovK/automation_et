@@ -9,12 +9,22 @@ version: 2
 # - Patch + minor are grouped into one PR per ecosystem per week to keep review
 #   overhead low. Majors arrive separately because they need a closer look.
 #
-# - IMPORTANT, and the reason a bot PR here needs a human step: Vercel does not
-#   build pull requests opened by Dependabot, so a bump lands with no preview
-#   and no proof it still compiles. The established handling in this project is
-#   to mirror the change onto a `chore/` branch cut from `production`, let
-#   Vercel build that, and merge the mirror. A Dependabot PR merged on a green
-#   test suite alone has never been built by anything.
+# - A bot PR here is built twice over, and no longer needs the hand-mirroring
+#   step this note used to prescribe. It claimed Vercel does not build
+#   Dependabot pull requests, so a bump had to be copied onto a `chore/` branch
+#   to get a preview. That is no longer true on either count: all eight bumps
+#   open in August (#91-#98) carried a real `Vercel — Deployment has completed`
+#   status, and since #107 pointed ci.yml at `production` — the branch this repo
+#   actually uses — the workflow runs `pnpm run build` itself. The mirror was
+#   worth doing when nothing else compiled the change. Repeating it now costs a
+#   branch and a review to learn what two checks already report.
+#
+# - What is still worth doing by hand is batching. Every bump touches
+#   pnpm-lock.yaml, so merging one forces the rest to rebase and re-run both
+#   checks — eight sequential rounds for eight dependency lines. Landing them
+#   together on one branch is a single review and a single resolution, and it
+#   is the only thing that verifies the *combined* lockfile, which is what
+#   ships. Per-PR CI never sees that. See #109 for the shape.
 #
 # - This repo installs with pnpm and Vercel uses `--frozen-lockfile`, so
 #   `pnpm-lock.yaml` must be regenerated with pnpm in the same commit as any
