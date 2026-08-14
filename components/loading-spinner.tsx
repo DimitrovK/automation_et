@@ -34,16 +34,16 @@ export function LoadingSpinner({
           {/* Pentagon patterns to mimic soccer ball */}
           <div className="absolute inset-0 overflow-hidden rounded-full">
             {/* Center pentagon */}
-            <div className="absolute left-1/2 top-1/2 size-1/3 -translate-x-1/2 -translate-y-1/2 rotate-12 rounded-sm bg-gray-800 opacity-80 dark:bg-gray-900"></div>
+            <div className="absolute left-1/2 top-1/2 size-1/3 -translate-x-1/2 -translate-y-1/2 rotate-12 rounded-sm bg-muted opacity-80"></div>
 
             {/* Top left pattern */}
-            <div className="absolute left-1/4 top-1/4 size-1/4 -rotate-45 rounded-sm bg-gray-800 opacity-70 dark:bg-gray-900"></div>
+            <div className="absolute left-1/4 top-1/4 size-1/4 -rotate-45 rounded-sm bg-muted opacity-70"></div>
 
             {/* Top right pattern */}
-            <div className="absolute right-1/4 top-1/4 size-1/4 rotate-45 rounded-sm bg-gray-800 opacity-70 dark:bg-gray-900"></div>
+            <div className="absolute right-1/4 top-1/4 size-1/4 rotate-45 rounded-sm bg-muted opacity-70"></div>
 
             {/* Bottom pattern */}
-            <div className="absolute bottom-1/4 left-1/2 size-1/4 -translate-x-1/2 rounded-sm bg-gray-800 opacity-70 dark:bg-gray-900"></div>
+            <div className="absolute bottom-1/4 left-1/2 size-1/4 -translate-x-1/2 rounded-sm bg-muted opacity-70"></div>
           </div>
         </div>
       </div>
@@ -70,8 +70,8 @@ export function LoadingSpinner({
 
   if (overlay) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-50/95 via-blue-50/90 to-green-50/80 backdrop-blur-sm dark:from-gray-900/95 dark:via-gray-800/90 dark:to-gray-900/80">
-        <div className="rounded-xl border bg-white/90 p-8 shadow-2xl backdrop-blur-sm dark:bg-gray-800/90">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
+        <div className="rounded-xl border bg-card/90 p-8 shadow-2xl backdrop-blur-sm">
           {content}
         </div>
       </div>
@@ -79,7 +79,7 @@ export function LoadingSpinner({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       {content}
     </div>
   );

@@ -14,6 +14,7 @@ import { GameBadge } from '@/components/reports/GameBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
@@ -24,18 +25,6 @@ import { chartTheme } from '@/lib/chart-theme';
 import { playStyle } from '@/lib/play-style';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-
-function Tile({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <Card>
-      <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold text-foreground">{value}</p>
-        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function PlayerDetailPage() {
   const { resolvedTheme } = useTheme();
@@ -126,22 +115,22 @@ export default function PlayerDetailPage() {
           : (
               <>
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  <Tile
+                  <StatTile
                     label="Games played"
                     value={data.totals.games_played.toLocaleString()}
                     hint={`${data.totals.games_finished.toLocaleString()} finished`}
                   />
-                  <Tile
+                  <StatTile
                     label="Completion"
                     value={data.totals.completion_pct === null ? '—' : `${data.totals.completion_pct}%`}
                     hint="Of the games they started"
                   />
-                  <Tile
+                  <StatTile
                     label="Active days"
                     value={`${data.totals.active_days} / ${data.days}`}
                     hint={data.totals.active_days_pct === null ? '' : `${data.totals.active_days_pct}% of the range`}
                   />
-                  <Tile
+                  <StatTile
                     label="Games per active day"
                     value={data.totals.games_per_active_day?.toString() ?? '—'}
                     hint="Habit vs one big session"
@@ -151,7 +140,7 @@ export default function PlayerDetailPage() {
                       a lobby regular, and only one of them stops when their
                       friends do. */}
                   {style && (
-                    <Tile
+                    <StatTile
                       label="Play style"
                       value={style.label ?? '—'}
                       hint={`${style.mp.toLocaleString()} multiplayer · ${style.solo.toLocaleString()} solo`}

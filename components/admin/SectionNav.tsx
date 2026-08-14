@@ -34,12 +34,12 @@ export function SectionNav({ groups, trailing }: {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav aria-label="Section" className="rounded-lg border bg-white/60 p-2 dark:border-slate-700 dark:bg-slate-800/60">
+    <nav aria-label="Section" className="rounded-lg border bg-card/60 p-2">
       <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
         {groups.map(group => (
           <div key={group.heading || 'ungrouped'} className="min-w-40 flex-1">
             {group.heading && (
-              <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 {group.heading}
               </p>
             )}
@@ -53,7 +53,7 @@ export function SectionNav({ groups, trailing }: {
                     'flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
                     isActive(href)
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
-                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+                      : 'text-muted-foreground hover:bg-muted',
                   )}
                 >
                   <Icon className="size-4 shrink-0" />
@@ -66,7 +66,7 @@ export function SectionNav({ groups, trailing }: {
       </div>
 
       {trailing && (
-        <div className="mt-2 flex justify-end border-t pt-2 dark:border-slate-700">
+        <div className="mt-2 flex justify-end border-t pt-2">
           <Link
             href={trailing.href}
             aria-current={isActive(trailing.href) ? 'page' : undefined}
@@ -74,7 +74,7 @@ export function SectionNav({ groups, trailing }: {
               'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors',
               isActive(trailing.href)
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
-                : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-700/60',
+                : 'text-muted-foreground hover:bg-muted',
             )}
           >
             <trailing.icon className="size-3.5" />

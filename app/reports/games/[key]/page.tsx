@@ -17,6 +17,7 @@ import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
@@ -25,18 +26,6 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { compareToParams, rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <Card>
-      <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold text-foreground">{value}</p>
-        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
-  );
-}
 
 /** Everything about one game in one place, instead of filtering five pages by hand. */
 export default function GameDetailPage() {
@@ -139,21 +128,21 @@ export default function GameDetailPage() {
                 <ComparisonTiles comparison={summary.data.comparison} />
                 {row && (
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <Stat
+                    <StatTile
                       label="Completion"
                       value={row.completion_pct === null ? '—' : `${row.completion_pct}%`}
                       hint="Of games started"
                     />
-                    <Stat
+                    <StatTile
                       label="Repeat rate"
                       value={row.repeat_rate_pct === null ? '—' : `${row.repeat_rate_pct}%`}
                       hint="Players who came back another day"
                     />
-                    <Stat
+                    <StatTile
                       label="Sessions per player"
                       value={row.sessions_per_player?.toString() ?? '—'}
                     />
-                    <Stat
+                    <StatTile
                       label="Share of platform"
                       value={row.share_pct === null ? '—' : `${row.share_pct}%`}
                       hint="Of all games played"

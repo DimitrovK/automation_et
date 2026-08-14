@@ -10,10 +10,10 @@ import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameFilter } from '@/components/reports/GameFilter';
-import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
@@ -23,21 +23,6 @@ import { useAuth } from '@/lib/auth';
 import { chartTheme } from '@/lib/chart-theme';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-
-function Tile({ label, value, hint, metric }: { label: string; value: string; hint: string; metric?: string }) {
-  return (
-    <Card>
-      <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-muted-foreground">
-          {label}
-          {metric && <MetricInfo metric={metric} />}
-        </p>
-        <p className="text-2xl font-bold text-foreground">{value}</p>
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function PatternsPage() {
   const { resolvedTheme } = useTheme();
@@ -114,7 +99,7 @@ export default function PatternsPage() {
           : (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <Tile
+                  <StatTile
                     label="Busiest slot"
                     metric="peak_cell"
                     value={data.peak_cell
@@ -126,18 +111,18 @@ export default function PatternsPage() {
                       ? `${data.peak_cell.games_started.toLocaleString()} games · busiest single hour`
                       : 'No activity in this window'}
                   />
-                  <Tile
+                  <StatTile
                     label="Peak hour"
                     metric="peak_hour"
                     value={data.peak_hour === null ? '—' : `${String(data.peak_hour).padStart(2, '0')}:00`}
                     hint={`${peakHourCount.toLocaleString()} games · ${data.timezone}`}
                   />
-                  <Tile
+                  <StatTile
                     label="Busiest day"
                     value={data.peak_weekday ?? '—'}
                     hint="Highest total over the range"
                   />
-                  <Tile
+                  <StatTile
                     label="Quietest day"
                     value={quietestDay?.name ?? '—'}
                     hint={quietestDay ? `${quietestDay.games_started.toLocaleString()} games` : '—'}

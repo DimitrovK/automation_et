@@ -67,7 +67,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       {isSubmitting && (
         <LoadingSpinner
           message="Authenticating"
@@ -148,7 +148,7 @@ export function LoginForm() {
 
           {/* Help text for common issues */}
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">Having trouble logging in? Check your username and password.</p>
+            <p className="text-xs text-muted-foreground">Having trouble logging in? Check your username and password.</p>
           </div>
         </CardContent>
       </Card>

@@ -10,6 +10,7 @@ import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { gameName, useGameMeta } from '@/hooks/use-game-meta';
@@ -101,14 +102,7 @@ export default function MultiplayerReportPage() {
                     { label: 'Finished', value: data.totals.rooms_finished },
                     { label: 'Cancelled', value: data.totals.rooms_cancelled },
                   ].map(tile => (
-                    <Card key={tile.label}>
-                      <CardContent className="p-4">
-                        <p className="text-sm font-medium text-muted-foreground">{tile.label}</p>
-                        <p className="text-3xl font-bold text-foreground">
-                          {tile.value.toLocaleString()}
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <StatTile key={tile.label} label={tile.label} value={tile.value.toLocaleString()} />
                   ))}
                 </div>
 

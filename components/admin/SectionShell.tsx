@@ -53,7 +53,11 @@ export function SectionShell({
   const allowed = requireSuperuser ? !!user?.is_superuser : !!(user?.is_staff || user?.is_superuser);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+    // Flat surface, not a gradient. A green-to-blue wash behind every page was
+    // the loudest thing on screen and it competed with the data for attention:
+    // two hues arguing under a chart whose own colours are the content. Depth
+    // comes from the cards sitting on this instead, which is one job per layer.
+    <div className="min-h-screen bg-background p-4">
       {/* Numbers are read down columns here, so they get tabular figures — a
           "1" and a "7" occupy the same width and the eye can compare rows
           without re-reading each one. */}
@@ -65,8 +69,8 @@ export function SectionShell({
             instead of two. */}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{title}</h1>
-            <p className="max-w-2xl text-sm text-gray-600 dark:text-gray-300">{description}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+            <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>
           </div>
           {actions}
         </div>
@@ -96,7 +100,7 @@ export function SectionShell({
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-muted-foreground">
                       You're signed in, but your account doesn't have access. Ask an
                       administrator to grant it if you need it.
                     </p>

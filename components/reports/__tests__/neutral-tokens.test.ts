@@ -41,6 +41,10 @@ describe('reporting surface paints with tokens', () => {
     const files = [
       ...sourceFiles(join(process.cwd(), 'app', 'reports')),
       ...sourceFiles(join(process.cwd(), 'components', 'reports')),
+      // The shell wraps every report page, so a literal colour here is on every
+      // page at once — which is exactly what happened: it held a green-to-blue
+      // gradient that no page-level migration could have reached.
+      ...sourceFiles(join(process.cwd(), 'components', 'admin')),
     ];
 
     const offenders = files
@@ -57,6 +61,25 @@ describe('reporting surface paints with tokens', () => {
     expect(
       offenders,
       'Use bg-card / bg-muted / text-foreground / text-muted-foreground / border-border instead',
+    ).toEqual([]);
+  });
+
+  it('has no page-level gradients', () => {
+    // Depth comes from cards on a flat surface. A gradient behind the content
+    // was the loudest thing on screen and competed with the charts, whose own
+    // colours are the data — two hues arguing under a third that means
+    // something. One job per layer.
+    const files = [
+      ...sourceFiles(join(process.cwd(), 'app', 'reports')),
+      ...sourceFiles(join(process.cwd(), 'components', 'reports')),
+      ...sourceFiles(join(process.cwd(), 'components', 'admin')),
+    ];
+
+    const offenders = files.filter(file => readFileSync(file, 'utf8').includes('bg-gradient'));
+
+    expect(
+      offenders.map(f => f.replace(process.cwd(), '')),
+      'Reporting surfaces are flat; elevation comes from cards',
     ).toEqual([]);
   });
 
