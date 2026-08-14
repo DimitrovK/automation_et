@@ -1,5 +1,6 @@
 'use client';
 
+import type { FootballerNation, FootballerNationStat } from '@/types/player';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -16,13 +17,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { FootballerAPI } from '@/lib/footballer-api';
-import type { FootballerNation, FootballerNationStat } from '@/types/player';
 
 type Props = {
   footballerId: number;
-  /** Primary + secondary nations the API will allow on this footballer
+  /**
+   * Primary + secondary nations the API will allow on this footballer
    *  (validated server-side: nation must be primary OR in other_nations).
-   *  Pass them so the inline picker only offers eligible options. */
+   *  Pass them so the inline picker only offers eligible options.
+   */
   eligibleNations: FootballerNation[];
 };
 
@@ -79,7 +81,9 @@ export function NationsEditor({ footballerId, eligibleNations }: Props) {
   }
 
   async function saveNew() {
-    if (!newDraft) return;
+    if (!newDraft) {
+      return;
+    }
     if (!newDraft.nation_id) {
       toast.error('Pick a nation.');
       return;
@@ -103,7 +107,9 @@ export function NationsEditor({ footballerId, eligibleNations }: Props) {
   }
 
   async function saveEdit() {
-    if (!editDraft || !editDraft.id) return;
+    if (!editDraft || !editDraft.id) {
+      return;
+    }
     if (!editDraft.nation_id) {
       toast.error('Pick a nation.');
       return;
@@ -128,7 +134,12 @@ export function NationsEditor({ footballerId, eligibleNations }: Props) {
   }
 
   async function remove(row: FootballerNationStat) {
-    if (!confirm(`Delete ${row.nation_name} stats?`)) return;
+    // Native confirm, deliberately: this removes a stored record and a styled
+    // dialog is a UX change rather than a lint fix.
+    // eslint-disable-next-line no-alert -- irreversible delete; see above
+    if (!confirm(`Delete ${row.nation_name} stats?`)) {
+      return;
+    }
     setBusyId(row.id);
     try {
       await FootballerAPI.deleteFootballerNation(row.id);
@@ -141,8 +152,8 @@ export function NationsEditor({ footballerId, eligibleNations }: Props) {
     }
   }
 
-  const eligibleIds = eligibleNations.map((n) => n.id);
-  const usedIds = rows.map((r) => r.nation_id);
+  const eligibleIds = eligibleNations.map(n => n.id);
+  const usedIds = rows.map(r => r.nation_id);
 
   return (
     <Card>
@@ -161,81 +172,96 @@ export function NationsEditor({ footballerId, eligibleNations }: Props) {
           onClick={() => setNewDraft({ ...EMPTY_DRAFT })}
           disabled={!!newDraft || loading}
         >
-          <Plus className="mr-1.5 size-4" /> Add nation
+          <Plus className="mr-1.5 size-4" />
+          {' '}
+          Add nation
         </Button>
       </CardHeader>
       <CardContent>
-        {loading && rows.length === 0 ? (
-          <div className="flex items-center gap-2 py-6 text-sm text-gray-500">
-            <Loader2 className="size-4 animate-spin" /> Loading…
-          </div>
-        ) : rows.length === 0 && !newDraft ? (
-          <div className="rounded-md border bg-gray-50 p-6 text-center text-sm text-gray-500 dark:bg-slate-800/40">
-            No international stats yet. Click <strong>Add nation</strong> to record some.
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nation</TableHead>
-                <TableHead className="text-right">Apps</TableHead>
-                <TableHead className="text-right">Goals</TableHead>
-                <TableHead className="w-32 text-right" aria-label="Actions" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => {
-                const editing = editId === row.id && editDraft;
-                if (editing) {
-                  return (
-                    <NationRowEditor
-                      key={row.id}
-                      draft={editDraft!}
-                      onChange={setEditDraft}
-                      onSave={saveEdit}
-                      onCancel={() => { setEditId(null); setEditDraft(null); }}
-                      saving={busyId === row.id}
-                      eligibleIds={eligibleIds}
-                      excludeIds={usedIds.filter((i) => i !== row.nation_id)}
-                    />
-                  );
-                }
-                return (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">{row.nation_name}</TableCell>
-                    <TableCell className="text-right">{row.apps ?? '—'}</TableCell>
-                    <TableCell className="text-right">{row.goals ?? '—'}</TableCell>
-                    <TableCell className="space-x-1 text-right">
-                      <Button size="sm" variant="ghost" onClick={() => startEdit(row)}>Edit</Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => remove(row)}
-                        aria-label={`Delete ${row.nation_name}`}
-                        className="size-8 text-red-600 hover:text-red-700"
-                        disabled={busyId === row.id}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {newDraft && (
-                <NationRowEditor
-                  draft={newDraft}
-                  onChange={setNewDraft}
-                  onSave={saveNew}
-                  onCancel={() => setNewDraft(null)}
-                  saving={busyId === 'new'}
-                  eligibleIds={eligibleIds}
-                  excludeIds={usedIds}
-                  isNew
-                />
+        {loading && rows.length === 0
+          ? (
+              <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                {' '}
+                Loading…
+              </div>
+            )
+          : rows.length === 0 && !newDraft
+            ? (
+                <div className="rounded-md border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
+                  No international stats yet. Click
+                  {' '}
+                  <strong>Add nation</strong>
+                  {' '}
+                  to record some.
+                </div>
+              )
+            : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nation</TableHead>
+                      <TableHead className="text-right">Apps</TableHead>
+                      <TableHead className="text-right">Goals</TableHead>
+                      <TableHead className="w-32 text-right" aria-label="Actions" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((row) => {
+                      const editing = editId === row.id && editDraft;
+                      if (editing) {
+                        return (
+                          <NationRowEditor
+                            key={row.id}
+                            draft={editDraft!}
+                            onChange={setEditDraft}
+                            onSave={saveEdit}
+                            onCancel={() => {
+                              setEditId(null);
+                              setEditDraft(null);
+                            }}
+                            saving={busyId === row.id}
+                            eligibleIds={eligibleIds}
+                            excludeIds={usedIds.filter(i => i !== row.nation_id)}
+                          />
+                        );
+                      }
+                      return (
+                        <TableRow key={row.id}>
+                          <TableCell className="font-medium">{row.nation_name}</TableCell>
+                          <TableCell className="text-right">{row.apps ?? '—'}</TableCell>
+                          <TableCell className="text-right">{row.goals ?? '—'}</TableCell>
+                          <TableCell className="space-x-1 text-right">
+                            <Button size="sm" variant="ghost" onClick={() => startEdit(row)}>Edit</Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => remove(row)}
+                              aria-label={`Delete ${row.nation_name}`}
+                              className="size-8 text-red-600 hover:text-red-700"
+                              disabled={busyId === row.id}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {newDraft && (
+                      <NationRowEditor
+                        draft={newDraft}
+                        onChange={setNewDraft}
+                        onSave={saveNew}
+                        onCancel={() => setNewDraft(null)}
+                        saving={busyId === 'new'}
+                        eligibleIds={eligibleIds}
+                        excludeIds={usedIds}
+                        isNew
+                      />
+                    )}
+                  </TableBody>
+                </Table>
               )}
-            </TableBody>
-          </Table>
-        )}
       </CardContent>
     </Card>
   );
@@ -274,7 +300,7 @@ function NationRowEditor(props: {
         <Input
           type="number"
           value={draft.apps ?? ''}
-          onChange={(e) => setN('apps', num(e.target.value))}
+          onChange={e => setN('apps', num(e.target.value))}
           className="h-9 w-20 px-2 text-right"
           aria-label="Apps"
         />
@@ -283,7 +309,7 @@ function NationRowEditor(props: {
         <Input
           type="number"
           value={draft.goals ?? ''}
-          onChange={(e) => setN('goals', num(e.target.value))}
+          onChange={e => setN('goals', num(e.target.value))}
           className="h-9 w-20 px-2 text-right"
           aria-label="Goals"
         />
@@ -298,11 +324,15 @@ function NationRowEditor(props: {
   );
 }
 
-/** When eligible nations is empty (legacy data), no exclusion — let the
+/**
+ * When eligible nations is empty (legacy data), no exclusion — let the
  *  user pick anything and the server validates. Otherwise we'd have to
- *  exclude every other nation in the world, which is silly. */
+ *  exclude every other nation in the world, which is silly.
+ */
 function nationsNotEligible(eligibleIds: number[]): number[] {
-  if (eligibleIds.length === 0) return [];
+  if (eligibleIds.length === 0) {
+    return [];
+  }
   // We'd need the full nations list to invert this, which is async. The
   // NationCombobox already filters by available; trust that for now.
   return [];

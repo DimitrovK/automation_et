@@ -263,7 +263,7 @@ export function UpdateFootballer({
             </div>
 
             {/* Game eligibility group — three switches side-by-side. */}
-            <div className="bg-muted/50/50 rounded-md border p-3">
+            <div className="rounded-md border bg-muted/50 p-3">
               <Label className="mb-2 block text-sm font-medium">Game Eligibility</Label>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="flex items-center space-x-2">
