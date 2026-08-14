@@ -9,14 +9,13 @@ import { FilterBar, FilterGroup, Segmented } from '@/components/reports/FilterBa
 import { GameBadge } from '@/components/reports/GameBadge';
 import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -82,7 +81,7 @@ export default function PlayersReportPage() {
 
   // ReportsAPI methods are static, so the reference is already stable across
   // renders — no useCallback needed to stop useReport's effect re-firing.
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getTopPlayers,
     params,
     enabled,
@@ -168,7 +167,7 @@ export default function PlayersReportPage() {
 
       <div className="flex justify-end">
         <ExportButton
-          rows={data?.players ?? []}
+          rows={state.data?.players ?? []}
           view="players"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
@@ -187,83 +186,81 @@ export default function PlayersReportPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-96 w-full" />
-          : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Most active — last
-                    {' '}
-                    {data.window}
-                    {' '}
-                    days
-                  </CardTitle>
-                  <CardDescription>
-                    Games played counts sessions started, matching the Daily Pulse.
-                    Multiplayer sessions are included in that total — the Style column
-                    says how much of it they are, which is the difference between a solo
-                    grinder and a lobby regular.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="overflow-x-auto">
-                  <ReportTable>
-                    <ReportHead>
-                      <Th>#</Th>
-                      <Th>Player</Th>
-                      <Th align="right">Played</Th>
-                      <Th align="right">Finished</Th>
-                      <Th>Style</Th>
-                      <Th>Games</Th>
-                    </ReportHead>
-                    <tbody>
-                      {data.players.map((player, index) => (
-                        <ReportRow key={player.user_id}>
-                          <Td className="text-muted-foreground">{index + 1}</Td>
-                          <Td className="font-medium">
-                            {/* The drill-down existed and worked; nothing linked
-                                to it, so the only way in was typing a URL. */}
-                            <Link
-                              href={`/reports/players/${player.user_id}`}
-                              className="text-emerald-700 hover:underline dark:text-emerald-400"
-                            >
-                              {player.username}
-                            </Link>
-                          </Td>
-                          <Td align="right">{player.games_played.toLocaleString()}</Td>
-                          <Td align="right">{player.games_finished.toLocaleString()}</Td>
-                          <Td>
-                            <PlayStyleBadge played={player.games_played} mp={player.mp_sessions} />
-                          </Td>
-                          <Td>
-                            <div className="flex flex-wrap gap-1">
-                              {player.games.map(playedGame => (
-                                <GameBadge
-                                  key={playedGame}
-                                  gameKey={playedGame}
-                                  meta={meta}
-                                  active={game === playedGame}
-                                  onClick={key => setGame(game === key ? null : key)}
-                                />
-                              ))}
-                            </div>
-                          </Td>
-                        </ReportRow>
-                      ))}
-                    </tbody>
-                  </ReportTable>
-                  {data.players.length === 0 && (
-                    <EmptyState>
-                      {search
-                        ? `No player matching "${search}" played in this window.`
-                        : 'Nobody played in this window.'}
-                    </EmptyState>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Most active — last
+                {' '}
+                {data.window}
+                {' '}
+                days
+              </CardTitle>
+              <CardDescription>
+                Games played counts sessions started, matching the Daily Pulse.
+                Multiplayer sessions are included in that total — the Style column
+                says how much of it they are, which is the difference between a solo
+                grinder and a lobby regular.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <ReportTable>
+                <ReportHead>
+                  <Th>#</Th>
+                  <Th>Player</Th>
+                  <Th align="right">Played</Th>
+                  <Th align="right">Finished</Th>
+                  <Th>Style</Th>
+                  <Th>Games</Th>
+                </ReportHead>
+                <tbody>
+                  {data.players.map((player, index) => (
+                    <ReportRow key={player.user_id}>
+                      <Td className="text-muted-foreground">{index + 1}</Td>
+                      <Td className="font-medium">
+                        {/* The drill-down existed and worked; nothing linked
+                            to it, so the only way in was typing a URL. */}
+                        <Link
+                          href={`/reports/players/${player.user_id}`}
+                          className="text-emerald-700 hover:underline dark:text-emerald-400"
+                        >
+                          {player.username}
+                        </Link>
+                      </Td>
+                      <Td align="right">{player.games_played.toLocaleString()}</Td>
+                      <Td align="right">{player.games_finished.toLocaleString()}</Td>
+                      <Td>
+                        <PlayStyleBadge played={player.games_played} mp={player.mp_sessions} />
+                      </Td>
+                      <Td>
+                        <div className="flex flex-wrap gap-1">
+                          {player.games.map(playedGame => (
+                            <GameBadge
+                              key={playedGame}
+                              gameKey={playedGame}
+                              meta={meta}
+                              active={game === playedGame}
+                              onClick={key => setGame(game === key ? null : key)}
+                            />
+                          ))}
+                        </div>
+                      </Td>
+                    </ReportRow>
+                  ))}
+                </tbody>
+              </ReportTable>
+              {data.players.length === 0 && (
+                <EmptyState>
+                  {search
+                    ? `No player matching "${search}" played in this window.`
+                    : 'Nobody played in this window.'}
+                </EmptyState>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }

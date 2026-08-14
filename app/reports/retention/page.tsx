@@ -7,11 +7,10 @@ import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { RetentionByGame } from '@/components/reports/RetentionByGame';
 import { RetentionTable } from '@/components/reports/RetentionTable';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -43,7 +42,7 @@ export default function RetentionPage() {
   );
 
   const { meta } = useGameMeta(enabled);
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getRetention,
     params,
     enabled,
@@ -68,7 +67,7 @@ export default function RetentionPage() {
       </FilterBar>
       <div className="flex justify-end">
         <ExportButton
-          rows={data?.cohorts ?? []}
+          rows={state.data?.cohorts ?? []}
           view="retention"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
@@ -78,11 +77,11 @@ export default function RetentionPage() {
             // One column per offset, because a JSON blob in a cell is
             // not something a spreadsheet can chart. Null stays empty
             // rather than 0: the cohort hasn't reached that day yet.
-            ...(data?.offsets ?? []).map(offset => ({
+            ...(state.data?.offsets ?? []).map(offset => ({
               header: `D${offset} %`,
               value: (row: RetentionCohort) => row.retention[String(offset)]?.pct ?? '',
             })),
-            ...(data?.offsets ?? []).map(offset => ({
+            ...(state.data?.offsets ?? []).map(offset => ({
               header: `D${offset} returned`,
               value: (row: RetentionCohort) => row.retention[String(offset)]?.returned ?? '',
             })),
@@ -90,19 +89,17 @@ export default function RetentionPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-96 w-full" />
-          : (
-              <>
-                {/* Before the cohort grid: "which games keep people" is the
-                    question someone arrives with, and the grid answers "which
-                    days did". */}
-                <RetentionByGame data={data} meta={meta} />
-                <RetentionTable data={data} />
-              </>
-            )}
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => (
+          <>
+            {/* Before the cohort grid: "which games keep people" is the
+                question someone arrives with, and the grid answers "which
+                days did". */}
+            <RetentionByGame data={data} meta={meta} />
+            <RetentionTable data={data} />
+          </>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }

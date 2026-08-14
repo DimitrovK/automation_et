@@ -9,12 +9,11 @@ import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { gameName, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -47,7 +46,7 @@ export default function MultiplayerReportPage() {
 
   // ReportsAPI methods are static, so the reference is already stable across
   // renders — no useCallback needed to stop useReport's effect re-firing.
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getMultiplayer,
     params,
     enabled,
@@ -77,7 +76,7 @@ export default function MultiplayerReportPage() {
 
       <div className="flex justify-end">
         <ExportButton
-          rows={data?.by_game ?? []}
+          rows={state.data?.by_game ?? []}
           view="multiplayer"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
@@ -91,79 +90,77 @@ export default function MultiplayerReportPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-64 w-full" />
-          : (
-              <>
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  {[
-                    { label: 'Rooms created', value: data.totals.rooms_created },
-                    { label: 'Started', value: data.totals.rooms_started },
-                    { label: 'Finished', value: data.totals.rooms_finished },
-                    { label: 'Cancelled', value: data.totals.rooms_cancelled },
-                  ].map(tile => (
-                    <StatTile key={tile.label} label={tile.label} value={tile.value.toLocaleString()} />
-                  ))}
-                </div>
+      <ReportPanel state={state} skeletonClassName="h-64 w-full">
+        {data => (
+          <>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {[
+                { label: 'Rooms created', value: data.totals.rooms_created },
+                { label: 'Started', value: data.totals.rooms_started },
+                { label: 'Finished', value: data.totals.rooms_finished },
+                { label: 'Cancelled', value: data.totals.rooms_cancelled },
+              ].map(tile => (
+                <StatTile key={tile.label} label={tile.label} value={tile.value.toLocaleString()} />
+              ))}
+            </div>
 
-                {/* Above the per-game table: modes are shared across games, so
-                    "is Elimination working anywhere" is a question the per-game
-                    split can't answer, and it's the one you ask first. */}
-                {/* Ahead of the mode split and the table: "which stage loses
-                    people" is the first question, and both of those make you do
-                    the subtraction yourself. */}
-                <MultiplayerFunnel rows={data.by_game} meta={meta} />
+            {/* Above the per-game table: modes are shared across games, so
+                "is Elimination working anywhere" is a question the per-game
+                split can't answer, and it's the one you ask first. */}
+            {/* Ahead of the mode split and the table: "which stage loses
+                people" is the first question, and both of those make you do
+                the subtraction yourself. */}
+            <MultiplayerFunnel rows={data.by_game} meta={meta} />
 
-                <ModeBreakdown rows={data.by_mode} meta={meta} onSelectGame={key => setGame(game === key ? null : key)} />
+            <ModeBreakdown rows={data.by_mode} meta={meta} onSelectGame={key => setGame(game === key ? null : key)} />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lobbies that never started</CardTitle>
-                    <CardDescription>
-                      {data.totals.never_started_pct}
-                      % of rooms opened in this window never got going. High values usually
-                      mean people couldn't find enough players.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="overflow-x-auto">
-                    <ReportTable>
-                      <ReportHead>
-                        <Th>Game</Th>
-                        <Th align="right">Created</Th>
-                        <Th align="right">Started</Th>
-                        <Th align="right">Finished</Th>
-                        <Th align="right">Cancelled</Th>
-                        <Th align="right">Never started</Th>
-                      </ReportHead>
-                      <tbody>
-                        {data.by_game.map(row => (
-                          <ReportRow key={row.game_type}>
-                            <Td strong>
-                              {gameName(meta[row.game_type], row.game_type)}
-                            </Td>
-                            <Td align="right">{row.rooms_created.toLocaleString()}</Td>
-                            <Td align="right">{row.rooms_started.toLocaleString()}</Td>
-                            <Td align="right">{row.rooms_finished.toLocaleString()}</Td>
-                            <Td align="right">{row.rooms_cancelled.toLocaleString()}</Td>
-                            <Td align="right">
-                              {row.never_started_pct}
-                              %
-                            </Td>
-                          </ReportRow>
-                        ))}
-                      </tbody>
-                    </ReportTable>
-                    {data.by_game.length === 0 && (
-                      <EmptyState>
-                        No multiplayer rooms in this window.
-                      </EmptyState>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>Lobbies that never started</CardTitle>
+                <CardDescription>
+                  {data.totals.never_started_pct}
+                  % of rooms opened in this window never got going. High values usually
+                  mean people couldn't find enough players.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <ReportTable>
+                  <ReportHead>
+                    <Th>Game</Th>
+                    <Th align="right">Created</Th>
+                    <Th align="right">Started</Th>
+                    <Th align="right">Finished</Th>
+                    <Th align="right">Cancelled</Th>
+                    <Th align="right">Never started</Th>
+                  </ReportHead>
+                  <tbody>
+                    {data.by_game.map(row => (
+                      <ReportRow key={row.game_type}>
+                        <Td strong>
+                          {gameName(meta[row.game_type], row.game_type)}
+                        </Td>
+                        <Td align="right">{row.rooms_created.toLocaleString()}</Td>
+                        <Td align="right">{row.rooms_started.toLocaleString()}</Td>
+                        <Td align="right">{row.rooms_finished.toLocaleString()}</Td>
+                        <Td align="right">{row.rooms_cancelled.toLocaleString()}</Td>
+                        <Td align="right">
+                          {row.never_started_pct}
+                          %
+                        </Td>
+                      </ReportRow>
+                    ))}
+                  </tbody>
+                </ReportTable>
+                {data.by_game.length === 0 && (
+                  <EmptyState>
+                    No multiplayer rooms in this window.
+                  </EmptyState>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }
