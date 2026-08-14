@@ -24,18 +24,35 @@ export function FilterBar({ children }: { children: ReactNode }) {
   );
 }
 
-/** One named control within the bar. */
+/**
+ * One named control within the bar.
+ *
+ * `label` is optional for a control that belongs to the one before it — a
+ * clear button beside the range it clears. Those still need the caption's
+ * height reserved or they sit a line too high, so the space is rendered
+ * explicitly and hidden from assistive tech.
+ *
+ * The earlier version passed `label="&nbsp;"` for that. It rendered correctly
+ * — JSX decodes entities in an attribute literal, so it produced a real
+ * non-breaking space rather than the six characters — but it left a captioned
+ * <p> in the accessibility tree with nothing to say, and made "no name" look
+ * like a typo rather than a decision.
+ */
 export function FilterGroup({ label, children, hint }: {
-  label: string;
+  label?: string;
   children: ReactNode;
   /** Shown on hover — for the rule behind a control, not for its name. */
   hint?: string;
 }) {
   return (
     <div className="space-y-1.5" title={hint}>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-        {label}
-      </p>
+      {label
+        ? (
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              {label}
+            </p>
+          )
+        : <p className="text-[11px] leading-normal" aria-hidden>{'\u00A0'}</p>}
       {children}
     </div>
   );

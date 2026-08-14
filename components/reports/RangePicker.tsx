@@ -82,7 +82,7 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
       </FilterGroup>
 
       {custom && (
-        <FilterGroup label="&nbsp;">
+        <FilterGroup>
           <Button
             size="sm"
             variant="ghost"
