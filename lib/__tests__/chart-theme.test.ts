@@ -99,16 +99,23 @@ describe('chart theme tracks the CSS tokens', () => {
     expect(theme.grid.stroke).not.toBe(hslTripletToHex(t.border));
   });
 
-  it('keeps surfaces near-neutral in dark mode', () => {
-    // The first attempt tinted dark surfaces to 20%+ saturation and the card
-    // read as "a green card" rather than as a surface. Surfaces carry a hint of
-    // the brand hue; past roughly 10% the hue becomes the colour of the thing.
+  it('keeps dark surfaces out of the green band', () => {
+    // Two attempts at a green-tinted dark surface were rejected as reading like
+    // "a green card" rather than a surface. The instinct was to cap saturation,
+    // but that measures nothing here: at 7% lightness `#0d1117` and the rejected
+    // `#131d18` have IDENTICAL chroma (10/255 in RGB). Only their hue differed.
+    //
+    // So the rule is about hue, and it is a judgement rather than a law: a green
+    // cast at surface scale reads as sickly where a cool one reads as neutral.
+    // Written down because it was learned twice.
     const t = tokens('dark');
 
-    for (const name of ['background', 'card', 'muted', 'border']) {
-      const saturation = Number.parseFloat(t[name].split(/\s+/)[1]);
+    for (const name of ['background', 'card', 'popover', 'muted', 'border']) {
+      const hue = Number.parseFloat(t[name].split(/\s+/)[0]);
 
-      expect(saturation, `--${name} is too saturated for a surface`).toBeLessThanOrEqual(10);
+      // One expression, not two `.not`s: as separate assertions they would
+      // demand a hue both below 60 and above 170, which no colour satisfies.
+      expect(hue < 60 || hue > 170, `--${name} sits in the green band (hue ${hue})`).toBe(true);
     }
   });
 
@@ -117,6 +124,41 @@ describe('chart theme tracks the CSS tokens', () => {
       const { series } = chartTheme(isDark);
 
       expect(new Set(series).size, `duplicate series colour (dark=${isDark})`).toBe(series.length);
+    }
+  });
+
+  it('separates the first three series by hue, not by lightness', () => {
+    // The funnel charts colour three bars from series[0..2]. A previous version
+    // used three adjacent steps of ONE emerald ramp: on a light surface the pale
+    // end falls below 3:1 against the background, so the steps had to crowd into
+    // the dark half and the last two ended up 0.064 apart in luminance —
+    // reported as indistinguishable, and rightly.
+    //
+    // Hue distance rather than luminance distance, because that is the property
+    // that failed. Two colours of similar brightness are easy to tell apart when
+    // their hues differ; three shades of one hue are not, and a luminance test
+    // would wave through the very palette that caused this.
+    const hue = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map(i => Number.parseInt(hex.slice(i, i + 2), 16) / 255);
+      const max = Math.max(r, g, b);
+      const d = max - Math.min(r, g, b);
+      if (d === 0) {
+        return 0;
+      }
+      const h = max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
+
+      return h < 0 ? h + 360 : h;
+    };
+
+    for (const isDark of [false, true]) {
+      const hues = chartTheme(isDark).series.slice(0, 3).map(hue);
+      const gaps = hues.flatMap((a, i) => hues.slice(i + 1).map((b) => {
+        const raw = Math.abs(a - b);
+
+        return Math.min(raw, 360 - raw);
+      }));
+
+      expect(Math.min(...gaps), `funnel stages share a hue (dark=${isDark})`).toBeGreaterThan(30);
     }
   });
 

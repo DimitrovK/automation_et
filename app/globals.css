@@ -15,11 +15,16 @@
   /*
    * The house palette.
    *
-   * Surfaces are gray, carrying 3–8% of the brand hue: a cast you would not
-   * name, not a colour. An earlier pass pushed this to 20%+ on the theory that a
-   * green-tinted neutral would read as a house style rather than as the default
-   * every admin tool ships with. It read as green cards instead. The hue is not
-   * where a surface earns its character; its lightness steps are.
+   * Surfaces are a COOL gray scale. Two earlier passes tinted them toward the
+   * brand green — first heavily, then faintly — and both were rejected as
+   * looking like green cards rather than surfaces. The tell was the app's own
+   * nav dropdown, which overrode the tokens with a cool gray-800 and read
+   * better than anything around it.
+   *
+   * Hue was the whole difference, not intensity: at 7% lightness the rejected
+   * green and the current #0d1117 have identical chroma. A green cast at
+   * surface scale reads as sickly; a cool one reads as neutral. A surface does
+   * not earn its character from hue — it earns it from lightness steps.
    *
    * Emerald is the ACCENT and is spent only on interactive state — active
    * filters, links, focus rings, the primary action. It is never decorative and
@@ -30,26 +35,26 @@
    * below serve the charts with no game dimension (new-vs-returning, modes).
    */
   :root {
-    --background: 120 7% 97%;
-    --foreground: 135 10% 8%;
+    --background: 210 29% 97%;
+    --foreground: 213 13% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 135 10% 8%;
+    --card-foreground: 213 13% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 135 10% 8%;
+    --popover-foreground: 213 13% 14%;
     /* emerald-600, not -500: white on -500 is 2.5:1, which fails on every
        button the accent exists to make obvious. */
     --primary: 161 94% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 120 7% 95%;
-    --secondary-foreground: 135 10% 8%;
-    --muted: 120 7% 95%;
-    --muted-foreground: 155 6% 42%;
-    --accent: 140 8% 92%;
-    --accent-foreground: 135 10% 8%;
+    --secondary: 210 25% 95%;
+    --secondary-foreground: 213 13% 14%;
+    --muted: 210 25% 95%;
+    --muted-foreground: 212 8% 43%;
+    --accent: 210 24% 93%;
+    --accent-foreground: 213 13% 14%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 140 5% 89%;
-    --input: 140 5% 89%;
+    --border: 210 18% 84%;
+    --input: 210 18% 84%;
     --ring: 161 94% 30%;
     /* Validated as a set, not picked by eye: OKLCH lightness band, chroma
        floor, adjacent-pair separation under deutan/protan/tritan simulation,
@@ -60,46 +65,45 @@
     --chart-4: 263 70% 58%;
     --chart-5: 347 77% 50%;
     --radius: 0.625rem;
-    --sidebar-background: 120 7% 95%;
-    --sidebar-foreground: 135 10% 8%;
+    --sidebar-background: 210 25% 95%;
+    --sidebar-foreground: 213 13% 14%;
     --sidebar-primary: 161 94% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 140 8% 92%;
-    --sidebar-accent-foreground: 135 10% 8%;
-    --sidebar-border: 140 5% 89%;
+    --sidebar-accent: 210 24% 93%;
+    --sidebar-accent-foreground: 213 13% 14%;
+    --sidebar-border: 210 18% 84%;
     --sidebar-ring: 161 94% 30%;
   }
   .dark {
     /*
-     * Gray, with a whisper of the brand hue — 3–5% saturation, which is a cast
-     * you would not name rather than a colour. The first attempt ran 20%+ and
-     * the card read as "a green card" instead of as a surface.
+     * Four elevation steps, which is what a dark UI actually needs: page 7%,
+     * card 11%, popover 13%, and a border at 21% so every surface has an edge
+     * as well as a lift. An earlier pass ran page 5% / card 8% — three points
+     * apart — and cards sat flat with nothing to lift them off the page.
      *
-     * Lightness matters more than hue here, and it was the real fault in the
-     * attempt before this one: card at 8% against a background at 5% is three
-     * points of separation, so cards sat flat on the page and the whole surface
-     * read as murky. Background 4%, card 10% — six points — plus a border at
-     * 18%, so a card has both a lift and an edge. Depth is the thing dark UIs
-     * get wrong, and it is spent on lightness steps, not on saturation.
+     * The popover step exists because it was already being faked: the nav
+     * dropdown hardcoded dark:bg-gray-800 and a heavy shadow to escape a card
+     * colour that gave it nothing to sit on. A floating surface is lighter than
+     * the card beneath it, so the tokens say so.
      */
-    --background: 120 5% 4%;
-    --foreground: 120 7% 95%;
-    --card: 120 4% 10%;
-    --card-foreground: 120 7% 95%;
-    --popover: 120 4% 10%;
-    --popover-foreground: 120 7% 95%;
+    --background: 216 28% 7%;
+    --foreground: 208 35% 93%;
+    --card: 215 21% 11%;
+    --card-foreground: 208 35% 93%;
+    --popover: 215 18% 13%;
+    --popover-foreground: 208 35% 93%;
     --primary: 160 84% 39%;
-    --primary-foreground: 120 5% 4%;
-    --secondary: 120 4% 14%;
-    --secondary-foreground: 120 7% 95%;
-    --muted: 120 4% 14%;
-    --muted-foreground: 140 5% 62%;
-    --accent: 120 4% 14%;
-    --accent-foreground: 120 7% 95%;
+    --primary-foreground: 216 28% 7%;
+    --secondary: 215 15% 15%;
+    --secondary-foreground: 208 35% 93%;
+    --muted: 215 15% 15%;
+    --muted-foreground: 212 9% 58%;
+    --accent: 215 15% 15%;
+    --accent-foreground: 208 35% 93%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 140 3% 18%;
-    --input: 140 3% 18%;
+    --border: 212 12% 21%;
+    --input: 212 12% 21%;
     --ring: 160 84% 39%;
     /* Deliberately NOT the light steps brightened. The validator's dark
        lightness band is 0.48–0.67 — *below* the light band, not above it — so
@@ -112,13 +116,13 @@
     --chart-3: 32 95% 44%;
     --chart-4: 258 90% 66%;
     --chart-5: 350 89% 60%;
-    --sidebar-background: 120 4% 8%;
-    --sidebar-foreground: 120 7% 95%;
+    --sidebar-background: 215 21% 9%;
+    --sidebar-foreground: 208 35% 93%;
     --sidebar-primary: 160 84% 39%;
-    --sidebar-primary-foreground: 120 5% 4%;
-    --sidebar-accent: 120 4% 14%;
-    --sidebar-accent-foreground: 120 7% 95%;
-    --sidebar-border: 140 3% 18%;
+    --sidebar-primary-foreground: 216 28% 7%;
+    --sidebar-accent: 215 15% 15%;
+    --sidebar-accent-foreground: 208 35% 93%;
+    --sidebar-border: 212 12% 21%;
     --sidebar-ring: 160 84% 39%;
   }
 }

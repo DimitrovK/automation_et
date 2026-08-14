@@ -23,19 +23,22 @@ import { chartTheme } from '@/lib/chart-theme';
  * light one.
  */
 /**
- * Stage colours: strongest first, because stage one is the largest count.
+ * Stage colours: three distinct hues, not three steps of one.
  *
- * The shared ramp is ordered weakest-to-strongest in BOTH modes ("stronger"
- * meaning further from the surface — darker on light, lighter on dark), so
- * reversing it is all that is needed and it stays correct per surface.
+ * A single-hue ramp was the first answer, on the reasoning that funnel stages
+ * are magnitudes of one thing. They are not — rooms created, started and
+ * finished are three different measures, and the funnel's ORDER is already
+ * carried by position, so hue is free to say which measure a bar is.
  *
- * This replaces two locally-defined ramps that had drifted into disagreeing
- * with each other: in light mode a later stage got stronger, while in dark mode
- * this component made it weaker and FavouredVsPlayedChart made it stronger. The
- * same funnel therefore changed meaning when you flipped the theme.
+ * It also could not be made legible. On a near-white surface the pale end of an
+ * emerald ramp falls below 3:1 against the background, so the three steps had to
+ * crowd into the dark half: the last two ended up 0.064 apart in luminance and
+ * were reported as indistinguishable. These three are validated as a set —
+ * lightness band, chroma floor, adjacent separation under deutan/protan/tritan,
+ * and >= 3:1 against both surfaces.
  */
 function stageRamp(isDark: boolean): string[] {
-  return [...chartTheme(isDark).ramp].reverse().slice(0, 3);
+  return chartTheme(isDark).series.slice(0, 3);
 }
 
 /** Null, never 0, when there is nothing to divide by — no rooms means no rate. */

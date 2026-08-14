@@ -32,12 +32,13 @@ type Props = {
  * deeper, not lighter).
  */
 /*
- * Strongest first — see MultiplayerFunnel.stageRamp. Both funnels now derive
- * from the one shared ramp instead of keeping a local copy each, which is how
- * they came to disagree about what a later stage should look like in dark mode.
+ * Three distinct hues — see MultiplayerFunnel.stageRamp. Favourited, started and
+ * finished are different measures rather than steps of one, and a single-hue
+ * ramp put two of these bars 0.064 apart in luminance on a light surface, which
+ * is not a difference anyone can read.
  */
 function funnelRamp(isDark: boolean): string[] {
-  return [...chartTheme(isDark).ramp].reverse().slice(0, 3);
+  return chartTheme(isDark).series.slice(0, 3);
 }
 
 export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, meta, onRetry }: Props) {

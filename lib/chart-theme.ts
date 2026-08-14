@@ -50,21 +50,21 @@ export type ChartTheme = {
  * ~450 hand-typed colours in the first place.
  */
 const LIGHT = {
-  text: '#121613',
-  muted: '#65726c',
-  line: '#e2e4e2',
+  text: '#1f2328',
+  muted: '#656d76',
+  line: '#cfd6de',
   surface: '#ffffff',
-  border: '#e2e4e2',
+  border: '#cfd6de',
 };
 
 const DARK = {
-  text: '#f1f3f1',
-  muted: '#99a39c',
+  text: '#e7eef3',
+  muted: '#8a939e',
   // A step lighter than --border: a hairline that reads on a card reads as
   // nothing at all on the near-black chart surface behind it.
-  line: '#393c3a',
-  surface: '#181b18',
-  border: '#2d2f2d',
+  line: '#3d444d',
+  surface: '#161b22',
+  border: '#2f353c',
 };
 
 /**

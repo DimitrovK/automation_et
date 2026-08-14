@@ -354,7 +354,7 @@ export function Navigation({ className }: NavigationProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="max-h-[80vh] w-72 overflow-y-auto border border-gray-200 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+                  className="max-h-[80vh] w-72 overflow-y-auto p-2 shadow-xl"
                 >
                   {navigationPages.map(page => renderNavigationItem(page))}
                 </DropdownMenuContent>
