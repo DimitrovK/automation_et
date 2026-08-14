@@ -4,6 +4,7 @@ import type { GameTotals, Granularity } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/ActivityChart';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
 import { MetricToggle } from '@/components/reports/MetricToggle';
@@ -68,7 +69,7 @@ export default function ReportsPage() {
       title="Daily Pulse"
       description="How today is going, measured against a typical day of the same weekday."
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <FilterBar>
         <RangePicker
           value={range}
           onChange={next => update({ range: next })}
@@ -76,7 +77,7 @@ export default function ReportsPage() {
           onIncludeBotsChange={value => update({ includeBots: value })}
         />
         <MetricToggle value={metric} onChange={next => update({ metric: next })} />
-      </div>
+      </FilterBar>
 
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">

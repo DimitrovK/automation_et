@@ -84,4 +84,32 @@ describe('bots control', () => {
     // The previous preset survives, so clearing the range returns to it.
     expect(arg.window).toBe(30);
   });
+
+  it('shows which range is selected, and only that one', () => {
+    // The presets used to be seven separate outline buttons: nothing said
+    // which was active, so the control answered "what am I looking at" with
+    // silence. `aria-pressed` is the assertion because it is also what a
+    // screen reader announces — a colour alone would say nothing to it.
+    render(<RangePicker value={{ window: 30 }} onChange={() => {}} includeBots={false} onIncludeBotsChange={() => {}} />);
+
+    expect(screen.getByRole('button', { name: '30d' })).toHaveAttribute('aria-pressed', 'true');
+
+    const pressed = screen.getAllByRole('button').filter(b => b.getAttribute('aria-pressed') === 'true');
+
+    expect(pressed).toHaveLength(1);
+  });
+
+  it('marks a custom range as selected rather than a preset', () => {
+    render(
+      <RangePicker
+        value={{ window: 30, start: '2026-06-01', end: '2026-06-30' }}
+        onChange={() => {}}
+        includeBots={false}
+        onIncludeBotsChange={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /2026-06-01/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '30d' })).toHaveAttribute('aria-pressed', 'false');
+  });
 });

@@ -1,7 +1,8 @@
 'use client';
 
 import type { MetricKey } from '@/types/reports';
-import { Button } from '@/components/ui/button';
+import { FilterGroup, Segmented } from '@/components/reports/FilterBar';
+import { cn } from '@/lib/utils';
 import { METRIC_OPTIONS } from '@/types/reports';
 
 /**
@@ -15,18 +16,25 @@ export function MetricToggle({ value, onChange }: {
   onChange: (metric: MetricKey) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-gray-600 dark:text-gray-300">Show</span>
-      {METRIC_OPTIONS.map(option => (
-        <Button
-          key={option.key}
-          size="sm"
-          variant={option.key === value ? 'default' : 'outline'}
-          onClick={() => onChange(option.key)}
-        >
-          {option.label}
-        </Button>
-      ))}
-    </div>
+    <FilterGroup label="Foreground metric" hint="Which metric gets the large chart; the others keep their own panels below it.">
+      <Segmented>
+        {METRIC_OPTIONS.map(option => (
+          <button
+            key={option.key}
+            type="button"
+            aria-pressed={option.key === value}
+            onClick={() => onChange(option.key)}
+            className={cn(
+              'rounded px-2.5 py-1 text-sm font-medium transition-colors',
+              option.key === value
+                ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
+                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </Segmented>
+    </FilterGroup>
   );
 }

@@ -1,12 +1,14 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
-import { CalendarDays, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useState } from 'react';
+import { FilterGroup, Segmented } from '@/components/reports/FilterBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { activePreset, isoDay, yesterdayRange } from '@/lib/report-range';
+import { cn } from '@/lib/utils';
 import { REPORT_WINDOWS } from '@/types/reports';
 
 /**
@@ -43,58 +45,58 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
   const custom = active === 'custom';
   const invalid = !draftStart || draftStart > draftEnd || draftEnd > today;
 
+  /** One option in the range segment. */
+  const option = (key: string | number, label: string, isActive: boolean, onSelect: () => void) => (
+    <button
+      key={key}
+      type="button"
+      aria-pressed={isActive}
+      onClick={onSelect}
+      className={cn(
+        'rounded px-2.5 py-1 text-sm font-medium transition-colors',
+        isActive
+          ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
+          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+      )}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-gray-600 dark:text-gray-300">Range</span>
+    <>
+      <FilterGroup label="Range">
+        <Segmented>
+          {option('today', 'Today', active === 'today', () => onChange({ window: 1 }))}
+          {option('yesterday', 'Yesterday', active === 'yesterday', () => onChange(yesterdayRange(now, value.window)))}
+          {/* 1 is excluded: it is the Today button above, and "1d" beside it
+              would be the same range offered twice under two names. */}
+          {REPORT_WINDOWS.filter(w => w > 1).map(w => option(w, `${w}d`, active === w, () => onChange({ window: w })))}
+          {option(
+            'custom',
+            custom ? `${value.start} → ${value.end ?? today}` : 'Custom…',
+            custom,
+            () => setOpen(!open),
+          )}
+        </Segmented>
+      </FilterGroup>
 
-      <Button
-        size="sm"
-        variant={active === 'today' ? 'default' : 'outline'}
-        onClick={() => onChange({ window: 1 })}
-      >
-        Today
-      </Button>
-      <Button
-        size="sm"
-        variant={active === 'yesterday' ? 'default' : 'outline'}
-        onClick={() => onChange(yesterdayRange(now, value.window))}
-      >
-        Yesterday
-      </Button>
-
-      {/* 1 is excluded: it is the Today button above, and "1d" beside it would
-          be the same range offered twice under two names. */}
-      {REPORT_WINDOWS.filter(w => w > 1).map(w => (
-        <Button
-          key={w}
-          size="sm"
-          variant={active === w ? 'default' : 'outline'}
-          onClick={() => onChange({ window: w })}
-        >
-          {w}
-          d
-        </Button>
-      ))}
-
-      <Button
-        size="sm"
-        variant={custom ? 'default' : 'outline'}
-        onClick={() => setOpen(!open)}
-        title="Pick exact dates"
-      >
-        <CalendarDays className="mr-1 size-3.5" />
-        {custom ? `${value.start} → ${value.end ?? today}` : 'Custom'}
-        {custom && (
-          <X
-            className="ml-1 size-3"
-            onClick={(event) => {
-              event.stopPropagation();
+      {custom && (
+        <FilterGroup label="&nbsp;">
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label="Clear the custom range"
+            onClick={() => {
               onChange({ window: value.window });
               setOpen(false);
             }}
-          />
-        )}
-      </Button>
+          >
+            <X className="mr-1 size-3.5" />
+            Clear
+          </Button>
+        </FilterGroup>
+      )}
 
       {/* A switch, not a button. Button labels read as actions, so "Bots
           excluded" in an unfilled style read as "click to exclude bots" —
@@ -102,21 +104,25 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
           off, and the label never has to be interpreted as an instruction. It
           also stops the control competing with the window presets beside it,
           where filled genuinely does mean "selected". */}
-      <label
-        htmlFor="include-bots"
-        className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
-        title="Bot and simulation accounts (is_dummy). Off by default — Anonymous players are real people and are always counted."
+      <FilterGroup
+        label="Accounts"
+        hint="Bot and simulation accounts (is_dummy). Off by default — Anonymous players are real people and are always counted."
       >
-        <Switch
-          id="include-bots"
-          checked={includeBots}
-          onCheckedChange={onIncludeBotsChange}
-        />
-        Include bots
-      </label>
+        <label
+          htmlFor="include-bots"
+          className="flex h-8 items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
+        >
+          <Switch
+            id="include-bots"
+            checked={includeBots}
+            onCheckedChange={onIncludeBotsChange}
+          />
+          Include bots
+        </label>
+      </FilterGroup>
 
       {open && (
-        <div className="flex w-full flex-wrap items-end gap-2 rounded-md border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex w-full basis-full flex-wrap items-end gap-2 rounded-md border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <label htmlFor="range-start" className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
             From
             <Input
@@ -157,6 +163,6 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
