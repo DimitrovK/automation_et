@@ -90,6 +90,7 @@ describe('useReport', () => {
     render(<BoundArg />);
     await screen.findByText('loaded-18');
     await new Promise(resolve => setTimeout(resolve, 60));
+
     expect(calls).toEqual([18]);
 
     await act(async () => setId(19));
@@ -97,6 +98,7 @@ describe('useReport', () => {
 
     // And having refetched once, it settles rather than looping on the new id.
     await new Promise(resolve => setTimeout(resolve, 60));
+
     expect(calls).toEqual([18, 19]);
   });
 });

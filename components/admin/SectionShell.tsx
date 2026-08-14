@@ -1,7 +1,7 @@
 'use client';
 
-import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
 import type { ReactNode } from 'react';
+import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
 import { AlertTriangle } from 'lucide-react';
 import { SectionNav } from '@/components/admin/SectionNav';
 import { LoadingSpinner } from '@/components/loading-spinner';

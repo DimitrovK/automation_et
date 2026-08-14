@@ -28,6 +28,7 @@ describe('chartTheme', () => {
     // would compete with the data for attention.
     for (const isDark of [false, true]) {
       const theme = chartTheme(isDark);
+
       expect(theme.grid.stroke).not.toBe(theme.tooltip.contentStyle.color);
     }
   });

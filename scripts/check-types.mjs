@@ -121,7 +121,7 @@ function main() {
 
   const unused = unusedOut
     .split('\n')
-    .filter(line => / error TS(6133|6192|6196):/.test(line))
+    .filter(line => / error TS(?:6133|6192|6196):/.test(line))
     .filter(line => inScope(line));
 
   if (unused.length > 0) {

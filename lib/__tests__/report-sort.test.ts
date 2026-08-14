@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { GameRowWithDuration } from '@/lib/report-sort';
+import { describe, expect, it } from 'vitest';
 import { sortGameTotals } from '@/lib/report-sort';
 
 function game(game_type: string, overrides: Partial<GameRowWithDuration> = {}): GameRowWithDuration {

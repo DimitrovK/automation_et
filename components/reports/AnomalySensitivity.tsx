@@ -16,6 +16,10 @@ import { Button } from '@/components/ui/button';
  */
 export type Sensitivity = 'broad' | 'default' | 'strict';
 
+// Exported beside its component on purpose: a recharts tree renders nothing
+// measurable in jsdom, so the pure part has to be reachable from a test. The
+// cost is fast-refresh reloading this file rather than hot-swapping it.
+// eslint-disable-next-line react-refresh/only-export-components
 export const SENSITIVITY_PRESETS: Record<Sensitivity, {
   label: string;
   hint: string;

@@ -80,7 +80,11 @@ export function ChartTooltip({
       {payload.map((entry, index) => (
         <p
           // Series can share a name across a stacked chart, so the key includes
-          // the dataKey rather than trusting the label to be unique.
+          // the dataKey rather than trusting the label to be unique. The index
+          // is the tiebreaker of last resort, not the key itself: this list is
+          // one tooltip's rows, rebuilt from scratch on every hover, so there
+          // is no reordering for a positional key to corrupt.
+          // eslint-disable-next-line react/no-array-index-key
           key={`${entry.dataKey ?? entry.name ?? 'series'}-${index}`}
           className="flex items-center gap-1.5 text-muted-foreground"
         >

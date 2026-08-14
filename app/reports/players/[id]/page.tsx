@@ -3,10 +3,12 @@
 import type { RangeState } from '@/lib/report-range';
 import type { ReportParams } from '@/types/reports';
 import { ArrowLeft } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
@@ -14,15 +16,13 @@ import { ReportsShell } from '@/components/reports/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
-import { playStyle } from '@/lib/play-style';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
+import { chartTheme } from '@/lib/chart-theme';
+import { playStyle } from '@/lib/play-style';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-import { useTheme } from 'next-themes';
-import { chartTheme } from '@/lib/chart-theme';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 function Tile({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (

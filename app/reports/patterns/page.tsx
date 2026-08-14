@@ -2,12 +2,14 @@
 
 import type { RangeState } from '@/lib/report-range';
 import type { HourWeekdayRow } from '@/types/reports';
+import { useTheme } from 'next-themes';
 import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
-import { MetricInfo } from '@/components/reports/MetricInfo';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameFilter } from '@/components/reports/GameFilter';
+import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -17,11 +19,9 @@ import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
+import { chartTheme } from '@/lib/chart-theme';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-import { useTheme } from 'next-themes';
-import { chartTheme } from '@/lib/chart-theme';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 function Tile({ label, value, hint, metric }: { label: string; value: string; hint: string; metric?: string }) {
   return (

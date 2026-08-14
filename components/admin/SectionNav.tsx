@@ -37,7 +37,7 @@ export function SectionNav({ groups, trailing }: {
     <nav aria-label="Section" className="rounded-lg border bg-white/60 p-2 dark:border-slate-700 dark:bg-slate-800/60">
       <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
         {groups.map(group => (
-          <div key={group.heading || 'ungrouped'} className="min-w-[10rem] flex-1">
+          <div key={group.heading || 'ungrouped'} className="min-w-40 flex-1">
             {group.heading && (
               <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 {group.heading}

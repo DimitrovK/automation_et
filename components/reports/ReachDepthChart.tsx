@@ -2,8 +2,8 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { GameTotals } from '@/types/reports';
-import { useMemo } from 'react';
 import { useTheme } from 'next-themes';
+import { useMemo } from 'react';
 import {
   CartesianGrid,
   Cell,
