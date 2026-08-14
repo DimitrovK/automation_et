@@ -1,5 +1,6 @@
 'use client';
 
+import type { Position, PositionsTracker, SetPositionsRequest } from '@/types/player';
 import { AlertTriangle, Check, Loader2, MapPin, Plus, Star, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -7,10 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiButton } from '@/components/ui/emerald-button';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import type { Position, PositionsTracker, SetPositionsRequest } from '@/types/player';
 import { FootballerAPI } from '@/lib/footballer-api';
 
 export type SelectedPosition = {
@@ -54,18 +54,30 @@ function inferRole(positionName: string): string {
   const gk = ['GK'];
   const def = ['CB', 'LB', 'RB', 'LWB', 'RWB', 'SW'];
   const mid = ['CDM', 'CM', 'CAM', 'LM', 'RM'];
-  if (gk.includes(positionName)) return 'GK';
-  if (def.includes(positionName)) return 'DEF';
-  if (mid.includes(positionName)) return 'MID';
+  if (gk.includes(positionName)) {
+    return 'GK';
+  }
+  if (def.includes(positionName)) {
+    return 'DEF';
+  }
+  if (mid.includes(positionName)) {
+    return 'MID';
+  }
   return 'FWD';
 }
 
 type SyncStatus = 'synced' | 'mismatch' | 'new-player' | 'no-data';
 
 function getSyncStatus(positionsTracker?: PositionsTracker, playerFoundInDB?: boolean): SyncStatus {
-  if (!positionsTracker) return 'no-data';
-  if (!playerFoundInDB) return 'new-player';
-  if (positionsTracker.hasDiscrepancy) return 'mismatch';
+  if (!positionsTracker) {
+    return 'no-data';
+  }
+  if (!playerFoundInDB) {
+    return 'new-player';
+  }
+  if (positionsTracker.hasDiscrepancy) {
+    return 'mismatch';
+  }
   return 'synced';
 }
 
@@ -100,7 +112,9 @@ export function PositionCard({
 
   // Initialize selected positions from tracker data
   useEffect(() => {
-    if (!positionsTracker) return;
+    if (!positionsTracker) {
+      return;
+    }
 
     const initial: SelectedPosition[] = [];
 
@@ -160,7 +174,9 @@ export function PositionCard({
   }, []);
 
   const addPosition = (pos: Position) => {
-    if (selectedPositions.some(s => s.position_id === pos.id)) return;
+    if (selectedPositions.some(s => s.position_id === pos.id)) {
+      return;
+    }
     const newPos: SelectedPosition = {
       position_id: pos.id,
       name: pos.name,
@@ -175,7 +191,7 @@ export function PositionCard({
   };
 
   const removePosition = (positionId: number) => {
-    setSelectedPositions(prev => {
+    setSelectedPositions((prev) => {
       const filtered = prev.filter(p => p.position_id !== positionId);
       // If we removed the primary, make the first one primary
       if (filtered.length > 0 && !filtered.some(p => p.is_primary)) {
@@ -194,7 +210,9 @@ export function PositionCard({
   };
 
   const handleApplyPositions = async () => {
-    if (!footballerId || selectedPositions.length === 0) return;
+    if (!footballerId || selectedPositions.length === 0) {
+      return;
+    }
 
     const request: SetPositionsRequest = {
       footballer_id: footballerId,
@@ -226,17 +244,20 @@ export function PositionCard({
     return null;
   }
 
-  const hasWikipediaPositions = positionsTracker.wikipediaPositions.length > 0;
   const hasMissing = positionsTracker.missingInDatabase.length > 0;
 
   // Determine if current selection differs from saved/DB state
   const hasUnsavedChanges = (() => {
     // After a save, compare against the saved snapshot
     if (savedSnapshot) {
-      if (selectedPositions.length !== savedSnapshot.length) return true;
+      if (selectedPositions.length !== savedSnapshot.length) {
+        return true;
+      }
       const snapIds = new Set(savedSnapshot.map(p => p.position_id));
-      if (selectedPositions.some(p => !snapIds.has(p.position_id))) return true;
-      return selectedPositions.some(sp => {
+      if (selectedPositions.some(p => !snapIds.has(p.position_id))) {
+        return true;
+      }
+      return selectedPositions.some((sp) => {
         const saved = savedSnapshot.find(s => s.position_id === sp.position_id);
         return saved && saved.is_primary !== sp.is_primary;
       });
@@ -248,7 +269,7 @@ export function PositionCard({
       ? (selectedIds.size !== dbPositionIds.size
         || [...selectedIds].some(id => !dbPositionIds.has(id))
         || [...dbPositionIds].some(id => !selectedIds.has(id))
-        || selectedPositions.some(sp => {
+        || selectedPositions.some((sp) => {
           const dbP = positionsTracker.databasePositions.find(d => d.id === sp.position_id);
           return dbP && dbP.isPrimary !== sp.is_primary;
         }))
@@ -257,7 +278,9 @@ export function PositionCard({
 
   // Group allPositions by role for the selector
   const positionsByRole = allPositions.reduce<Record<string, Position[]>>((acc, pos) => {
-    if (!acc[pos.role]) acc[pos.role] = [];
+    if (!acc[pos.role]) {
+      acc[pos.role] = [];
+    }
     acc[pos.role].push(pos);
     return acc;
   }, {});
@@ -306,175 +329,186 @@ export function PositionCard({
 
         {positionsEnabled && (
           <>
-        {/* Discrepancy Alert */}
-        {syncStatus === 'mismatch' && hasMissing && (
-          <Alert className="border-amber-200 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20">
-            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200">
-              <strong>{positionsTracker.missingInDatabase.length}</strong>
-              {' '}
-              position{positionsTracker.missingInDatabase.length > 1 ? 's' : ''}
-              {' '}
-              found on Wikipedia but missing in database:
-              {' '}
-              <strong>{positionsTracker.missingInDatabase.map(p => p.fullName).join(', ')}</strong>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <Tabs defaultValue="selected" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="selected" className="text-xs sm:text-sm">
-              Selected Positions
-              <Badge variant="secondary" className="ml-2 text-xs">{selectedPositions.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="all" className="text-xs sm:text-sm">
-              All Positions
-              <Badge variant="secondary" className="ml-2 text-xs">{allPositions.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Tab 1: Selected / Active Positions */}
-          <TabsContent value="selected" className="space-y-4 pt-2">
-            {selectedPositions.length === 0 ? (
-              <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                No positions selected. Go to &quot;All Positions&quot; tab to add some.
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {selectedPositions.map(pos => (
-                  <div
-                    key={pos.position_id}
-                    className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Badge className={`border ${getRoleBadgeClass(pos.role)}`}>
-                        {pos.name}
-                      </Badge>
-                      <span className="text-sm font-medium">{pos.full_name}</span>
-                      {pos.is_primary && (
-                        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                          <Star className="mr-1 size-3 fill-current" />
-                          Primary
-                        </Badge>
-                      )}
-                      {pos.source === 'wikipedia' && !positionsTracker.databasePositions.some(d => d.id === pos.position_id) && (
-                        <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400">Wiki</Badge>
-                      )}
-                      {pos.source === 'manual' && (
-                        <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400">Manual</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {!pos.is_primary && (
-                        <button
-                          onClick={() => setPrimary(pos.position_id)}
-                          className="rounded p-1 text-xs text-gray-500 transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
-                          title="Set as primary"
-                          aria-label={`Set ${pos.full_name} as primary`}
-                        >
-                          <Star className="size-4" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => removePosition(pos.position_id)}
-                        className="rounded p-1 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                        title="Remove"
-                        aria-label={`Remove ${pos.full_name}`}
-                      >
-                        <X className="size-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* Discrepancy Alert */}
+            {syncStatus === 'mismatch' && hasMissing && (
+              <Alert className="border-amber-200 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20">
+                <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="text-amber-800 dark:text-amber-200">
+                  <strong>{positionsTracker.missingInDatabase.length}</strong>
+                  {' '}
+                  position
+                  {positionsTracker.missingInDatabase.length > 1 ? 's' : ''}
+                  {' '}
+                  found on Wikipedia but missing in database:
+                  {' '}
+                  <strong>{positionsTracker.missingInDatabase.map(p => p.fullName).join(', ')}</strong>
+                </AlertDescription>
+              </Alert>
             )}
 
-            {/* Apply Button */}
-            {hasUnsavedChanges && footballerId && !applied && (
-              <ApiButton
-                onClick={handleApplyPositions}
-                disabled={applying || selectedPositions.length === 0}
-                loading={applying}
-                loadingText="Applying..."
-                size="sm"
-              >
-                Save Positions
-              </ApiButton>
-            )}
+            <Tabs defaultValue="selected" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="selected" className="text-xs sm:text-sm">
+                  Selected Positions
+                  <Badge variant="secondary" className="ml-2 text-xs">{selectedPositions.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="all" className="text-xs sm:text-sm">
+                  All Positions
+                  <Badge variant="secondary" className="ml-2 text-xs">{allPositions.length}</Badge>
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Success State */}
-            {applied && (
-              <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                <Check className="size-4" />
-                Positions saved successfully!
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && (
-              <div className="text-sm text-red-600 dark:text-red-400">
-                ❌ {error}
-              </div>
-            )}
-
-            {/* New Player Info */}
-            {syncStatus === 'new-player' && selectedPositions.length > 0 && (
-              <div className="text-sm text-blue-600 dark:text-blue-400">
-                💡 These positions will be assigned when the player is deployed.
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Tab 2: All Available Positions */}
-          <TabsContent value="all" className="space-y-4 pt-2">
-            {loadingPositions ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="size-5 animate-spin text-gray-400" />
-                <span className="ml-2 text-sm text-gray-500">Loading positions...</span>
-              </div>
-            ) : (
-              Object.entries(ROLE_LABELS).map(([role, label]) => {
-                const positions = positionsByRole[role] || [];
-                if (positions.length === 0) return null;
-
-                return (
-                  <div key={role}>
-                    <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      {label}
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {positions.map(pos => {
-                        const isSelected = selectedPositions.some(s => s.position_id === pos.id);
-                        return (
-                          <button
-                            key={pos.id}
-                            onClick={() => isSelected ? removePosition(pos.id) : addPosition(pos)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${
-                              isSelected
-                                ? `${getRoleBadgeClass(pos.role)} ring-2 ring-offset-1 ring-emerald-500 dark:ring-offset-gray-900`
-                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700'
-                            }`}
-                            title={isSelected ? `Remove ${pos.full_name}` : `Add ${pos.full_name}`}
+              {/* Tab 1: Selected / Active Positions */}
+              <TabsContent value="selected" className="space-y-4 pt-2">
+                {selectedPositions.length === 0
+                  ? (
+                      <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No positions selected. Go to &quot;All Positions&quot; tab to add some.
+                      </div>
+                    )
+                  : (
+                      <div className="space-y-2">
+                        {selectedPositions.map(pos => (
+                          <div
+                            key={pos.position_id}
+                            className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
                           >
-                            {isSelected ? (
-                              <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                            ) : (
-                              <Plus className="size-3.5 text-gray-400" />
-                            )}
-                            <span>{pos.name}</span>
-                            <span className="hidden text-xs opacity-60 sm:inline">{pos.full_name}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <Separator className="mt-3" />
+                            <div className="flex items-center gap-3">
+                              <Badge className={`border ${getRoleBadgeClass(pos.role)}`}>
+                                {pos.name}
+                              </Badge>
+                              <span className="text-sm font-medium">{pos.full_name}</span>
+                              {pos.is_primary && (
+                                <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                  <Star className="mr-1 size-3 fill-current" />
+                                  Primary
+                                </Badge>
+                              )}
+                              {pos.source === 'wikipedia' && !positionsTracker.databasePositions.some(d => d.id === pos.position_id) && (
+                                <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400">Wiki</Badge>
+                              )}
+                              {pos.source === 'manual' && (
+                                <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400">Manual</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!pos.is_primary && (
+                                <button
+                                  onClick={() => setPrimary(pos.position_id)}
+                                  className="rounded p-1 text-xs text-gray-500 transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
+                                  title="Set as primary"
+                                  aria-label={`Set ${pos.full_name} as primary`}
+                                >
+                                  <Star className="size-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => removePosition(pos.position_id)}
+                                className="rounded p-1 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                                title="Remove"
+                                aria-label={`Remove ${pos.full_name}`}
+                              >
+                                <X className="size-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                {/* Apply Button */}
+                {hasUnsavedChanges && footballerId && !applied && (
+                  <ApiButton
+                    onClick={handleApplyPositions}
+                    disabled={applying || selectedPositions.length === 0}
+                    loading={applying}
+                    loadingText="Applying..."
+                    size="sm"
+                  >
+                    Save Positions
+                  </ApiButton>
+                )}
+
+                {/* Success State */}
+                {applied && (
+                  <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                    <Check className="size-4" />
+                    Positions saved successfully!
                   </div>
-                );
-              })
-            )}
-          </TabsContent>
-        </Tabs>
+                )}
+
+                {/* Error State */}
+                {error && (
+                  <div className="text-sm text-red-600 dark:text-red-400">
+                    ❌
+                    {' '}
+                    {error}
+                  </div>
+                )}
+
+                {/* New Player Info */}
+                {syncStatus === 'new-player' && selectedPositions.length > 0 && (
+                  <div className="text-sm text-blue-600 dark:text-blue-400">
+                    💡 These positions will be assigned when the player is deployed.
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Tab 2: All Available Positions */}
+              <TabsContent value="all" className="space-y-4 pt-2">
+                {loadingPositions
+                  ? (
+                      <div className="flex items-center justify-center py-6">
+                        <Loader2 className="size-5 animate-spin text-gray-400" />
+                        <span className="ml-2 text-sm text-gray-500">Loading positions...</span>
+                      </div>
+                    )
+                  : (
+                      Object.entries(ROLE_LABELS).map(([role, label]) => {
+                        const positions = positionsByRole[role] || [];
+                        if (positions.length === 0) {
+                          return null;
+                        }
+
+                        return (
+                          <div key={role}>
+                            <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                              {label}
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {positions.map((pos) => {
+                                const isSelected = selectedPositions.some(s => s.position_id === pos.id);
+                                return (
+                                  <button
+                                    key={pos.id}
+                                    onClick={() => isSelected ? removePosition(pos.id) : addPosition(pos)}
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${
+                                      isSelected
+                                        ? `${getRoleBadgeClass(pos.role)} ring-2 ring-emerald-500 ring-offset-1 dark:ring-offset-gray-900`
+                                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+                                    }`}
+                                    title={isSelected ? `Remove ${pos.full_name}` : `Add ${pos.full_name}`}
+                                  >
+                                    {isSelected
+                                      ? (
+                                          <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                                        )
+                                      : (
+                                          <Plus className="size-3.5 text-gray-400" />
+                                        )}
+                                    <span>{pos.name}</span>
+                                    <span className="hidden text-xs opacity-60 sm:inline">{pos.full_name}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <Separator className="mt-3" />
+                          </div>
+                        );
+                      })
+                    )}
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </CardContent>
