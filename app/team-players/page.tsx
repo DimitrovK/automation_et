@@ -136,17 +136,17 @@ export default function TeamPlayersPage() {
 
   // ---- render ------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+    <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
         <Navigation />
 
         <div className="space-y-2 text-center">
-          <h1 className="flex items-center justify-center gap-2 text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="flex items-center justify-center gap-2 text-3xl font-bold text-foreground">
             <Users2 className="size-7 text-emerald-600" />
             {' '}
             Team Players
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-muted-foreground">
             Look up the squad assigned to a team. Search by name or paste a team ID.
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function TeamPlayersPage() {
           </div>
         )}
 
-        {dataLoading && <p className="text-center text-sm text-gray-500">Loading team…</p>}
+        {dataLoading && <p className="text-center text-sm text-muted-foreground">Loading team…</p>}
 
         {data && (
           <>
@@ -173,7 +173,7 @@ export default function TeamPlayersPage() {
             <Card>
               <CardContent className="grid grid-cols-1 gap-3 pt-6 md:grid-cols-2 lg:grid-cols-6">
                 <div>
-                  <label htmlFor="filter-role" className="mb-1 block text-xs font-medium text-gray-600">Role</label>
+                  <label htmlFor="filter-role" className="mb-1 block text-xs font-medium text-muted-foreground">Role</label>
                   <Select value={role} onValueChange={v => setRole(v as RoleFilter)}>
                     <SelectTrigger id="filter-role"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -185,7 +185,7 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="filter-transfer" className="mb-1 block text-xs font-medium text-gray-600">Transfer</label>
+                  <label htmlFor="filter-transfer" className="mb-1 block text-xs font-medium text-muted-foreground">Transfer</label>
                   <Select
                     value={transferType}
                     onValueChange={v => setTransferType(v as TransferFilter)}
@@ -200,7 +200,7 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="filter-status" className="mb-1 block text-xs font-medium text-gray-600">Status</label>
+                  <label htmlFor="filter-status" className="mb-1 block text-xs font-medium text-muted-foreground">Status</label>
                   <Select
                     value={statusFilter}
                     onValueChange={v => setStatusFilter(v as StatusFilter)}
@@ -215,7 +215,7 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div className="md:col-span-1 lg:col-span-2">
-                  <label htmlFor="filter-player-name" className="mb-1 block text-xs font-medium text-gray-600">
+                  <label htmlFor="filter-player-name" className="mb-1 block text-xs font-medium text-muted-foreground">
                     Player name
                   </label>
                   <Input
@@ -227,7 +227,7 @@ export default function TeamPlayersPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="filter-sort" className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
+                  <label htmlFor="filter-sort" className="mb-1 block text-xs font-medium text-muted-foreground">Sort</label>
                   <Select
                     value={ordering}
                     onValueChange={v => setOrdering(v as TeamPlayersOrdering)}
@@ -273,7 +273,7 @@ export default function TeamPlayersPage() {
               ? (
                   data.players.results.length === 0
                     ? (
-                        <div className="rounded-md border p-8 text-center text-sm text-gray-500">
+                        <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
                           No players match the current filters.
                         </div>
                       )

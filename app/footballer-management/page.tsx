@@ -709,7 +709,7 @@ export default function FootballerManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+    <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Navigation */}
         <Navigation />
@@ -717,7 +717,7 @@ export default function FootballerManagementPage() {
         <div className="container mx-auto space-y-6">
           <div>
             <h1 className="text-3xl font-bold">Footballer Management</h1>
-            <p className="text-gray-600">Test page for footballer API endpoints</p>
+            <p className="text-muted-foreground">Test page for footballer API endpoints</p>
           </div>
 
           {error && (
@@ -823,7 +823,7 @@ export default function FootballerManagementPage() {
             <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
               <Card>
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <CardHeader className="cursor-pointer transition-colors hover:bg-muted/50">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle>Filters & Search</CardTitle>
@@ -833,10 +833,10 @@ export default function FootballerManagementPage() {
                       </div>
                       {isFiltersOpen
                         ? (
-                            <ChevronUp className="size-5 text-gray-500" />
+                            <ChevronUp className="size-5 text-muted-foreground" />
                           )
                         : (
-                            <ChevronDown className="size-5 text-gray-500" />
+                            <ChevronDown className="size-5 text-muted-foreground" />
                           )}
                     </div>
                   </CardHeader>
@@ -1052,7 +1052,7 @@ export default function FootballerManagementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Try widening the filters above (e.g. status set to "All", clearing the search box)
                   and running the query again.
                 </p>
