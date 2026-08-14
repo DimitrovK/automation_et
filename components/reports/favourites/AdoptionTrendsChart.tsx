@@ -47,7 +47,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
                 'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
                 granularity === g
                   ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                  : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50',
+                  : 'text-muted-foreground hover:bg-muted',
               )}
             >
               {g}
@@ -68,7 +68,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
         )}
 
         {!isLoading && !error && points.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500">No adoption data yet.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">No adoption data yet.</p>
         )}
 
         {!isLoading && !error && points.length > 0 && (
@@ -90,7 +90,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
               </ResponsiveContainer>
             </div>
             {hasBackfill && (
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 Includes pre-launch favourites (approximate dates).
               </p>
             )}

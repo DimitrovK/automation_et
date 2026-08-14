@@ -25,7 +25,7 @@ export function MetricInfo({ metric }: { metric: string }) {
   return (
     <Popover>
       <PopoverTrigger
-        className="ml-1 inline-flex align-middle text-gray-400 transition-colors hover:text-gray-700 dark:hover:text-gray-200"
+        className="ml-1 inline-flex align-middle text-muted-foreground/70 transition-colors hover:text-foreground/80"
         aria-label={`What "${definition?.label ?? metric}" means`}
       >
         <Info className="size-3.5" />
@@ -34,7 +34,7 @@ export function MetricInfo({ metric }: { metric: string }) {
         {isLoading && <Skeleton className="h-16 w-full" />}
 
         {!isLoading && !definition && (
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-muted-foreground">
             {failed
               ? 'Could not load the definition. Showing nothing rather than a copy that might no longer match how this is calculated.'
               : `No definition recorded for "${metric}".`}
@@ -43,16 +43,16 @@ export function MetricInfo({ metric }: { metric: string }) {
 
         {definition && (
           <>
-            <p className="font-semibold text-gray-900 dark:text-white">{definition.label}</p>
-            <p className="mt-1 text-gray-700 dark:text-gray-200">{definition.counts}</p>
+            <p className="font-semibold text-foreground">{definition.label}</p>
+            <p className="mt-1 text-foreground/80">{definition.counts}</p>
             {definition.excludes && (
-              <p className="mt-2 text-gray-600 dark:text-gray-300">
+              <p className="mt-2 text-muted-foreground">
                 <span className="font-medium">Excludes: </span>
                 {definition.excludes}
               </p>
             )}
             {definition.caveat && (
-              <p className="mt-2 rounded border border-amber-200 bg-amber-50 p-2 text-gray-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-gray-100">
+              <p className="mt-2 rounded border border-amber-200 bg-amber-50 p-2 text-foreground dark:border-amber-900 dark:bg-amber-900/20">
                 {definition.caveat}
               </p>
             )}

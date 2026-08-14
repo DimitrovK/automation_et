@@ -30,9 +30,9 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <Card>
       <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-        {hint && <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
     </Card>
   );
@@ -198,7 +198,7 @@ export default function GameDetailPage() {
           <CardContent className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+                <tr className="border-b text-left text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">#</th>
                   <th className="py-2 pr-4 font-medium">Player</th>
                   <th className="py-2 pr-4 text-right font-medium">Played</th>
@@ -207,8 +207,8 @@ export default function GameDetailPage() {
               </thead>
               <tbody>
                 {players.data.players.map((player, index) => (
-                  <tr key={player.user_id} className="border-b last:border-0 dark:border-slate-700">
-                    <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{index + 1}</td>
+                  <tr key={player.user_id} className="border-b last:border-0">
+                    <td className="py-2 pr-4 text-muted-foreground">{index + 1}</td>
                     <td className="py-2 pr-4">
                       <Link
                         href={`/reports/players/${player.user_id}`}
@@ -224,7 +224,7 @@ export default function GameDetailPage() {
               </tbody>
             </table>
             {players.data.players.length === 0 && (
-              <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              <p className="py-6 text-center text-sm text-muted-foreground">
                 Nobody played this game in the selected range.
               </p>
             )}

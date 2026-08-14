@@ -154,7 +154,7 @@ export default function GamesIndexPage() {
                   <CardContent className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+                        <tr className="border-b text-left text-muted-foreground">
                           <th className="py-2 pr-4 font-medium">Game</th>
                           {COLUMNS.map(column => (
                             <th key={column.key} className="py-2 pr-4 text-right font-medium">
@@ -164,7 +164,7 @@ export default function GamesIndexPage() {
                                 onClick={() => setSortBy(column.key)}
                                 className={sortBy === column.key
                                   ? 'font-semibold text-emerald-700 dark:text-emerald-400'
-                                  : 'hover:text-gray-900 dark:hover:text-white'}
+                                  : 'hover:text-foreground dark:hover:text-white'}
                               >
                                 {column.label}
                               </button>
@@ -175,13 +175,13 @@ export default function GamesIndexPage() {
                       </thead>
                       <tbody>
                         {rows.map((row: GameRowWithDuration) => (
-                          <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
+                          <tr key={row.game_type} className="border-b last:border-0">
                             <td className="py-2 pr-4">
                               <Link href={`/reports/games/${row.game_type}`}>
                                 <GameBadge gameKey={row.game_type} meta={meta} />
                               </Link>
                             </td>
-                            <td className="py-2 pr-4 text-right font-medium text-gray-900 dark:text-white">
+                            <td className="py-2 pr-4 text-right font-medium text-foreground">
                               {row.games_started.toLocaleString()}
                             </td>
                             <td className="py-2 pr-4 text-right">{num(row.completion_pct, '%')}</td>
@@ -189,7 +189,7 @@ export default function GamesIndexPage() {
                             <td className="py-2 pr-4 text-right">{num(row.repeat_rate_pct, '%')}</td>
                             <td className="py-2 pr-4 text-right">
                               {row.median_seconds === null || row.median_seconds === undefined
-                                ? <span className="text-gray-400">—</span>
+                                ? <span className="text-muted-foreground/70">—</span>
                                 : (
                                     <span
                                       className={row.single_sitting === false ? 'text-amber-700 dark:text-amber-300' : undefined}
@@ -204,7 +204,7 @@ export default function GamesIndexPage() {
                             </td>
                             <td className="py-2 pr-4 text-right">
                               {row.trend_pct === null
-                                ? <span className="text-gray-400">—</span>
+                                ? <span className="text-muted-foreground/70">—</span>
                                 : (
                                     <span className={row.trend_pct >= 0
                                       ? 'inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400'
@@ -221,7 +221,7 @@ export default function GamesIndexPage() {
                       </tbody>
                     </table>
                     {rows.length === 0 && (
-                      <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <p className="py-6 text-center text-sm text-muted-foreground">
                         No game activity in this window.
                       </p>
                     )}

@@ -147,7 +147,7 @@ export default function PlayersReportPage() {
                   'rounded px-2.5 py-1 text-sm font-medium transition-colors',
                   sortBy === key
                     ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+                    : 'text-muted-foreground hover:bg-muted',
                 )}
               >
                 {label}
@@ -159,7 +159,7 @@ export default function PlayersReportPage() {
 
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
-          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <span className="text-sm text-foreground/80">Filtered to</span>
           <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
         </div>
       )}
@@ -209,7 +209,7 @@ export default function PlayersReportPage() {
                 <CardContent className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+                      <tr className="border-b text-left text-muted-foreground">
                         <th className="py-2 pr-4 font-medium">#</th>
                         <th className="py-2 pr-4 font-medium">Player</th>
                         <th className="py-2 pr-4 text-right font-medium">Played</th>
@@ -220,8 +220,8 @@ export default function PlayersReportPage() {
                     </thead>
                     <tbody>
                       {data.players.map((player, index) => (
-                        <tr key={player.user_id} className="border-b last:border-0 dark:border-slate-700">
-                          <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{index + 1}</td>
+                        <tr key={player.user_id} className="border-b last:border-0">
+                          <td className="py-2 pr-4 text-muted-foreground">{index + 1}</td>
                           <td className="py-2 pr-4 font-medium">
                             {/* The drill-down existed and worked; nothing linked
                                 to it, so the only way in was typing a URL. */}
@@ -255,7 +255,7 @@ export default function PlayersReportPage() {
                     </tbody>
                   </table>
                   {data.players.length === 0 && (
-                    <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <p className="py-6 text-center text-sm text-muted-foreground">
                       {search
                         ? `No player matching "${search}" played in this window.`
                         : 'Nobody played in this window.'}

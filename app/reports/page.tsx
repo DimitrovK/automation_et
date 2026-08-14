@@ -81,7 +81,7 @@ export default function ReportsPage() {
 
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
-          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <span className="text-sm text-foreground/80">Filtered to</span>
           <GameBadge gameKey={game} meta={meta} active onClick={() => update({ game: null })} />
         </div>
       )}
@@ -102,7 +102,7 @@ export default function ReportsPage() {
               ? (
                   <>
                     <PulseTiles pulse={data.pulse} />
-                    <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-center text-xs text-muted-foreground">
                       {selectedLabel ? `${selectedLabel} · ` : ''}
                       compared with the mean of the last
                       {' '}
@@ -114,7 +114,7 @@ export default function ReportsPage() {
                   </>
                 )
               : (
-                  <p className="rounded-md border border-gray-200 bg-gray-50 p-3 text-center text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300">
+                  <p className="rounded-md border border-border bg-muted/50 p-3 text-center text-sm text-muted-foreground">
                     Today's pulse is hidden because this range ends on
                     {' '}
                     {data.end}

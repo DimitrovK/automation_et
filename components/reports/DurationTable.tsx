@@ -35,16 +35,16 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
   const maxMedian = Math.max(...comparable.map(row => row.median_seconds ?? 0), 0);
 
   const renderRows = (rows: typeof data.rows) => rows.map(row => (
-    <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
+    <tr key={row.game_type} className="border-b last:border-0">
       <td className="py-2 pr-4">
         <GameBadge gameKey={row.game_type} meta={meta} />
       </td>
       <td className="py-2 pr-4">
         <div className="flex items-center gap-2">
-          <span className="w-14 text-right font-medium tabular-nums text-gray-900 dark:text-white">
+          <span className="w-14 text-right font-medium tabular-nums text-foreground">
             {formatDuration(row.median_seconds)}
           </span>
-          <div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
+          <div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full"
               style={{
@@ -75,7 +75,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
 
   const longLivedHead = (
     <thead>
-      <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+      <tr className="border-b text-left text-muted-foreground">
         <th className="py-2 pr-4 font-medium">Game</th>
         <th className="py-2 pr-4 font-medium">Median</th>
         <th className="py-2 pr-4 font-medium">Why it's long</th>
@@ -88,27 +88,27 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
   const renderLongLived = (rows: typeof data.rows) => rows.map((row) => {
     const why = longSessionReason(row);
     return (
-      <tr key={row.game_type} className="border-b align-top last:border-0 dark:border-slate-700">
+      <tr key={row.game_type} className="border-b align-top last:border-0">
         <td className="py-2 pr-4">
           <GameBadge gameKey={row.game_type} meta={meta} />
         </td>
-        <td className="py-2 pr-4 font-medium tabular-nums text-gray-900 dark:text-white">
+        <td className="py-2 pr-4 font-medium tabular-nums text-foreground">
           {formatDuration(row.median_seconds)}
         </td>
         <td className="max-w-md py-2 pr-4">
           {why === null
-            ? <span className="text-gray-500 dark:text-gray-400">—</span>
+            ? <span className="text-muted-foreground">—</span>
             : (
                 <>
-                  <span className="font-medium text-gray-900 dark:text-white">{why.label}</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{why.detail}</p>
+                  <span className="font-medium text-foreground">{why.label}</span>
+                  <p className="text-xs text-muted-foreground">{why.detail}</p>
                 </>
               )}
         </td>
         {/* The comparable number, where the headline one isn't: a swept game's
             median is the sweeper's clock, and this is the median among the
             sessions that actually played out. */}
-        <td className="py-2 pr-4 text-right font-medium tabular-nums text-gray-900 dark:text-white">
+        <td className="py-2 pr-4 text-right font-medium tabular-nums text-foreground">
           {why?.playedOut ?? '—'}
         </td>
         <td className="py-2 text-right tabular-nums">{row.measured.toLocaleString()}</td>
@@ -118,7 +118,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
 
   const head = (
     <thead>
-      <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+      <tr className="border-b text-left text-muted-foreground">
         <th className="py-2 pr-4 font-medium">Game</th>
         <th className="py-2 pr-4 font-medium">Median</th>
         <th className="py-2 pr-4 font-medium" title="Where the middle half of sessions sit — p25 to p75, median marked">Middle half</th>
@@ -176,7 +176,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             <tbody>{renderRows(comparable)}</tbody>
           </table>
           {comparable.length === 0 && (
-            <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="py-6 text-center text-sm text-muted-foreground">
               No comparable games in this range.
             </p>
           )}
@@ -210,7 +210,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
       )}
 
       {unsupported.length > 0 && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-muted-foreground">
           No session length available for
           {' '}
           {unsupported.map(row => gameName(meta[row.game_type], row.game_type)).join(' and ')}

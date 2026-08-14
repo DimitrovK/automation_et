@@ -102,7 +102,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
       <CardHeader className="space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <CardTitle>{title}</CardTitle>
-          <div className="flex gap-1 rounded-md border p-0.5 dark:border-slate-700">
+          <div className="flex gap-1 rounded-md border p-0.5">
             {GRANULARITIES.map(option => (
               <button
                 key={option}
@@ -114,7 +114,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
                   'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
                   effective === option
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700/50',
+                    : 'text-muted-foreground hover:bg-muted',
                 )}
               >
                 {option}
@@ -166,9 +166,9 @@ export function ActivityChart({ series, title, description, metric, color, granu
       <CardContent className="grid grid-cols-1 gap-4 pt-0 sm:grid-cols-3">
         {panels.context.map(key => METRIC_OPTIONS.find(option => option.key === key)!).map(option => (
           <div key={option.key} className="space-y-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
+            <p className="text-xs font-medium text-muted-foreground">
               {option.label}
-              <span className="ml-1 font-normal tabular-nums text-gray-400 dark:text-gray-500">
+              <span className="ml-1 font-normal tabular-nums text-muted-foreground/70">
                 {total(data, option.key).toLocaleString()}
               </span>
             </p>

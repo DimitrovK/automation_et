@@ -68,7 +68,7 @@ export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, met
         )}
 
         {!isLoading && !error && rows.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500">No engagement data yet.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">No engagement data yet.</p>
         )}
 
         {!isLoading && !error && rows.length > 0 && (

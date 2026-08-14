@@ -56,7 +56,7 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
         'rounded px-2.5 py-1 text-sm font-medium transition-colors',
         isActive
           ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
-          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+          : 'text-muted-foreground hover:bg-muted',
       )}
     >
       {label}
@@ -110,7 +110,7 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
       >
         <label
           htmlFor="include-bots"
-          className="flex h-8 items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
+          className="flex h-8 items-center gap-2 text-sm text-muted-foreground"
         >
           <Switch
             id="include-bots"
@@ -122,8 +122,8 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
       </FilterGroup>
 
       {open && (
-        <div className="flex w-full basis-full flex-wrap items-end gap-2 rounded-md border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <label htmlFor="range-start" className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
+        <div className="flex w-full basis-full flex-wrap items-end gap-2 rounded-md border bg-card p-3">
+          <label htmlFor="range-start" className="flex flex-col gap-1 text-xs text-muted-foreground">
             From
             <Input
               id="range-start"
@@ -134,7 +134,7 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
               className="h-8 w-40"
             />
           </label>
-          <label htmlFor="range-end" className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
+          <label htmlFor="range-end" className="flex flex-col gap-1 text-xs text-muted-foreground">
             To
             <Input
               id="range-end"
@@ -157,7 +157,7 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
             Apply
           </Button>
           {invalid && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-muted-foreground">
               Pick a start date on or before the end date, and not in the future.
             </span>
           )}

@@ -29,9 +29,9 @@ function Tile({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <Card>
       <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-        {hint && <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
     </Card>
   );
@@ -160,7 +160,7 @@ export default function PlayerDetailPage() {
                 </div>
 
                 {data.totals.games_played === 0 && (
-                  <p className="rounded-md border border-dashed p-6 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-gray-400">
+                  <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
                     This player didn't play anything in the selected range.
                   </p>
                 )}
@@ -212,7 +212,7 @@ export default function PlayerDetailPage() {
                         {data.by_game.map(row => (
                           <div key={row.game_type} className="flex flex-wrap items-center justify-between gap-2">
                             <GameBadge gameKey={row.game_type} meta={meta} />
-                            <span className="text-sm tabular-nums text-gray-600 dark:text-gray-300">
+                            <span className="text-sm tabular-nums text-muted-foreground">
                               {row.games_played.toLocaleString()}
                               {' played · '}
                               {row.completion_pct}

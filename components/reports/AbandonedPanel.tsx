@@ -68,7 +68,7 @@ export function AbandonedPanel({ rows, meta }: { rows: GameTotals[]; meta: GameM
               <span className="min-w-40 flex-1">
                 <GameBadge gameKey={row.game_type} meta={meta} />
               </span>
-              <span className="h-2 w-full max-w-64 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
+              <span className="h-2 w-full max-w-64 overflow-hidden rounded-full bg-muted">
                 <span
                   className="block h-full rounded-full"
                   style={{
@@ -77,16 +77,16 @@ export function AbandonedPanel({ rows, meta }: { rows: GameTotals[]; meta: GameM
                   }}
                 />
               </span>
-              <span className="w-20 text-right font-medium tabular-nums text-gray-900 dark:text-white">
+              <span className="w-20 text-right font-medium tabular-nums text-foreground">
                 {row.abandoned.toLocaleString()}
               </span>
-              <span className="w-14 text-right tabular-nums text-gray-500 dark:text-gray-400">
+              <span className="w-14 text-right tabular-nums text-muted-foreground">
                 {row.share_of_abandoned_pct}
                 %
               </span>
               {/* Context, not ranking: the rate says how hard the pool would be
                   to shrink, the pool says how much there is to win. */}
-              <span className="w-24 text-right tabular-nums text-gray-500 dark:text-gray-400">
+              <span className="w-24 text-right tabular-nums text-muted-foreground">
                 {row.completion_pct === null ? '—' : `${row.completion_pct}% done`}
               </span>
             </li>

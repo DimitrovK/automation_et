@@ -106,7 +106,7 @@ export function ActivityHeatmap({
           <div className="min-w-[520px]">
             <div className="mb-1 flex pl-10">
               {Array.from({ length: 24 }, (_, hour) => (
-                <div key={hour} className="flex-1 text-center text-[10px] text-gray-500 dark:text-gray-400">
+                <div key={hour} className="flex-1 text-center text-[10px] text-muted-foreground">
                   {HOUR_TICKS.includes(hour) ? String(hour).padStart(2, '0') : ''}
                 </div>
               ))}
@@ -114,7 +114,7 @@ export function ActivityHeatmap({
 
             {rows.map(row => (
               <div key={row.weekday} className="mb-0.5 flex items-center">
-                <div className="w-10 shrink-0 pr-1 text-right text-[11px] text-gray-600 dark:text-gray-300">
+                <div className="w-10 shrink-0 pr-1 text-right text-[11px] text-muted-foreground">
                   {row.name.slice(0, 3)}
                 </div>
                 {row.hours.map((value, hour) => {
@@ -148,7 +148,7 @@ export function ActivityHeatmap({
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 dark:text-gray-300">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <span className="min-h-4">
             {hovered
               ? `${hovered.row.name} ${String(hovered.hour).padStart(2, '0')}:00 — ${hovered.row.hours[hovered.hour].toLocaleString()} sessions`
@@ -156,7 +156,7 @@ export function ActivityHeatmap({
           </span>
           <span className="flex flex-wrap items-center gap-1">
             <span className="mr-1">Sessions</span>
-            <span className="size-3 rounded-[2px] border border-gray-300 dark:border-slate-600" />
+            <span className="size-3 rounded-[2px] border border-border" />
             <span className="mr-1">0</span>
             {ramp.map((colour, index) => {
               const low = index === 0 ? 1 : Math.round(BUCKET_EDGES[index - 1] * busiest) + 1;

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
  */
 function heat(pct: number | null): string {
   if (pct === null) {
-    return 'bg-gray-50 text-gray-400 dark:bg-slate-800 dark:text-gray-500';
+    return 'bg-muted/50 text-muted-foreground/70';
   }
   if (pct >= 40) {
     return 'bg-emerald-600 text-white';
@@ -30,7 +30,7 @@ function heat(pct: number | null): string {
   if (pct > 0) {
     return 'bg-emerald-200/50 text-emerald-950';
   }
-  return 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-300';
+  return 'bg-muted text-muted-foreground';
 }
 
 export function RetentionTable({ data }: { data: RetentionResponse }) {
@@ -44,11 +44,11 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
           return (
             <Card key={key}>
               <CardContent className="space-y-1 p-4">
-                <p className="text-sm font-medium uppercase text-gray-600 dark:text-gray-300">{key}</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm font-medium uppercase text-muted-foreground">{key}</p>
+                <p className="text-3xl font-bold text-foreground">
                   {cell?.pct === null || cell === undefined ? '—' : `${cell.pct}%`}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {cell
                     ? `${cell.returned.toLocaleString()} of ${cell.players.toLocaleString()} across ${cell.cohorts_measured} cohorts`
                     : 'not enough history'}
@@ -106,7 +106,7 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+                <tr className="border-b text-left text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Cohort day</th>
                   <th className="py-2 pr-4 text-right font-medium">Players</th>
                   {keys.map(key => (
@@ -119,11 +119,11 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
                   <tr
                     key={cohort.date}
                     className={cn(
-                      'border-b last:border-0 dark:border-slate-700',
+                      'border-b last:border-0',
                       cohort.inflated && 'opacity-60',
                     )}
                   >
-                    <td className="py-1.5 pr-4 font-medium text-gray-900 dark:text-white">
+                    <td className="py-1.5 pr-4 font-medium text-foreground">
                       {cohort.date}
                       {cohort.inflated && (
                         <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-300">
@@ -155,7 +155,7 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-muted-foreground">
             "—" means the cohort hasn't reached that milestone yet, not 0%.
           </p>
         </CardContent>

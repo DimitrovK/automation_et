@@ -53,7 +53,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
       </CardHeader>
       <CardContent className="space-y-5">
         {played.length === 0 && (
-          <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="py-6 text-center text-sm text-muted-foreground">
             No multiplayer rooms in this window.
           </p>
         )}
@@ -71,7 +71,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
             <div key={row.game_type} className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <GameBadge gameKey={row.game_type} meta={meta} />
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   {startedPct === null ? '—' : `${startedPct}% started`}
                   {' · '}
                   {finishedPct === null
@@ -84,10 +84,10 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
                 const width = row.rooms_created > 0 ? (stage.value / row.rooms_created) * 100 : 0;
                 return (
                   <div key={stage.label} className="flex items-center gap-2">
-                    <span className="w-16 shrink-0 text-right text-xs text-gray-500 dark:text-gray-400">
+                    <span className="w-16 shrink-0 text-right text-xs text-muted-foreground">
                       {stage.label}
                     </span>
-                    <div className="h-4 flex-1 rounded-sm bg-gray-100 dark:bg-slate-700">
+                    <div className="h-4 flex-1 rounded-sm bg-muted">
                       <div
                         className="h-4 rounded-sm"
                         style={{ width: `${width}%`, backgroundColor: ramp[index] }}
@@ -98,7 +98,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
                         aria-label={`${stage.label}: ${stage.value} rooms`}
                       />
                     </div>
-                    <span className="w-14 shrink-0 text-xs tabular-nums text-gray-700 dark:text-gray-200">
+                    <span className="w-14 shrink-0 text-xs tabular-nums text-foreground/80">
                       {stage.value.toLocaleString()}
                     </span>
                   </div>

@@ -53,15 +53,15 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
           return (
             <Card key={key}>
               <CardContent className="space-y-1 p-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                <p className="text-3xl font-bold text-foreground">
                   {metric.current.toLocaleString()}
                 </p>
                 <span
                   className={cn(
                     'flex items-center gap-1 text-xs font-medium',
                     pct === null || flat
-                      ? 'text-gray-500 dark:text-gray-400'
+                      ? 'text-muted-foreground'
                       : up
                         ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-red-600 dark:text-red-400',
@@ -74,7 +74,7 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
                         : metric.previous === 0 ? 'no earlier activity' : 'incomplete data')
                     : `${pct > 0 ? '+' : ''}${pct}% vs ${offsetLabel}`}
                 </span>
-                <p className="pt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="pt-1 text-xs text-muted-foreground">
                   {metric.previous.toLocaleString()}
                   {' previously · '}
                   {metric.change > 0 ? '+' : ''}
@@ -86,7 +86,7 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
         })}
       </div>
 
-      <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         {comparison.current.start}
         {' → '}
         {comparison.current.end}

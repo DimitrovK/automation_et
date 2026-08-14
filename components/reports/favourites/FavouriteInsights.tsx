@@ -26,11 +26,11 @@ function BarRow({ row, max }: { row: Row; max: number }) {
   const pct = max > 0 ? Math.round((row.count / max) * 100) : 0;
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="w-28 shrink-0 truncate text-gray-600 dark:text-gray-300">{row.label}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+      <span className="w-28 shrink-0 truncate text-muted-foreground">{row.label}</span>
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
         <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
       </div>
-      <span className="w-8 shrink-0 text-right font-mono text-xs text-gray-500">{row.count}</span>
+      <span className="w-8 shrink-0 text-right font-mono text-xs text-muted-foreground">{row.count}</span>
     </div>
   );
 }
@@ -74,10 +74,10 @@ export function FavouriteInsights({ data, meta }: Props) {
             <Crown className="size-4 text-amber-500" />
             Top #1 picks
           </p>
-          <p className="text-xs text-gray-500">Which game users favourite first.</p>
+          <p className="text-xs text-muted-foreground">Which game users favourite first.</p>
           {firstChoice.length === 0
             ? (
-                <p className="py-4 text-center text-sm text-gray-500">No data yet.</p>
+                <p className="py-4 text-center text-sm text-muted-foreground">No data yet.</p>
               )
             : (
                 <div className="space-y-1.5 pt-1">
@@ -92,7 +92,7 @@ export function FavouriteInsights({ data, meta }: Props) {
 
         <div className="space-y-2">
           <p className="text-sm font-medium">Favourites per user</p>
-          <p className="text-xs text-gray-500">How many games each user favourites.</p>
+          <p className="text-xs text-muted-foreground">How many games each user favourites.</p>
           <div className="space-y-1.5 pt-1">
             {depth.map(d => (
               <BarRow key={d.bucket} row={{ key: d.bucket, label: `${d.bucket} game${d.bucket === '1' ? '' : 's'}`, count: d.count }} max={depthMax} />

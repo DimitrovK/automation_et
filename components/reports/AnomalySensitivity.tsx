@@ -52,7 +52,7 @@ export function AnomalySensitivity({ value, onChange }: {
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-gray-600 dark:text-gray-300">Sensitivity</span>
+      <span className="text-sm text-muted-foreground">Sensitivity</span>
       {(Object.keys(SENSITIVITY_PRESETS) as Sensitivity[]).map((key) => {
         const preset = SENSITIVITY_PRESETS[key];
         return (
@@ -67,7 +67,7 @@ export function AnomalySensitivity({ value, onChange }: {
           </Button>
         );
       })}
-      <span className="text-xs text-gray-500 dark:text-gray-400">
+      <span className="text-xs text-muted-foreground">
         {SENSITIVITY_PRESETS[value].hint}
       </span>
     </div>

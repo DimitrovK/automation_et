@@ -56,7 +56,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
       <CardContent className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+            <tr className="border-b text-left text-muted-foreground">
               <th className="py-2 pr-4 font-medium">Game</th>
               {offsets.map(key => (
                 <th key={key} className="py-2 pr-4 text-right font-medium uppercase">{key}</th>
@@ -75,7 +75,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                 0,
               );
               return (
-                <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
+                <tr key={row.game_type} className="border-b last:border-0">
                   <td className="py-2 pr-4">
                     <GameBadge gameKey={row.game_type} meta={meta} />
                   </td>
@@ -93,7 +93,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                         {pct === null
                           ? (
                               <span
-                                className="text-gray-400 dark:text-gray-500"
+                                className="text-muted-foreground/70"
                                 title={value?.below_threshold
                                   ? `Only ${value.players} players — too few to state a rate`
                                   : 'No cohort has reached this offset yet'}
@@ -114,7 +114,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                       </td>
                     );
                   })}
-                  <td className="py-2 text-right tabular-nums text-gray-500 dark:text-gray-400">
+                  <td className="py-2 text-right tabular-nums text-muted-foreground">
                     {players.toLocaleString()}
                   </td>
                 </tr>
@@ -122,7 +122,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
             })}
           </tbody>
           <tfoot>
-            <tr className="text-gray-500 dark:text-gray-400">
+            <tr className="text-muted-foreground">
               <td className="py-2 pr-4 text-xs">Median across games</td>
               {offsets.map(key => (
                 <td key={key} className="py-2 pr-4 text-right text-xs tabular-nums">
@@ -133,7 +133,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
             </tr>
           </tfoot>
         </table>
-        <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-3 text-xs text-muted-foreground">
           {`A dash means no rate could be stated: either no cohort has reached that offset yet, or the game had fewer than ${data.min_players ?? 20} measurable players — one of three returning is 33%, which beside a game with hundreds reads as a finding rather than as noise.`}
         </p>
       </CardContent>

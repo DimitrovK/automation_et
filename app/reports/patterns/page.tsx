@@ -28,12 +28,12 @@ function Tile({ label, value, hint, metric }: { label: string; value: string; hi
   return (
     <Card>
       <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+        <p className="text-sm font-medium text-muted-foreground">
           {label}
           {metric && <MetricInfo metric={metric} />}
         </p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{hint}</p>
       </CardContent>
     </Card>
   );

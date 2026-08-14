@@ -67,7 +67,7 @@ export default function MultiplayerReportPage() {
       </FilterBar>
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
-          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <span className="text-sm text-foreground/80">Filtered to</span>
           <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
         </div>
       )}
@@ -103,8 +103,8 @@ export default function MultiplayerReportPage() {
                   ].map(tile => (
                     <Card key={tile.label}>
                       <CardContent className="p-4">
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{tile.label}</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-muted-foreground">{tile.label}</p>
+                        <p className="text-3xl font-bold text-foreground">
                           {tile.value.toLocaleString()}
                         </p>
                       </CardContent>
@@ -134,7 +134,7 @@ export default function MultiplayerReportPage() {
                   <CardContent className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
+                        <tr className="border-b text-left text-muted-foreground">
                           <th className="py-2 pr-4 font-medium">Game</th>
                           <th className="py-2 pr-4 text-right font-medium">Created</th>
                           <th className="py-2 pr-4 text-right font-medium">Started</th>
@@ -145,8 +145,8 @@ export default function MultiplayerReportPage() {
                       </thead>
                       <tbody>
                         {data.by_game.map(row => (
-                          <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
-                            <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">
+                          <tr key={row.game_type} className="border-b last:border-0">
+                            <td className="py-2 pr-4 font-medium text-foreground">
                               {gameName(meta[row.game_type], row.game_type)}
                             </td>
                             <td className="py-2 pr-4 text-right">{row.rooms_created.toLocaleString()}</td>
@@ -162,7 +162,7 @@ export default function MultiplayerReportPage() {
                       </tbody>
                     </table>
                     {data.by_game.length === 0 && (
-                      <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <p className="py-6 text-center text-sm text-muted-foreground">
                         No multiplayer rooms in this window.
                       </p>
                     )}

@@ -54,7 +54,7 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
       <CardContent className="space-y-6">
         {modes.length === 0
           ? (
-              <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              <p className="py-6 text-center text-sm text-muted-foreground">
                 No multiplayer rooms in this window.
               </p>
             )
@@ -81,8 +81,8 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
                   {modes.map(mode => (
                     <div key={mode.mode} className="space-y-2">
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{mode.mode}</h4>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <h4 className="text-sm font-semibold text-foreground">{mode.mode}</h4>
+                        <span className="text-xs text-muted-foreground">
                           {mode.rooms_created.toLocaleString()}
                           {' rooms · '}
                           {mode.rooms_started.toLocaleString()}
