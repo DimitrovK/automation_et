@@ -1,3 +1,4 @@
+import type { TeamPlayerRow } from '@/types/team';
 import { Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,26 +10,33 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { TeamPlayerRow } from '@/types/team';
 
 function formatYears(start: number | null, end: number | null): string {
-  if (start === null && end === null) return '—';
-  if (start !== null && end === null) return `${start} – present`;
-  if (start === null && end !== null) return `? – ${end}`;
+  if (start === null && end === null) {
+    return '—';
+  }
+  if (start !== null && end === null) {
+    return `${start} – present`;
+  }
+  if (start === null && end !== null) {
+    return `? – ${end}`;
+  }
   return `${start} – ${end}`;
 }
 
 type Props = {
   players: TeamPlayerRow[];
-  /** Optional handler called with the footballer id when the user
-   *  clicks the row's edit icon. */
+  /**
+   * Optional handler called with the footballer id when the user
+   *  clicks the row's edit icon.
+   */
   onEdit?: (footballerId: number) => void;
 };
 
 export function PlayerTable({ players, onEdit }: Props) {
   if (players.length === 0) {
     return (
-      <div className="rounded-md border p-8 text-center text-sm text-gray-500">
+      <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
         No players match the current filters.
       </div>
     );
@@ -51,10 +59,11 @@ export function PlayerTable({ players, onEdit }: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {players.map((p) => (
+          {players.map(p => (
             <TableRow key={p.id} data-testid={`player-row-${p.id}`}>
-              <TableCell className="text-right font-mono text-xs text-gray-500">
-                #{p.footballer_id}
+              <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                #
+                {p.footballer_id}
               </TableCell>
               <TableCell className="font-medium">
                 {p.full_name}

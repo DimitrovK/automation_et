@@ -243,7 +243,7 @@ export function Navigation({ className }: NavigationProps) {
               'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200',
               hasActiveChild
                 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                : 'hover:bg-gray-100 dark:hover:bg-gray-700/50',
+                : 'hover:bg-muted',
             )}
           >
             <Icon className="size-4 shrink-0" />
@@ -261,7 +261,7 @@ export function Navigation({ className }: NavigationProps) {
 
           {/* Children items (shown when expanded) */}
           {isExpanded && (
-            <div className="ml-3 mt-1 space-y-1 border-l-2 border-gray-300 pl-3 dark:border-gray-600">
+            <div className="ml-3 mt-1 space-y-1 border-l-2 border-border pl-3">
               {page.children.map((child) => {
                 const ChildIcon = child.icon;
                 const isChildActive = child.href === pathname;
@@ -285,7 +285,7 @@ export function Navigation({ className }: NavigationProps) {
                       'flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all duration-200',
                       isChildActive
                         ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/30 text-gray-700 dark:text-gray-300',
+                        : 'hover:bg-muted/50 text-foreground/80',
                     )}
                   >
                     <ChildIcon className="size-3.5 shrink-0" />
@@ -320,7 +320,7 @@ export function Navigation({ className }: NavigationProps) {
           'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200 mb-1',
           isActive
             ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium'
-            : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300',
+            : 'hover:bg-muted text-foreground/80',
         )}
       >
         <Icon className="size-4 shrink-0" />
@@ -343,7 +343,7 @@ export function Navigation({ className }: NavigationProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hidden items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:flex"
+                    className="hidden items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-card/10 hover:text-white sm:flex"
                   >
                     <Menu className="size-4" />
                     <span className="hidden md:inline">
@@ -365,7 +365,7 @@ export function Navigation({ className }: NavigationProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:hidden"
+                className="flex items-center gap-2 border border-white/20 font-medium text-white/90 transition-all duration-300 hover:border-white/30 hover:bg-card/10 hover:text-white sm:hidden"
               >
                 <Menu className="size-5" />
               </Button>
@@ -373,7 +373,7 @@ export function Navigation({ className }: NavigationProps) {
 
             {/* Center - Brand */}
             <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-white/15 p-1.5">
+              <div className="rounded-lg bg-card/15 p-1.5">
                 <Sparkles className="size-4 text-white" />
               </div>
               <div className="hidden md:block">
@@ -417,24 +417,24 @@ export function Navigation({ className }: NavigationProps) {
           />
 
           {/* Mobile Menu Panel */}
-          <div className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] overflow-y-auto bg-white shadow-2xl dark:bg-gray-900 sm:hidden">
+          <div className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] overflow-y-auto bg-card shadow-2xl sm:hidden">
             <div className="p-4">
               {/* Header */}
-              <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+              <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
                     <Sparkles className="size-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-gray-900 dark:text-white">ExtraTime</h2>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Automation</p>
+                    <h2 className="text-base font-bold text-foreground">ExtraTime</h2>
+                    <p className="text-xs text-muted-foreground">Automation</p>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-gray-600 dark:text-gray-400"
+                  className="text-muted-foreground"
                 >
                   ✕
                 </Button>
@@ -446,9 +446,9 @@ export function Navigation({ className }: NavigationProps) {
               </nav>
 
               {/* Theme Toggle in Mobile Menu */}
-              <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+              <div className="mt-6 border-t border-border pt-6">
                 <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</span>
+                  <span className="text-sm font-medium text-foreground/80">Theme</span>
                   <ThemeToggle />
                 </div>
               </div>

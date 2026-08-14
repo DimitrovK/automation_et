@@ -63,7 +63,7 @@ export function ConsoleLogDisplay() {
       case 'api':
         return 'text-blue-600 dark:text-blue-400';
       default:
-        return 'text-gray-700 dark:text-gray-300';
+        return 'text-foreground/80';
     }
   };
 
@@ -132,19 +132,19 @@ export function ConsoleLogDisplay() {
       </CardHeader>
       {isExpanded && (
         <CardContent>
-          <div className="h-96 overflow-y-auto rounded-lg bg-gray-900 p-4 font-mono text-sm">
+          <div className="h-96 overflow-y-auto rounded-lg bg-foreground p-4 font-mono text-sm">
             {logs.length === 0
               ? (
-                  <div className="py-8 text-center text-gray-500">
+                  <div className="py-8 text-center text-muted-foreground">
                     No logs yet. Start uploading to see activity...
                   </div>
                 )
               : (
                   <div className="space-y-2">
                     {logs.map(log => (
-                      <div key={log.id} className="border-l-2 border-gray-700 py-1 pl-3">
+                      <div key={log.id} className="border-l-2 border-border py-1 pl-3">
                         <div className="mb-1 flex items-center gap-2">
-                          <span className="text-xs text-gray-500">{log.timestamp}</span>
+                          <span className="text-xs text-muted-foreground">{log.timestamp}</span>
                           {getLogBadge(log.type)}
                         </div>
                         <div className={`whitespace-pre-wrap break-all ${getLogColor(log.type)}`}>

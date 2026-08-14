@@ -77,7 +77,7 @@ export function ResultsSummary() {
                   {completedResults.length}
                   )
                 </CardTitle>
-                <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                <ChevronDown className="collapse-icon size-5 text-muted-foreground transition-transform duration-200" />
               </CollapsibleTrigger>
               <CardDescription>
                 Players with matching data between database and Wikipedia
@@ -94,7 +94,7 @@ export function ResultsSummary() {
                         {result.footballer.last_name}
                       </div>
                       {result.wikipediaData && result.databaseData && (
-                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="mt-1 text-xs text-muted-foreground">
                           Teams:
                           {' '}
                           {result.databaseData.teams_played_for?.length || 0}
@@ -131,7 +131,7 @@ export function ResultsSummary() {
                   {errorResults.length}
                   )
                 </CardTitle>
-                <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                <ChevronDown className="collapse-icon size-5 text-muted-foreground transition-transform duration-200" />
               </CollapsibleTrigger>
               <CardDescription>
                 Players that could not be processed due to API errors
@@ -171,7 +171,7 @@ export function ResultsSummary() {
                   {careerDiscrepancyResults.length}
                   )
                 </CardTitle>
-                <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                <ChevronDown className="collapse-icon size-5 text-muted-foreground transition-transform duration-200" />
               </CollapsibleTrigger>
               <CardDescription>
                 Comparison between database records and Wikipedia data
@@ -202,7 +202,7 @@ export function ResultsSummary() {
                           </Link>
                         </div>
 
-                        <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="mb-3 text-sm text-muted-foreground">
                           {result.footballer.nation.name}
                           {' \u2022 Born: '}
                           {result.footballer.date_of_birth}
@@ -215,7 +215,7 @@ export function ResultsSummary() {
                             </div>
                             <ul className="space-y-1">
                               {careerIssues.map(discrepancy => (
-                                <li key={discrepancy} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                <li key={discrepancy} className="flex items-start gap-2 text-sm text-foreground/80">
                                   <AlertCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
                                   {discrepancy}
                                 </li>
@@ -229,8 +229,8 @@ export function ResultsSummary() {
                           <div className="mt-3 border-t border-orange-100 pt-3">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
-                                <div className="font-medium text-gray-700 dark:text-gray-300">Database</div>
-                                <div className="text-gray-600 dark:text-gray-400">
+                                <div className="font-medium text-foreground/80">Database</div>
+                                <div className="text-muted-foreground">
                                   Teams:
                                   {' '}
                                   {result.databaseData.teams_played_for?.length || 0}
@@ -247,8 +247,8 @@ export function ResultsSummary() {
                                 </div>
                               </div>
                               <div>
-                                <div className="font-medium text-gray-700 dark:text-gray-300">Wikipedia</div>
-                                <div className="text-gray-600 dark:text-gray-400">
+                                <div className="font-medium text-foreground/80">Wikipedia</div>
+                                <div className="text-muted-foreground">
                                   Teams:
                                   {' '}
                                   {result.wikipediaData.teams?.length || 0}
@@ -294,7 +294,7 @@ export function ResultsSummary() {
                       {resultsWithNationIssues.length !== 1 ? 's' : ''}
                       )
                     </CardTitle>
-                    <ChevronDown className="collapse-icon size-5 text-gray-500 transition-transform duration-200" />
+                    <ChevronDown className="collapse-icon size-5 text-muted-foreground transition-transform duration-200" />
                   </CollapsibleTrigger>
                   <CardDescription>
                     National team data differences between Wikipedia and the database
@@ -343,12 +343,12 @@ export function ResultsSummary() {
                       <div key={result.footballer.id} className="rounded-lg border border-blue-200 p-4 dark:border-blue-700">
                         <div className="mb-3 flex items-center justify-between">
                           <div>
-                            <div className="text-base font-medium text-gray-900 dark:text-white">
+                            <div className="text-base font-medium text-foreground">
                               {result.footballer.first_name}
                               {' '}
                               {result.footballer.last_name}
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <div className="text-sm text-muted-foreground">
                               {result.footballer.nation.name}
                               {' \u2022 '}
                               {pendingComps.length}

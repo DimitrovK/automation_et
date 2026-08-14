@@ -165,11 +165,11 @@ export function PlayerProfileCard({
       <CardContent className="space-y-4">
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <Calendar className="size-4 shrink-0 text-gray-500" />
+            <Calendar className="size-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Age</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Age</p>
               <div className="flex items-center">
-                <p className="text-sm font-medium dark:text-white">
+                <p className="text-sm font-medium">
                   {calculateAge(getDisplayValue('dateOfBirth') as string)}
                   {' '}
                   (
@@ -182,11 +182,11 @@ export function PlayerProfileCard({
           </div>
 
           <div className="flex items-center gap-3">
-            <MapPin className="size-4 shrink-0 text-gray-500" />
+            <MapPin className="size-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Nationality</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Nationality</p>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-medium dark:text-white">{getDisplayValue('nationality')}</p>
+                <p className="text-sm font-medium">{getDisplayValue('nationality')}</p>
                 {renderConflictBadge('nationality')}
                 {!playerData.countryFoundInDB && <AlertTriangle className="size-4 text-amber-500" />}
               </div>
@@ -214,10 +214,10 @@ export function PlayerProfileCard({
           </div>
 
           <div className="flex items-center gap-3">
-            <Users className="size-4 shrink-0 text-gray-500" />
+            <Users className="size-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0">
-              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Position</p>
-              <p className="text-sm font-medium dark:text-white">{playerData.position}</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Position</p>
+              <p className="text-sm font-medium">{playerData.position}</p>
             </div>
           </div>
         </div>

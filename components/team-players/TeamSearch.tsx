@@ -1,5 +1,6 @@
 'use client';
 
+import type { TeamSearchResult } from '@/types/team';
 import { Hash, Loader2, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,14 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { TeamAPI } from '@/lib/team-api';
-import type { TeamSearchResult } from '@/types/team';
 
 type Props = {
-  /** Called when the user picks a team — by autocomplete, Enter on a
-   *  highlighted row, or by submitting the by-ID tab. */
+  /**
+   * Called when the user picks a team — by autocomplete, Enter on a
+   *  highlighted row, or by submitting the by-ID tab.
+   */
   onSelect: (teamId: number) => void;
-  /** Surface a validation error inline (e.g. invalid ID input). The
-   *  parent owns the data-fetch error display. */
+  /**
+   * Surface a validation error inline (e.g. invalid ID input). The
+   *  parent owns the data-fetch error display.
+   */
   onValidationError?: (message: string) => void;
 };
 
@@ -44,7 +48,9 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
   // Guarded with a feature check — jsdom (test env) doesn't implement
   // ``scrollIntoView`` on HTMLElement.
   useEffect(() => {
-    if (highlight < 0 || !listRef.current) return;
+    if (highlight < 0 || !listRef.current) {
+      return;
+    }
     const item = listRef.current.querySelector<HTMLElement>(
       `[data-row-index="${highlight}"]`,
     );
@@ -68,13 +74,19 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
     setOpen(true);
     TeamAPI.searchTeams(query)
       .then((res) => {
-        if (!cancelled) setResults(res);
+        if (!cancelled) {
+          setResults(res);
+        }
       })
       .catch(() => {
-        if (!cancelled) setResults([]);
+        if (!cancelled) {
+          setResults([]);
+        }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -102,11 +114,11 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setHighlight((i) => (i + 1) % results.length);
+        setHighlight(i => (i + 1) % results.length);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setHighlight((i) => (i <= 0 ? results.length - 1 : i - 1));
+        setHighlight(i => (i <= 0 ? results.length - 1 : i - 1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -150,17 +162,21 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
         <Tabs defaultValue="name">
           <TabsList className="mb-3">
             <TabsTrigger value="name">
-              <Search className="mr-1.5 size-3.5" /> By name
+              <Search className="mr-1.5 size-3.5" />
+              {' '}
+              By name
             </TabsTrigger>
             <TabsTrigger value="id">
-              <Hash className="mr-1.5 size-3.5" /> By ID
+              <Hash className="mr-1.5 size-3.5" />
+              {' '}
+              By ID
             </TabsTrigger>
           </TabsList>
 
           {/* ---- By name ------------------------------------------------ */}
           <TabsContent value="name" className="space-y-3">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70" />
               <Input
                 ref={inputRef}
                 role="combobox"
@@ -183,19 +199,19 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
                   setTimeout(() => setOpen(false), 120);
                 }}
                 onKeyDown={handleSearchKeyDown}
-                className="h-11 pl-10 pr-10 text-base shadow-sm focus-visible:ring-emerald-500"
+                className="h-11 px-10 text-base shadow-sm focus-visible:ring-emerald-500"
               />
               {loading && (
                 <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-emerald-500" />
               )}
 
               {showDropdown && (
-                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-card shadow-lg">
                   {loading && results.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-gray-500">Searching…</p>
+                    <p className="px-3 py-2 text-sm text-muted-foreground">Searching…</p>
                   )}
                   {!loading && results.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-gray-500">No teams match that name.</p>
+                    <p className="px-3 py-2 text-sm text-muted-foreground">No teams match that name.</p>
                   )}
                   {results.length > 0 && (
                     <ul
@@ -215,17 +231,20 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
                               role="option"
                               aria-selected={active}
                               onMouseEnter={() => setHighlight(idx)}
-                              onMouseDown={(e) => e.preventDefault()}
+                              onMouseDown={e => e.preventDefault()}
                               onClick={() => pickTeam(team.id)}
                               className={
-                                'flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors '
-                                + (active
-                                  ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100'
-                                  : 'hover:bg-gray-50 dark:hover:bg-slate-800/50')
+                                `flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors ${
+                                  active
+                                    ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100'
+                                    : 'hover:bg-muted/50'}`
                               }
                             >
                               <span className="truncate font-medium">{team.name}</span>
-                              <span className="shrink-0 text-xs text-gray-400">#{team.id}</span>
+                              <span className="shrink-0 text-xs text-muted-foreground/70">
+                                #
+                                {team.id}
+                              </span>
                             </button>
                           </li>
                         );
@@ -241,7 +260,7 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
           <TabsContent value="id" className="space-y-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
-                <Hash className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                <Hash className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70" />
                 <Input
                   aria-label="Team ID"
                   type="number"
@@ -249,8 +268,8 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
                   min={1}
                   placeholder="e.g. 42"
                   value={idInput}
-                  onChange={(e) => setIdInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && submitId()}
+                  onChange={e => setIdInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && submitId()}
                   className="h-11 pl-10 text-base shadow-sm focus-visible:ring-emerald-500"
                 />
               </div>

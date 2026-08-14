@@ -65,7 +65,7 @@ export function CSVUploadForm() {
               <FileText className="size-5 text-emerald-600" />
               <div className="flex-1">
                 <p className="text-sm font-medium">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {(selectedFile.size / 1024).toFixed(2)}
                   {' '}
                   KB
@@ -113,7 +113,7 @@ export function CSVUploadForm() {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 {selectedStatus === 'APPROVED'
                   ? '✓ Questions will be immediately available in the app'
                   : '⚠ Questions will require manual review before appearing'}

@@ -47,7 +47,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function getRoleBadgeClass(role: string): string {
-  return ROLE_COLORS[role] || 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600';
+  return ROLE_COLORS[role] || 'bg-muted text-foreground border-border';
 }
 
 function inferRole(positionName: string): string {
@@ -85,7 +85,7 @@ const STATUS_BADGES: Record<SyncStatus, { label: string; className: string }> = 
   'synced': { label: 'Synced', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' },
   'mismatch': { label: 'Mismatch', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' },
   'new-player': { label: 'New Player', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
-  'no-data': { label: 'No Data', className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
+  'no-data': { label: 'No Data', className: 'bg-muted text-foreground' },
 };
 
 export function PositionCard({
@@ -290,7 +290,7 @@ export function PositionCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MapPin className="size-5 text-gray-600 dark:text-gray-400" />
+            <MapPin className="size-5 text-muted-foreground" />
             <div>
               <CardTitle className="text-lg">Positions</CardTitle>
               <CardDescription>
@@ -307,7 +307,7 @@ export function PositionCard({
                 checked={positionsEnabled}
                 onCheckedChange={setPositionsEnabled}
               />
-              <Label htmlFor="positions-enabled" className="cursor-pointer text-xs text-gray-500 dark:text-gray-400">
+              <Label htmlFor="positions-enabled" className="cursor-pointer text-xs text-muted-foreground">
                 {positionsEnabled ? 'Active' : 'Disabled'}
               </Label>
             </div>
@@ -322,7 +322,7 @@ export function PositionCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {!positionsEnabled && (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+          <div className="rounded-lg border border-dashed border-border bg-muted/50 py-4 text-center text-sm text-muted-foreground">
             Position management is disabled. Toggle the switch above to include positions in deployment.
           </div>
         )}
@@ -362,7 +362,7 @@ export function PositionCard({
               <TabsContent value="selected" className="space-y-4 pt-2">
                 {selectedPositions.length === 0
                   ? (
-                      <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <div className="py-6 text-center text-sm text-muted-foreground">
                         No positions selected. Go to &quot;All Positions&quot; tab to add some.
                       </div>
                     )
@@ -371,7 +371,7 @@ export function PositionCard({
                         {selectedPositions.map(pos => (
                           <div
                             key={pos.position_id}
-                            className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                            className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
                           >
                             <div className="flex items-center gap-3">
                               <Badge className={`border ${getRoleBadgeClass(pos.role)}`}>
@@ -395,7 +395,7 @@ export function PositionCard({
                               {!pos.is_primary && (
                                 <button
                                   onClick={() => setPrimary(pos.position_id)}
-                                  className="rounded p-1 text-xs text-gray-500 transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
+                                  className="rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-300"
                                   title="Set as primary"
                                   aria-label={`Set ${pos.full_name} as primary`}
                                 >
@@ -404,7 +404,7 @@ export function PositionCard({
                               )}
                               <button
                                 onClick={() => removePosition(pos.position_id)}
-                                className="rounded p-1 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                                className="rounded p-1 text-muted-foreground/70 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                                 title="Remove"
                                 aria-label={`Remove ${pos.full_name}`}
                               >
@@ -459,8 +459,8 @@ export function PositionCard({
                 {loadingPositions
                   ? (
                       <div className="flex items-center justify-center py-6">
-                        <Loader2 className="size-5 animate-spin text-gray-400" />
-                        <span className="ml-2 text-sm text-gray-500">Loading positions...</span>
+                        <Loader2 className="size-5 animate-spin text-muted-foreground/70" />
+                        <span className="ml-2 text-sm text-muted-foreground">Loading positions...</span>
                       </div>
                     )
                   : (
@@ -472,7 +472,7 @@ export function PositionCard({
 
                         return (
                           <div key={role}>
-                            <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            <h4 className="mb-2 text-sm font-semibold text-foreground/80">
                               {label}
                             </h4>
                             <div className="flex flex-wrap gap-2">
@@ -485,7 +485,7 @@ export function PositionCard({
                                     className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${
                                       isSelected
                                         ? `${getRoleBadgeClass(pos.role)} ring-2 ring-emerald-500 ring-offset-1 dark:ring-offset-gray-900`
-                                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+                                        : 'border-border bg-card text-foreground/80 hover:border-border hover:bg-muted/50'
                                     }`}
                                     title={isSelected ? `Remove ${pos.full_name}` : `Add ${pos.full_name}`}
                                   >
@@ -494,7 +494,7 @@ export function PositionCard({
                                           <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                                         )
                                       : (
-                                          <Plus className="size-3.5 text-gray-400" />
+                                          <Plus className="size-3.5 text-muted-foreground/70" />
                                         )}
                                     <span>{pos.name}</span>
                                     <span className="hidden text-xs opacity-60 sm:inline">{pos.full_name}</span>

@@ -513,14 +513,14 @@ ${JSON.stringify(data, null, 2)}`;
 
                   {isExistingPlayer && !hasChanges
                     ? (
-                        <div className="rounded-lg border bg-gray-50 py-8 text-center text-gray-500 dark:bg-slate-800">
+                        <div className="rounded-lg border bg-muted/50 py-8 text-center text-muted-foreground">
                           <p className="text-sm">No changes detected - API call not needed</p>
                         </div>
                       )
                     : (
                         <ScrollArea className="h-64 w-full rounded-lg border">
-                          <div className="bg-gray-100 p-3 dark:bg-slate-700 sm:p-4">
-                            <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                          <div className="bg-muted p-3 sm:p-4">
+                            <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                               <code>
                                 {showAsHttpRequest
                                   ? generateHttpRequest(footballerEndpoint, footballerMethod, footballerJson)
@@ -634,7 +634,7 @@ ${JSON.stringify(data, null, 2)}`;
                                     {deleteOp.position}
                                     )
                                   </p>
-                                  <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                  <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                                     <code>
                                       {showAsHttpRequest
                                         ? generateHttpRequest(`/data/footballer-teams/${deleteOp.id}/`, 'DELETE', { reason: 'Team mismatch or extra team in database', position: deleteOp.position, team_name: deleteOp.teamName })
@@ -671,7 +671,7 @@ ${JSON.stringify(data, null, 2)}`;
                                     {update.position}
                                     )
                                   </p>
-                                  <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                  <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                                     <code>
                                       {showAsHttpRequest
                                         ? generateHttpRequest(`/data/footballer-teams/${update.id}/`, 'PUT', update.changes)
@@ -706,7 +706,7 @@ ${JSON.stringify(data, null, 2)}`;
                                     {create.position}
                                     )
                                   </p>
-                                  <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                  <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                                     <code>
                                       {showAsHttpRequest
                                         ? generateHttpRequest('/data/footballer-teams/', 'POST', create.teamData)
@@ -721,7 +721,7 @@ ${JSON.stringify(data, null, 2)}`;
                       )}
 
                       {!hasTeamChanges && (
-                        <div className="rounded-lg border bg-gray-50 py-8 text-center text-gray-500 dark:bg-slate-800">
+                        <div className="rounded-lg border bg-muted/50 py-8 text-center text-muted-foreground">
                           <p className="text-sm">No team changes detected</p>
                         </div>
                       )}
@@ -731,8 +731,8 @@ ${JSON.stringify(data, null, 2)}`;
                     footballerTeamsJson.length > 0
                       ? (
                           <ScrollArea className="h-64 w-full rounded-lg border">
-                            <div className="bg-gray-100 p-3 dark:bg-slate-700 sm:p-4">
-                              <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                            <div className="bg-muted p-3 sm:p-4">
+                              <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                                 <code>
                                   {showAsHttpRequest
                                     ? generateHttpRequest('/data/footballer-teams/', 'POST', footballerTeamsJson)
@@ -743,7 +743,7 @@ ${JSON.stringify(data, null, 2)}`;
                           </ScrollArea>
                         )
                       : (
-                          <div className="rounded-lg border py-8 text-center text-gray-500">
+                          <div className="rounded-lg border py-8 text-center text-muted-foreground">
                             <p>No teams found in database to create records for</p>
                           </div>
                         )
@@ -808,7 +808,7 @@ ${JSON.stringify(data, null, 2)}`;
                                   {' '}
                                   {update.nationName}
                                 </p>
-                                <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                                   <code>
                                     {showAsHttpRequest
                                       ? generateHttpRequest(`/data/footballer-nations/${update.id}/`, 'PUT', update.changes)
@@ -838,7 +838,7 @@ ${JSON.stringify(data, null, 2)}`;
                                   {' '}
                                   {create.nationName}
                                 </p>
-                                <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                                <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                                   <code>
                                     {showAsHttpRequest
                                       ? generateHttpRequest('/data/footballer-nations/', 'POST', create.nationData)
@@ -853,7 +853,7 @@ ${JSON.stringify(data, null, 2)}`;
                     )}
 
                     {!hasNationChanges && (
-                      <div className="rounded-lg border bg-gray-50 py-8 text-center text-gray-500 dark:bg-slate-800">
+                      <div className="rounded-lg border bg-muted/50 py-8 text-center text-muted-foreground">
                         <p className="text-sm">No nation changes detected</p>
                       </div>
                     )}
@@ -907,7 +907,7 @@ ${JSON.stringify(data, null, 2)}`;
                             <p className="mb-1 break-all text-[10px] font-medium text-purple-800 dark:text-purple-300 sm:text-xs">
                               POST /data/footballer-positions/set-positions/
                             </p>
-                            <pre className="overflow-x-auto font-mono text-[10px] text-gray-700 dark:text-gray-300 sm:text-xs">
+                            <pre className="overflow-x-auto font-mono text-[10px] text-foreground/80 sm:text-xs">
                               <code>
                                 {showAsHttpRequest
                                   ? generateHttpRequest('/data/footballer-positions/set-positions/', 'POST', getPositionOps.positionsPayload)
@@ -930,7 +930,7 @@ ${JSON.stringify(data, null, 2)}`;
                       </ScrollArea>
                     </div>
                   ) : (
-                    <div className="rounded-lg border bg-gray-50 py-8 text-center text-gray-500 dark:bg-slate-800">
+                    <div className="rounded-lg border bg-muted/50 py-8 text-center text-muted-foreground">
                       <p className="text-sm">No position changes detected</p>
                     </div>
                   )}
@@ -977,7 +977,7 @@ ${JSON.stringify(data, null, 2)}`;
                             {' '}
                             Footballer
                             {isExistingPlayer && (
-                              <span className="ml-2 text-sm text-gray-600">
+                              <span className="ml-2 text-sm text-muted-foreground">
                                 (
                                 {footballerMethod}
                                 {' '}
@@ -986,8 +986,8 @@ ${JSON.stringify(data, null, 2)}`;
                               </span>
                             )}
                           </h4>
-                          <div className="overflow-x-auto rounded-lg bg-gray-100 p-3 dark:bg-slate-700">
-                            <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                          <div className="overflow-x-auto rounded-lg bg-muted p-3">
+                            <pre className="font-mono text-xs text-foreground/80">
                               <code>{JSON.stringify(footballerJson, null, 2)}</code>
                             </pre>
                           </div>
@@ -997,13 +997,13 @@ ${JSON.stringify(data, null, 2)}`;
                             <h4 className="mb-2 font-medium">2. Create Team Records</h4>
                             {footballerTeamsJson.map((team, index) => (
                               <div key={index} className="mb-3">
-                                <p className="mb-1 text-sm text-gray-600">
+                                <p className="mb-1 text-sm text-muted-foreground">
                                   Team
                                   {index + 1}
                                   :
                                 </p>
-                                <div className="overflow-x-auto rounded-lg bg-gray-100 p-3 dark:bg-slate-700">
-                                  <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                <div className="overflow-x-auto rounded-lg bg-muted p-3">
+                                  <pre className="font-mono text-xs text-foreground/80">
                                     <code>{JSON.stringify(team, null, 2)}</code>
                                   </pre>
                                 </div>
@@ -1025,7 +1025,7 @@ ${JSON.stringify(data, null, 2)}`;
                                 </p>
                                 {getTeamChanges.deletes.map((deleteOp, index) => (
                                   <div key={index} className="mb-3">
-                                    <p className="mb-1 text-sm text-gray-600">
+                                    <p className="mb-1 text-sm text-muted-foreground">
                                       DELETE /data/footballer-teams/
                                       {deleteOp.id}
                                       / -
@@ -1038,7 +1038,7 @@ ${JSON.stringify(data, null, 2)}`;
                                       )
                                     </p>
                                     <div className="overflow-x-auto rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
-                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                      <pre className="font-mono text-xs text-foreground/80">
                                         <code>{JSON.stringify({ reason: 'Team mismatch or extra team in database', position: deleteOp.position, team_name: deleteOp.teamName }, null, 2)}</code>
                                       </pre>
                                     </div>
@@ -1056,7 +1056,7 @@ ${JSON.stringify(data, null, 2)}`;
                                 </p>
                                 {getTeamChanges.updates.map((update, index) => (
                                   <div key={index} className="mb-3">
-                                    <p className="mb-1 text-sm text-gray-600">
+                                    <p className="mb-1 text-sm text-muted-foreground">
                                       PUT /data/footballer-teams/
                                       {update.id}
                                       / -
@@ -1069,7 +1069,7 @@ ${JSON.stringify(data, null, 2)}`;
                                       )
                                     </p>
                                     <div className="overflow-x-auto rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                      <pre className="font-mono text-xs text-foreground/80">
                                         <code>{JSON.stringify(update.changes, null, 2)}</code>
                                       </pre>
                                     </div>
@@ -1087,7 +1087,7 @@ ${JSON.stringify(data, null, 2)}`;
                                 </p>
                                 {getTeamChanges.creates.map((create, index) => (
                                   <div key={index} className="mb-3">
-                                    <p className="mb-1 text-sm text-gray-600">
+                                    <p className="mb-1 text-sm text-muted-foreground">
                                       POST /data/footballer-teams/ -
                                       {' '}
                                       {create.teamName}
@@ -1098,7 +1098,7 @@ ${JSON.stringify(data, null, 2)}`;
                                       )
                                     </p>
                                     <div className="overflow-x-auto rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                      <pre className="font-mono text-xs text-foreground/80">
                                         <code>{JSON.stringify(create.teamData, null, 2)}</code>
                                       </pre>
                                     </div>
@@ -1127,7 +1127,7 @@ ${JSON.stringify(data, null, 2)}`;
                                 </p>
                                 {getNationChanges.updates.map((update, index) => (
                                   <div key={index} className="mb-3">
-                                    <p className="mb-1 text-sm text-gray-600">
+                                    <p className="mb-1 text-sm text-muted-foreground">
                                       PUT /data/footballer-nations/
                                       {update.id}
                                       / -
@@ -1135,7 +1135,7 @@ ${JSON.stringify(data, null, 2)}`;
                                       {update.nationName}
                                     </p>
                                     <div className="overflow-x-auto rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                      <pre className="font-mono text-xs text-foreground/80">
                                         <code>{JSON.stringify(update.changes, null, 2)}</code>
                                       </pre>
                                     </div>
@@ -1153,13 +1153,13 @@ ${JSON.stringify(data, null, 2)}`;
                                 </p>
                                 {getNationChanges.creates.map((create, index) => (
                                   <div key={index} className="mb-3">
-                                    <p className="mb-1 text-sm text-gray-600">
+                                    <p className="mb-1 text-sm text-muted-foreground">
                                       POST /data/footballer-nations/ -
                                       {' '}
                                       {create.nationName}
                                     </p>
                                     <div className="overflow-x-auto rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                                      <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                      <pre className="font-mono text-xs text-foreground/80">
                                         <code>{JSON.stringify(create.nationData, null, 2)}</code>
                                       </pre>
                                     </div>
@@ -1188,11 +1188,11 @@ ${JSON.stringify(data, null, 2)}`;
                               {isExistingPlayer ? 'Sync Positions' : 'Set Positions'}
                             </h4>
                             <div className="mb-3">
-                              <p className="mb-1 text-sm text-gray-600">
+                              <p className="mb-1 text-sm text-muted-foreground">
                                 POST /data/footballer-positions/set-positions/
                               </p>
                               <div className="overflow-x-auto rounded-lg bg-purple-50 p-3 dark:bg-purple-900/20">
-                                <pre className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                <pre className="font-mono text-xs text-foreground/80">
                                   <code>{JSON.stringify(getPositionOps.positionsPayload, null, 2)}</code>
                                 </pre>
                               </div>

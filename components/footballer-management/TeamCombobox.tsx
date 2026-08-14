@@ -1,5 +1,6 @@
 'use client';
 
+import type { TeamSearchResult } from '@/types/team';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { TeamAPI } from '@/lib/team-api';
 import { cn } from '@/lib/utils';
-import type { TeamSearchResult } from '@/types/team';
 
 type Props = {
   value: { id: number; name: string } | null;
@@ -44,7 +44,9 @@ export function TeamCombobox({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     const q = debouncedQuery.trim();
     if (q.length < 2) {
       setResults([]);
@@ -55,13 +57,19 @@ export function TeamCombobox({
     setLoading(true);
     TeamAPI.searchTeams(q)
       .then((res) => {
-        if (!cancelled) setResults(res);
+        if (!cancelled) {
+          setResults(res);
+        }
       })
       .catch(() => {
-        if (!cancelled) setResults([]);
+        if (!cancelled) {
+          setResults([]);
+        }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -83,11 +91,13 @@ export function TeamCombobox({
             !value && 'text-muted-foreground',
           )}
         >
-          {value ? (
-            <span className="truncate">{value.name}</span>
-          ) : (
-            <span className="truncate">{placeholder}</span>
-          )}
+          {value
+            ? (
+                <span className="truncate">{value.name}</span>
+              )
+            : (
+                <span className="truncate">{placeholder}</span>
+              )}
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -100,8 +110,10 @@ export function TeamCombobox({
           />
           <CommandList>
             {loading && (
-              <div className="flex items-center gap-2 px-3 py-4 text-sm text-gray-500">
-                <Loader2 className="size-4 animate-spin" /> Searching…
+              <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                {' '}
+                Searching…
               </div>
             )}
             {!loading && query.trim().length >= 2 && results.length === 0 && (
@@ -109,7 +121,7 @@ export function TeamCombobox({
             )}
             {!loading && results.length > 0 && (
               <CommandGroup>
-                {results.map((t) => (
+                {results.map(t => (
                   <CommandItem
                     key={t.id}
                     value={`${t.name}-${t.id}`}
@@ -126,7 +138,10 @@ export function TeamCombobox({
                       )}
                     />
                     <span className="flex-1 truncate">{t.name}</span>
-                    <span className="ml-2 text-xs text-gray-400">#{t.id}</span>
+                    <span className="ml-2 text-xs text-muted-foreground/70">
+                      #
+                      {t.id}
+                    </span>
                   </CommandItem>
                 ))}
               </CommandGroup>

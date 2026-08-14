@@ -796,7 +796,7 @@ export function CareerLookupPlayerConfiguration({
           {/* Left Column - Player Information */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Player Information</h3>
+              <h3 className="text-lg font-semibold text-foreground">Player Information</h3>
               <Button
                 variant="outline"
                 size="sm"
@@ -831,7 +831,7 @@ export function CareerLookupPlayerConfiguration({
                   <SelectItem value="AWAITING_CHANGE_CHECK">Awaiting Change Check</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500 dark:text-gray-400">The approval status of this footballer record</p>
+              <p className="text-xs text-muted-foreground">The approval status of this footballer record</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -844,7 +844,7 @@ export function CareerLookupPlayerConfiguration({
                   value={playerConfig.firstName}
                   onChange={e => setPlayerConfig(prev => ({ ...prev, firstName: e.target.value }))}
                   disabled={!isEditingNames}
-                  className={`${!isEditingNames ? 'cursor-not-allowed bg-gray-50 dark:bg-slate-600' : ''}`}
+                  className={`${!isEditingNames ? 'cursor-not-allowed bg-muted/50' : ''}`}
                 />
               </div>
               <div className="space-y-2">
@@ -856,7 +856,7 @@ export function CareerLookupPlayerConfiguration({
                   value={playerConfig.lastName}
                   onChange={e => setPlayerConfig(prev => ({ ...prev, lastName: e.target.value }))}
                   disabled={!isEditingNames}
-                  className={`${!isEditingNames ? 'cursor-not-allowed bg-gray-50 dark:bg-slate-600' : ''}`}
+                  className={`${!isEditingNames ? 'cursor-not-allowed bg-muted/50' : ''}`}
                 />
               </div>
               <div className="space-y-2">
@@ -869,7 +869,7 @@ export function CareerLookupPlayerConfiguration({
                   value={playerConfig.dateOfBirth}
                   onChange={e => setPlayerConfig(prev => ({ ...prev, dateOfBirth: e.target.value }))}
                   disabled={!isEditingNames}
-                  className={`${!isEditingNames ? 'cursor-not-allowed bg-gray-50 dark:bg-slate-600' : ''}`}
+                  className={`${!isEditingNames ? 'cursor-not-allowed bg-muted/50' : ''}`}
                 />
               </div>
               <div className="space-y-2">
@@ -881,7 +881,7 @@ export function CareerLookupPlayerConfiguration({
                   value={playerConfig.nationality}
                   onChange={e => setPlayerConfig(prev => ({ ...prev, nationality: e.target.value }))}
                   disabled={!isEditingNames}
-                  className={`${!isEditingNames ? 'cursor-not-allowed bg-gray-50 dark:bg-slate-600' : ''}`}
+                  className={`${!isEditingNames ? 'cursor-not-allowed bg-muted/50' : ''}`}
                 />
               </div>
             </div>
@@ -897,13 +897,13 @@ export function CareerLookupPlayerConfiguration({
                 value={playerConfig.wikipediaUrl}
                 onChange={e => setPlayerConfig(prev => ({ ...prev, wikipediaUrl: e.target.value }))}
                 disabled={!isEditingNames}
-                className={`${!isEditingNames ? 'cursor-not-allowed bg-gray-50 dark:bg-slate-600' : ''}`}
+                className={`${!isEditingNames ? 'cursor-not-allowed bg-muted/50' : ''}`}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 Optional: Link to the player's Wikipedia page
               </p>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               Player information is automatically loaded from the search results. Click "Edit" to modify any field.
             </p>
           </div>
@@ -911,7 +911,7 @@ export function CareerLookupPlayerConfiguration({
           {/* Right Column - Player Settings */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Player Settings</h3>
+              <h3 className="text-lg font-semibold text-foreground">Player Settings</h3>
               {playerData?.playerFoundInDB && dbPlayerInfo && (
                 <Badge variant="secondary" className="border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                   Pre-loaded from DB
@@ -935,7 +935,7 @@ export function CareerLookupPlayerConfiguration({
                   Show date of birth in search results
                 </Label>
               </div>
-              <p className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              <p className="ml-6 text-xs text-muted-foreground">
                 Whether to display the year of birth in search results
               </p>
             </div>
@@ -956,7 +956,7 @@ export function CareerLookupPlayerConfiguration({
                   Player is retired
                 </Label>
               </div>
-              <p className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              <p className="ml-6 text-xs text-muted-foreground">
                 Indicates whether the footballer has retired from professional football
               </p>
             </div>
@@ -976,7 +976,7 @@ export function CareerLookupPlayerConfiguration({
                   Is a Player
                 </Label>
               </div>
-              <p className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              <p className="ml-6 text-xs text-muted-foreground">
                 Indicates whether this person has played as a footballer
               </p>
             </div>
@@ -996,7 +996,7 @@ export function CareerLookupPlayerConfiguration({
                   Is a Manager
                 </Label>
               </div>
-              <p className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              <p className="ml-6 text-xs text-muted-foreground">
                 Indicates whether this person has managed as a football manager/coach
               </p>
             </div>
@@ -1016,7 +1016,7 @@ export function CareerLookupPlayerConfiguration({
                   Information might change
                 </Label>
               </div>
-              <p className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              <p className="ml-6 text-xs text-muted-foreground">
                 Indicates if the player information might need revisions in the future
               </p>
             </div>
@@ -1037,7 +1037,7 @@ export function CareerLookupPlayerConfiguration({
                   Available for CareerPath game
                 </Label>
               </div>
-              <p className="ml-6 text-xs text-gray-500 dark:text-gray-400">
+              <p className="ml-6 text-xs text-muted-foreground">
                 Whether the footballer is available in the CareerPath game
               </p>
             </div>
@@ -1064,7 +1064,7 @@ export function CareerLookupPlayerConfiguration({
                   <SelectItem value="EXTREME">Extreme</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500 dark:text-gray-400">The difficulty level of this footballer in CareerPath</p>
+              <p className="text-xs text-muted-foreground">The difficulty level of this footballer in CareerPath</p>
             </div>
           </div>
         </div>
@@ -1140,7 +1140,7 @@ export function CareerLookupPlayerConfiguration({
                             </p>
                           )
                         : (
-                            <p className="text-center text-sm font-medium text-gray-600">
+                            <p className="text-center text-sm font-medium text-muted-foreground">
                               ✅ Player data matches database - No updates needed
                               {chosenDataSource === 'wikipedia' && ' (including team records)'}
                             </p>
@@ -1182,7 +1182,7 @@ export function CareerLookupPlayerConfiguration({
                 Load Player with New Info
               </Button>
             </div>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-center text-sm text-muted-foreground">
               Reload the player data to see the updated information from the database
             </p>
           </div>

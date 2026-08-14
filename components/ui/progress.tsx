@@ -8,7 +8,7 @@ const Progress = ({ ref, className, value, ...props }: React.ComponentPropsWitho
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      'relative h-4 w-full overflow-hidden rounded-full bg-gray-800', // graphite track
+      'relative h-4 w-full overflow-hidden rounded-full bg-muted', // graphite track
       className,
     )}
     {...props}

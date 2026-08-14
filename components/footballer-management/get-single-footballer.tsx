@@ -27,7 +27,7 @@ export function GetSingleFootballer({
   return (
     <div>
       <h4 className="mb-2 text-sm font-medium">Get Single Footballer</h4>
-      <p className="mb-3 text-xs text-gray-500">
+      <p className="mb-3 text-xs text-muted-foreground">
         Retrieve detailed information for a specific footballer by their unique ID.
       </p>
       <div className="flex flex-wrap items-center gap-2">

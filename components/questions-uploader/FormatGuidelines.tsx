@@ -34,7 +34,7 @@ export function FormatGuidelines() {
           <div className="space-y-3 text-sm">
             <div>
               <p className="mb-2 font-medium">Required Columns (in order):</p>
-              <ul className="list-inside list-disc space-y-1 text-gray-600 dark:text-gray-400">
+              <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                 <li>
                   <code>Questions</code>
                   {' '}
@@ -94,7 +94,7 @@ export function FormatGuidelines() {
             </div>
             <div>
               <p className="mb-2 font-medium">Format Example:</p>
-              <div className="overflow-x-auto rounded bg-gray-50 p-2 text-xs dark:bg-gray-800">
+              <div className="overflow-x-auto rounded bg-muted/50 p-2 text-xs">
                 <code>
                   Questions,Difficulty,A,B,C,D,Correct answer,Country,Player,Team,Uplouded
                   <br />
@@ -104,7 +104,7 @@ export function FormatGuidelines() {
             </div>
             <div>
               <p className="mb-2 font-medium">Tips:</p>
-              <ul className="list-inside list-disc space-y-1 text-gray-600 dark:text-gray-400">
+              <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                 <li>Use commas to separate columns</li>
                 <li>Wrap text containing commas in double quotes</li>
                 <li>First row must contain column headers exactly as shown above</li>

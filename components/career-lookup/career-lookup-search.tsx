@@ -63,9 +63,9 @@ export function CareerLookupSearch({
                 checked={searchMode === 'wikipedia_url'}
                 onCheckedChange={checked => onSearchModeChange(checked ? 'wikipedia_url' : 'name')}
                 aria-label="Toggle search mode"
-                className="data-[state=unchecked]:bg-gray-200 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600 dark:data-[state=unchecked]:bg-gray-700"
+                className="data-[state=unchecked]:bg-muted data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600"
               />
-              <span className={`text-sm font-medium ${searchMode === 'wikipedia_url' ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
+              <span className={`text-sm font-medium ${searchMode === 'wikipedia_url' ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'}`}>
                 Wikipedia URL
               </span>
             </div>

@@ -95,7 +95,7 @@ export function UploadButton() {
       </div>
 
       {isUploading && (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           You can stop the upload at any time to review progress
         </p>
       )}

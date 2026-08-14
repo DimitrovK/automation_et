@@ -75,11 +75,11 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
                 <button
                   type="button"
                   onClick={() => togglePlayerExpanded(footballer.id)}
-                  className="shrink-0 rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="shrink-0 rounded p-1 transition-colors hover:bg-muted"
                 >
                   {isExpanded
-                    ? <ChevronDown className="size-4 text-gray-500" />
-                    : <ChevronRight className="size-4 text-gray-500" />}
+                    ? <ChevronDown className="size-4 text-muted-foreground" />
+                    : <ChevronRight className="size-4 text-muted-foreground" />}
                 </button>
               )
             : <div className="w-6 shrink-0" />}
@@ -96,12 +96,12 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
 
           {/* Player Name and Basic Info */}
           <div className="min-w-0 flex-1">
-            <div className="truncate text-base font-medium text-gray-900 dark:text-white">
+            <div className="truncate text-base font-medium text-foreground">
               {footballer.first_name}
               {' '}
               {footballer.last_name}
             </div>
-            <div className="truncate text-sm text-gray-500 dark:text-gray-400">
+            <div className="truncate text-sm text-muted-foreground">
               {footballer.nation.name}
               {' \u2022 Born: '}
               {footballer.date_of_birth}
@@ -146,7 +146,7 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
 
       {/* Expanded View - Only show when expanded */}
       {isExpanded && (
-        <div className="border-t border-gray-200 dark:border-gray-700">
+        <div className="border-t border-border">
           {/* Discrepancy Details — career issues only */}
           {careerDiscrepancies.length > 0 && (
             <DiscrepancyDetails discrepancies={careerDiscrepancies} footballerId={footballer.id} />
@@ -162,7 +162,7 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
           {/* No International Career indicator */}
           {result && result.hasNoInternationalCareer && (
             <div className="px-4 pb-2">
-              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-700/40 dark:text-gray-400">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
                 <ShieldOff className="size-4" />
                 No international career recorded on Wikipedia
               </div>
@@ -182,13 +182,13 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
 function DiscrepancyDetails({ discrepancies, footballerId }: { discrepancies: string[]; footballerId: number }) {
   return (
     <div className="p-4">
-      <Card className="border-2 border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+      <Card className="border-2 border-border bg-card shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
             <AlertTriangle className="size-5 text-orange-600" />
             Data Discrepancies Detected
           </CardTitle>
-          <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+          <CardDescription className="text-sm text-muted-foreground">
             {discrepancies.length}
             {' '}
             issue
@@ -202,7 +202,7 @@ function DiscrepancyDetails({ discrepancies, footballerId }: { discrepancies: st
             {discrepancies.slice(0, 3).map(discrepancy => (
               <div
                 key={discrepancy}
-                className="flex items-start gap-3 rounded-lg border border-orange-300/60 bg-white/80 p-3 shadow-sm dark:border-orange-600/40 dark:bg-gray-900/40"
+                className="flex items-start gap-3 rounded-lg border border-orange-300/60 bg-card/80 p-3 shadow-sm dark:border-orange-600/40"
               >
                 <div className="mt-2.5 size-2 shrink-0 rounded-full bg-orange-600"></div>
                 <span className="text-sm font-medium leading-relaxed text-orange-900 dark:text-orange-100">

@@ -45,7 +45,7 @@ export function BetaBadges({ user, max = 3 }: { user: HubUser; max?: number }) {
         <Badge key={f} variant="outline" className="text-xs">{f}</Badge>
       ))}
       {extra > 0 && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           +
           {extra}
         </span>
@@ -57,7 +57,7 @@ export function BetaBadges({ user, max = 3 }: { user: HubUser; max?: number }) {
 /** Favourite-game chips (slugs prettified), capped with a +N overflow. */
 export function FavouriteGamesBadges({ games, max = 3 }: { games: string[]; max?: number }) {
   if (!games || games.length === 0) {
-    return <span className="text-xs text-gray-400">—</span>;
+    return <span className="text-xs text-muted-foreground/70">—</span>;
   }
   const shown = games.slice(0, max);
   const extra = games.length - shown.length;
@@ -67,7 +67,7 @@ export function FavouriteGamesBadges({ games, max = 3 }: { games: string[]; max?
         <Badge key={g} variant="outline" className="text-xs">{prettySlug(g)}</Badge>
       ))}
       {extra > 0 && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           +
           {extra}
         </span>
@@ -80,11 +80,11 @@ export function FavouriteGamesBadges({ games, max = 3 }: { games: string[]; max?
 export function OnlineDot({ user }: { user: HubUser }) {
   const state = user.is_online === undefined ? 'unknown' : user.is_online ? 'online' : 'offline';
   const color
-    = state === 'online' ? 'bg-emerald-500' : state === 'offline' ? 'bg-gray-300 dark:bg-gray-600' : 'bg-amber-400';
+    = state === 'online' ? 'bg-emerald-500' : state === 'offline' ? 'bg-muted-foreground/40' : 'bg-amber-400';
   return (
     <span className="inline-flex items-center gap-1.5" title={state}>
       <span className={cn('size-2 rounded-full', color)} />
-      <span className="text-xs capitalize text-gray-500">{state}</span>
+      <span className="text-xs capitalize text-muted-foreground">{state}</span>
     </span>
   );
 }

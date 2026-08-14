@@ -26,7 +26,7 @@ const OPTIONS: HubOption[] = [
   {
     title: 'Audit & moderation',
     description: 'Suspension history and a “who changed what” audit trail.',
-    icon: <ShieldCheck className="size-5 text-gray-400" />,
+    icon: <ShieldCheck className="size-5 text-muted-foreground/70" />,
     cta: 'Coming soon (Phase 2)',
     disabled: true,
   },

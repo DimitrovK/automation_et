@@ -28,7 +28,7 @@ function getLogIcon(type: DeploymentLogEntry['type']) {
     case 'loading':
       return <Loader2 className="size-4 animate-spin text-blue-500" />;
     default:
-      return <Terminal className="size-4 text-gray-500" />;
+      return <Terminal className="size-4 text-muted-foreground" />;
   }
 }
 
@@ -39,22 +39,22 @@ export function PlayerProcessingLogs({ logs }: { logs: DeploymentLogEntry[] }) {
 
   return (
     <div className="p-4">
-      <Card className="border-2 border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+      <Card className="border-2 border-border bg-card shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
             <Terminal className="size-5 text-blue-600" />
             Processing Logs
           </CardTitle>
-          <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+          <CardDescription className="text-sm text-muted-foreground">
             Detailed processing activity and search method used
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <ScrollArea className="h-64 w-full rounded-lg border">
-            <div className="space-y-2 bg-gray-100 p-4 dark:bg-slate-700">
+            <div className="space-y-2 bg-muted p-4">
               {logs.map(log => (
                 <div key={log.id} className="flex items-start gap-3 font-mono text-xs">
-                  <span className="mt-0.5 shrink-0 text-gray-500 dark:text-gray-400">
+                  <span className="mt-0.5 shrink-0 text-muted-foreground">
                     {formatTimestamp(log.timestamp)}
                   </span>
                   <div className="mt-0.5 shrink-0">
@@ -66,10 +66,10 @@ export function PlayerProcessingLogs({ logs }: { logs: DeploymentLogEntry[] }) {
                     </div>
                     {log.data && (
                       <details className="mt-1">
-                        <summary className="cursor-pointer text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                           View data
                         </summary>
-                        <pre className="mt-1 overflow-x-auto rounded bg-gray-200 p-2 text-xs dark:bg-slate-600">
+                        <pre className="mt-1 overflow-x-auto rounded bg-muted p-2 text-xs">
                           <code>{JSON.stringify(log.data, null, 2)}</code>
                         </pre>
                       </details>

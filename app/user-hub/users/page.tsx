@@ -129,177 +129,177 @@ function UserHubUsersInner() {
     >
       <>
 
-                <Card>
-                  <CardContent className="grid grid-cols-1 gap-3 pt-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="sm:col-span-2 lg:col-span-1">
-                      <label htmlFor="user-search" className="mb-1 block text-xs font-medium text-gray-600">Search</label>
-                      <Input
-                        id="user-search"
-                        aria-label="Search users"
-                        placeholder="Username, email or name…"
-                        value={q}
-                        onChange={e => setQ(e.target.value)}
-                      />
-                    </div>
+        <Card>
+          <CardContent className="grid grid-cols-1 gap-3 pt-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="sm:col-span-2 lg:col-span-1">
+              <label htmlFor="user-search" className="mb-1 block text-xs font-medium text-muted-foreground">Search</label>
+              <Input
+                id="user-search"
+                aria-label="Search users"
+                placeholder="Username, email or name…"
+                value={q}
+                onChange={e => setQ(e.target.value)}
+              />
+            </div>
 
-                    <div>
-                      <label htmlFor="filter-favourite" className="mb-1 block text-xs font-medium text-gray-600">Favourited game</label>
-                      <Select
-                        value={filters.favourite_game ?? ALL}
-                        onValueChange={v => updateFilter({ favourite_game: v === ALL ? undefined : v })}
-                      >
-                        <SelectTrigger id="filter-favourite"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={ALL}>Any game</SelectItem>
-                          {gameOptions.map(slug => (
-                            <SelectItem key={slug} value={slug}>{prettySlug(slug)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <div>
+              <label htmlFor="filter-favourite" className="mb-1 block text-xs font-medium text-muted-foreground">Favourited game</label>
+              <Select
+                value={filters.favourite_game ?? ALL}
+                onValueChange={v => updateFilter({ favourite_game: v === ALL ? undefined : v })}
+              >
+                <SelectTrigger id="filter-favourite"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Any game</SelectItem>
+                  {gameOptions.map(slug => (
+                    <SelectItem key={slug} value={slug}>{prettySlug(slug)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                    <div>
-                      <label htmlFor="filter-presence" className="mb-1 block text-xs font-medium text-gray-600">Presence</label>
-                      <Select
-                        value={filters.is_online ?? ALL}
-                        onValueChange={v => updateFilter({ is_online: v === ALL ? undefined : (v as BoolParam) })}
-                      >
-                        <SelectTrigger id="filter-presence"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={ALL}>All</SelectItem>
-                          <SelectItem value="true">Online</SelectItem>
-                          <SelectItem value="false">Offline</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <div>
+              <label htmlFor="filter-presence" className="mb-1 block text-xs font-medium text-muted-foreground">Presence</label>
+              <Select
+                value={filters.is_online ?? ALL}
+                onValueChange={v => updateFilter({ is_online: v === ALL ? undefined : (v as BoolParam) })}
+              >
+                <SelectTrigger id="filter-presence"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>All</SelectItem>
+                  <SelectItem value="true">Online</SelectItem>
+                  <SelectItem value="false">Offline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                    <div>
-                      <label htmlFor="filter-ordering" className="mb-1 block text-xs font-medium text-gray-600">Sort</label>
-                      <Select value={filters.ordering ?? 'id'} onValueChange={v => updateFilter({ ordering: v })}>
-                        <SelectTrigger id="filter-ordering"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {ORDERING_OPTIONS.map(o => (
-                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <div>
+              <label htmlFor="filter-ordering" className="mb-1 block text-xs font-medium text-muted-foreground">Sort</label>
+              <Select value={filters.ordering ?? 'id'} onValueChange={v => updateFilter({ ordering: v })}>
+                <SelectTrigger id="filter-ordering"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ORDERING_OPTIONS.map(o => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                    <div>
-                      <label htmlFor="filter-suspension" className="mb-1 block text-xs font-medium text-gray-600">Suspension</label>
-                      <Select
-                        value={filters.suspension ?? ALL}
-                        onValueChange={v => updateFilter({ suspension: v === ALL ? undefined : (v as SuspensionFilter) })}
-                      >
-                        <SelectTrigger id="filter-suspension"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={ALL}>Any</SelectItem>
-                          <SelectItem value="none">Not suspended</SelectItem>
-                          <SelectItem value="any">Suspended</SelectItem>
-                          <SelectItem value="FULL_PLATFORM">Full platform</SelectItem>
-                          <SelectItem value="ALL_GAMES">All games</SelectItem>
-                          <SelectItem value="MULTIPLAYER">Multiplayer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <div>
+              <label htmlFor="filter-suspension" className="mb-1 block text-xs font-medium text-muted-foreground">Suspension</label>
+              <Select
+                value={filters.suspension ?? ALL}
+                onValueChange={v => updateFilter({ suspension: v === ALL ? undefined : (v as SuspensionFilter) })}
+              >
+                <SelectTrigger id="filter-suspension"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>Any</SelectItem>
+                  <SelectItem value="none">Not suspended</SelectItem>
+                  <SelectItem value="any">Suspended</SelectItem>
+                  <SelectItem value="FULL_PLATFORM">Full platform</SelectItem>
+                  <SelectItem value="ALL_GAMES">All games</SelectItem>
+                  <SelectItem value="MULTIPLAYER">Multiplayer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                    <div>
-                      <label htmlFor="filter-beta" className="mb-1 block text-xs font-medium text-gray-600">Beta</label>
-                      <Select
-                        value={filters.is_beta_tester ?? ALL}
-                        onValueChange={v => updateFilter({ is_beta_tester: v === ALL ? undefined : (v as BoolParam) })}
-                      >
-                        <SelectTrigger id="filter-beta"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={ALL}>All</SelectItem>
-                          <SelectItem value="true">Beta testers</SelectItem>
-                          <SelectItem value="false">Non-beta</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <div>
+              <label htmlFor="filter-beta" className="mb-1 block text-xs font-medium text-muted-foreground">Beta</label>
+              <Select
+                value={filters.is_beta_tester ?? ALL}
+                onValueChange={v => updateFilter({ is_beta_tester: v === ALL ? undefined : (v as BoolParam) })}
+              >
+                <SelectTrigger id="filter-beta"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>All</SelectItem>
+                  <SelectItem value="true">Beta testers</SelectItem>
+                  <SelectItem value="false">Non-beta</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                    <div>
-                      <label htmlFor="filter-active" className="mb-1 block text-xs font-medium text-gray-600">Account</label>
-                      <Select
-                        value={filters.is_active ?? ALL}
-                        onValueChange={v => updateFilter({ is_active: v === ALL ? undefined : (v as BoolParam) })}
-                      >
-                        <SelectTrigger id="filter-active"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={ALL}>All</SelectItem>
-                          <SelectItem value="true">Active</SelectItem>
-                          <SelectItem value="false">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
+            <div>
+              <label htmlFor="filter-active" className="mb-1 block text-xs font-medium text-muted-foreground">Account</label>
+              <Select
+                value={filters.is_active ?? ALL}
+                onValueChange={v => updateFilter({ is_active: v === ALL ? undefined : (v as BoolParam) })}
+              >
+                <SelectTrigger id="filter-active"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>All</SelectItem>
+                  <SelectItem value="true">Active</SelectItem>
+                  <SelectItem value="false">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
-                <ActiveFilterChips filters={filters} onRemove={clearChip} onClearAll={clearAll} />
+        <ActiveFilterChips filters={filters} onRemove={clearChip} onClearAll={clearAll} />
 
-                <div className="flex items-center justify-end">
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant={view === 'cards' ? 'default' : 'outline'}
-                      onClick={() => setView('cards')}
-                      aria-label="Card view"
-                    >
-                      <LayoutGrid className="size-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={view === 'table' ? 'default' : 'outline'}
-                      onClick={() => setView('table')}
-                      aria-label="Table view"
-                    >
-                      <List className="size-4" />
-                    </Button>
-                  </div>
-                </div>
+        <div className="flex items-center justify-end">
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={view === 'cards' ? 'default' : 'outline'}
+              onClick={() => setView('cards')}
+              aria-label="Card view"
+            >
+              <LayoutGrid className="size-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={view === 'table' ? 'default' : 'outline'}
+              onClick={() => setView('table')}
+              aria-label="Table view"
+            >
+              <List className="size-4" />
+            </Button>
+          </div>
+        </div>
 
-                {error && (
-                  <div
-                    role="alert"
-                    className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
-                  >
-                    {error}
-                  </div>
-                )}
+        {error && (
+          <div
+            role="alert"
+            className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+          >
+            {error}
+          </div>
+        )}
 
-                {listLoading
-                  ? (
-                      <UserTableSkeleton />
-                    )
-                  : !error && (
-                      view === 'cards'
-                        ? (
-                            users.length === 0
-                              ? (
-                                  <div className="rounded-md border p-8 text-center text-sm text-gray-500">
-                                    No users match your filters.
-                                  </div>
-                                )
-                              : (
-                                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                                    {users.map(u => <UserCard key={u.id} user={u} onSelect={handleSelect} />)}
-                                  </div>
-                                )
-                          )
-                        : (
-                            <UserTable users={users} onSelect={handleSelect} />
-                          )
-                    )}
+        {listLoading
+          ? (
+              <UserTableSkeleton />
+            )
+          : !error && (
+              view === 'cards'
+                ? (
+                    users.length === 0
+                      ? (
+                          <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
+                            No users match your filters.
+                          </div>
+                        )
+                      : (
+                          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                            {users.map(u => <UserCard key={u.id} user={u} onSelect={handleSelect} />)}
+                          </div>
+                        )
+                  )
+                : (
+                    <UserTable users={users} onSelect={handleSelect} />
+                  )
+            )}
 
-                <DataPagination
-                  currentPage={filters.page ?? 1}
-                  totalPages={totalPages}
-                  totalCount={count}
-                  visibleCount={users.length}
-                  pageSize={USER_LIST_PAGE_SIZE}
-                  onPageChange={p => writeFilters({ ...filters, page: p })}
-                  disabled={listLoading}
-                />
+        <DataPagination
+          currentPage={filters.page ?? 1}
+          totalPages={totalPages}
+          totalCount={count}
+          visibleCount={users.length}
+          pageSize={USER_LIST_PAGE_SIZE}
+          onPageChange={p => writeFilters({ ...filters, page: p })}
+          disabled={listLoading}
+        />
 
         <UserDetailSheet user={selected} open={sheetOpen} onOpenChange={setSheetOpen} />
       </>
