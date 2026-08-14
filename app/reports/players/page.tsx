@@ -40,6 +40,10 @@ export default function PlayersReportPage() {
   // request keys on. Without the split, every keystroke would refetch — and
   // useReport keys on params by value, so it genuinely would fire each time.
   const [draftSearch, setDraftSearch] = useState(search);
+  // Syncing the draft when the URL-derived value changes is the point: a shared
+  // link or a Back navigation must land in the box. A one-way sync from a value
+  // this component does not own, not a render loop.
+  // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
   useEffect(() => setDraftSearch(search), [search]);
   useEffect(() => {
     // Compare what will actually be committed. Comparing the raw draft meant

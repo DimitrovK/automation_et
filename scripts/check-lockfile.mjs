@@ -45,7 +45,8 @@ function parseRootImporter(text) {
 
   for (const line of lines) {
     if (line.startsWith('importers:')) {
-      inImporters = true; continue;
+      inImporters = true;
+      continue;
     }
     if (!inImporters) {
       continue;
@@ -67,7 +68,9 @@ function parseRootImporter(text) {
 
     const sectionMatch = /^ {4}(dependencies|devDependencies):/.exec(line);
     if (sectionMatch) {
-      section = sectionMatch[1]; pendingName = null; continue;
+      section = sectionMatch[1];
+      pendingName = null;
+      continue;
     }
     if (!section) {
       continue;
@@ -75,10 +78,14 @@ function parseRootImporter(text) {
 
     const nameMatch = /^ {6}'?([^':]+)'?:\s*$/.exec(line);
     if (nameMatch) {
-      pendingName = nameMatch[1]; continue;
+      pendingName = nameMatch[1];
+      continue;
     }
 
-    const specMatch = /^ {8}specifier:\s*(.+?)\s*$/.exec(line);
+    // `(.+?)\s*$` lets the lazy group and the trailing \s* trade characters,
+    // which is quadratic on a pathological line. `(\S.*\S|\S)` pins both ends
+    // to non-space and matches exactly the same specifiers.
+    const specMatch = /^ {8}specifier:\s*(\S.*\S|\S)\s*$/.exec(line);
     if (specMatch && pendingName) {
       found[section][pendingName] = specMatch[1].replace(/^['"]|['"]$/g, '');
       pendingName = null;

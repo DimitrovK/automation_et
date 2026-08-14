@@ -5,9 +5,9 @@ import { CalendarDays, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { activePreset, isoDay, yesterdayRange } from '@/lib/report-range';
 import { REPORT_WINDOWS } from '@/types/reports';
-import { Switch } from '@/components/ui/switch';
 
 /**
  * Presets for the common case, explicit dates for everything else.

@@ -59,6 +59,16 @@ jobs:
       - name: Types
         run: pnpm run check-types:app
 
+      # Scoped to the reporting surface, which is clean. The rest of the app
+      # still has ~1,250 problems from a config that was added and then never
+      # executed (`next lint` was removed in Next 16, and eslint could not
+      # resolve eslint-plugin-format under pnpm until #103). Linting everything
+      # here would be red on arrival, and a red pipeline gets switched off —
+      # which is how the previous one went unread for months. The scope widens
+      # as areas are cleaned, not before.
+      - name: Lint (reporting surface)
+        run: pnpm exec eslint app/reports components/reports components/admin lib hooks scripts --max-warnings 0
+
       - name: Tests
         run: pnpm run test:run
 

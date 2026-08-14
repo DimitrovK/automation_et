@@ -10,14 +10,14 @@ describe('playStyleBadge', () => {
     render(<PlayStyleBadge played={41} mp={35} />);
     const badge = screen.getByText('Mostly multiplayer');
 
-    expect(badge.getAttribute('aria-label')).toBe('Mostly multiplayer: 35 multiplayer, 6 solo (85.4%)');
-    expect(badge.getAttribute('title')).toBe(badge.getAttribute('aria-label'));
+    expect(badge).toHaveAttribute('aria-label', 'Mostly multiplayer: 35 multiplayer, 6 solo (85.4%)');
+    expect(badge).toHaveAttribute('title', badge.getAttribute('aria-label'));
   });
 
   it('renders nothing when the backend has not sent a count', () => {
     // Absent is not zero: a badge reading "Solo" would claim we know.
     const { container } = render(<PlayStyleBadge played={41} />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container).toBeEmptyDOMElement();
   });
 });

@@ -1,15 +1,15 @@
 'use client';
 
 import type { AdoptionTrendsResponse, TrendGranularity } from '@/types/user-hub';
+import { useTheme } from 'next-themes';
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { chartTheme } from '@/lib/chart-theme';
 import { formatTrendDate } from '@/lib/user-hub-analytics';
 import { cn } from '@/lib/utils';
-import { useTheme } from 'next-themes';
-import { chartTheme } from '@/lib/chart-theme';
 
 type Props = {
   data: AdoptionTrendsResponse | null;

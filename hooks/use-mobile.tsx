@@ -11,6 +11,9 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
     mql.addEventListener('change', onChange);
+    // The first read has to happen after mount: `window` does not exist during
+    // the server render, and starting from a guess would flash the wrong layout.
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     return () => mql.removeEventListener('change', onChange);
   }, []);

@@ -25,6 +25,10 @@ const RAMP_LIGHT = ['#10b981', '#059669', '#047857', '#064e3b'];
 const RAMP_DARK = ['#047857', '#059669', '#34d399', '#a7f3d0'];
 
 /** Exported so the per-surface choice is testable rather than implicit. */
+// The cost is fast-refresh reloading this file rather than hot-swapping it.
+// measurable in jsdom, so the pure part has to be reachable from a test.
+// Exported beside its component on purpose: a recharts tree renders nothing
+// eslint-disable-next-line react-refresh/only-export-components
 export function heatmapRamp(isDark: boolean): string[] {
   return isDark ? RAMP_DARK : RAMP_LIGHT;
 }

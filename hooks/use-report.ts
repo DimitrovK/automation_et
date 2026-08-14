@@ -70,6 +70,14 @@ export function useReport<T>(
     } finally {
       setIsLoading(false);
     }
+    // `key` and `resourceKey` are not read inside this callback, and the rule
+    // is right that they are unnecessary for correctness of its BODY. They are
+    // here to control its IDENTITY: the effect below depends on `load`, so a
+    // new key produces a new `load` and therefore a refetch. That indirection
+    // is what stopped the loop this hook was built to fix — the fetcher itself
+    // is deliberately not a dependency, because callers rebuild it every
+    // render. Removing these two would leave nothing to trigger a refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, resourceKey, endpointLabel]);
 
   useEffect(() => {

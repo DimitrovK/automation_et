@@ -43,6 +43,7 @@ describe('abandonedSessions', () => {
 
   it('names a lever only when one game genuinely dominates', () => {
     const clear = abandonedSessions([game('big', 1000, 100), game('small', 100, 90)]);
+
     expect(clear.lever?.game_type).toBe('big');
   });
 

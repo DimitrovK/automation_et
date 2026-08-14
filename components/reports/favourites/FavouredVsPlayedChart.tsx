@@ -2,8 +2,8 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { FavouredVsPlayedResponse } from '@/types/user-hub';
-import { useMemo } from 'react';
 import { useTheme } from 'next-themes';
+import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { Button } from '@/components/ui/button';

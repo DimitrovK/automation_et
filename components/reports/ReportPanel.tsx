@@ -1,7 +1,7 @@
 'use client';
 
-import type { UseReport } from '@/hooks/use-report';
 import type { ReactNode } from 'react';
+import type { UseReport } from '@/hooks/use-report';
 import { ReportError } from '@/components/reports/ReportError';
 import { Skeleton } from '@/components/ui/skeleton';
 

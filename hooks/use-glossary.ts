@@ -51,6 +51,9 @@ export function useGlossary(enabled = true): GlossaryState {
       return;
     }
     let cancelled = false;
+    // The fetch starts here, so the loading flag starts here too. Deriving it
+    // during render would mean rendering a request that has not been made.
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setIsLoading(true);
     fetchGlossaryOnce()
       .then((res) => {

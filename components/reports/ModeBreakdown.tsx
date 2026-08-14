@@ -2,13 +2,13 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { MultiplayerModeRow } from '@/types/reports';
+import { useTheme } from 'next-themes';
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
-import { useTheme } from 'next-themes';
 import { chartTheme } from '@/lib/chart-theme';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
 
 /** Quiz has no mode column, so its rooms arrive as null rather than being dropped. */
 function modeLabel(mode: string | null): string {

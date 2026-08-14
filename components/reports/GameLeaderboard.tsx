@@ -1,13 +1,13 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
-import { useGameColor } from '@/hooks/use-game-meta';
 import type { GameTotals, MetricKey } from '@/types/reports';
 import { ChevronDown, ChevronRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useGameColor } from '@/hooks/use-game-meta';
 import { cn } from '@/lib/utils';
 
 /** '—' rather than 0 for a null rate: no data is not the same as zero. */
