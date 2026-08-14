@@ -126,7 +126,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
                 className={cn(
                   'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
                   effective === option
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted',
                 )}
               >

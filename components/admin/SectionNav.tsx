@@ -52,7 +52,7 @@ export function SectionNav({ groups, trailing }: {
                   className={cn(
                     'flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
                     isActive(href)
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+                      ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:bg-muted',
                   )}
                 >
@@ -73,7 +73,7 @@ export function SectionNav({ groups, trailing }: {
             className={cn(
               'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors',
               isActive(trailing.href)
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+                ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-muted',
             )}
           >

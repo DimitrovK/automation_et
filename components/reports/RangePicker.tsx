@@ -55,7 +55,7 @@ export function RangePicker({ value, onChange, includeBots, onIncludeBotsChange 
       className={cn(
         'rounded px-2.5 py-1 text-sm font-medium transition-colors',
         isActive
-          ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
+          ? 'bg-primary/10 text-primary shadow-sm'
           : 'text-muted-foreground hover:bg-muted',
       )}
     >

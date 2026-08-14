@@ -82,7 +82,7 @@ function getSyncStatus(positionsTracker?: PositionsTracker, playerFoundInDB?: bo
 }
 
 const STATUS_BADGES: Record<SyncStatus, { label: string; className: string }> = {
-  'synced': { label: 'Synced', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  'synced': { label: 'Synced', className: 'bg-primary/10 text-primary' },
   'mismatch': { label: 'Mismatch', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' },
   'new-player': { label: 'New Player', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
   'no-data': { label: 'No Data', className: 'bg-muted text-foreground' },

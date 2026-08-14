@@ -142,7 +142,7 @@ export function PlayerProfileCard({
             <Badge
               variant="secondary"
               className={chosenDataSource === 'database'
-                ? 'border-emerald-300 bg-emerald-100 text-emerald-800'
+                ? 'border-emerald-300 bg-primary/10 text-primary'
                 : 'border-blue-300 bg-blue-100 text-blue-800'}
             >
               {chosenDataSource === 'database'

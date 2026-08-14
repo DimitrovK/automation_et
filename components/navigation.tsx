@@ -242,7 +242,7 @@ export function Navigation({ className }: NavigationProps) {
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200',
               hasActiveChild
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                ? 'bg-primary/10 text-primary'
                 : 'hover:bg-muted',
             )}
           >
@@ -319,7 +319,7 @@ export function Navigation({ className }: NavigationProps) {
         className={cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200 mb-1',
           isActive
-            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium'
+            ? 'bg-primary/10 text-primary font-medium'
             : 'hover:bg-muted text-foreground/80',
         )}
       >
@@ -422,7 +422,7 @@ export function Navigation({ className }: NavigationProps) {
               {/* Header */}
               <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
+                  <div className="rounded-lg bg-primary/10 p-2">
                     <Sparkles className="size-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>

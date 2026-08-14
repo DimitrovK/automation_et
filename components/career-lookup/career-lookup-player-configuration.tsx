@@ -913,7 +913,7 @@ export function CareerLookupPlayerConfiguration({
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-foreground">Player Settings</h3>
               {playerData?.playerFoundInDB && dbPlayerInfo && (
-                <Badge variant="secondary" className="border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                <Badge variant="secondary" className="border-emerald-200 bg-primary/10 text-primary">
                   Pre-loaded from DB
                 </Badge>
               )}
