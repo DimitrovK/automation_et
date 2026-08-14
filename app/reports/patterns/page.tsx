@@ -8,6 +8,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContaine
 import { ActivityHeatmap } from '@/components/reports/ActivityHeatmap';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameFilter } from '@/components/reports/GameFilter';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -77,15 +78,17 @@ export default function PatternsPage() {
       title="Patterns"
       description="When people play, and whether the players are new or coming back."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
+        />
 
-      <GameFilter meta={meta} value={game} onChange={setGame} />
+        <GameFilter meta={meta} value={game} onChange={setGame} />
 
+      </FilterBar>
       <div className="flex justify-end">
         <ExportButton
           // The grid is the page's real dataset; the two bar charts are its

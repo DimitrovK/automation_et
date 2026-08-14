@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
@@ -99,12 +100,14 @@ export default function PlayerDetailPage() {
           <ArrowLeft className="size-4" />
           All players
         </Link>
-        <RangePicker
-          value={range}
-          onChange={setRange}
-          includeBots={false}
-          onIncludeBotsChange={() => undefined}
-        />
+        <FilterBar>
+          <RangePicker
+            value={range}
+            onChange={setRange}
+            includeBots={false}
+            onIncludeBotsChange={() => undefined}
+          />
+        </FilterBar>
 
         {/* Bot accounts are filtered out of every other report, so landing here
             from a direct link is the one way to read simulation traffic as real

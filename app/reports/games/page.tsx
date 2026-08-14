@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { AbandonedPanel } from '@/components/reports/AbandonedPanel';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
@@ -97,13 +98,15 @@ export default function GamesIndexPage() {
       title="Games"
       description="Every game side by side. Click one for its own report."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
+        />
 
+      </FilterBar>
       <div className="flex justify-end">
         <ExportButton
           rows={rows}

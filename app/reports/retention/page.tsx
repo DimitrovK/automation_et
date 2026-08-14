@@ -4,6 +4,7 @@ import type { RangeState } from '@/lib/report-range';
 import type { RetentionCohort } from '@/types/reports';
 import { useMemo } from 'react';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { GameFilter } from '@/components/reports/GameFilter';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
@@ -54,15 +55,17 @@ export default function RetentionPage() {
       title="Retention"
       description="Do players come back? Volume can look healthy right up until the supply of new players runs out."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
+        />
 
-      <GameFilter meta={meta} value={game} onChange={setGame} />
+        <GameFilter meta={meta} value={game} onChange={setGame} />
 
+      </FilterBar>
       <div className="flex justify-end">
         <ExportButton
           rows={data?.cohorts ?? []}

@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
 import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/AnomalySensitivity';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FilterBar } from '@/components/reports/FilterBar';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
@@ -60,17 +61,19 @@ export default function AnomaliesPage() {
       title="Needs attention"
       description="What moved enough to be worth interrupting you for, compared with the window before it."
     >
-      <RangePicker
-        value={range}
-        onChange={setRange}
-        includeBots={includeBots}
-        onIncludeBotsChange={setIncludeBots}
-      />
+      <FilterBar>
+        <RangePicker
+          value={range}
+          onChange={setRange}
+          includeBots={includeBots}
+          onIncludeBotsChange={setIncludeBots}
+        />
 
-      {/* No game filter on purpose: the point of this page is to surface the
-          game you would not have thought to look at. */}
-      <AnomalySensitivity value={sensitivity} onChange={setSensitivity} />
+        {/* No game filter on purpose: the point of this page is to surface the
+            game you would not have thought to look at. */}
+        <AnomalySensitivity value={sensitivity} onChange={setSensitivity} />
 
+      </FilterBar>
       <div className="flex justify-end">
         <ExportButton
           rows={anomalies.data?.findings ?? []}
