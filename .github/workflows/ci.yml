@@ -67,7 +67,7 @@ jobs:
       # which is how the previous one went unread for months. The scope widens
       # as areas are cleaned, not before.
       - name: Lint (reporting surface)
-        run: pnpm exec eslint app/reports components/reports components/admin lib hooks scripts --max-warnings 0
+        run: pnpm run lint:reports
 
       - name: Tests
         run: pnpm run test:run
@@ -79,9 +79,5 @@ jobs:
           NEXT_PUBLIC_N8N_WEBHOOK_URL: ${{ secrets.NEXT_PUBLIC_N8N_WEBHOOK_URL }}
           NEXT_PUBLIC_ADMIN_BASE_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_BASE_URL }}
 
-      # Lint is deliberately absent. `next lint` was removed in Next 16, so the
-      # old step invoked `next <dir>` and would have failed; and running eslint
-      # directly currently cannot resolve eslint-plugin-format under pnpm's
-      # layout. Both are real and are filed separately — a step that cannot pass
-      # would make this pipeline red on arrival and get switched off again,
-      # which is how the previous one ended up unread.
+      # Lint covers the reporting surface only — see the note on that step. The
+      # rest of the app is not linted here yet.
