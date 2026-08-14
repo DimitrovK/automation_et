@@ -47,7 +47,7 @@ export default function UserHubLandingPage() {
             className={o.disabled ? 'opacity-60' : 'transition-shadow duration-200 hover:shadow-lg'}
           >
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2">
                 {o.icon}
                 {o.title}
               </CardTitle>

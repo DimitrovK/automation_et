@@ -356,7 +356,7 @@ export function InlineNationSyncCard({
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+              <CardTitle className="flex items-center gap-2">
                 <Shield className="size-5 text-blue-600" />
                 National Team Sync
               </CardTitle>

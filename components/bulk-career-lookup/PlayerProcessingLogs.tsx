@@ -41,7 +41,7 @@ export function PlayerProcessingLogs({ logs }: { logs: DeploymentLogEntry[] }) {
     <div className="p-4">
       <Card className="border-2 border-border bg-card shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <CardTitle className="flex items-center gap-2">
             <Terminal className="size-5 text-blue-600" />
             Processing Logs
           </CardTitle>

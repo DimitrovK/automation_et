@@ -57,7 +57,7 @@ export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, met
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Favourited vs played</CardTitle>
+        <CardTitle>Favourited vs played</CardTitle>
         <p className="text-xs text-muted-foreground">
           Of the users who favourited a game, how many started it and how many finished.
           A wide gap between the first two bars is a game people mean to play and don't.

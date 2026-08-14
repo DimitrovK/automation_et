@@ -66,7 +66,7 @@ export function ReachDepthChart({ rows, meta }: { rows: GameTotals[]; meta: Game
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Reach vs depth</CardTitle>
+        <CardTitle>Reach vs depth</CardTitle>
         <CardDescription>
           How many people played each game, against how often each of them played it.
           {contrast && (

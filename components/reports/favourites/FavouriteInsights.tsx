@@ -63,7 +63,7 @@ export function FavouriteInsights({ data, meta }: Props) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-base">Insights</CardTitle>
+        <CardTitle>Insights</CardTitle>
         <Button size="sm" variant="outline" onClick={exportCsv} disabled={data.users.length === 0}>
           <Download className="mr-2 size-4" />
           Export CSV

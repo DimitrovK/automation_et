@@ -44,7 +44,7 @@ export default function GlossaryPage() {
         {metrics.map(definition => (
           <Card key={definition.key} id={definition.key} className="scroll-mt-4">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">{definition.label}</CardTitle>
+              <CardTitle>{definition.label}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p className="text-foreground">{definition.counts}</p>

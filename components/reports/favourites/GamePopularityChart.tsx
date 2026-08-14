@@ -49,7 +49,7 @@ export function GamePopularityChart({ gamePopularity, meta, onGameSelect }: Prop
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Game popularity</CardTitle>
+        <CardTitle>Game popularity</CardTitle>
         <p className="text-xs text-muted-foreground">
           Users who have this game in their favourites.
           {interactive && ' Click a game to see who.'}

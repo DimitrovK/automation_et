@@ -39,7 +39,7 @@ export function AbandonedPanel({ rows, meta }: { rows: GameTotals[]; meta: GameM
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Where the losses are</CardTitle>
+        <CardTitle>Where the losses are</CardTitle>
         <CardDescription>
           {totalAbandoned.toLocaleString()}
           {' sessions were started and not finished in this window. '}

@@ -184,7 +184,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
       {longLived.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Long-lived sessions</CardTitle>
+            <CardTitle>Long-lived sessions</CardTitle>
             <CardDescription className="flex items-start gap-2">
               <Info className="mt-0.5 size-3.5 shrink-0" />
               <span>

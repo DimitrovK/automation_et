@@ -31,7 +31,7 @@ export function GameRetentionCard({ data, gameKey, gameLabel }: {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Does it keep people?</CardTitle>
+        <CardTitle>Does it keep people?</CardTitle>
         <CardDescription>
           {`Of the players whose first ${gameLabel} day was X, how many came back to it. `}
           Compared with the median across games — not the platform figure, which counts a

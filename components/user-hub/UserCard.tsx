@@ -27,7 +27,7 @@ export function UserCard({ user, onSelect }: Props) {
       className="cursor-pointer transition-shadow duration-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
     >
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between gap-2 text-base">
+        <CardTitle className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2 truncate">
             <UserAvatar user={user} />
             <span className="truncate">

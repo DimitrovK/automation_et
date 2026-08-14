@@ -24,7 +24,7 @@ export function GameHourProfile({ data, gameLabel }: { data: PatternsResponse; g
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">When it's played</CardTitle>
+        <CardTitle>When it's played</CardTitle>
         <CardDescription>
           {`${gameLabel}'s own play across the day, in ${data.timezone}. Busiest hour: `}
           <strong>

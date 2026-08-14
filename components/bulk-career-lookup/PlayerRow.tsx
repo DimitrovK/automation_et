@@ -184,7 +184,7 @@ function DiscrepancyDetails({ discrepancies, footballerId }: { discrepancies: st
     <div className="p-4">
       <Card className="border-2 border-border bg-card shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="size-5 text-orange-600" />
             Data Discrepancies Detected
           </CardTitle>

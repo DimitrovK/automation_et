@@ -43,7 +43,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Which games keep people</CardTitle>
+        <CardTitle>Which games keep people</CardTitle>
         <CardDescription>
           Each game measured on its own players: of those whose first day in it was X, how
           many came back to

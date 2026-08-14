@@ -42,7 +42,7 @@ export function DurationHistogram({ data, meta }: { data: DurationResponse; meta
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Session length, distributed</CardTitle>
+        <CardTitle>Session length, distributed</CardTitle>
         <CardDescription>
           {`How ${gameName(meta[row.game_type], row.game_type)}'s ${row.measured.toLocaleString()} measured sessions spread out. `}
           A median tells you the middle; this tells you whether there is one kind of session or several.

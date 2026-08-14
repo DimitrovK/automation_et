@@ -37,7 +37,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-base">Adoption over time</CardTitle>
+        <CardTitle>Adoption over time</CardTitle>
         <div className="flex gap-1 rounded-md border p-0.5">
           {PILLS.map(g => (
             <button
