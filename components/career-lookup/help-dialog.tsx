@@ -36,15 +36,15 @@ export function HelpDialog({ className = '' }: HelpDialogProps) {
         <div className="space-y-3 text-sm">
           <div>
             <h4 className="font-medium">Player Names:</h4>
-            <p className="text-gray-600 dark:text-gray-400">Use underscores instead of spaces (e.g., "Borislav_Tsonev")</p>
+            <p className="text-muted-foreground">Use underscores instead of spaces (e.g., "Borislav_Tsonev")</p>
           </div>
           <div>
             <h4 className="font-medium">Requirements:</h4>
-            <p className="text-gray-600 dark:text-gray-400">Make sure your n8n workflow is running on localhost:5678</p>
+            <p className="text-muted-foreground">Make sure your n8n workflow is running on localhost:5678</p>
           </div>
           <div>
             <h4 className="font-medium">Troubleshooting:</h4>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Use the settings (⚙️) button for configuration and testing
             </p>
           </div>

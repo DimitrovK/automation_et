@@ -5,6 +5,7 @@ import type { SelectedPosition } from '@/components/career-lookup/position-card'
 import type { Footballer, FootballerNationStat, FootballerPosition, FootballerTeam, n8nWikiPlayerData } from '@/types/player';
 import {
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -44,7 +45,6 @@ export default function FootballerCareerApp() {
 
   // State for database player info (fetched via API when playerDBId is available)
   const [dbPlayerInfo, setDbPlayerInfo] = useState<Footballer | null>(null);
-  // eslint-disable-next-line unused-imports/no-unused-vars -- pre-existing; setter is used, getter retained for future loading-state UI.
   const [loadingDbPlayer, setLoadingDbPlayer] = useState(false);
 
   // State for database national team stats
@@ -277,15 +277,15 @@ export default function FootballerCareerApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+    <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Navigation */}
         <Navigation />
 
         {/* Header with utility buttons */}
         <div className="relative space-y-2 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Footballer Career Lookup</h1>
-          <p className="text-gray-600 dark:text-gray-300">Search for detailed career information of football players</p>
+          <h1 className="text-4xl font-bold text-foreground">Footballer Career Lookup</h1>
+          <p className="text-muted-foreground">Search for detailed career information of football players</p>
 
           {/* Desktop layout - settings button positioned absolutely */}
           <div className="absolute right-0 top-0 hidden items-center gap-2 md:flex">
@@ -326,6 +326,21 @@ export default function FootballerCareerApp() {
                 <li>Try the API testing button (💻) above for direct webhook testing</li>
                 <li>Check the help button (❓) for more guidance</li>
               </ol>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* The database record is fetched from an effect that runs once the
+            search resolves, so the search spinner has already stopped by the
+            time it starts. Without this, the database columns below sit empty
+            for that window and read as "this player is not in the database"
+            rather than "the record has not arrived yet" — which is the one
+            thing a comparison screen must never get wrong. */}
+        {loadingDbPlayer && (
+          <Alert>
+            <Loader2 className="size-4 animate-spin" />
+            <AlertDescription>
+              Loading this player's database record for comparison...
             </AlertDescription>
           </Alert>
         )}

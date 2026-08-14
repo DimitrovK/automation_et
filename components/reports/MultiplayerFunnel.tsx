@@ -3,9 +3,11 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { MultiplayerGameRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { chartTheme } from '@/lib/chart-theme';
 
 /**
  * Where multiplayer rooms are lost, per game.
@@ -21,8 +23,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
  * against their own surface; the dark one re-anchors rather than flipping the
  * light one.
  */
-const STAGE_RAMP_LIGHT = ['#10b981', '#047857', '#064e3b'];
-const STAGE_RAMP_DARK = ['#6ee7b7', '#34d399', '#10b981'];
+/**
+ * Stage colours: three distinct hues, not three steps of one.
+ *
+ * A single-hue ramp was the first answer, on the reasoning that funnel stages
+ * are magnitudes of one thing. They are not — rooms created, started and
+ * finished are three different measures, and the funnel's ORDER is already
+ * carried by position, so hue is free to say which measure a bar is.
+ *
+ * It also could not be made legible. On a near-white surface the pale end of an
+ * emerald ramp falls below 3:1 against the background, so the three steps had to
+ * crowd into the dark half: the last two ended up 0.064 apart in luminance and
+ * were reported as indistinguishable. These three are validated as a set —
+ * lightness band, chroma floor, adjacent separation under deutan/protan/tritan,
+ * and >= 3:1 against both surfaces.
+ */
+function stageRamp(isDark: boolean): string[] {
+  return chartTheme(isDark).series.slice(0, 3);
+}
 
 /** Null, never 0, when there is nothing to divide by — no rooms means no rate. */
 function share(value: number, total: number): number | null {
@@ -31,7 +49,7 @@ function share(value: number, total: number): number | null {
 
 export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; meta: GameMetaMap }) {
   const { resolvedTheme } = useTheme();
-  const ramp = resolvedTheme === 'dark' ? STAGE_RAMP_DARK : STAGE_RAMP_LIGHT;
+  const ramp = stageRamp(resolvedTheme === 'dark');
 
   const played = [...rows]
     .filter(row => row.rooms_created > 0)
@@ -53,9 +71,9 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
       </CardHeader>
       <CardContent className="space-y-5">
         {played.length === 0 && (
-          <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <EmptyState>
             No multiplayer rooms in this window.
-          </p>
+          </EmptyState>
         )}
 
         {played.map((row) => {
@@ -71,7 +89,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
             <div key={row.game_type} className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <GameBadge gameKey={row.game_type} meta={meta} />
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   {startedPct === null ? '—' : `${startedPct}% started`}
                   {' · '}
                   {finishedPct === null
@@ -84,10 +102,10 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
                 const width = row.rooms_created > 0 ? (stage.value / row.rooms_created) * 100 : 0;
                 return (
                   <div key={stage.label} className="flex items-center gap-2">
-                    <span className="w-16 shrink-0 text-right text-xs text-gray-500 dark:text-gray-400">
+                    <span className="w-16 shrink-0 text-right text-xs text-muted-foreground">
                       {stage.label}
                     </span>
-                    <div className="h-4 flex-1 rounded-sm bg-gray-100 dark:bg-slate-700">
+                    <div className="h-4 flex-1 rounded-sm bg-muted">
                       <div
                         className="h-4 rounded-sm"
                         style={{ width: `${width}%`, backgroundColor: ramp[index] }}
@@ -98,7 +116,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
                         aria-label={`${stage.label}: ${stage.value} rooms`}
                       />
                     </div>
-                    <span className="w-14 shrink-0 text-xs tabular-nums text-gray-700 dark:text-gray-200">
+                    <span className="w-14 shrink-0 text-xs tabular-nums text-foreground/80">
                       {stage.value.toLocaleString()}
                     </span>
                   </div>

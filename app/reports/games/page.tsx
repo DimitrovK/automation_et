@@ -6,16 +6,17 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { AbandonedPanel } from '@/components/reports/AbandonedPanel';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReachDepthChart } from '@/components/reports/ReachDepthChart';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -70,7 +71,7 @@ export default function GamesIndexPage() {
   // comparison table had to be read beside a second page to answer "which game
   // holds attention". Merged in here instead.
   const duration = useReport(ReportsAPI.getDuration, params, enabled, 'The session duration endpoint');
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getSummary,
     params,
     enabled,
@@ -78,11 +79,11 @@ export default function GamesIndexPage() {
   );
 
   const rows = useMemo(() => {
-    if (!data) {
+    if (!state.data) {
       return [];
     }
     const byGame = new Map((duration.data?.rows ?? []).map(row => [row.game_type, row]));
-    const merged: GameRowWithDuration[] = data.by_game.map(row => ({
+    const merged: GameRowWithDuration[] = state.data.by_game.map(row => ({
       ...row,
       median_seconds: byGame.get(row.game_type)?.median_seconds ?? null,
       single_sitting: byGame.get(row.game_type)?.single_sitting ?? null,
@@ -91,7 +92,7 @@ export default function GamesIndexPage() {
     // unmeasured sorts last, never as a low value — is the part that is easy to
     // get wrong, and it is tested in one place.
     return sortGameTotals(merged, sortBy);
-  }, [data, duration.data, sortBy]);
+  }, [state.data, duration.data, sortBy]);
 
   return (
     <ReportsShell
@@ -124,111 +125,107 @@ export default function GamesIndexPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-96 w-full" />
-          : (
-              <>
-                {/* Before the table, because it answers a question the table
-                  can't: a ranking by volume puts a game with a wide shallow
-                  audience next to one with a small devoted one and says
-                  nothing about the difference. */}
-                <ReachDepthChart rows={data.by_game} meta={meta} />
-                {/* Reach and depth say which games are worth attention; this says
-                  where the recoverable sessions actually are, which is a
-                  different question and the one nobody could answer from a
-                  completion-rate column. */}
-                <AbandonedPanel rows={data.by_game} meta={meta} />
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Comparison</CardTitle>
-                    <CardDescription>
-                      Sorted by
-                      {' '}
-                      {COLUMNS.find(column => column.key === sortBy)?.label.toLowerCase()}
-                      . Games with nothing to measure sort last rather than bottom —
-                      unmeasured is not the same as worst.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
-                          <th className="py-2 pr-4 font-medium">Game</th>
-                          {COLUMNS.map(column => (
-                            <th key={column.key} className="py-2 pr-4 text-right font-medium">
-                              <button
-                                type="button"
-                                title={column.hint}
-                                onClick={() => setSortBy(column.key)}
-                                className={sortBy === column.key
-                                  ? 'font-semibold text-emerald-700 dark:text-emerald-400'
-                                  : 'hover:text-gray-900 dark:hover:text-white'}
-                              >
-                                {column.label}
-                              </button>
-                              <MetricInfo metric={column.metric} />
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.map((row: GameRowWithDuration) => (
-                          <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
-                            <td className="py-2 pr-4">
-                              <Link href={`/reports/games/${row.game_type}`}>
-                                <GameBadge gameKey={row.game_type} meta={meta} />
-                              </Link>
-                            </td>
-                            <td className="py-2 pr-4 text-right font-medium text-gray-900 dark:text-white">
-                              {row.games_started.toLocaleString()}
-                            </td>
-                            <td className="py-2 pr-4 text-right">{num(row.completion_pct, '%')}</td>
-                            <td className="py-2 pr-4 text-right">{num(row.sessions_per_player)}</td>
-                            <td className="py-2 pr-4 text-right">{num(row.repeat_rate_pct, '%')}</td>
-                            <td className="py-2 pr-4 text-right">
-                              {row.median_seconds === null || row.median_seconds === undefined
-                                ? <span className="text-gray-400">—</span>
-                                : (
-                                    <span
-                                      className={row.single_sitting === false ? 'text-amber-700 dark:text-amber-300' : undefined}
-                                      title={row.single_sitting === false
-                                        ? 'A session here spans days, not a sitting — not comparable with the others'
-                                        : undefined}
-                                    >
-                                      {formatDuration(row.median_seconds)}
-                                      {row.single_sitting === false && ' *'}
-                                    </span>
-                                  )}
-                            </td>
-                            <td className="py-2 pr-4 text-right">
-                              {row.trend_pct === null
-                                ? <span className="text-gray-400">—</span>
-                                : (
-                                    <span className={row.trend_pct >= 0
-                                      ? 'inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400'
-                                      : 'inline-flex items-center gap-1 text-red-600 dark:text-red-400'}
-                                    >
-                                      {row.trend_pct >= 0 ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-                                      {Math.abs(row.trend_pct).toLocaleString()}
-                                      %
-                                    </span>
-                                  )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {rows.length === 0 && (
-                      <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No game activity in this window.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            )}
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => (
+          <>
+            {/* Before the table, because it answers a question the table
+              can't: a ranking by volume puts a game with a wide shallow
+              audience next to one with a small devoted one and says
+              nothing about the difference. */}
+            <ReachDepthChart rows={data.by_game} meta={meta} />
+            {/* Reach and depth say which games are worth attention; this says
+              where the recoverable sessions actually are, which is a
+              different question and the one nobody could answer from a
+              completion-rate column. */}
+            <AbandonedPanel rows={data.by_game} meta={meta} />
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparison</CardTitle>
+                <CardDescription>
+                  Sorted by
+                  {' '}
+                  {COLUMNS.find(column => column.key === sortBy)?.label.toLowerCase()}
+                  . Games with nothing to measure sort last rather than bottom —
+                  unmeasured is not the same as worst.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <ReportTable>
+                  <ReportHead>
+                    <Th>Game</Th>
+                    {COLUMNS.map(column => (
+                      <Th key={column.key} align="right">
+                        <button
+                          type="button"
+                          title={column.hint}
+                          onClick={() => setSortBy(column.key)}
+                          className={sortBy === column.key
+                            ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                            : 'hover:text-foreground dark:hover:text-white'}
+                        >
+                          {column.label}
+                        </button>
+                        <MetricInfo metric={column.metric} />
+                      </Th>
+                    ))}
+                  </ReportHead>
+                  <tbody>
+                    {rows.map((row: GameRowWithDuration) => (
+                      <ReportRow key={row.game_type}>
+                        <Td>
+                          <Link href={`/reports/games/${row.game_type}`}>
+                            <GameBadge gameKey={row.game_type} meta={meta} />
+                          </Link>
+                        </Td>
+                        <Td align="right" strong>
+                          {row.games_started.toLocaleString()}
+                        </Td>
+                        <Td align="right">{num(row.completion_pct, '%')}</Td>
+                        <Td align="right">{num(row.sessions_per_player)}</Td>
+                        <Td align="right">{num(row.repeat_rate_pct, '%')}</Td>
+                        <Td align="right">
+                          {row.median_seconds === null || row.median_seconds === undefined
+                            ? <span className="text-muted-foreground/70">—</span>
+                            : (
+                                <span
+                                  className={row.single_sitting === false ? 'text-amber-700 dark:text-amber-300' : undefined}
+                                  title={row.single_sitting === false
+                                    ? 'A session here spans days, not a sitting — not comparable with the others'
+                                    : undefined}
+                                >
+                                  {formatDuration(row.median_seconds)}
+                                  {row.single_sitting === false && ' *'}
+                                </span>
+                              )}
+                        </Td>
+                        <Td align="right">
+                          {row.trend_pct === null
+                            ? <span className="text-muted-foreground/70">—</span>
+                            : (
+                                <span className={row.trend_pct >= 0
+                                  ? 'inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400'
+                                  : 'inline-flex items-center gap-1 text-red-600 dark:text-red-400'}
+                                >
+                                  {row.trend_pct >= 0 ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
+                                  {Math.abs(row.trend_pct).toLocaleString()}
+                                  %
+                                </span>
+                              )}
+                        </Td>
+                      </ReportRow>
+                    ))}
+                  </tbody>
+                </ReportTable>
+                {rows.length === 0 && (
+                  <EmptyState>
+                    No game activity in this window.
+                  </EmptyState>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }

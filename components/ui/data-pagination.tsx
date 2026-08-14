@@ -15,8 +15,10 @@ type Props = {
   totalPages: number;
   totalCount?: number;
   pageSize?: number;
-  /** Number currently shown on this page — used in the "Showing X of Y"
-   *  caption when set. Falls back to ``pageSize``. */
+  /**
+   * Number currently shown on this page — used in the "Showing X of Y"
+   *  caption when set. Falls back to ``pageSize``.
+   */
   visibleCount?: number;
   onPageChange: (page: number) => void;
   /** Disable controls (e.g. while a request is in flight). */
@@ -47,24 +49,36 @@ export function DataPagination({
   className,
 }: Props) {
   if (totalPages <= 1) {
-    if (hideCount || totalCount === undefined) return null;
+    if (hideCount || totalCount === undefined) {
+      return null;
+    }
     return (
-      <p className={`text-center text-sm text-gray-500 ${className ?? ''}`}>
-        Showing {totalCount} {totalCount === 1 ? 'result' : 'results'}
+      <p className={`text-center text-sm text-muted-foreground ${className ?? ''}`}>
+        Showing
+        {' '}
+        {totalCount}
+        {' '}
+        {totalCount === 1 ? 'result' : 'results'}
       </p>
     );
   }
 
   const goTo = (page: number) => {
-    if (disabled) return;
-    if (page < 1 || page > totalPages || page === currentPage) return;
+    if (disabled) {
+      return;
+    }
+    if (page < 1 || page > totalPages || page === currentPage) {
+      return;
+    }
     onPageChange(page);
   };
 
   const windowStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
   const windowEnd = Math.min(totalPages, windowStart + 4);
   const windowPages: number[] = [];
-  for (let p = windowStart; p <= windowEnd; p++) windowPages.push(p);
+  for (let p = windowStart; p <= windowEnd; p++) {
+    windowPages.push(p);
+  }
 
   const showLeadingFirst = windowStart > 1;
   const showLeadingEllipsis = windowStart > 2;
@@ -72,8 +86,8 @@ export function DataPagination({
   const showTrailingEllipsis = windowEnd < totalPages - 1;
 
   const shown = visibleCount ?? pageSize;
-  const showingCaption =
-    !hideCount && totalCount !== undefined && shown !== undefined
+  const showingCaption
+    = !hideCount && totalCount !== undefined && shown !== undefined
       ? `Showing ${shown} of ${totalCount} ${totalCount === 1 ? 'result' : 'results'}`
       : null;
 
@@ -110,7 +124,7 @@ export function DataPagination({
             </PaginationItem>
           )}
 
-          {windowPages.map((p) => (
+          {windowPages.map(p => (
             <PaginationItem key={p}>
               <PaginationLink
                 onClick={() => goTo(p)}
@@ -154,7 +168,7 @@ export function DataPagination({
       </Pagination>
 
       {showingCaption && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{showingCaption}</p>
+        <p className="text-xs text-muted-foreground">{showingCaption}</p>
       )}
     </div>
   );

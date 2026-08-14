@@ -73,7 +73,7 @@ export function ProcessingControls() {
           </GraphiteButton>
         </div>
 
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-muted-foreground">
           {selectedFootballers.size > 0
             ? (
                 <>
@@ -100,7 +100,7 @@ export function ProcessingControls() {
             <label htmlFor="use-wikipedia-url" className="text-sm font-medium">
               Use Wikipedia URLs
             </label>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-muted-foreground">
               When available, use stored Wikipedia URLs of each player for career lookup
             </span>
           </div>
@@ -108,7 +108,7 @@ export function ProcessingControls() {
             id="use-wikipedia-url"
             checked={useWikipediaUrl}
             onCheckedChange={setUseWikipediaUrl}
-            className="data-[state=unchecked]:bg-gray-200 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600 dark:data-[state=unchecked]:bg-gray-700"
+            className="data-[state=unchecked]:bg-muted data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600"
           />
         </div>
 
@@ -118,7 +118,7 @@ export function ProcessingControls() {
               <label htmlFor="auto-sync-nations" className="text-sm font-medium">
                 Auto-sync National Teams
               </label>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-muted-foreground">
                 Automatically update national team stats in the DB during processing
               </span>
             </div>
@@ -126,7 +126,7 @@ export function ProcessingControls() {
               id="auto-sync-nations"
               checked={autoSyncNations}
               onCheckedChange={setAutoSyncNations}
-              className="data-[state=unchecked]:bg-gray-200 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-blue-600 dark:data-[state=unchecked]:bg-gray-700"
+              className="data-[state=unchecked]:bg-muted data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-blue-600"
             />
           </div>
         )}

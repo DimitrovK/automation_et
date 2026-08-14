@@ -20,7 +20,7 @@ export function DurationSpread({ row }: { row: DurationRow }) {
   const { p25_seconds: p25, p75_seconds: p75, median_seconds: median, p90_seconds: p90 } = row;
 
   if (p25 === null || p25 === undefined || p75 === null || p75 === undefined || median === null) {
-    return <span className="text-xs text-gray-400 dark:text-gray-500">—</span>;
+    return <span className="text-xs text-muted-foreground/70">—</span>;
   }
 
   // Scaled against p90 rather than the longest session: one abandoned session
@@ -36,20 +36,20 @@ export function DurationSpread({ row }: { row: DurationRow }) {
       className="flex items-center gap-2"
       title={`25% of sessions under ${formatDuration(p25)} · half under ${formatDuration(median)} · 75% under ${formatDuration(p75)} · 90% under ${formatDuration(p90 ?? null)}`}
     >
-      <span className="relative h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
+      <span className="relative h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
         <span
-          className="absolute inset-y-0 rounded-full bg-gray-300 dark:bg-slate-500"
+          className="absolute inset-y-0 rounded-full bg-muted-foreground/40"
           style={{ left: `${left}%`, width: `${width}%` }}
         />
         {/* The median inside the range, because "the middle half runs 3–7
             minutes" and "the middle is at 4" are different facts and a reader
             needs both to judge whether the median represents anything. */}
         <span
-          className="absolute inset-y-0 w-0.5 bg-gray-900 dark:bg-white"
+          className="absolute inset-y-0 w-0.5 bg-foreground"
           style={{ left: `${Math.min(99, pct(median))}%` }}
         />
       </span>
-      <span className="whitespace-nowrap text-xs tabular-nums text-gray-500 dark:text-gray-400">
+      <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
         {formatDuration(p25)}
         –
         {formatDuration(p75)}

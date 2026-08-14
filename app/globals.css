@@ -12,74 +12,118 @@
 }
 
 @layer base {
+  /*
+   * The house palette.
+   *
+   * Surfaces are a COOL gray scale. Two earlier passes tinted them toward the
+   * brand green — first heavily, then faintly — and both were rejected as
+   * looking like green cards rather than surfaces. The tell was the app's own
+   * nav dropdown, which overrode the tokens with a cool gray-800 and read
+   * better than anything around it.
+   *
+   * Hue was the whole difference, not intensity: at 7% lightness the rejected
+   * green and the current #0d1117 have identical chroma. A green cast at
+   * surface scale reads as sickly; a cool one reads as neutral. A surface does
+   * not earn its character from hue — it earns it from lightness steps.
+   *
+   * Emerald is the ACCENT and is spent only on interactive state — active
+   * filters, links, focus rings, the primary action. It is never decorative and
+   * never a series colour, so "green" always means "you can act on this".
+   *
+   * Series colours are a separate system: per-game hues come from the backend
+   * registry (`GAME_STATS_REGISTRY.color` / `.color_dark`), and --chart-1..5
+   * below serve the charts with no game dimension (new-vs-returning, modes).
+   */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 210 29% 97%;
+    --foreground: 213 13% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 213 13% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --popover-foreground: 213 13% 14%;
+    /* emerald-600, not -500: white on -500 is 2.5:1, which fails on every
+       button the accent exists to make obvious. */
+    --primary: 161 94% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 25% 95%;
+    --secondary-foreground: 213 13% 14%;
+    --muted: 210 25% 95%;
+    --muted-foreground: 212 8% 43%;
+    --accent: 210 24% 93%;
+    --accent-foreground: 213 13% 14%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 18% 84%;
+    --input: 210 18% 84%;
+    --ring: 161 94% 30%;
+    /* Validated as a set, not picked by eye: OKLCH lightness band, chroma
+       floor, adjacent-pair separation under deutan/protan/tritan simulation,
+       and >= 3:1 against this surface. */
+    --chart-1: 161 94% 30%;
+    --chart-2: 200 98% 39%;
+    --chart-3: 32 95% 44%;
+    --chart-4: 263 70% 58%;
+    --chart-5: 347 77% 50%;
+    --radius: 0.625rem;
+    --sidebar-background: 210 25% 95%;
+    --sidebar-foreground: 213 13% 14%;
+    --sidebar-primary: 161 94% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 24% 93%;
+    --sidebar-accent-foreground: 213 13% 14%;
+    --sidebar-border: 210 18% 84%;
+    --sidebar-ring: 161 94% 30%;
   }
   .dark {
-    --background: 215 30% 12%;
-    --foreground: 0 0% 98%;
-    --card: 215 25% 20%;
-    --card-foreground: 0 0% 98%;
-    --popover: 215 25% 20%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 215 20% 25%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 215 20% 25%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 215 20% 25%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /*
+     * Four elevation steps, which is what a dark UI actually needs: page 7%,
+     * card 11%, popover 13%, and a border at 21% so every surface has an edge
+     * as well as a lift. An earlier pass ran page 5% / card 8% — three points
+     * apart — and cards sat flat with nothing to lift them off the page.
+     *
+     * The popover step exists because it was already being faked: the nav
+     * dropdown hardcoded dark:bg-gray-800 and a heavy shadow to escape a card
+     * colour that gave it nothing to sit on. A floating surface is lighter than
+     * the card beneath it, so the tokens say so.
+     */
+    --background: 216 28% 7%;
+    --foreground: 208 35% 93%;
+    --card: 215 21% 11%;
+    --card-foreground: 208 35% 93%;
+    --popover: 215 18% 13%;
+    --popover-foreground: 208 35% 93%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 216 28% 7%;
+    --secondary: 215 15% 15%;
+    --secondary-foreground: 208 35% 93%;
+    --muted: 215 15% 15%;
+    --muted-foreground: 212 9% 58%;
+    --accent: 215 15% 15%;
+    --accent-foreground: 208 35% 93%;
+    --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 215 15% 30%;
-    --input: 215 15% 30%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 212 12% 21%;
+    --input: 212 12% 21%;
+    --ring: 160 84% 39%;
+    /* Deliberately NOT the light steps brightened. The validator's dark
+       lightness band is 0.48–0.67 — *below* the light band, not above it — so
+       the intuitive "lighten everything for dark mode" move puts amber and
+       emerald out of band and washes them into the surface glow. Chart-4 and -5
+       shift a step lighter; chart-1..3 stay put, because they were already
+       correct for this surface. */
+    --chart-1: 161 94% 30%;
+    --chart-2: 200 98% 39%;
+    --chart-3: 32 95% 44%;
+    --chart-4: 258 90% 66%;
+    --chart-5: 350 89% 60%;
+    --sidebar-background: 215 21% 9%;
+    --sidebar-foreground: 208 35% 93%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 216 28% 7%;
+    --sidebar-accent: 215 15% 15%;
+    --sidebar-accent-foreground: 208 35% 93%;
+    --sidebar-border: 212 12% 21%;
+    --sidebar-ring: 160 84% 39%;
   }
 }
 
@@ -89,6 +133,22 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /*
+   * One focus ring, on everything focusable.
+   *
+   * The shadcn primitives each declare their own; the app's own controls
+   * — segmented filters, nav links, sortable column headers, game badges —
+   * declared none at all, so keyboard focus fell back to whatever the
+   * browser draws and looked different on every control.
+   *
+   * `:focus-visible` rather than `:focus`, so it appears for keyboard
+   * navigation and not on every mouse click. Matching the primitives'
+   * values means this is invisible where they already handle it.
+   */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }
 

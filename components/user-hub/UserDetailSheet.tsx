@@ -25,8 +25,8 @@ type Props = {
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-gray-100 py-1.5 text-sm dark:border-gray-800">
-      <span className="text-gray-500">{label}</span>
+    <div className="flex justify-between gap-4 border-b border-border py-1.5 text-sm">
+      <span className="text-muted-foreground">{label}</span>
       <span className="text-right font-medium">{value ?? '—'}</span>
     </div>
   );
@@ -98,13 +98,13 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
           <TabsContent value="favourites" className="mt-3">
             {user.favourite_games.length === 0
               ? (
-                  <p className="py-6 text-center text-sm text-gray-500">No favourite games.</p>
+                  <p className="py-6 text-center text-sm text-muted-foreground">No favourite games.</p>
                 )
               : (
                   <ol className="space-y-1">
                     {user.favourite_games.map((g, i) => (
                       <li key={g} className="flex items-center gap-2 text-sm">
-                        <span className="w-5 font-mono text-xs text-gray-400">
+                        <span className="w-5 font-mono text-xs text-muted-foreground/70">
                           {i + 1}
                           .
                         </span>
@@ -117,11 +117,11 @@ export function UserDetailSheet({ user, open, onOpenChange }: Props) {
 
           <TabsContent value="audit" className="mt-3">
             <div className="space-y-3 py-4 text-center">
-              <ShieldBan className="mx-auto size-8 text-gray-300" />
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              <ShieldBan className="mx-auto size-8 text-muted-foreground" />
+              <p className="text-sm font-medium text-muted-foreground">
                 Suspension history & audit trail
               </p>
-              <p className="mx-auto max-w-xs text-xs text-gray-500">
+              <p className="mx-auto max-w-xs text-xs text-muted-foreground">
                 <History className="mr-1 inline size-3" />
                 Coming in Phase 2 — per-user suspension history and a "who changed what"
                 audit log (see backend issue #1246). For now, changes are made and tracked

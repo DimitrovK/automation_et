@@ -35,8 +35,8 @@ export function PlayStyleBadge({ played, mp }: { played: number; mp?: number }) 
       className={cn(
         'inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium',
         emphasised
-          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
-          : 'bg-gray-100 text-gray-600 dark:bg-slate-700/60 dark:text-gray-300',
+          ? 'bg-primary/10 text-primary'
+          : 'bg-muted text-muted-foreground',
       )}
     >
       {style.label}

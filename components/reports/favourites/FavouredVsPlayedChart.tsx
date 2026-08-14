@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,14 +32,21 @@ type Props = {
  * its own steps, and the light ramp inverts there (on dark, brighter reads as
  * deeper, not lighter).
  */
-const FUNNEL_LIGHT = ['#10b981', '#047857', '#064e3b'];
-const FUNNEL_DARK = ['#065f46', '#10b981', '#6ee7b7'];
+/*
+ * Three distinct hues — see MultiplayerFunnel.stageRamp. Favourited, started and
+ * finished are different measures rather than steps of one, and a single-hue
+ * ramp put two of these bars 0.064 apart in luminance on a light surface, which
+ * is not a difference anyone can read.
+ */
+function funnelRamp(isDark: boolean): string[] {
+  return chartTheme(isDark).series.slice(0, 3);
+}
 
 export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, meta, onRetry }: Props) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   const theme = chartTheme(isDark);
-  const funnel = isDark ? FUNNEL_DARK : FUNNEL_LIGHT;
+  const funnel = funnelRamp(isDark);
 
   const rows = useMemo(() => (data ? sortEngagementRows(data.games) : []), [data]);
 
@@ -49,7 +57,7 @@ export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, met
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Favourited vs played</CardTitle>
+        <CardTitle>Favourited vs played</CardTitle>
         <p className="text-xs text-muted-foreground">
           Of the users who favourited a game, how many started it and how many finished.
           A wide gap between the first two bars is a game people mean to play and don't.
@@ -68,7 +76,7 @@ export function FavouredVsPlayedChart({ data, isLoading, error, notDeployed, met
         )}
 
         {!isLoading && !error && rows.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500">No engagement data yet.</p>
+          <EmptyState hint="Try a wider date range.">No favourited games were played in this window.</EmptyState>
         )}
 
         {!isLoading && !error && rows.length > 0 && (

@@ -66,7 +66,7 @@ export function ReachDepthChart({ rows, meta }: { rows: GameTotals[]; meta: Game
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Reach vs depth</CardTitle>
+        <CardTitle>Reach vs depth</CardTitle>
         <CardDescription>
           How many people played each game, against how often each of them played it.
           {contrast && (
@@ -152,10 +152,10 @@ export function ReachDepthChart({ rows, meta }: { rows: GameTotals[]; meta: Game
             const members = data.filter(point => point.quadrant === quadrant);
             return (
               <div key={quadrant}>
-                <dt className="font-medium text-gray-900 dark:text-white">{QUADRANT_LABELS[quadrant]}</dt>
-                <dd className="text-gray-600 dark:text-gray-300">
+                <dt className="font-medium text-foreground">{QUADRANT_LABELS[quadrant]}</dt>
+                <dd className="text-muted-foreground">
                   {members.length === 0
-                    ? <span className="text-gray-400 dark:text-gray-500">none</span>
+                    ? <span className="text-muted-foreground/70">none</span>
                     : members.map(point => point.name).join(', ')}
                 </dd>
               </div>

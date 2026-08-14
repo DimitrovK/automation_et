@@ -20,7 +20,7 @@ type Props = {
 export function UserTable({ users, onSelect }: Props) {
   if (users.length === 0) {
     return (
-      <div className="rounded-md border p-8 text-center text-sm text-gray-500">
+      <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
         No users match your filters.
       </div>
     );
@@ -56,7 +56,7 @@ export function UserTable({ users, onSelect }: Props) {
               }}
               className="cursor-pointer"
             >
-              <TableCell className="text-right font-mono text-xs text-gray-500">
+              <TableCell className="text-right font-mono text-xs text-muted-foreground">
                 #
                 {u.id}
               </TableCell>
@@ -70,11 +70,11 @@ export function UserTable({ users, onSelect }: Props) {
                       : u.is_staff
                         ? <span className="ml-2 text-xs text-emerald-600" title="Staff">◆</span>
                         : null}
-                    {!u.is_active && <span className="ml-2 text-xs text-gray-400">(inactive)</span>}
+                    {!u.is_active && <span className="ml-2 text-xs text-muted-foreground/70">(inactive)</span>}
                   </span>
                 </span>
               </TableCell>
-              <TableCell className="hidden text-sm text-gray-600 dark:text-gray-300 md:table-cell">
+              <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                 {u.email || '—'}
               </TableCell>
               <TableCell><FavouriteGamesBadges games={u.favourite_games} /></TableCell>

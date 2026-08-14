@@ -58,7 +58,7 @@ export function PlayerList() {
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center space-x-2">
                   <div className="size-4 animate-spin rounded-full border-b-2 border-emerald-600"></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Loading footballers...</span>
+                  <span className="text-sm text-muted-foreground">Loading footballers...</span>
                 </div>
               </div>
             )
@@ -70,9 +70,9 @@ export function PlayerList() {
 
                 {footballers.length === 0 && (
                   <div className="py-12 text-center">
-                    <Users className="mx-auto mb-4 size-12 text-gray-400" />
-                    <p className="text-lg text-gray-500">No players found with current filters</p>
-                    <p className="mt-1 text-sm text-gray-400">Try adjusting your filter criteria</p>
+                    <Users className="mx-auto mb-4 size-12 text-muted-foreground/70" />
+                    <p className="text-lg text-muted-foreground">No players found with current filters</p>
+                    <p className="mt-1 text-sm text-muted-foreground/70">Try adjusting your filter criteria</p>
                   </div>
                 )}
               </div>
@@ -80,7 +80,7 @@ export function PlayerList() {
       </CardContent>
 
       {totalPages > 1 && (
-        <div className="border-t border-gray-200 px-6 py-4 dark:border-gray-700">
+        <div className="border-t border-border px-6 py-4">
           <DataPagination
             currentPage={currentPage}
             totalPages={totalPages}

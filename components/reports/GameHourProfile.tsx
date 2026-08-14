@@ -24,7 +24,7 @@ export function GameHourProfile({ data, gameLabel }: { data: PatternsResponse; g
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">When it's played</CardTitle>
+        <CardTitle>When it's played</CardTitle>
         <CardDescription>
           {`${gameLabel}'s own play across the day, in ${data.timezone}. Busiest hour: `}
           <strong>
@@ -55,7 +55,7 @@ export function GameHourProfile({ data, gameLabel }: { data: PatternsResponse; g
             );
           })}
         </ul>
-        <div className="mt-1 flex justify-between text-[10px] text-gray-400 dark:text-gray-500">
+        <div className="mt-1 flex justify-between text-[10px] text-muted-foreground/70">
           <span>00:00</span>
           <span>06:00</span>
           <span>12:00</span>

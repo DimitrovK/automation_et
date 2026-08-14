@@ -27,8 +27,8 @@ export function MetricToggle({ value, onChange }: {
             className={cn(
               'rounded px-2.5 py-1 text-sm font-medium transition-colors',
               option.key === value
-                ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
-                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+                ? 'bg-primary/10 text-primary shadow-sm'
+                : 'text-muted-foreground hover:bg-muted',
             )}
           >
             {option.label}

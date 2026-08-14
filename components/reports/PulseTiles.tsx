@@ -2,7 +2,7 @@
 
 import type { ActivityMetrics, Pulse, PulseMetric } from '@/types/reports';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { StatTile } from '@/components/reports/StatTile';
 import { cn } from '@/lib/utils';
 
 const TILES: { key: keyof ActivityMetrics; label: string; hint: string }[] = [
@@ -28,7 +28,7 @@ function Delta({ metric }: { metric: PulseMetric }) {
         ? 'new — no usual level'
         : 'no comparison';
     return (
-      <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
         <Minus className="size-3" />
         {reason}
       </span>
@@ -45,7 +45,7 @@ function Delta({ metric }: { metric: PulseMetric }) {
       className={cn(
         'flex items-center gap-1 text-xs font-medium',
         flat
-          ? 'text-gray-500 dark:text-gray-400'
+          ? 'text-muted-foreground'
           : up
             ? 'text-emerald-600 dark:text-emerald-400'
             : 'text-red-600 dark:text-red-400',
@@ -85,7 +85,7 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
           nothing on screen said what it was comparing, which is what let that
           survive. */}
       {partial && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-muted-foreground">
           {`Today so far, against the same ${sharePct}% of a typical day — `}
           {`by this point a typical ${pulse.weekday} has seen `}
           {`${sharePct}% of its play, so the comparison is like for like.`}
@@ -96,14 +96,13 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
         {TILES.map(({ key, label, hint }) => {
           const metric = pulse.metrics[key];
           return (
-            <Card key={key}>
-              <CardContent className="space-y-1 p-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {metric.today.toLocaleString()}
-                </p>
-                <Delta metric={metric} />
-                <p className="pt-1 text-xs text-gray-500 dark:text-gray-400">
+            <StatTile
+              key={key}
+              label={label}
+              value={metric.today.toLocaleString()}
+              delta={<Delta metric={metric} />}
+              hint={(
+                <>
                   {hint}
                   {' · '}
                   {metric.baseline_same_weekday === null
@@ -112,16 +111,16 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
                     // the baseline IS the whole weekday, and saying "by now"
                     // would keep implying a partial comparison that has ended.
                     : `typical ${pulse.weekday}${partial ? ' by now' : ''}: ${metric.baseline_same_weekday.toLocaleString()}`}
-                </p>
-                {/* On a part-day, the whole-day figure answers a different
-                    question — what today is heading for, not how it compares. */}
-                {partial && metric.baseline_full_day !== null && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
-                    {`Full ${pulse.weekday}: ${metric.baseline_full_day.toLocaleString()}`}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                  {/* On a part-day, the whole-day figure answers a different
+                      question — what today is heading for, not how it compares. */}
+                  {partial && metric.baseline_full_day !== null && (
+                    <span className="mt-1 block text-muted-foreground/70">
+                      {`Full ${pulse.weekday}: ${metric.baseline_full_day.toLocaleString()}`}
+                    </span>
+                  )}
+                </>
+              )}
+            />
           );
         })}
       </div>

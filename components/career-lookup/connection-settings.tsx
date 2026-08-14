@@ -126,16 +126,16 @@ export function ConnectionSettings({
                   Test
                 </Button>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Enter your n8n webhook URL. Player search requests will be sent directly to this URL.
               </p>
             </div>
           </div>
 
           {debugInfo && debugInfo.length > 0 && (
-            <div className="max-h-32 overflow-y-auto rounded-lg bg-gray-100 p-3 dark:bg-slate-700">
+            <div className="max-h-32 overflow-y-auto rounded-lg bg-muted p-3">
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-medium dark:text-white">Connection Test Results:</p>
+                <p className="text-sm font-medium">Connection Test Results:</p>
                 <Badge variant="outline" className="text-xs">
                   Direct:
                   {' '}
@@ -143,7 +143,7 @@ export function ConnectionSettings({
                 </Badge>
               </div>
               {debugInfo.map((info, index) => (
-                <p key={index} className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                <p key={index} className="font-mono text-xs text-foreground/80">
                   {info}
                 </p>
               ))}

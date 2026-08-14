@@ -5,6 +5,7 @@ import type { GameTotals, MetricKey } from '@/types/reports';
 import { ChevronDown, ChevronRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
@@ -17,14 +18,14 @@ function rate(value: number | null, suffix = '%'): string {
 
 function Trend({ pct }: { pct: number | null }) {
   if (pct === null) {
-    return <span className="text-gray-400">—</span>;
+    return <span className="text-muted-foreground/70">—</span>;
   }
   const flat = Math.abs(pct) < 5;
   const Icon = flat ? Minus : pct > 0 ? TrendingUp : TrendingDown;
   return (
     <span className={cn(
       'inline-flex items-center justify-end gap-1 tabular-nums',
-      flat ? 'text-gray-500 dark:text-gray-400' : pct > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400',
+      flat ? 'text-muted-foreground' : pct > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400',
     )}
     >
       <Icon className="size-3" />
@@ -39,7 +40,7 @@ function Trend({ pct }: { pct: number | null }) {
 function VolumeBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.max(2, (value / max) * 100) : 0;
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
       <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
     </div>
   );
@@ -78,7 +79,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
       </CardHeader>
       <CardContent className="space-y-1">
         {/* Header row — hidden on small screens, where the expanded panel carries it. */}
-        <div className="hidden items-center gap-3 border-b px-2 pb-2 text-xs font-medium text-gray-500 dark:border-slate-700 dark:text-gray-400 md:flex">
+        <div className="hidden items-center gap-3 border-b px-2 pb-2 text-xs font-medium text-muted-foreground md:flex">
           <span className="w-6" />
           <span className="flex-1">Game</span>
           <span className="w-20 text-right">Played</span>
@@ -88,9 +89,9 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
         </div>
 
         {active.length === 0 && (
-          <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <EmptyState>
             No games played in this window.
-          </p>
+          </EmptyState>
         )}
 
         {active.map((row) => {
@@ -105,7 +106,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                 'rounded-md border transition-colors',
                 isSelected
                   ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10'
-                  : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800',
+                  : 'border-transparent hover:bg-muted/50',
               )}
             >
               <div className="flex flex-wrap items-center gap-3 p-2 md:flex-nowrap">
@@ -114,7 +115,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                   aria-expanded={isOpen}
                   aria-label={isOpen ? 'Collapse details' : 'Expand details'}
                   onClick={() => setExpanded(isOpen ? null : row.game_type)}
-                  className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  className="text-muted-foreground/70 hover:text-foreground/80"
                 >
                   {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                 </button>
@@ -129,7 +130,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                   <VolumeBar value={row[metric]} max={max} color={color} />
                 </div>
 
-                <span className="w-20 text-right text-sm font-medium tabular-nums text-gray-900 dark:text-white">
+                <span className="w-20 text-right text-sm font-medium tabular-nums text-foreground">
                   {row[metric].toLocaleString()}
                 </span>
                 <span className="w-24 text-right text-sm tabular-nums">{rate(row.completion_pct)}</span>
@@ -140,7 +141,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
               </div>
 
               {isOpen && (
-                <dl className="grid grid-cols-2 gap-3 border-t px-4 py-3 text-sm dark:border-slate-700 sm:grid-cols-3 lg:grid-cols-6">
+                <dl className="grid grid-cols-2 gap-3 border-t px-4 py-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
                   {[
                     ['Started', row.games_started.toLocaleString()],
                     ['Finished', row.games_finished.toLocaleString()],
@@ -153,8 +154,8 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                     ['Previous window', row.previous_games_started.toLocaleString()],
                   ].map(([label, value]) => (
                     <div key={label as string}>
-                      <dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt>
-                      <dd className="font-medium tabular-nums text-gray-900 dark:text-white">{value}</dd>
+                      <dt className="text-xs text-muted-foreground">{label}</dt>
+                      <dd className="font-medium tabular-nums text-foreground">{value}</dd>
                     </div>
                   ))}
                   <div className="col-span-2 sm:col-span-3 lg:col-span-6">

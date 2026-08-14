@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
 import { popularityRows } from '@/lib/favourites-chart';
@@ -48,7 +49,7 @@ export function GamePopularityChart({ gamePopularity, meta, onGameSelect }: Prop
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Game popularity</CardTitle>
+        <CardTitle>Game popularity</CardTitle>
         <p className="text-xs text-muted-foreground">
           Users who have this game in their favourites.
           {interactive && ' Click a game to see who.'}
@@ -57,9 +58,7 @@ export function GamePopularityChart({ gamePopularity, meta, onGameSelect }: Prop
       <CardContent>
         {data.length === 0
           ? (
-              <p className="py-8 text-center text-sm text-gray-500">
-                No favourites recorded yet.
-              </p>
+              <EmptyState>No favourites recorded yet.</EmptyState>
             )
           : (
               <div style={{ height: Math.max(160, data.length * 40) }}>

@@ -225,12 +225,12 @@ export function SeniorCareerCard({
               Complete club history and statistics
               {footballerId
                 ? (
-                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       💡 You can sync club stats here directly, or they will be included when you click Deploy/Update Footballer below.
                     </span>
                   )
                 : (
-                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       📋 Club stats will be created automatically when you deploy the footballer below.
                     </span>
                   )}
@@ -385,30 +385,30 @@ export function SeniorCareerCard({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+              <tr className="border-b border-border">
+                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Club
                 </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Apps
                 </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Goals
                 </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Transfer
                 </th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Season
                 </th>
                 {/* Only show Data Source column if there are any conflicts */}
                 {hasAnyTeamConflicts() && (
-                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
                     <div className="flex items-center justify-center gap-1">
                       Data Source
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <HelpCircle className="size-3 cursor-help text-gray-400 hover:text-gray-600" />
+                          <HelpCircle className="size-3 cursor-help text-muted-foreground/70 hover:text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="max-w-48 text-xs">
@@ -421,10 +421,10 @@ export function SeniorCareerCard({
                     </div>
                   </th>
                 )}
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Status
                 </th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                   Actions
                 </th>
               </tr>
@@ -577,7 +577,7 @@ export function SeniorCareerCard({
                 return (
                   <tr
                     key={`${index}-${team.teamName}-${source}`}
-                    className={`border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700/50 ${
+                    className={`border-b border-border transition-colors hover:bg-muted/50 ${
                       !team.teamFound
                         ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
                         : hasAnyConflicts
@@ -589,7 +589,7 @@ export function SeniorCareerCard({
                       <div className="flex items-center gap-2">
                         <div>
                           <div
-                            className={`font-medium ${!team.teamFound ? 'text-red-700 dark:text-red-400' : 'text-gray-900 dark:text-white'} flex items-center gap-1`}
+                            className={`font-medium ${!team.teamFound ? 'text-red-700 dark:text-red-400' : 'text-foreground'} flex items-center gap-1`}
                           >
                             {!team.teamFound && <AlertTriangle className="size-4 text-red-500" />}
                             {isDifferentTeam && source === 'database' && <Shield className="size-4 text-emerald-600" />}
@@ -597,7 +597,7 @@ export function SeniorCareerCard({
                             {team.teamName}
                           </div>
                           {team.originalTeamName !== team.teamName && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="text-xs text-muted-foreground">
                               (
                               {team.originalTeamName}
                               )
@@ -624,7 +624,7 @@ export function SeniorCareerCard({
                       </div>
                     </td>
                     <td className="px-2 py-3 text-center">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-foreground">
                         {(() => {
                           // If different team or no DB team, use wiki data
                           if (isDifferentTeam || !dbTeam) {
@@ -642,7 +642,7 @@ export function SeniorCareerCard({
                       </div>
                     </td>
                     <td className="px-2 py-3 text-center">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-foreground">
                         {(() => {
                           // If different team or no DB team, use wiki data
                           if (isDifferentTeam || !dbTeam) {
@@ -690,7 +690,7 @@ export function SeniorCareerCard({
                       </Badge>
                     </td>
                     <td className="px-2 py-3 text-sm">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-foreground">
                         {(() => {
                           let joinYear = team.joinYear;
                           let departYear = team.departYear;
@@ -781,7 +781,7 @@ export function SeniorCareerCard({
                               )
                             : (
                                 <div className="space-y-1">
-                                  <span className="text-xs text-gray-500">Wikipedia</span>
+                                  <span className="text-xs text-muted-foreground">Wikipedia</span>
                                   <div className="text-xs text-green-600 dark:text-green-400">
                                     No conflicts
                                   </div>
@@ -877,7 +877,7 @@ export function SeniorCareerCard({
                               </a>
                             )
                           : (
-                              <span className="text-xs text-gray-400">No link</span>
+                              <span className="text-xs text-muted-foreground/70">No link</span>
                             )}
                       </div>
                     </td>
@@ -886,20 +886,20 @@ export function SeniorCareerCard({
               })}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-gray-300 bg-gray-50 dark:border-slate-600 dark:bg-slate-700/30">
-                <td className="px-2 py-3 font-semibold text-gray-700 dark:text-gray-300">
+              <tr className="border-t-2 border-border bg-muted/50">
+                <td className="px-2 py-3 font-semibold text-foreground/80">
                   {playerData.summary.totalTeams}
                   {' '}
                   clubs
                 </td>
-                <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                <td className="px-2 py-3 text-center font-semibold text-foreground">
                   {playerData.totalAppearances}
                 </td>
-                <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                <td className="px-2 py-3 text-center font-semibold text-foreground">
                   {playerData.totalGoals}
                 </td>
-                <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">-</td>
-                <td className="px-2 py-3 font-semibold text-gray-900 dark:text-white">Total</td>
+                <td className="px-2 py-3 text-center font-semibold text-foreground">-</td>
+                <td className="px-2 py-3 font-semibold text-foreground">Total</td>
                 {/* Only show Data Source column if there are any conflicts */}
                 {hasAnyTeamConflicts() && (
                   <td className="px-2 py-3 text-center">

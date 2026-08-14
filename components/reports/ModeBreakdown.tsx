@@ -5,6 +5,7 @@ import type { MultiplayerModeRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
@@ -54,9 +55,9 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
       <CardContent className="space-y-6">
         {modes.length === 0
           ? (
-              <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              <EmptyState>
                 No multiplayer rooms in this window.
-              </p>
+              </EmptyState>
             )
           : (
               <>
@@ -81,8 +82,8 @@ export function ModeBreakdown({ rows, meta, onSelectGame }: {
                   {modes.map(mode => (
                     <div key={mode.mode} className="space-y-2">
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{mode.mode}</h4>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <h4 className="text-sm font-semibold text-foreground">{mode.mode}</h4>
+                        <span className="text-xs text-muted-foreground">
                           {mode.rooms_created.toLocaleString()}
                           {' rooms · '}
                           {mode.rooms_started.toLocaleString()}

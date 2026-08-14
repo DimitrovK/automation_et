@@ -25,7 +25,7 @@ export function CreateFootballer({
   createForm,
   createLoading,
   nations,
-  nationsLoading,
+  nationsLoading: _nationsLoading,
   onFormChange,
   onCreateFootballer,
 }: CreateFootballerProps) {
@@ -42,7 +42,7 @@ export function CreateFootballer({
   const otherNations = useMemo(() => {
     const ids = createForm.other_nation_ids ?? [];
     return ids
-      .map((id) => nations.find((n) => n.id === id))
+      .map(id => nations.find(n => n.id === id))
       .filter((n): n is FootballerNation => Boolean(n));
   }, [createForm.other_nation_ids, nations]);
 
@@ -50,7 +50,7 @@ export function CreateFootballer({
     <div className="space-y-6">
       <div>
         <h4 className="mb-2 text-sm font-medium">Create New Footballer</h4>
-        <p className="mb-4 text-xs text-gray-500">Create a new footballer entry with the required information.</p>
+        <p className="mb-4 text-xs text-muted-foreground">Create a new footballer entry with the required information.</p>
 
         {/* Status - First and alone */}
         <div className="mb-4 grid grid-cols-1 gap-4">
@@ -109,7 +109,7 @@ export function CreateFootballer({
             <Label>Nation</Label>
             <NationCombobox
               value={createForm.nation_id || null}
-              onChange={(id) => updateForm({ nation_id: id })}
+              onChange={id => updateForm({ nation_id: id })}
               placeholder="Search and pick a nation…"
             />
           </div>
@@ -121,10 +121,10 @@ export function CreateFootballer({
             <Label>Other Nationalities</Label>
             <NationsMultiSelect
               value={otherNations}
-              onChange={(arr) => updateForm({ other_nation_ids: arr.map((n) => n.id) })}
+              onChange={arr => updateForm({ other_nation_ids: arr.map(n => n.id) })}
               excludeIds={createForm.nation_id ? [createForm.nation_id] : []}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Optional: dual citizenship. The primary nation above is excluded from this list.
             </p>
           </div>
@@ -140,7 +140,7 @@ export function CreateFootballer({
               value={createForm.wikipedia_url || ''}
               onChange={e => updateForm({ wikipedia_url: e.target.value || null })}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Optional: Link to the player's Wikipedia page
             </p>
           </div>
@@ -179,7 +179,7 @@ export function CreateFootballer({
         </div>
 
         {/* Game eligibility group — three switches side-by-side. */}
-        <div className="mb-4 rounded-md border bg-gray-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+        <div className="mb-4 rounded-md border bg-muted/50 p-3">
           <Label className="mb-2 block text-sm font-medium">Game Eligibility</Label>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex items-center space-x-2">

@@ -3,6 +3,7 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { RetentionGameRow, RetentionResponse, RetentionSummaryCell } from '@/types/reports';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -42,7 +43,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Which games keep people</CardTitle>
+        <CardTitle>Which games keep people</CardTitle>
         <CardDescription>
           Each game measured on its own players: of those whose first day in it was X, how
           many came back to
@@ -54,16 +55,14 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
         </CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
-              <th className="py-2 pr-4 font-medium">Game</th>
-              {offsets.map(key => (
-                <th key={key} className="py-2 pr-4 text-right font-medium uppercase">{key}</th>
-              ))}
-              <th className="py-2 text-right font-medium">Players</th>
-            </tr>
-          </thead>
+        <ReportTable>
+          <ReportHead>
+            <Th>Game</Th>
+            {offsets.map(key => (
+              <Th key={key} align="right" className="uppercase">{key}</Th>
+            ))}
+            <Th align="right">Players</Th>
+          </ReportHead>
           <tbody>
             {rows.map((row) => {
               // The first offset the row actually carries, not the first one
@@ -75,10 +74,10 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                 0,
               );
               return (
-                <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
-                  <td className="py-2 pr-4">
+                <ReportRow key={row.game_type}>
+                  <Td>
                     <GameBadge gameKey={row.game_type} meta={meta} />
-                  </td>
+                  </Td>
                   {offsets.map((key) => {
                     const value = cell(row, key);
                     const pct = value?.pct ?? null;
@@ -89,11 +88,11 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                     const above = pct !== null && peer !== null && peer !== undefined && pct > peer;
                     const below = pct !== null && peer !== null && peer !== undefined && pct < peer;
                     return (
-                      <td key={key} className="py-2 pr-4 text-right tabular-nums">
+                      <Td key={key} align="right">
                         {pct === null
                           ? (
                               <span
-                                className="text-gray-400 dark:text-gray-500"
+                                className="text-muted-foreground/70"
                                 title={value?.below_threshold
                                   ? `Only ${value.players} players — too few to state a rate`
                                   : 'No cohort has reached this offset yet'}
@@ -111,29 +110,29 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                                 %
                               </span>
                             )}
-                      </td>
+                      </Td>
                     );
                   })}
-                  <td className="py-2 text-right tabular-nums text-gray-500 dark:text-gray-400">
+                  <Td align="right" className="text-muted-foreground">
                     {players.toLocaleString()}
-                  </td>
-                </tr>
+                  </Td>
+                </ReportRow>
               );
             })}
           </tbody>
           <tfoot>
-            <tr className="text-gray-500 dark:text-gray-400">
-              <td className="py-2 pr-4 text-xs">Median across games</td>
+            <ReportRow className="text-muted-foreground">
+              <Td className="text-xs">Median across games</Td>
               {offsets.map(key => (
-                <td key={key} className="py-2 pr-4 text-right text-xs tabular-nums">
+                <Td key={key} align="right" className="text-xs">
                   {median[key] === null || median[key] === undefined ? '—' : `${median[key]}%`}
-                </td>
+                </Td>
               ))}
-              <td />
-            </tr>
+              <Td />
+            </ReportRow>
           </tfoot>
-        </table>
-        <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+        </ReportTable>
+        <p className="mt-3 text-xs text-muted-foreground">
           {`A dash means no rate could be stated: either no cohort has reached that offset yet, or the game had fewer than ${data.min_players ?? 20} measurable players — one of three returning is 33%, which beside a game with hundreds reads as a finding rather than as noise.`}
         </p>
       </CardContent>

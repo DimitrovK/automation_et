@@ -3,18 +3,19 @@
 import type { RangeState } from '@/lib/report-range';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar, FilterGroup, Segmented } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -80,7 +81,7 @@ export default function PlayersReportPage() {
 
   // ReportsAPI methods are static, so the reference is already stable across
   // renders — no useCallback needed to stop useReport's effect re-firing.
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getTopPlayers,
     params,
     enabled,
@@ -146,8 +147,8 @@ export default function PlayersReportPage() {
                 className={cn(
                   'rounded px-2.5 py-1 text-sm font-medium transition-colors',
                   sortBy === key
-                    ? 'bg-emerald-100 text-emerald-800 shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60',
+                    ? 'bg-primary/10 text-primary shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted',
                 )}
               >
                 {label}
@@ -159,14 +160,14 @@ export default function PlayersReportPage() {
 
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
-          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <span className="text-sm text-foreground/80">Filtered to</span>
           <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
         </div>
       )}
 
       <div className="flex justify-end">
         <ExportButton
-          rows={data?.players ?? []}
+          rows={state.data?.players ?? []}
           view="players"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
@@ -185,85 +186,81 @@ export default function PlayersReportPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-96 w-full" />
-          : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Most active — last
-                    {' '}
-                    {data.window}
-                    {' '}
-                    days
-                  </CardTitle>
-                  <CardDescription>
-                    Games played counts sessions started, matching the Daily Pulse.
-                    Multiplayer sessions are included in that total — the Style column
-                    says how much of it they are, which is the difference between a solo
-                    grinder and a lobby regular.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
-                        <th className="py-2 pr-4 font-medium">#</th>
-                        <th className="py-2 pr-4 font-medium">Player</th>
-                        <th className="py-2 pr-4 text-right font-medium">Played</th>
-                        <th className="py-2 pr-4 text-right font-medium">Finished</th>
-                        <th className="py-2 pr-4 font-medium">Style</th>
-                        <th className="py-2 font-medium">Games</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.players.map((player, index) => (
-                        <tr key={player.user_id} className="border-b last:border-0 dark:border-slate-700">
-                          <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{index + 1}</td>
-                          <td className="py-2 pr-4 font-medium">
-                            {/* The drill-down existed and worked; nothing linked
-                                to it, so the only way in was typing a URL. */}
-                            <Link
-                              href={`/reports/players/${player.user_id}`}
-                              className="text-emerald-700 hover:underline dark:text-emerald-400"
-                            >
-                              {player.username}
-                            </Link>
-                          </td>
-                          <td className="py-2 pr-4 text-right">{player.games_played.toLocaleString()}</td>
-                          <td className="py-2 pr-4 text-right">{player.games_finished.toLocaleString()}</td>
-                          <td className="py-2 pr-4">
-                            <PlayStyleBadge played={player.games_played} mp={player.mp_sessions} />
-                          </td>
-                          <td className="py-2">
-                            <div className="flex flex-wrap gap-1">
-                              {player.games.map(playedGame => (
-                                <GameBadge
-                                  key={playedGame}
-                                  gameKey={playedGame}
-                                  meta={meta}
-                                  active={game === playedGame}
-                                  onClick={key => setGame(game === key ? null : key)}
-                                />
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {data.players.length === 0 && (
-                    <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                      {search
-                        ? `No player matching "${search}" played in this window.`
-                        : 'Nobody played in this window.'}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Most active — last
+                {' '}
+                {data.window}
+                {' '}
+                days
+              </CardTitle>
+              <CardDescription>
+                Games played counts sessions started, matching the Daily Pulse.
+                Multiplayer sessions are included in that total — the Style column
+                says how much of it they are, which is the difference between a solo
+                grinder and a lobby regular.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <ReportTable>
+                <ReportHead>
+                  <Th>#</Th>
+                  <Th>Player</Th>
+                  <Th align="right">Played</Th>
+                  <Th align="right">Finished</Th>
+                  <Th>Style</Th>
+                  <Th>Games</Th>
+                </ReportHead>
+                <tbody>
+                  {data.players.map((player, index) => (
+                    <ReportRow key={player.user_id}>
+                      <Td className="text-muted-foreground">{index + 1}</Td>
+                      <Td className="font-medium">
+                        {/* The drill-down existed and worked; nothing linked
+                            to it, so the only way in was typing a URL. */}
+                        <Link
+                          href={`/reports/players/${player.user_id}`}
+                          className="text-emerald-700 hover:underline dark:text-emerald-400"
+                        >
+                          {player.username}
+                        </Link>
+                      </Td>
+                      <Td align="right">{player.games_played.toLocaleString()}</Td>
+                      <Td align="right">{player.games_finished.toLocaleString()}</Td>
+                      <Td>
+                        <PlayStyleBadge played={player.games_played} mp={player.mp_sessions} />
+                      </Td>
+                      <Td>
+                        <div className="flex flex-wrap gap-1">
+                          {player.games.map(playedGame => (
+                            <GameBadge
+                              key={playedGame}
+                              gameKey={playedGame}
+                              meta={meta}
+                              active={game === playedGame}
+                              onClick={key => setGame(game === key ? null : key)}
+                            />
+                          ))}
+                        </div>
+                      </Td>
+                    </ReportRow>
+                  ))}
+                </tbody>
+              </ReportTable>
+              {data.players.length === 0 && (
+                <EmptyState>
+                  {search
+                    ? `No player matching "${search}" played in this window.`
+                    : 'Nobody played in this window.'}
+                </EmptyState>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }

@@ -18,7 +18,7 @@ import type { ReactNode } from 'react';
  */
 export function FilterBar({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-end gap-x-6 gap-y-4 rounded-lg border bg-white/60 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/60">
+    <div className="flex flex-wrap items-end gap-x-6 gap-y-4 rounded-lg border bg-card/60 px-4 py-3">
       {children}
     </div>
   );
@@ -48,7 +48,7 @@ export function FilterGroup({ label, children, hint }: {
     <div className="space-y-1.5" title={hint}>
       {label
         ? (
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               {label}
             </p>
           )
@@ -68,7 +68,7 @@ export function FilterGroup({ label, children, hint }: {
  */
 export function Segmented({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-wrap gap-0.5 rounded-md border bg-gray-50 p-0.5 dark:border-slate-700 dark:bg-slate-900/40">
+    <div className="flex flex-wrap gap-0.5 rounded-md border bg-muted/50 p-0.5">
       {children}
     </div>
   );

@@ -69,6 +69,12 @@ describe('every filtered report page uses the bar', () => {
     };
     walk(root);
 
+    // A walk that silently found nothing would let this guard pass forever.
+    // Verified: pointing the roots at a directory with no .tsx files made it
+    // report 4 passing assertions over zero files.
+    expect(pages.length, 'walk found no files — this guard would pass vacuously')
+      .toBeGreaterThan(5);
+
     const offenders = pages.filter((file) => {
       const source = readFileSync(file, 'utf8');
       if (!source.includes('<RangePicker')) {

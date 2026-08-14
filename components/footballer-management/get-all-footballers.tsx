@@ -13,7 +13,7 @@ export function GetAllFootballers({ loading, onGetFootballers }: GetAllFootballe
   return (
     <div>
       <h4 className="mb-2 text-sm font-medium">Get All Footballers</h4>
-      <p className="mb-3 text-xs text-gray-500">
+      <p className="mb-3 text-xs text-muted-foreground">
         Retrieve a paginated list of all footballers with optional filtering, searching, and sorting.
       </p>
       <div className="flex flex-wrap gap-2">

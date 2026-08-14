@@ -7,9 +7,8 @@ import { DurationTable } from '@/components/reports/DurationTable';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -38,7 +37,7 @@ export default function DurationPage() {
   );
 
   const { meta } = useGameMeta(enabled);
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getDuration,
     params,
     enabled,
@@ -61,7 +60,7 @@ export default function DurationPage() {
       </FilterBar>
       <div className="flex justify-end">
         <ExportButton
-          rows={data?.rows ?? []}
+          rows={state.data?.rows ?? []}
           view="duration"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
@@ -77,18 +76,16 @@ export default function DurationPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-80 w-full" />
-          : (
-              <>
-                <DurationTable data={data} meta={meta} />
-                {/* After the comparison, because "which game holds attention"
-                    comes before "what does this one look like". */}
-                <DurationHistogram data={data} meta={meta} />
-              </>
-            )}
+      <ReportPanel state={state} skeletonClassName="h-80 w-full">
+        {data => (
+          <>
+            <DurationTable data={data} meta={meta} />
+            {/* After the comparison, because "which game holds attention"
+                comes before "what does this one look like". */}
+            <DurationHistogram data={data} meta={meta} />
+          </>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }

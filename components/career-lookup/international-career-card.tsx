@@ -60,24 +60,24 @@ export function InternationalCareerCard({
   // Detect "no international career" sentinel from n8n
   if (isNoInternationalCareer(nationalTeams)) {
     return (
-      <Card className="mt-6 border-gray-200 bg-gray-50 opacity-75 dark:border-gray-700 dark:bg-gray-800/50">
+      <Card className="mt-6 border-border bg-muted/50 opacity-75">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-            <ShieldOff className="size-5 text-gray-400 dark:text-gray-500" />
+          <CardTitle className="flex items-center gap-2 text-muted-foreground">
+            <ShieldOff className="size-5 text-muted-foreground/70" />
             International Career
           </CardTitle>
-          <CardDescription className="text-gray-400 dark:text-gray-500">
+          <CardDescription className="text-muted-foreground/70">
             National team appearances and statistics
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white/60 p-4 dark:border-gray-600 dark:bg-gray-700/40">
-            <ShieldOff className="size-6 shrink-0 text-gray-400 dark:text-gray-500" />
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-card/60 p-4">
+            <ShieldOff className="size-6 shrink-0 text-muted-foreground/70" />
             <div>
-              <p className="font-medium text-gray-600 dark:text-gray-300">
+              <p className="font-medium text-muted-foreground">
                 No International Career
               </p>
-              <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-500">
+              <p className="mt-0.5 text-sm text-muted-foreground/70">
                 This footballer has no recorded international career according to Wikipedia.
               </p>
             </div>
@@ -191,12 +191,12 @@ export function InternationalCareerCard({
               National team appearances and statistics
               {footballerId
                 ? (
-                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       💡 You can sync national team stats here directly, or they will be included when you click Deploy/Update Footballer below.
                     </span>
                   )
                 : (
-                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       📋 National team stats will be created automatically when you deploy the footballer below.
                     </span>
                   )}
@@ -249,46 +249,46 @@ export function InternationalCareerCard({
               {footballerId
                 ? (
                     <>
-                      <tr className="border-b border-gray-100 dark:border-slate-700">
-                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      <tr className="border-b border-border">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                           Nation
                         </th>
-                        <th colSpan={2} className="border-b border-gray-200 p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:border-slate-600 dark:text-blue-400">
+                        <th colSpan={2} className="border-b border-border p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
                           Wikipedia
                         </th>
-                        <th colSpan={2} className="border-b border-l-2 border-gray-200 border-l-gray-300 p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-slate-600 dark:border-l-slate-500 dark:text-emerald-400">
+                        <th colSpan={2} className="border-b border-l-2 border-border border-l-gray-300 p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-l-slate-500 dark:text-emerald-400">
                           Database
                         </th>
-                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                           Season
                         </th>
-                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                           Action
                         </th>
                       </tr>
-                      <tr className="border-b border-gray-200 dark:border-slate-600">
-                        <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Apps</th>
-                        <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
-                        <th className="border-l-2 border-l-gray-300 px-2 py-1 text-center text-xs font-medium text-gray-600 dark:border-l-slate-500 dark:text-gray-400">Apps</th>
-                        <th className="px-2 py-1 text-center text-xs font-medium text-gray-600 dark:text-gray-400">Goals</th>
+                      <tr className="border-b border-border">
+                        <th className="px-2 py-1 text-center text-xs font-medium text-muted-foreground">Apps</th>
+                        <th className="px-2 py-1 text-center text-xs font-medium text-muted-foreground">Goals</th>
+                        <th className="border-l-2 border-l-gray-300 px-2 py-1 text-center text-xs font-medium text-muted-foreground dark:border-l-slate-500">Apps</th>
+                        <th className="px-2 py-1 text-center text-xs font-medium text-muted-foreground">Goals</th>
                       </tr>
                     </>
                   )
                 : (
-                    <tr className="border-b border-gray-200">
-                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                    <tr className="border-b border-border">
+                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                         Nation
                       </th>
-                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
                         Apps
                       </th>
-                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
                         Goals
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                         Season
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
                         Status
                       </th>
                     </tr>
@@ -304,13 +304,13 @@ export function InternationalCareerCard({
                 return (
                   <tr
                     key={`nt-${nt.teamName}`}
-                    className={`border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-slate-600 dark:hover:bg-slate-700/50 ${getRowClassName(comp.status)}`}
+                    className={`border-b border-border transition-colors hover:bg-muted/50 ${getRowClassName(comp.status)}`}
                   >
                     <td className="px-2 py-3">
                       <div className="flex items-center gap-2">
                         <div>
                           <div
-                            className={`font-medium ${comp.status === 'not-found' ? 'text-red-700 dark:text-red-400' : 'text-gray-900 dark:text-white'} flex items-center gap-1`}
+                            className={`font-medium ${comp.status === 'not-found' ? 'text-red-700 dark:text-red-400' : 'text-foreground'} flex items-center gap-1`}
                           >
                             {comp.status === 'not-found' && <AlertTriangle className="size-4 text-red-500" />}
                             {nt.teamName}
@@ -326,31 +326,31 @@ export function InternationalCareerCard({
                       </div>
                     </td>
                     <td className="px-2 py-3 text-center">
-                      <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== nt.apps ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
+                      <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== nt.apps ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'}`}>
                         {nt.apps}
                       </div>
                     </td>
                     <td className="px-2 py-3 text-center">
-                      <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== nt.goals ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
+                      <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== nt.goals ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'}`}>
                         {nt.goals}
                       </div>
                     </td>
                     {footballerId && (
                       <>
                         <td className="border-l-2 border-l-gray-300 px-2 py-3 text-center dark:border-l-slate-500">
-                          <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== nt.apps ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
+                          <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.apps !== nt.apps ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'}`}>
                             {comp.dbStat ? comp.dbStat.apps : '—'}
                           </div>
                         </td>
                         <td className="px-2 py-3 text-center">
-                          <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== nt.goals ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
+                          <div className={`font-medium ${comp.status === 'mismatch' && comp.dbStat && comp.dbStat.goals !== nt.goals ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'}`}>
                             {comp.dbStat ? comp.dbStat.goals : '—'}
                           </div>
                         </td>
                       </>
                     )}
                     <td className="px-2 py-3 text-sm">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-foreground">
                         {`${nt.startYear}${nt.endYear ? `–${nt.endYear}` : ''}`}
                       </div>
                     </td>
@@ -423,27 +423,27 @@ export function InternationalCareerCard({
               })}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-gray-300 bg-gray-50 dark:border-slate-600 dark:bg-slate-700/30">
-                <td className="px-2 py-3 font-semibold text-gray-700 dark:text-gray-300">
+              <tr className="border-t-2 border-border bg-muted/50">
+                <td className="px-2 py-3 font-semibold text-foreground/80">
                   {`${nationalTeams.length} nation${nationalTeams.length !== 1 ? 's' : ''}`}
                 </td>
-                <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                <td className="px-2 py-3 text-center font-semibold text-foreground">
                   {nationalTeams.reduce((sum, nt) => sum + nt.apps, 0)}
                 </td>
-                <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                <td className="px-2 py-3 text-center font-semibold text-foreground">
                   {nationalTeams.reduce((sum, nt) => sum + nt.goals, 0)}
                 </td>
                 {footballerId && (
                   <>
-                    <td className="border-l-2 border-l-gray-300 px-2 py-3 text-center font-semibold text-gray-900 dark:border-l-slate-500 dark:text-white">
+                    <td className="border-l-2 border-l-gray-300 px-2 py-3 text-center font-semibold text-foreground dark:border-l-slate-500">
                       {hasDbData ? dbNationalTeams!.reduce((sum, db) => sum + db.apps, 0) : '—'}
                     </td>
-                    <td className="px-2 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                    <td className="px-2 py-3 text-center font-semibold text-foreground">
                       {hasDbData ? dbNationalTeams!.reduce((sum, db) => sum + db.goals, 0) : '—'}
                     </td>
                   </>
                 )}
-                <td className="px-2 py-3 font-semibold text-gray-900 dark:text-white">Total</td>
+                <td className="px-2 py-3 font-semibold text-foreground">Total</td>
                 <td className="px-2 py-3">
                   <div className="flex flex-wrap gap-1">
                     {footballerId

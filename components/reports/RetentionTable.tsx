@@ -3,6 +3,8 @@
 import type { RetentionResponse } from '@/types/reports';
 import { AlertTriangle } from 'lucide-react';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -13,7 +15,7 @@ import { cn } from '@/lib/utils';
  */
 function heat(pct: number | null): string {
   if (pct === null) {
-    return 'bg-gray-50 text-gray-400 dark:bg-slate-800 dark:text-gray-500';
+    return 'bg-muted/50 text-muted-foreground/70';
   }
   if (pct >= 40) {
     return 'bg-emerald-600 text-white';
@@ -30,7 +32,7 @@ function heat(pct: number | null): string {
   if (pct > 0) {
     return 'bg-emerald-200/50 text-emerald-950';
   }
-  return 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-300';
+  return 'bg-muted text-muted-foreground';
 }
 
 export function RetentionTable({ data }: { data: RetentionResponse }) {
@@ -42,19 +44,17 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
         {keys.map((key) => {
           const cell = data.summary[key];
           return (
-            <Card key={key}>
-              <CardContent className="space-y-1 p-4">
-                <p className="text-sm font-medium uppercase text-gray-600 dark:text-gray-300">{key}</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {cell?.pct === null || cell === undefined ? '—' : `${cell.pct}%`}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {cell
-                    ? `${cell.returned.toLocaleString()} of ${cell.players.toLocaleString()} across ${cell.cohorts_measured} cohorts`
-                    : 'not enough history'}
-                </p>
-              </CardContent>
-            </Card>
+            <StatTile
+              key={key}
+              // Uppercased in the text, not by CSS: the label IS "D7", and
+              // text-transform would leave a screen reader saying "d7" while
+              // sighted readers see the milestone's actual name.
+              label={key.toUpperCase()}
+              value={cell?.pct === null || cell === undefined ? '—' : `${cell.pct}%`}
+              hint={cell
+                ? `${cell.returned.toLocaleString()} of ${cell.players.toLocaleString()} across ${cell.cohorts_measured} cohorts`
+                : 'not enough history'}
+            />
           );
         })}
       </div>
@@ -104,40 +104,38 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
           )}
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
-                  <th className="py-2 pr-4 font-medium">Cohort day</th>
-                  <th className="py-2 pr-4 text-right font-medium">Players</th>
-                  {keys.map(key => (
-                    <th key={key} className="py-2 pr-2 text-center font-medium uppercase">{key}</th>
-                  ))}
-                </tr>
-              </thead>
+            <ReportTable>
+              <ReportHead>
+                <Th>Cohort day</Th>
+                <Th align="right">Players</Th>
+                {keys.map(key => (
+                  <Th key={key} align="center" className="pr-2 uppercase">{key}</Th>
+                ))}
+              </ReportHead>
               <tbody>
                 {data.cohorts.map(cohort => (
-                  <tr
+                  <ReportRow
                     key={cohort.date}
-                    className={cn(
-                      'border-b last:border-0 dark:border-slate-700',
-                      cohort.inflated && 'opacity-60',
-                    )}
+                    // The borders live in ReportRow now; this only says what is
+                    // specific to this table — a cohort too young to be complete
+                    // is dimmed so it is not read as a real drop.
+                    className={cohort.inflated ? 'opacity-60' : undefined}
                   >
-                    <td className="py-1.5 pr-4 font-medium text-gray-900 dark:text-white">
+                    <Td strong className="py-1.5">
                       {cohort.date}
                       {cohort.inflated && (
                         <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-300">
                           inflated
                         </span>
                       )}
-                    </td>
-                    <td className="py-1.5 pr-4 text-right tabular-nums">
+                    </Td>
+                    <Td align="right" className="py-1.5">
                       {cohort.cohort_size.toLocaleString()}
-                    </td>
+                    </Td>
                     {keys.map((key) => {
                       const cell = cohort.retention[key];
                       return (
-                        <td key={key} className="p-1 text-center">
+                        <Td key={key} align="center" className="p-1">
                           <span
                             className={cn(
                               'inline-block w-full rounded px-2 py-1 text-xs tabular-nums',
@@ -147,15 +145,15 @@ export function RetentionTable({ data }: { data: RetentionResponse }) {
                           >
                             {cell?.pct === undefined || cell === null ? '—' : `${cell.pct}%`}
                           </span>
-                        </td>
+                        </Td>
                       );
                     })}
-                  </tr>
+                  </ReportRow>
                 ))}
               </tbody>
-            </table>
+            </ReportTable>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-muted-foreground">
             "—" means the cohort hasn't reached that milestone yet, not 0%.
           </p>
         </CardContent>

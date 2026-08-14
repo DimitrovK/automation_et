@@ -44,7 +44,7 @@ export function ComparePicker({ offset, start, end, onChange }: {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-gray-600 dark:text-gray-300">Compared with</span>
+      <span className="text-sm text-muted-foreground">Compared with</span>
 
       {OFFSETS.map(({ value, label }) => (
         <Button
@@ -89,8 +89,8 @@ export function ComparePicker({ offset, start, end, onChange }: {
       )}
 
       {open && (
-        <div className="flex w-full flex-wrap items-end gap-2 rounded-md border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <label htmlFor="compare-start" className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
+        <div className="flex w-full flex-wrap items-end gap-2 rounded-md border bg-card p-3">
+          <label htmlFor="compare-start" className="flex flex-col gap-1 text-xs text-muted-foreground">
             From
             <Input
               id="compare-start"
@@ -101,7 +101,7 @@ export function ComparePicker({ offset, start, end, onChange }: {
               className="h-8 w-40"
             />
           </label>
-          <label htmlFor="compare-end" className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
+          <label htmlFor="compare-end" className="flex flex-col gap-1 text-xs text-muted-foreground">
             To
             <Input
               id="compare-end"
@@ -127,7 +127,7 @@ export function ComparePicker({ offset, start, end, onChange }: {
           >
             Apply
           </Button>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-muted-foreground">
             {invalid
               ? 'Pick a start date on or before the end date, and not in the future.'
               : 'A period of a different length shows totals without a percentage — a rate across unequal spans describes the calendar, not the platform.'}

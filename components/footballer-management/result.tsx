@@ -69,7 +69,7 @@ export function Result({
       <CardContent>
         {type === 'delete' && deletedFootballerId
           ? (
-              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
+              <div className="rounded-lg bg-muted/50 p-4">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{config.icon}</span>
                   <div>
@@ -79,7 +79,7 @@ export function Result({
                       {' '}
                       has been permanently deleted
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">This action cannot be undone</p>
+                    <p className="text-sm text-muted-foreground">This action cannot be undone</p>
                   </div>
                 </div>
               </div>

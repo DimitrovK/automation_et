@@ -2,16 +2,18 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
 import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { gameName, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -44,7 +46,7 @@ export default function MultiplayerReportPage() {
 
   // ReportsAPI methods are static, so the reference is already stable across
   // renders — no useCallback needed to stop useReport's effect re-firing.
-  const { data, isLoading, error, notDeployed, refetch } = useReport(
+  const state = useReport(
     ReportsAPI.getMultiplayer,
     params,
     enabled,
@@ -67,14 +69,14 @@ export default function MultiplayerReportPage() {
       </FilterBar>
       {game && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-900/20">
-          <span className="text-sm text-gray-700 dark:text-gray-200">Filtered to</span>
+          <span className="text-sm text-foreground/80">Filtered to</span>
           <GameBadge gameKey={game} meta={meta} active onClick={() => setGame(null)} />
         </div>
       )}
 
       <div className="flex justify-end">
         <ExportButton
-          rows={data?.by_game ?? []}
+          rows={state.data?.by_game ?? []}
           view="multiplayer"
           filters={{ ...rangeToParams(range), bots: includeBots, game }}
           columns={[
@@ -88,88 +90,77 @@ export default function MultiplayerReportPage() {
         />
       </div>
 
-      {error
-        ? <ReportError error={error} notDeployed={notDeployed} onRetry={refetch} />
-        : isLoading || !data
-          ? <Skeleton className="h-64 w-full" />
-          : (
-              <>
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  {[
-                    { label: 'Rooms created', value: data.totals.rooms_created },
-                    { label: 'Started', value: data.totals.rooms_started },
-                    { label: 'Finished', value: data.totals.rooms_finished },
-                    { label: 'Cancelled', value: data.totals.rooms_cancelled },
-                  ].map(tile => (
-                    <Card key={tile.label}>
-                      <CardContent className="p-4">
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{tile.label}</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                          {tile.value.toLocaleString()}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+      <ReportPanel state={state} skeletonClassName="h-64 w-full">
+        {data => (
+          <>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {[
+                { label: 'Rooms created', value: data.totals.rooms_created },
+                { label: 'Started', value: data.totals.rooms_started },
+                { label: 'Finished', value: data.totals.rooms_finished },
+                { label: 'Cancelled', value: data.totals.rooms_cancelled },
+              ].map(tile => (
+                <StatTile key={tile.label} label={tile.label} value={tile.value.toLocaleString()} />
+              ))}
+            </div>
 
-                {/* Above the per-game table: modes are shared across games, so
-                    "is Elimination working anywhere" is a question the per-game
-                    split can't answer, and it's the one you ask first. */}
-                {/* Ahead of the mode split and the table: "which stage loses
-                    people" is the first question, and both of those make you do
-                    the subtraction yourself. */}
-                <MultiplayerFunnel rows={data.by_game} meta={meta} />
+            {/* Above the per-game table: modes are shared across games, so
+                "is Elimination working anywhere" is a question the per-game
+                split can't answer, and it's the one you ask first. */}
+            {/* Ahead of the mode split and the table: "which stage loses
+                people" is the first question, and both of those make you do
+                the subtraction yourself. */}
+            <MultiplayerFunnel rows={data.by_game} meta={meta} />
 
-                <ModeBreakdown rows={data.by_mode} meta={meta} onSelectGame={key => setGame(game === key ? null : key)} />
+            <ModeBreakdown rows={data.by_mode} meta={meta} onSelectGame={key => setGame(game === key ? null : key)} />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lobbies that never started</CardTitle>
-                    <CardDescription>
-                      {data.totals.never_started_pct}
-                      % of rooms opened in this window never got going. High values usually
-                      mean people couldn't find enough players.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
-                          <th className="py-2 pr-4 font-medium">Game</th>
-                          <th className="py-2 pr-4 text-right font-medium">Created</th>
-                          <th className="py-2 pr-4 text-right font-medium">Started</th>
-                          <th className="py-2 pr-4 text-right font-medium">Finished</th>
-                          <th className="py-2 pr-4 text-right font-medium">Cancelled</th>
-                          <th className="py-2 text-right font-medium">Never started</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.by_game.map(row => (
-                          <tr key={row.game_type} className="border-b last:border-0 dark:border-slate-700">
-                            <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">
-                              {gameName(meta[row.game_type], row.game_type)}
-                            </td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_created.toLocaleString()}</td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_started.toLocaleString()}</td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_finished.toLocaleString()}</td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_cancelled.toLocaleString()}</td>
-                            <td className="py-2 text-right">
-                              {row.never_started_pct}
-                              %
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {data.by_game.length === 0 && (
-                      <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No multiplayer rooms in this window.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>Lobbies that never started</CardTitle>
+                <CardDescription>
+                  {data.totals.never_started_pct}
+                  % of rooms opened in this window never got going. High values usually
+                  mean people couldn't find enough players.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <ReportTable>
+                  <ReportHead>
+                    <Th>Game</Th>
+                    <Th align="right">Created</Th>
+                    <Th align="right">Started</Th>
+                    <Th align="right">Finished</Th>
+                    <Th align="right">Cancelled</Th>
+                    <Th align="right">Never started</Th>
+                  </ReportHead>
+                  <tbody>
+                    {data.by_game.map(row => (
+                      <ReportRow key={row.game_type}>
+                        <Td strong>
+                          {gameName(meta[row.game_type], row.game_type)}
+                        </Td>
+                        <Td align="right">{row.rooms_created.toLocaleString()}</Td>
+                        <Td align="right">{row.rooms_started.toLocaleString()}</Td>
+                        <Td align="right">{row.rooms_finished.toLocaleString()}</Td>
+                        <Td align="right">{row.rooms_cancelled.toLocaleString()}</Td>
+                        <Td align="right">
+                          {row.never_started_pct}
+                          %
+                        </Td>
+                      </ReportRow>
+                    ))}
+                  </tbody>
+                </ReportTable>
+                {data.by_game.length === 0 && (
+                  <EmptyState>
+                    No multiplayer rooms in this window.
+                  </EmptyState>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </ReportPanel>
     </ReportsShell>
   );
 }

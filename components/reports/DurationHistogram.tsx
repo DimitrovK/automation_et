@@ -42,7 +42,7 @@ export function DurationHistogram({ data, meta }: { data: DurationResponse; meta
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Session length, distributed</CardTitle>
+        <CardTitle>Session length, distributed</CardTitle>
         <CardDescription>
           {`How ${gameName(meta[row.game_type], row.game_type)}'s ${row.measured.toLocaleString()} measured sessions spread out. `}
           A median tells you the middle; this tells you whether there is one kind of session or several.
@@ -64,8 +64,8 @@ export function DurationHistogram({ data, meta }: { data: DurationResponse; meta
         <ul className="space-y-1.5">
           {bands.map(band => (
             <li key={band.label} className="flex items-center gap-3 text-sm">
-              <span className="w-28 shrink-0 text-right text-xs text-gray-600 dark:text-gray-300">{band.label}</span>
-              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
+              <span className="w-28 shrink-0 text-right text-xs text-muted-foreground">{band.label}</span>
+              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
                 <span
                   className="block h-full rounded-full"
                   style={{
@@ -74,10 +74,10 @@ export function DurationHistogram({ data, meta }: { data: DurationResponse; meta
                   }}
                 />
               </span>
-              <span className="w-16 shrink-0 text-right text-xs tabular-nums text-gray-500 dark:text-gray-400">
+              <span className="w-16 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                 {band.count.toLocaleString()}
               </span>
-              <span className="w-12 shrink-0 text-right text-xs tabular-nums text-gray-400 dark:text-gray-500">
+              <span className="w-12 shrink-0 text-right text-xs tabular-nums text-muted-foreground/70">
                 {band.pct}
                 %
               </span>

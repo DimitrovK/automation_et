@@ -2,7 +2,7 @@
 
 import type { ActivityMetrics, PeriodComparison } from '@/types/reports';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { StatTile } from '@/components/reports/StatTile';
 import { cn } from '@/lib/utils';
 
 const TILES: { key: keyof ActivityMetrics; label: string }[] = [
@@ -51,17 +51,16 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
           const Icon = pct === null ? Minus : flat ? Minus : up ? TrendingUp : TrendingDown;
 
           return (
-            <Card key={key}>
-              <CardContent className="space-y-1 p-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {metric.current.toLocaleString()}
-                </p>
+            <StatTile
+              key={key}
+              label={label}
+              value={metric.current.toLocaleString()}
+              delta={(
                 <span
                   className={cn(
                     'flex items-center gap-1 text-xs font-medium',
                     pct === null || flat
-                      ? 'text-gray-500 dark:text-gray-400'
+                      ? 'text-muted-foreground'
                       : up
                         ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-red-600 dark:text-red-400',
@@ -74,19 +73,21 @@ export function ComparisonTiles({ comparison }: { comparison: PeriodComparison }
                         : metric.previous === 0 ? 'no earlier activity' : 'incomplete data')
                     : `${pct > 0 ? '+' : ''}${pct}% vs ${offsetLabel}`}
                 </span>
-                <p className="pt-1 text-xs text-gray-500 dark:text-gray-400">
+              )}
+              hint={(
+                <>
                   {metric.previous.toLocaleString()}
                   {' previously · '}
                   {metric.change > 0 ? '+' : ''}
                   {metric.change.toLocaleString()}
-                </p>
-              </CardContent>
-            </Card>
+                </>
+              )}
+            />
           );
         })}
       </div>
 
-      <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+      <p className="text-center text-xs text-muted-foreground">
         {comparison.current.start}
         {' → '}
         {comparison.current.end}

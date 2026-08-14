@@ -27,7 +27,7 @@ export function UserCard({ user, onSelect }: Props) {
       className="cursor-pointer transition-shadow duration-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
     >
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between gap-2 text-base">
+        <CardTitle className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2 truncate">
             <UserAvatar user={user} />
             <span className="truncate">
@@ -39,14 +39,14 @@ export function UserCard({ user, onSelect }: Props) {
                   : null}
             </span>
           </span>
-          <span className="font-mono text-xs text-gray-400">
+          <span className="font-mono text-xs text-muted-foreground/70">
             #
             {user.id}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <p className="flex items-center gap-1.5 truncate text-sm text-gray-600 dark:text-gray-300">
+        <p className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
           <Mail className="size-3.5 shrink-0" />
           {user.email || '—'}
         </p>
@@ -54,7 +54,7 @@ export function UserCard({ user, onSelect }: Props) {
         <div className="flex flex-wrap items-center gap-1">
           <SuspensionBadge user={user} />
           <BetaBadges user={user} max={2} />
-          {!user.is_active && <span className="text-xs text-gray-400">inactive</span>}
+          {!user.is_active && <span className="text-xs text-muted-foreground/70">inactive</span>}
         </div>
         <OnlineDot user={user} />
       </CardContent>

@@ -213,7 +213,7 @@ function SummaryActionCell({
     );
   }
   if (!opStatus && comp.status === 'synced') {
-    return <span className="text-xs text-gray-400">&mdash;</span>;
+    return <span className="text-xs text-muted-foreground/70">&mdash;</span>;
   }
   if (!opStatus && comp.status === 'not-found') {
     return (
@@ -252,16 +252,16 @@ export function NationComparisonTable({ comparisons, footballerId, variant }: Na
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className={`border-b ${isSummary ? 'border-gray-200 dark:border-slate-600' : 'border-gray-100 dark:border-slate-700'}`}>
-            <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Nation</th>
+          <tr className={`border-b ${isSummary ? 'border-border' : 'border-border'}`}>
+            <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">Nation</th>
             <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Wiki Apps</th>
             <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Wiki Goals</th>
             <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">DB Apps</th>
             <th className="p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">DB Goals</th>
             {isSummary && (
-              <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Status</th>
+              <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">Status</th>
             )}
-            <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">Action</th>
+            <th className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -272,9 +272,9 @@ export function NationComparisonTable({ comparisons, footballerId, variant }: Na
             return (
               <tr
                 key={`${keyPrefix}-${comp.wikiTeam.teamName}`}
-                className={`border-b border-gray-100 text-sm dark:border-slate-600 ${getRowBgClass(comp.status)}`}
+                className={`border-b border-border text-sm ${getRowBgClass(comp.status)}`}
               >
-                <td className="p-2 font-medium text-gray-900 dark:text-white">
+                <td className="p-2 font-medium text-foreground">
                   {comp.wikiTeam.teamName}
                   {comp.wikiTeam.nationNameDB && comp.wikiTeam.nationNameDB !== comp.wikiTeam.teamName && (
                     <span className="ml-1 text-xs text-blue-600 dark:text-blue-400">
@@ -352,15 +352,15 @@ export function InlineNationSyncCard({
 
   return (
     <div className="p-4">
-      <Card className="border-2 border-blue-200 bg-white shadow-lg dark:border-blue-700 dark:bg-gray-800">
+      <Card className="border-2 border-blue-200 bg-card shadow-lg dark:border-blue-700">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+              <CardTitle className="flex items-center gap-2">
                 <Shield className="size-5 text-blue-600" />
                 National Team Sync
               </CardTitle>
-              <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+              <CardDescription className="text-sm text-muted-foreground">
                 {pending.length}
                 {' '}
                 nation

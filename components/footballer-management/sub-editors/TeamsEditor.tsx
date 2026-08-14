@@ -1,5 +1,6 @@
 'use client';
 
+import type { CreateFootballerTeamRequest, FootballerTeam } from '@/types/player';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -24,7 +25,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { FootballerAPI } from '@/lib/footballer-api';
-import type { CreateFootballerTeamRequest, FootballerTeam } from '@/types/player';
 
 type Props = { footballerId: number };
 
@@ -109,7 +109,9 @@ export function TeamsEditor({ footballerId }: Props) {
   }
 
   function validate(d: DraftTeam): string | null {
-    if (!d.team_id) return 'Pick a team.';
+    if (!d.team_id) {
+      return 'Pick a team.';
+    }
     if (d.start_year !== null && (d.start_year < 1850 || d.start_year > 2100)) {
       return 'Start year looks wrong.';
     }
@@ -133,7 +135,9 @@ export function TeamsEditor({ footballerId }: Props) {
   }
 
   async function saveNew() {
-    if (!newDraft) return;
+    if (!newDraft) {
+      return;
+    }
     const err = validate(newDraft);
     if (err) {
       toast.error(err);
@@ -153,7 +157,9 @@ export function TeamsEditor({ footballerId }: Props) {
   }
 
   async function saveEdit() {
-    if (!editDraft || !editDraft.id) return;
+    if (!editDraft || !editDraft.id) {
+      return;
+    }
     const err = validate(editDraft);
     if (err) {
       toast.error(err);
@@ -182,7 +188,12 @@ export function TeamsEditor({ footballerId }: Props) {
   }
 
   async function remove(row: FootballerTeam) {
-    if (!confirm(`Delete ${row.team_name} (${row.role}) stint? This cannot be undone.`)) return;
+    // Native confirm, deliberately: this removes a stored record and a styled
+    // dialog is a UX change rather than a lint fix.
+    // eslint-disable-next-line no-alert -- irreversible delete; see above
+    if (!confirm(`Delete ${row.team_name} (${row.role}) stint? This cannot be undone.`)) {
+      return;
+    }
     setSavingId(row.id);
     try {
       await FootballerAPI.deleteFootballerTeam(row.id);
@@ -215,98 +226,110 @@ export function TeamsEditor({ footballerId }: Props) {
         </Button>
       </CardHeader>
       <CardContent className="space-y-3">
-        {loading && rows.length === 0 ? (
-          <div className="flex items-center gap-2 py-6 text-sm text-gray-500">
-            <Loader2 className="size-4 animate-spin" /> Loading stints…
-          </div>
-        ) : rows.length === 0 && !newDraft ? (
-          <div className="rounded-md border bg-gray-50 p-6 text-center text-sm text-gray-500 dark:bg-slate-800/40">
-            No team stints yet. Click <strong>Add stint</strong> to create the first one.
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Team</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Years</TableHead>
-                <TableHead className="text-right">Apps</TableHead>
-                <TableHead className="text-right">Goals</TableHead>
-                <TableHead>Transfer</TableHead>
-                <TableHead className="w-32 text-right" aria-label="Actions" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => {
-                const isEditing = editId === row.id && editDraft;
-                if (isEditing) {
-                  return (
-                    <RowEditor
-                      key={row.id}
-                      draft={editDraft!}
-                      saving={savingId === row.id}
-                      onChange={(d) => setEditDraft(d)}
-                      onSave={saveEdit}
-                      onCancel={cancelEdit}
-                    />
-                  );
-                }
-                return (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">{row.team_name}</TableCell>
-                    <TableCell>
-                      <Badge variant={row.role === 'manager' ? 'default' : 'secondary'}>
-                        {row.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {row.start_year ?? '—'}–{row.end_year ?? 'present'}
-                    </TableCell>
-                    <TableCell className="text-right">{row.apps ?? '—'}</TableCell>
-                    <TableCell className="text-right">{row.goals ?? '—'}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={row.transfer_type === 'loan' ? 'destructive' : 'secondary'}
-                        className={
-                          row.transfer_type === 'loan'
-                            ? 'bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-100'
-                            : ''
-                        }
-                      >
-                        {row.transfer_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => startEdit(row)}>
-                        Edit
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => remove(row)}
-                        disabled={savingId === row.id}
-                        aria-label={`Delete ${row.team_name}`}
-                        className="ml-1 size-8 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {newDraft && (
-                <RowEditor
-                  draft={newDraft}
-                  saving={savingId === 'new'}
-                  onChange={(d) => setNewDraft(d)}
-                  onSave={saveNew}
-                  onCancel={cancelAdd}
-                  isNew
-                />
+        {loading && rows.length === 0
+          ? (
+              <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                {' '}
+                Loading stints…
+              </div>
+            )
+          : rows.length === 0 && !newDraft
+            ? (
+                <div className="rounded-md border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
+                  No team stints yet. Click
+                  {' '}
+                  <strong>Add stint</strong>
+                  {' '}
+                  to create the first one.
+                </div>
+              )
+            : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Team</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Years</TableHead>
+                      <TableHead className="text-right">Apps</TableHead>
+                      <TableHead className="text-right">Goals</TableHead>
+                      <TableHead>Transfer</TableHead>
+                      <TableHead className="w-32 text-right" aria-label="Actions" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((row) => {
+                      const isEditing = editId === row.id && editDraft;
+                      if (isEditing) {
+                        return (
+                          <RowEditor
+                            key={row.id}
+                            draft={editDraft!}
+                            saving={savingId === row.id}
+                            onChange={d => setEditDraft(d)}
+                            onSave={saveEdit}
+                            onCancel={cancelEdit}
+                          />
+                        );
+                      }
+                      return (
+                        <TableRow key={row.id}>
+                          <TableCell className="font-medium">{row.team_name}</TableCell>
+                          <TableCell>
+                            <Badge variant={row.role === 'manager' ? 'default' : 'secondary'}>
+                              {row.role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {row.start_year ?? '—'}
+                            –
+                            {row.end_year ?? 'present'}
+                          </TableCell>
+                          <TableCell className="text-right">{row.apps ?? '—'}</TableCell>
+                          <TableCell className="text-right">{row.goals ?? '—'}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={row.transfer_type === 'loan' ? 'destructive' : 'secondary'}
+                              className={
+                                row.transfer_type === 'loan'
+                                  ? 'bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-100'
+                                  : ''
+                              }
+                            >
+                              {row.transfer_type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="ghost" onClick={() => startEdit(row)}>
+                              Edit
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => remove(row)}
+                              disabled={savingId === row.id}
+                              aria-label={`Delete ${row.team_name}`}
+                              className="ml-1 size-8 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {newDraft && (
+                      <RowEditor
+                        draft={newDraft}
+                        saving={savingId === 'new'}
+                        onChange={d => setNewDraft(d)}
+                        onSave={saveNew}
+                        onCancel={cancelAdd}
+                        isNew
+                      />
+                    )}
+                  </TableBody>
+                </Table>
               )}
-            </TableBody>
-          </Table>
-        )}
       </CardContent>
     </Card>
   );
@@ -327,7 +350,9 @@ function RowEditor(props: {
     onChange({ ...draft, [k]: v });
 
   const numOrNull = (s: string) => {
-    if (s === '' || s === null) return null;
+    if (s === '' || s === null) {
+      return null;
+    }
     const n = Number(s);
     return Number.isFinite(n) ? n : null;
   };
@@ -337,12 +362,12 @@ function RowEditor(props: {
       <TableCell className="min-w-48">
         <TeamCombobox
           value={draft.team_id ? { id: draft.team_id, name: draft.team_name || '' } : null}
-          onChange={(t) => onChange({ ...draft, team_id: t.id, team_name: t.name })}
+          onChange={t => onChange({ ...draft, team_id: t.id, team_name: t.name })}
           compact
         />
       </TableCell>
       <TableCell>
-        <Select value={draft.role} onValueChange={(v) => set('role', v as 'player' | 'manager')}>
+        <Select value={draft.role} onValueChange={v => set('role', v as 'player' | 'manager')}>
           <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="player">Player</SelectItem>
@@ -356,16 +381,16 @@ function RowEditor(props: {
             type="number"
             placeholder="Start"
             value={draft.start_year ?? ''}
-            onChange={(e) => set('start_year', numOrNull(e.target.value))}
+            onChange={e => set('start_year', numOrNull(e.target.value))}
             className="h-9 w-20 px-2"
             aria-label="Start year"
           />
-          <span className="text-gray-400">–</span>
+          <span className="text-muted-foreground/70">–</span>
           <Input
             type="number"
             placeholder="End"
             value={draft.end_year ?? ''}
-            onChange={(e) => set('end_year', numOrNull(e.target.value))}
+            onChange={e => set('end_year', numOrNull(e.target.value))}
             className="h-9 w-20 px-2"
             aria-label="End year"
           />
@@ -375,7 +400,7 @@ function RowEditor(props: {
         <Input
           type="number"
           value={draft.apps ?? ''}
-          onChange={(e) => set('apps', numOrNull(e.target.value))}
+          onChange={e => set('apps', numOrNull(e.target.value))}
           className="h-9 w-20 px-2 text-right"
           aria-label="Apps"
         />
@@ -384,7 +409,7 @@ function RowEditor(props: {
         <Input
           type="number"
           value={draft.goals ?? ''}
-          onChange={(e) => set('goals', numOrNull(e.target.value))}
+          onChange={e => set('goals', numOrNull(e.target.value))}
           className="h-9 w-20 px-2 text-right"
           aria-label="Goals"
         />
@@ -392,7 +417,7 @@ function RowEditor(props: {
       <TableCell>
         <Select
           value={draft.transfer_type}
-          onValueChange={(v) => set('transfer_type', v as 'permanent' | 'loan')}
+          onValueChange={v => set('transfer_type', v as 'permanent' | 'loan')}
         >
           <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -412,4 +437,3 @@ function RowEditor(props: {
     </TableRow>
   );
 }
-

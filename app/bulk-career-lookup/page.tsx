@@ -18,15 +18,15 @@ export default function BulkCareerLookupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+    <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
         <Navigation />
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bulk Career Lookup</h1>
-            <p className="mt-1 text-gray-600 dark:text-gray-400">
+            <h1 className="text-3xl font-bold text-foreground">Bulk Career Lookup</h1>
+            <p className="mt-1 text-muted-foreground">
               Check multiple players for career data discrepancies
             </p>
           </div>

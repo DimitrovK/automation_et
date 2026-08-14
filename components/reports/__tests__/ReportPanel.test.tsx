@@ -76,3 +76,44 @@ describe('reportPanel', () => {
     expect(screen.getByText('content')).toBeInTheDocument();
   });
 });
+
+describe('no page hand-rolls the panel', () => {
+  it('has no page branching on error/isLoading itself', async () => {
+    // Eight of ten pages wrote the triad out by hand, which had two costs. The
+    // skeleton was sized differently on each (h-64, h-72, h-80, h-96), so the
+    // page jumped by a different amount depending on which report you opened —
+    // and more importantly the branch sat at PAGE level, so one slow endpoint
+    // blanked panels that had already loaded, and one failing endpoint replaced
+    // panels that were fine.
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+
+    const root = join(process.cwd(), 'app', 'reports');
+    const pages: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+        } else if (entry.name.endsWith('.tsx')) {
+          pages.push(full);
+        }
+      }
+    };
+    walk(root);
+
+    // A walk that silently found nothing would let this guard pass forever.
+    // Verified: pointing the roots at a directory with no .tsx files made it
+    // report 4 passing assertions over zero files.
+    expect(pages.length, 'walk found no files — this guard would pass vacuously')
+      .toBeGreaterThan(5);
+
+    const offenders = pages.filter(file =>
+      readFileSync(file, 'utf8').includes('isLoading || !data'));
+
+    expect(
+      offenders.map(f => f.replace(process.cwd(), '')),
+      'Use ReportPanel — it owns loading, error and retry per panel',
+    ).toEqual([]);
+  });
+});

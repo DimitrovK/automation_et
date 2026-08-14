@@ -41,7 +41,7 @@ export function GameFilter({ meta, value, onChange }: {
           aria-pressed={value === null}
           className={value === null
             ? 'rounded-full border border-emerald-600 bg-emerald-600 px-2.5 py-0.5 text-xs font-medium text-white'
-            : 'rounded-full border border-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'}
+            : 'rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-foreground/80 hover:bg-muted/50'}
         >
           All games
         </button>

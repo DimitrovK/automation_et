@@ -60,15 +60,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 dark:from-slate-800 dark:to-emerald-900/30">
+    <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Navigation */}
         <Navigation />
 
         {/* Header */}
         <div className="relative space-y-2 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">ExtraTime Automation</h1>
-          <p className="text-gray-600 dark:text-gray-300">Football data management and automation tools</p>
+          <h1 className="text-4xl font-bold text-foreground">ExtraTime Automation</h1>
+          <p className="text-muted-foreground">Football data management and automation tools</p>
         </div>
 
         {/* Dashboard Cards */}
@@ -252,7 +252,7 @@ export default function DashboardPage() {
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700/60"
+                    className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
                   >
                     <Icon className="size-3.5 shrink-0" />
                     {label}
@@ -265,7 +265,7 @@ export default function DashboardPage() {
           <Card className="opacity-60 transition-shadow duration-200 hover:shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Settings className="size-5 text-gray-600" />
+                <Settings className="size-5 text-muted-foreground" />
                 Settings
               </CardTitle>
               <CardDescription>

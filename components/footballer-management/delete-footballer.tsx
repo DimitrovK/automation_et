@@ -109,7 +109,7 @@ export function DeleteFootballer({
           </AlertDialogContent>
         </AlertDialog>
 
-        <p className="text-xs text-gray-600 dark:text-gray-400">
+        <p className="text-xs text-muted-foreground">
           Make sure you have the correct ID. Deletion is permanent and cannot be reversed.
         </p>
       </CardContent>

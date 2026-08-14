@@ -4,6 +4,7 @@ import type { AdoptionTrendsResponse, TrendGranularity } from '@/types/user-hub'
 import { useTheme } from 'next-themes';
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,7 +37,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-base">Adoption over time</CardTitle>
+        <CardTitle>Adoption over time</CardTitle>
         <div className="flex gap-1 rounded-md border p-0.5">
           {PILLS.map(g => (
             <button
@@ -46,8 +47,8 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
               className={cn(
                 'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
                 granularity === g
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                  : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50',
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted',
               )}
             >
               {g}
@@ -68,7 +69,7 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
         )}
 
         {!isLoading && !error && points.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500">No adoption data yet.</p>
+          <EmptyState hint="Try a wider date range.">No favourites were added in this window.</EmptyState>
         )}
 
         {!isLoading && !error && points.length > 0 && (
@@ -84,13 +85,13 @@ export function AdoptionTrendsChart({ data, isLoading, error, notDeployed, granu
                       apart while favourites lived outside Reports. */}
                   <Tooltip content={<ChartTooltip labelFormatter={v => formatTrendDate(String(v), granularity)} />} />
                   <Legend wrapperStyle={theme.legend} />
-                  <Area type="monotone" dataKey="cumulative_users" name="Cumulative users" stroke="#10b981" fill="#10b981" fillOpacity={0.2} />
-                  <Area type="monotone" dataKey="new_adopters" name="New adopters" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} />
+                  <Area type="monotone" dataKey="cumulative_users" name="Cumulative users" stroke={theme.series[0]} fill={theme.series[0]} fillOpacity={0.2} />
+                  <Area type="monotone" dataKey="new_adopters" name="New adopters" stroke={theme.series[1]} fill={theme.series[1]} fillOpacity={0.15} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
             {hasBackfill && (
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 Includes pre-launch favourites (approximate dates).
               </p>
             )}

@@ -60,7 +60,7 @@ export function RollupHealthBanner() {
         {problem}
       </p>
       {health.suggested_command && (
-        <pre className="mt-2 overflow-x-auto rounded bg-amber-100/70 p-2 text-xs text-amber-950 dark:bg-slate-900/60 dark:text-amber-100">
+        <pre className="mt-2 overflow-x-auto rounded bg-amber-100/70 p-2 text-xs text-amber-950 dark:text-amber-100">
           {health.suggested_command}
         </pre>
       )}

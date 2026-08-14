@@ -128,9 +128,9 @@ export function MessageBox() {
         <CardContent className="flex-1 space-y-6 overflow-y-auto">
           {/* Channel Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Discord Channel</label>
+            <label htmlFor="discord-channel" className="text-sm font-medium">Discord Channel</label>
             <Select value={selectedChannelId} onValueChange={setSelectedChannelId}>
-              <SelectTrigger>
+              <SelectTrigger id="discord-channel">
                 <SelectValue placeholder="Select a Discord channel..." />
               </SelectTrigger>
               <SelectContent>
@@ -139,7 +139,7 @@ export function MessageBox() {
                     <div className="flex items-center gap-2">
                       <Hash className="size-4" />
                       <span className="font-medium">{channel.name}</span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         (
                         {channel.description}
                         )
@@ -150,7 +150,7 @@ export function MessageBox() {
               </SelectContent>
             </Select>
             {selectedChannel && (
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Badge variant="outline" className="text-xs">
                   ID:
                   {' '}
@@ -166,7 +166,7 @@ export function MessageBox() {
           {/* Message Composition */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Message (Markdown supported)</label>
+              <label htmlFor="discord-message" className="text-sm font-medium">Message (Markdown supported)</label>
               <Button
                 variant="outline"
                 size="sm"
@@ -179,7 +179,7 @@ export function MessageBox() {
             </div>
 
             {/* Formatting Toolbar */}
-            <div className="flex flex-wrap gap-1 rounded-md border bg-gray-50 p-2 dark:bg-gray-800">
+            <div className="flex flex-wrap gap-1 rounded-md border bg-muted/50 p-2">
               {formatActions.map((action, index) => (
                 <Button
                   key={index}
@@ -187,7 +187,7 @@ export function MessageBox() {
                   size="sm"
                   onClick={action.action}
                   disabled={isSending}
-                  className="size-8 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="size-8 p-0 hover:bg-muted"
                   title={action.label}
                 >
                   <action.icon className="size-3" />
@@ -196,6 +196,7 @@ export function MessageBox() {
             </div>
 
             <Textarea
+              id="discord-message"
               ref={textareaRef}
               value={message}
               onChange={(e) => {
@@ -212,39 +213,39 @@ export function MessageBox() {
             {/* Message Preview */}
             {showPreview && message && (
               <div className="mt-3">
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Preview:</label>
-                <div className="prose prose-sm dark:prose-invert mt-1 max-w-none rounded-md border bg-gray-50 p-3 text-sm dark:bg-gray-800">
+                <p className="text-sm font-medium text-muted-foreground">Preview:</p>
+                <div className="prose prose-sm dark:prose-invert mt-1 max-w-none rounded-md border bg-muted/50 p-3 text-sm">
                   <ReactMarkdown
                     remarkPlugins={[remarkBreaks]}
                     components={{
                       // Custom components to match Discord-like styling
                       code: ({ children, ...props }) => (
-                        <code className="rounded bg-gray-200 px-1 py-0.5 font-mono text-xs text-gray-900 dark:bg-gray-700 dark:text-white" {...props}>
+                        <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground" {...props}>
                           {children}
                         </code>
                       ),
                       pre: ({ children, ...props }) => (
-                        <pre className="overflow-x-auto rounded bg-gray-200 p-2 font-mono text-xs dark:bg-gray-700" {...props}>
+                        <pre className="overflow-x-auto rounded bg-muted p-2 font-mono text-xs" {...props}>
                           {children}
                         </pre>
                       ),
                       blockquote: ({ children, ...props }) => (
-                        <blockquote className="border-l-4 border-indigo-500 pl-3 italic text-gray-700 dark:text-gray-300" {...props}>
+                        <blockquote className="border-l-4 border-indigo-500 pl-3 italic text-foreground/80" {...props}>
                           {children}
                         </blockquote>
                       ),
                       strong: ({ children, ...props }) => (
-                        <strong className="font-bold text-gray-900 dark:text-white" {...props}>
+                        <strong className="font-bold text-foreground" {...props}>
                           {children}
                         </strong>
                       ),
                       em: ({ children, ...props }) => (
-                        <em className="italic text-gray-800 dark:text-gray-300" {...props}>
+                        <em className="italic text-foreground" {...props}>
                           {children}
                         </em>
                       ),
                       del: ({ children, ...props }) => (
-                        <del className="text-gray-600 line-through dark:text-gray-400" {...props}>
+                        <del className="text-muted-foreground line-through" {...props}>
                           {children}
                         </del>
                       ),
@@ -254,22 +255,22 @@ export function MessageBox() {
                         </a>
                       ),
                       p: ({ children, ...props }) => (
-                        <p className="mb-2 text-gray-800 dark:text-gray-200" {...props}>
+                        <p className="mb-2 text-foreground" {...props}>
                           {children}
                         </p>
                       ),
                       ul: ({ children, ...props }) => (
-                        <ul className="mb-2 list-inside list-disc text-gray-800 dark:text-gray-200" {...props}>
+                        <ul className="mb-2 list-inside list-disc text-foreground" {...props}>
                           {children}
                         </ul>
                       ),
                       ol: ({ children, ...props }) => (
-                        <ol className="mb-2 list-inside list-decimal text-gray-800 dark:text-gray-200" {...props}>
+                        <ol className="mb-2 list-inside list-decimal text-foreground" {...props}>
                           {children}
                         </ol>
                       ),
                       li: ({ children, ...props }) => (
-                        <li className="text-gray-800 dark:text-gray-200" {...props}>
+                        <li className="text-foreground" {...props}>
                           {children}
                         </li>
                       ),
@@ -278,13 +279,13 @@ export function MessageBox() {
                     {message}
                   </ReactMarkdown>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   ✨ Live preview - This shows how your message will appear with formatting applied.
                 </p>
               </div>
             )}
 
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Character count:
               {' '}
               {message.length}

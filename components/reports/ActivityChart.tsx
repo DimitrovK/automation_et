@@ -1,5 +1,6 @@
 'use client';
 
+import type { ChartTheme } from '@/lib/chart-theme';
 import type { ActivityDay, Granularity, MetricKey } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -32,12 +33,24 @@ function total(rows: { [key: string]: unknown }[], key: MetricKey): number {
   return rows.reduce((sum, row) => sum + (typeof row[key] === 'number' ? (row[key] as number) : 0), 0);
 }
 
-const DEFAULT_COLORS: Record<MetricKey, string> = {
-  games_started: '#059669',
-  games_finished: '#2563eb',
-  distinct_players: '#f59e0b',
-  mp_player_sessions: '#8b5cf6',
+/**
+ * Metric -> slot in the shared categorical series.
+ *
+ * A metric keeps its slot regardless of which one is selected, so "blue" means
+ * finished-sessions on the large chart and on the three small ones beneath it.
+ * Assigning by position in the rendered list would repaint every metric as soon
+ * as the selection changed.
+ */
+const METRIC_SLOT: Record<MetricKey, number> = {
+  games_started: 0,
+  games_finished: 1,
+  distinct_players: 2,
+  mp_player_sessions: 3,
 };
+
+function metricColor(theme: ChartTheme, metric: MetricKey): string {
+  return theme.series[METRIC_SLOT[metric]];
+}
 
 /**
  * Daily activity: the selected metric large, the other three beneath it.
@@ -93,7 +106,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
         }),
   }));
   const uncovered = rows.filter(row => !row.covered).length;
-  const primaryColor = color ?? DEFAULT_COLORS[metric];
+  const primaryColor = color ?? metricColor(theme, metric);
   const panels = metricPanels(metric);
   const primaryOption = METRIC_OPTIONS.find(option => option.key === panels.primary)!;
 
@@ -102,7 +115,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
       <CardHeader className="space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <CardTitle>{title}</CardTitle>
-          <div className="flex gap-1 rounded-md border p-0.5 dark:border-slate-700">
+          <div className="flex gap-1 rounded-md border p-0.5">
             {GRANULARITIES.map(option => (
               <button
                 key={option}
@@ -113,8 +126,8 @@ export function ActivityChart({ series, title, description, metric, color, granu
                 className={cn(
                   'rounded px-2 py-0.5 text-xs font-medium capitalize transition-colors',
                   effective === option
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700/50',
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted',
                 )}
               >
                 {option}
@@ -166,9 +179,9 @@ export function ActivityChart({ series, title, description, metric, color, granu
       <CardContent className="grid grid-cols-1 gap-4 pt-0 sm:grid-cols-3">
         {panels.context.map(key => METRIC_OPTIONS.find(option => option.key === key)!).map(option => (
           <div key={option.key} className="space-y-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
+            <p className="text-xs font-medium text-muted-foreground">
               {option.label}
-              <span className="ml-1 font-normal tabular-nums text-gray-400 dark:text-gray-500">
+              <span className="ml-1 font-normal tabular-nums text-muted-foreground/70">
                 {total(data, option.key).toLocaleString()}
               </span>
             </p>
@@ -185,7 +198,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
                     type="monotone"
                     dataKey={option.key}
                     name={option.label}
-                    stroke={DEFAULT_COLORS[option.key]}
+                    stroke={metricColor(theme, option.key)}
                     strokeWidth={1.5}
                     dot={false}
                     connectNulls={false}

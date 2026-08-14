@@ -4,6 +4,7 @@ import type { HourWeekdayRow, PeakCell } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { chartTheme } from '@/lib/chart-theme';
 import { cn } from '@/lib/utils';
 
 /** Every third hour, so the axis stays readable on a phone. */
@@ -21,16 +22,16 @@ const HOUR_TICKS = [0, 3, 6, 9, 12, 15, 18, 21];
  * lightness, adjacent steps at least 0.06 apart, lightest step clearing 2:1 so
  * it is distinguishable from an empty cell.
  */
-const RAMP_LIGHT = ['#10b981', '#059669', '#047857', '#064e3b'];
-const RAMP_DARK = ['#047857', '#059669', '#34d399', '#a7f3d0'];
-
 /** Exported so the per-surface choice is testable rather than implicit. */
 // Exported beside its component on purpose: a recharts tree renders nothing
 // measurable in jsdom, so the pure part has to be reachable from a test. The
 // cost is fast-refresh reloading this file rather than hot-swapping it.
 // eslint-disable-next-line react-refresh/only-export-components
 export function heatmapRamp(isDark: boolean): string[] {
-  return isDark ? RAMP_DARK : RAMP_LIGHT;
+  // The steps themselves now live in chart-theme beside the categorical series,
+  // because three components had each grown their own emerald ramp and they had
+  // already drifted to different values.
+  return chartTheme(isDark).ramp;
 }
 
 /** Quartile-style thresholds as a share of the busiest cell. */
@@ -106,7 +107,7 @@ export function ActivityHeatmap({
           <div className="min-w-[520px]">
             <div className="mb-1 flex pl-10">
               {Array.from({ length: 24 }, (_, hour) => (
-                <div key={hour} className="flex-1 text-center text-[10px] text-gray-500 dark:text-gray-400">
+                <div key={hour} className="flex-1 text-center text-[10px] text-muted-foreground">
                   {HOUR_TICKS.includes(hour) ? String(hour).padStart(2, '0') : ''}
                 </div>
               ))}
@@ -114,7 +115,7 @@ export function ActivityHeatmap({
 
             {rows.map(row => (
               <div key={row.weekday} className="mb-0.5 flex items-center">
-                <div className="w-10 shrink-0 pr-1 text-right text-[11px] text-gray-600 dark:text-gray-300">
+                <div className="w-10 shrink-0 pr-1 text-right text-[11px] text-muted-foreground">
                   {row.name.slice(0, 3)}
                 </div>
                 {row.hours.map((value, hour) => {
@@ -148,7 +149,7 @@ export function ActivityHeatmap({
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 dark:text-gray-300">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <span className="min-h-4">
             {hovered
               ? `${hovered.row.name} ${String(hovered.hour).padStart(2, '0')}:00 — ${hovered.row.hours[hovered.hour].toLocaleString()} sessions`
@@ -156,7 +157,7 @@ export function ActivityHeatmap({
           </span>
           <span className="flex flex-wrap items-center gap-1">
             <span className="mr-1">Sessions</span>
-            <span className="size-3 rounded-[2px] border border-gray-300 dark:border-slate-600" />
+            <span className="size-3 rounded-[2px] border border-border" />
             <span className="mr-1">0</span>
             {ramp.map((colour, index) => {
               const low = index === 0 ? 1 : Math.round(BUCKET_EDGES[index - 1] * busiest) + 1;

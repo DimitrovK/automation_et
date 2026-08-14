@@ -11,12 +11,15 @@ import { ComparePicker } from '@/components/reports/ComparePicker';
 import { ComparisonTiles } from '@/components/reports/ComparisonTiles';
 import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
+import { EmptyState } from '@/components/reports/EmptyState';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameHourProfile } from '@/components/reports/GameHourProfile';
 import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
@@ -25,18 +28,6 @@ import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
 import { compareToParams, rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
-
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <Card>
-      <CardContent className="space-y-1 p-4">
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-        {hint && <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
-      </CardContent>
-    </Card>
-  );
-}
 
 /** Everything about one game in one place, instead of filtering five pages by hand. */
 export default function GameDetailPage() {
@@ -139,21 +130,21 @@ export default function GameDetailPage() {
                 <ComparisonTiles comparison={summary.data.comparison} />
                 {row && (
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <Stat
+                    <StatTile
                       label="Completion"
                       value={row.completion_pct === null ? '—' : `${row.completion_pct}%`}
                       hint="Of games started"
                     />
-                    <Stat
+                    <StatTile
                       label="Repeat rate"
                       value={row.repeat_rate_pct === null ? '—' : `${row.repeat_rate_pct}%`}
                       hint="Players who came back another day"
                     />
-                    <Stat
+                    <StatTile
                       label="Sessions per player"
                       value={row.sessions_per_player?.toString() ?? '—'}
                     />
-                    <Stat
+                    <StatTile
                       label="Share of platform"
                       value={row.share_pct === null ? '—' : `${row.share_pct}%`}
                       hint="Of all games played"
@@ -196,37 +187,35 @@ export default function GameDetailPage() {
             <CardDescription>Ranked within this game only.</CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-600 dark:border-slate-700 dark:text-gray-300">
-                  <th className="py-2 pr-4 font-medium">#</th>
-                  <th className="py-2 pr-4 font-medium">Player</th>
-                  <th className="py-2 pr-4 text-right font-medium">Played</th>
-                  <th className="py-2 text-right font-medium">Finished</th>
-                </tr>
-              </thead>
+            <ReportTable>
+              <ReportHead>
+                <Th>#</Th>
+                <Th>Player</Th>
+                <Th align="right">Played</Th>
+                <Th align="right">Finished</Th>
+              </ReportHead>
               <tbody>
                 {players.data.players.map((player, index) => (
-                  <tr key={player.user_id} className="border-b last:border-0 dark:border-slate-700">
-                    <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{index + 1}</td>
-                    <td className="py-2 pr-4">
+                  <ReportRow key={player.user_id}>
+                    <Td className="text-muted-foreground">{index + 1}</Td>
+                    <Td>
                       <Link
                         href={`/reports/players/${player.user_id}`}
                         className="font-medium text-emerald-700 hover:underline dark:text-emerald-400"
                       >
                         {player.username}
                       </Link>
-                    </td>
-                    <td className="py-2 pr-4 text-right tabular-nums">{player.games_played.toLocaleString()}</td>
-                    <td className="py-2 text-right tabular-nums">{player.games_finished.toLocaleString()}</td>
-                  </tr>
+                    </Td>
+                    <Td align="right">{player.games_played.toLocaleString()}</Td>
+                    <Td align="right">{player.games_finished.toLocaleString()}</Td>
+                  </ReportRow>
                 ))}
               </tbody>
-            </table>
+            </ReportTable>
             {players.data.players.length === 0 && (
-              <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              <EmptyState>
                 Nobody played this game in the selected range.
-              </p>
+              </EmptyState>
             )}
           </CardContent>
         </Card>

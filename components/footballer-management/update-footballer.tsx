@@ -1,6 +1,6 @@
 'use client';
 
-import type { CreateFootballerRequest, Footballer, FootballerNation, FootballerTeam } from '@/types/player';
+import type { CreateFootballerRequest, Footballer, FootballerNation } from '@/types/player';
 import { Edit, Loader2, Search } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { NationCombobox } from '@/components/footballer-management/NationCombobox';
@@ -45,7 +45,7 @@ export function UpdateFootballer({
   const otherNations = useMemo(() => {
     const ids = updateForm.other_nation_ids ?? [];
     return ids
-      .map((id) => nations.find((n) => n.id === id))
+      .map(id => nations.find(n => n.id === id))
       .filter((n): n is FootballerNation => Boolean(n));
   }, [updateForm.other_nation_ids, nations]);
 
@@ -185,7 +185,7 @@ export function UpdateFootballer({
                 <Label>Nation</Label>
                 <NationCombobox
                   value={updateForm.nation_id || null}
-                  onChange={(id) => onFormChange({ ...updateForm, nation_id: id })}
+                  onChange={id => onFormChange({ ...updateForm, nation_id: id })}
                   placeholder="Search and pick a nation…"
                   disabled={updateLoading}
                 />
@@ -198,11 +198,11 @@ export function UpdateFootballer({
                 <Label>Other Nationalities</Label>
                 <NationsMultiSelect
                   value={otherNations}
-                  onChange={(arr) => onFormChange({ ...updateForm, other_nation_ids: arr.map((n) => n.id) })}
+                  onChange={arr => onFormChange({ ...updateForm, other_nation_ids: arr.map(n => n.id) })}
                   excludeIds={updateForm.nation_id ? [updateForm.nation_id] : []}
                   disabled={updateLoading}
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Optional: dual citizenship. The primary nation above is excluded from this list.
                 </p>
               </div>
@@ -219,7 +219,7 @@ export function UpdateFootballer({
                   onChange={e => onFormChange({ ...updateForm, wikipedia_url: e.target.value || null })}
                   disabled={updateLoading}
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Optional: Link to the player's Wikipedia page
                 </p>
               </div>
@@ -263,7 +263,7 @@ export function UpdateFootballer({
             </div>
 
             {/* Game eligibility group — three switches side-by-side. */}
-            <div className="rounded-md border bg-gray-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+            <div className="rounded-md border bg-muted/50 p-3">
               <Label className="mb-2 block text-sm font-medium">Game Eligibility</Label>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="flex items-center space-x-2">
@@ -352,16 +352,26 @@ export function UpdateFootballer({
             <Button
               onClick={onUpdateFootballer}
               disabled={updateLoading || !updateForm.last_name.trim() || !updateForm.date_of_birth}
-              className="border-slate-500 bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-sm hover:from-slate-600 hover:to-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="border-border bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-sm hover:from-slate-600 hover:to-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {updateLoading ? (
-                <><Loader2 className="mr-2 size-4 animate-spin" /> Updating footballer...</>
-              ) : (
-                <><Edit className="mr-2 size-4" /> Update Footballer</>
-              )}
+              {updateLoading
+                ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      {' '}
+                      Updating footballer...
+                    </>
+                  )
+                : (
+                    <>
+                      <Edit className="mr-2 size-4" />
+                      {' '}
+                      Update Footballer
+                    </>
+                  )}
             </Button>
 
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               * Required fields. Team stints, positions, nation stats, and pictures
               are managed in the editors below — saving the form here only updates
               the core footballer record.

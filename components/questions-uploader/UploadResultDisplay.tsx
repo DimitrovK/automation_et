@@ -126,7 +126,7 @@ export function UploadResultDisplay() {
             }`}
           >
             <span className="text-2xl font-bold text-blue-600">{details.total}</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Total</span>
+            <span className="text-sm text-muted-foreground">Total</span>
           </button>
           <button
             onClick={() => setActiveFilter('uploaded')}
@@ -140,7 +140,7 @@ export function UploadResultDisplay() {
             }`}
           >
             <span className="text-2xl font-bold text-green-600">{details.successful}</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300">✅ Uploaded</span>
+            <span className="text-sm text-muted-foreground">✅ Uploaded</span>
           </button>
           <button
             onClick={() => setActiveFilter('duplicates')}
@@ -154,7 +154,7 @@ export function UploadResultDisplay() {
             }`}
           >
             <span className="text-2xl font-bold text-yellow-600">{details.duplicates}</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300">⚠️ Duplicates</span>
+            <span className="text-sm text-muted-foreground">⚠️ Duplicates</span>
           </button>
           <button
             onClick={() => setActiveFilter('skipped')}
@@ -168,7 +168,7 @@ export function UploadResultDisplay() {
             }`}
           >
             <span className="text-2xl font-bold text-orange-600">{details.skipped}</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300">⏭️ Skipped</span>
+            <span className="text-sm text-muted-foreground">⏭️ Skipped</span>
           </button>
           <button
             onClick={() => setActiveFilter('failed')}
@@ -182,7 +182,7 @@ export function UploadResultDisplay() {
             }`}
           >
             <span className="text-2xl font-bold text-red-600">{details.failed}</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300">❌ Failed</span>
+            <span className="text-sm text-muted-foreground">❌ Failed</span>
           </button>
         </div>
 
@@ -242,7 +242,7 @@ export function UploadResultDisplay() {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <p className="text-sm text-foreground/80">
                     {q.text}
                   </p>
                 </div>
@@ -412,10 +412,10 @@ export function UploadResultDisplay() {
 
         {/* API Response Raw Data (for debugging) */}
         <details className="text-xs">
-          <summary className="cursor-pointer text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+          <summary className="cursor-pointer text-muted-foreground hover:text-foreground/80">
             View Raw API Response
           </summary>
-          <pre className="mt-2 overflow-x-auto rounded-lg bg-gray-100 p-4 dark:bg-gray-900">
+          <pre className="mt-2 overflow-x-auto rounded-lg bg-muted p-4">
             {JSON.stringify(details, null, 2)}
           </pre>
         </details>

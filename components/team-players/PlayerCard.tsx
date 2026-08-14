@@ -1,21 +1,29 @@
+import type { TeamPlayerRow } from '@/types/team';
 import { Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { TeamPlayerRow } from '@/types/team';
 
 function formatYears(start: number | null, end: number | null): string {
-  if (start === null && end === null) return '—';
-  if (start !== null && end === null) return `${start} – present`;
-  if (start === null && end !== null) return `? – ${end}`;
+  if (start === null && end === null) {
+    return '—';
+  }
+  if (start !== null && end === null) {
+    return `${start} – present`;
+  }
+  if (start === null && end !== null) {
+    return `? – ${end}`;
+  }
   return `${start} – ${end}`;
 }
 
 type Props = {
   player: TeamPlayerRow;
-  /** Optional handler called with the footballer id when the user
+  /**
+   * Optional handler called with the footballer id when the user
    *  clicks the inline edit button. The parent decides where to send
-   *  them — usually `/footballer-management?edit=<id>`. */
+   *  them — usually `/footballer-management?edit=<id>`.
+   */
   onEdit?: (footballerId: number) => void;
 };
 
@@ -26,14 +34,17 @@ export function PlayerCard({ player, onEdit }: Props) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-semibold leading-tight">{player.full_name}</h3>
-            <p className="text-xs font-mono text-gray-400">#{player.footballer_id}</p>
+            <p className="font-mono text-xs text-muted-foreground/70">
+              #
+              {player.footballer_id}
+            </p>
           </div>
           <Badge variant={player.role === 'manager' ? 'default' : 'secondary'}>
             {player.role}
           </Badge>
         </div>
 
-        <div className="text-sm text-gray-600 dark:text-gray-300">
+        <div className="text-sm text-muted-foreground">
           {player.nation_name ?? 'Unknown'}
           {player.nation_short ? ` (${player.nation_short})` : ''}
           {player.retired ? ' · retired' : ''}
@@ -45,8 +56,16 @@ export function PlayerCard({ player, onEdit }: Props) {
 
         {player.role === 'player' && (
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Badge variant="outline">{player.apps ?? 0} apps</Badge>
-            <Badge variant="outline">{player.goals ?? 0} goals</Badge>
+            <Badge variant="outline">
+              {player.apps ?? 0}
+              {' '}
+              apps
+            </Badge>
+            <Badge variant="outline">
+              {player.goals ?? 0}
+              {' '}
+              goals
+            </Badge>
             <Badge
               variant={player.transfer_type === 'loan' ? 'destructive' : 'secondary'}
               className={

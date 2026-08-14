@@ -1,5 +1,6 @@
 'use client';
 
+import type { FootballerBulkUpdates } from '@/types/player';
 import { CheckSquare, Loader2, MinusSquare, Square, Wand2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -14,11 +15,12 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FootballerAPI } from '@/lib/footballer-api';
-import type { FootballerBulkUpdates } from '@/types/player';
 
 type Props = {
-  /** Ids of every footballer rendered in the current result set —
-   *  used by the "select all" toggle. */
+  /**
+   * Ids of every footballer rendered in the current result set —
+   *  used by the "select all" toggle.
+   */
   visibleIds: number[];
   selectedIds: Set<number>;
   onSelectionChange: (ids: Set<number>) => void;
@@ -62,18 +64,22 @@ export function BulkUpdateToolbar({
   const [updates, setUpdates] = useState<FootballerBulkUpdates>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
-  const someSelected = !allSelected && visibleIds.some((id) => selectedIds.has(id));
+  const allSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
+  const someSelected = !allSelected && visibleIds.some(id => selectedIds.has(id));
 
   const updateCount = Object.keys(updates).filter(
-    (k) => updates[k as keyof FootballerBulkUpdates] !== undefined,
+    k => updates[k as keyof FootballerBulkUpdates] !== undefined,
   ).length;
 
   const canApply = selectedIds.size > 0 && updateCount > 0;
 
   const summary = useMemo(() => {
-    if (selectedIds.size === 0) return 'No footballers selected.';
-    if (selectedIds.size === 1) return '1 footballer selected.';
+    if (selectedIds.size === 0) {
+      return 'No footballers selected.';
+    }
+    if (selectedIds.size === 1) {
+      return '1 footballer selected.';
+    }
     return `${selectedIds.size} footballers selected.`;
   }, [selectedIds]);
 
@@ -91,14 +97,19 @@ export function BulkUpdateToolbar({
   ) {
     setUpdates((u) => {
       const next = { ...u };
-      if (value === undefined) delete next[key];
-      else (next[key] as FootballerBulkUpdates[K]) = value;
+      if (value === undefined) {
+        delete next[key];
+      } else {
+        (next[key] as FootballerBulkUpdates[K]) = value;
+      }
       return next;
     });
   }
 
   async function apply() {
-    if (!canApply) return;
+    if (!canApply) {
+      return;
+    }
     setSubmitting(true);
     try {
       const ids = Array.from(selectedIds);
@@ -139,14 +150,14 @@ export function BulkUpdateToolbar({
             {allSelected ? 'Deselect all' : 'Select all on this page'}
           </Button>
 
-          <span className="text-sm text-gray-600 dark:text-gray-300">{summary}</span>
+          <span className="text-sm text-muted-foreground">{summary}</span>
 
           <div className="ml-auto flex items-center gap-2">
             <Button
               type="button"
               variant={open ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setOpen((o) => !o)}
+              onClick={() => setOpen(o => !o)}
               disabled={selectedIds.size === 0}
               className="gap-2"
             >
@@ -157,21 +168,20 @@ export function BulkUpdateToolbar({
         </div>
 
         {open && (
-          <div className="grid grid-cols-1 gap-3 rounded-md border bg-gray-50/50 p-3 sm:grid-cols-2 lg:grid-cols-3 dark:bg-slate-800/40">
+          <div className="grid grid-cols-1 gap-3 rounded-md border bg-muted/50 p-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">
+              <label htmlFor="bulk-status" className="mb-1 block text-xs font-medium text-muted-foreground">
                 Status
               </label>
               <Select
                 value={updates.status ?? '__noop__'}
-                onValueChange={(v) =>
-                  setUpdate('status', v === '__noop__' ? undefined : (v as FootballerBulkUpdates['status']))
-                }
+                onValueChange={v =>
+                  setUpdate('status', v === '__noop__' ? undefined : (v as FootballerBulkUpdates['status']))}
               >
-                <SelectTrigger><SelectValue placeholder="Don't change" /></SelectTrigger>
+                <SelectTrigger id="bulk-status"><SelectValue placeholder="Don't change" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__noop__">Don't change</SelectItem>
-                  {STATUS_CHOICES.map((s) => (
+                  {STATUS_CHOICES.map(s => (
                     <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -179,24 +189,23 @@ export function BulkUpdateToolbar({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">
+              <label htmlFor="bulk-difficulty" className="mb-1 block text-xs font-medium text-muted-foreground">
                 Career path difficulty
               </label>
               <Select
                 value={updates.career_path_difficulty ?? '__noop__'}
-                onValueChange={(v) =>
+                onValueChange={v =>
                   setUpdate(
                     'career_path_difficulty',
                     v === '__noop__'
                       ? undefined
                       : (v as FootballerBulkUpdates['career_path_difficulty']),
-                  )
-                }
+                  )}
               >
-                <SelectTrigger><SelectValue placeholder="Don't change" /></SelectTrigger>
+                <SelectTrigger id="bulk-difficulty"><SelectValue placeholder="Don't change" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__noop__">Don't change</SelectItem>
-                  {DIFFICULTY_CHOICES.map((d) => (
+                  {DIFFICULTY_CHOICES.map(d => (
                     <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -206,53 +215,57 @@ export function BulkUpdateToolbar({
             <BoolFlag
               label="Retired"
               value={updates.retired}
-              onChange={(v) => setUpdate('retired', v)}
+              onChange={v => setUpdate('retired', v)}
             />
             <BoolFlag
               label="Is player"
               value={updates.is_player}
-              onChange={(v) => setUpdate('is_player', v)}
+              onChange={v => setUpdate('is_player', v)}
             />
             <BoolFlag
               label="Is manager"
               value={updates.is_manager}
-              onChange={(v) => setUpdate('is_manager', v)}
+              onChange={v => setUpdate('is_manager', v)}
             />
             <BoolFlag
               label="Might change"
               value={updates.might_change}
-              onChange={(v) => setUpdate('might_change', v)}
+              onChange={v => setUpdate('might_change', v)}
             />
             <BoolFlag
               label="Available for Career Path"
               value={updates.available_for_career_path}
-              onChange={(v) => setUpdate('available_for_career_path', v)}
+              onChange={v => setUpdate('available_for_career_path', v)}
             />
             <BoolFlag
               label="Available for Grid"
               value={updates.available_for_grid}
-              onChange={(v) => setUpdate('available_for_grid', v)}
+              onChange={v => setUpdate('available_for_grid', v)}
             />
             <BoolFlag
               label="Available for Scout"
               value={updates.available_for_scout}
-              onChange={(v) => setUpdate('available_for_scout', v)}
+              onChange={v => setUpdate('available_for_scout', v)}
             />
           </div>
         )}
 
         {open && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 dark:border-slate-700">
-            <div className="text-xs text-gray-500">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+            <div className="text-xs text-muted-foreground">
               {updateCount === 0
                 ? 'Pick at least one field to change.'
                 : `${updateCount} ${updateCount === 1 ? 'field' : 'fields'} will be applied to ${selectedIds.size} ${
-                    selectedIds.size === 1 ? 'footballer' : 'footballers'
-                  }.`}
+                  selectedIds.size === 1 ? 'footballer' : 'footballers'
+                }.`}
             </div>
             <Button onClick={apply} disabled={!canApply || submitting}>
               {submitting && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-              Apply to {selectedIds.size} {selectedIds.size === 1 ? 'footballer' : 'footballers'}
+              Apply to
+              {' '}
+              {selectedIds.size}
+              {' '}
+              {selectedIds.size === 1 ? 'footballer' : 'footballers'}
             </Button>
           </div>
         )}
@@ -274,19 +287,19 @@ function BoolFlag({
   // The label-click cycles, the Switch directly sets true/false; the
   // small ✕ button on the right clears the field back to undefined.
   return (
-    <div className="flex items-center justify-between rounded-md border bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900/40">
+    <div className="flex items-center justify-between rounded-md border bg-card px-3 py-2">
       <div className="flex items-center gap-2">
         <Switch
           checked={value === true}
-          onCheckedChange={(checked) => onChange(checked)}
+          onCheckedChange={checked => onChange(checked)}
           aria-label={label}
         />
         <span className="text-sm">{label}</span>
       </div>
       <span
         className={
-          'text-xs '
-          + (value === undefined ? 'text-gray-400' : value ? 'text-emerald-600' : 'text-red-600')
+          `text-xs ${
+            value === undefined ? 'text-muted-foreground/70' : value ? 'text-emerald-600' : 'text-red-600'}`
         }
       >
         {value === undefined ? 'no change' : value ? 'will be true' : 'will be false'}
@@ -295,7 +308,7 @@ function BoolFlag({
         <button
           type="button"
           onClick={() => onChange(undefined)}
-          className="ml-2 rounded p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          className="ml-2 rounded p-1 text-muted-foreground/70 hover:text-foreground/80"
           aria-label={`Clear ${label}`}
         >
           ×

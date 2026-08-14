@@ -48,7 +48,7 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
       case 'loading':
         return <Loader2 className="size-4 animate-spin text-blue-500" />;
       default:
-        return <Terminal className="size-4 text-gray-500" />;
+        return <Terminal className="size-4 text-muted-foreground" />;
     }
   };
 
@@ -67,7 +67,7 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
       case 'loading':
         return 'text-blue-700 dark:text-blue-300';
       default:
-        return 'text-gray-700 dark:text-gray-300';
+        return 'text-foreground/80';
     }
   };
 
@@ -98,7 +98,7 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
           {onClear && logs.length > 0 && !isActive && (
             <button
               onClick={onClear}
-              className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              className="text-sm text-muted-foreground hover:text-foreground/80"
             >
               Clear
             </button>
@@ -110,18 +110,18 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
       </CardHeader>
       <CardContent>
         <ScrollArea ref={scrollAreaRef} className="h-80 w-full rounded-lg border">
-          <div className="space-y-2 bg-gray-100 p-4 dark:bg-slate-700">
+          <div className="space-y-2 bg-muted p-4">
             {logs.length === 0 && !isActive
               ? (
-                  <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                  <div className="py-8 text-center text-muted-foreground">
                     <Terminal className="mx-auto mb-2 size-8 opacity-50" />
                     <p className="text-sm">No deployment activity yet</p>
                   </div>
                 )
               : (
-                  logs.map((log, index) => (
+                  logs.map((log, _index) => (
                     <div key={log.id} className="flex items-start gap-3 font-mono text-xs">
-                      <span className="mt-0.5 shrink-0 text-gray-500 dark:text-gray-400">
+                      <span className="mt-0.5 shrink-0 text-muted-foreground">
                         {formatTimestamp(log.timestamp)}
                       </span>
                       <div className="mt-0.5 shrink-0">
@@ -133,10 +133,10 @@ export function DeploymentConsole({ logs, isActive, onClear }: DeploymentConsole
                         </div>
                         {log.data && (
                           <details className="mt-1">
-                            <summary className="cursor-pointer text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+                            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                               View data
                             </summary>
-                            <pre className="mt-1 overflow-x-auto rounded bg-gray-200 p-2 text-xs dark:bg-slate-600">
+                            <pre className="mt-1 overflow-x-auto rounded bg-muted p-2 text-xs">
                               <code>{JSON.stringify(log.data, null, 2)}</code>
                             </pre>
                           </details>

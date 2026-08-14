@@ -31,7 +31,7 @@ export function GraphiteButton({
   ...props
 }: GraphiteButtonProps) {
   const baseClasses = variant === 'default'
-    ? 'bg-gradient-to-r from-slate-600 to-gray-700 hover:from-slate-700 hover:to-gray-800 text-white border-slate-600 hover:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+    ? 'bg-gradient-to-r from-slate-600 to-gray-700 hover:from-slate-700 hover:to-gray-800 text-white border-border hover:border-border shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
     : '';
 
   return (

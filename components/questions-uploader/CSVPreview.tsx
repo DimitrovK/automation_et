@@ -61,7 +61,7 @@ export function CSVPreview() {
       <CardContent>
         <div className="max-h-[500px] overflow-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-white dark:bg-slate-800">
+            <thead className="sticky top-0 z-10 bg-card">
               <tr className="border-b">
                 <th className="p-2 text-left font-medium">Row</th>
                 {displayData[0] && Object.keys(displayData[0]).filter(k => k !== 'row').map(key => (
@@ -73,7 +73,7 @@ export function CSVPreview() {
             </thead>
             <tbody>
               {displayData.map((row, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr key={index} className="border-b hover:bg-muted/50">
                   <td className="p-2">
                     <Badge variant="outline">{row.row}</Badge>
                   </td>

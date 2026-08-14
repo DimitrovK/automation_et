@@ -46,8 +46,13 @@ export function FootballerCard({
 
   return (
     <div className="fm-card border">
-      <div
-        className="fm-card-header cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-slate-700/50"
+      {/* A real button, not a div with onClick: this is the only way to open
+          the card, so it has to be reachable by keyboard and announce that it
+          expands something. It contains no other controls, so nesting is safe. */}
+      <button
+        type="button"
+        aria-expanded={isExpanded}
+        className="fm-card-header w-full cursor-pointer text-left transition-colors hover:bg-muted/50"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-start justify-between">
@@ -57,7 +62,7 @@ export function FootballerCard({
               <div className="flex flex-wrap items-center gap-1">
                 <Badge
                   variant="outline"
-                  className="border-slate-500 bg-gradient-to-r from-slate-500 to-slate-600 text-xs text-white shadow-sm"
+                  className="border-border bg-gradient-to-r from-slate-500 to-slate-600 text-xs text-white shadow-sm"
                 >
                   ID:
                   {' '}
@@ -74,7 +79,7 @@ export function FootballerCard({
                           ? 'border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
                           : footballer.status === 'DENIED'
                             ? 'border-red-500 bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
-                            : 'border-gray-500 bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg'
+                            : 'border-border bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg'
                   }`}
                 >
                   {footballer.status}
@@ -164,7 +169,7 @@ export function FootballerCard({
                 )}
           </div>
         </div>
-      </div>
+      </button>
 
       {isExpanded && (
         <div className="fm-card-body pt-4">
@@ -194,7 +199,7 @@ export function FootballerCard({
                           </a>
                         )
                       : (
-                          <span className="font-medium text-gray-500">null</span>
+                          <span className="font-medium text-muted-foreground">null</span>
                         )}
                   </div>
                   <div className="flex items-center justify-between py-1">
@@ -291,17 +296,17 @@ export function FootballerCard({
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                               <div>
-                                <span className="text-xs uppercase tracking-wide text-gray-500">Apps:</span>
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Apps:</span>
                                 <span className="fm-stat-blue ml-1 font-mono font-medium">{team.apps}</span>
                               </div>
                               <div>
-                                <span className="text-xs uppercase tracking-wide text-gray-500">Goals:</span>
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Goals:</span>
                                 <span className="fm-stat-yellow ml-1 font-mono font-medium">{team.goals}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                               <div>
-                                <span className="text-xs uppercase tracking-wide text-gray-500">Period:</span>
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Period:</span>
                                 <span className="fm-stat-green ml-1 font-mono">
                                   {team.start_year}
                                   {' '}
@@ -392,7 +397,7 @@ export function FootballerCard({
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
-                            <span className="text-xs uppercase tracking-wide text-gray-500">Period:</span>
+                            <span className="text-xs uppercase tracking-wide text-muted-foreground">Period:</span>
                             <span className="fm-stat-green ml-1 font-mono">
                               {team.start_year}
                               {' '}
@@ -402,7 +407,7 @@ export function FootballerCard({
                             </span>
                           </div>
                           <div>
-                            <span className="text-xs uppercase tracking-wide text-gray-500">Duration:</span>
+                            <span className="text-xs uppercase tracking-wide text-muted-foreground">Duration:</span>
                             <span className="fm-stat-blue ml-1 font-mono">
                               {team.end_year && team.start_year ? `${team.end_year - team.start_year} years` : 'Current'}
                             </span>

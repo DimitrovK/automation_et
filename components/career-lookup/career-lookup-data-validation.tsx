@@ -157,13 +157,13 @@ export function CareerLookupDataValidation({
             mismatches,
           });
 
-          console.log(`Team mismatch found at position ${i + 1} (${i + 1}${positionSuffix} team): ${wikiTeam.teamName} vs ${dbTeam.team_name}`, mismatches);
+          console.warn(`Team mismatch found at position ${i + 1} (${i + 1}${positionSuffix} team): ${wikiTeam.teamName} vs ${dbTeam.team_name}`, mismatches);
         }
       }
 
       // Log if arrays have different lengths
       if (wikiTeams.length !== dbTeams.length) {
-        console.log(`Array length mismatch: Wikipedia has ${wikiTeams.length} teams, DB has ${dbTeams.length} teams`);
+        console.warn(`Array length mismatch: Wikipedia has ${wikiTeams.length} teams, DB has ${dbTeams.length} teams`);
       }
 
       const validation = {
@@ -224,7 +224,6 @@ export function CareerLookupDataValidation({
     setValidationDialogOpen(false);
     setChosenDataSource('wikipedia');
     onDataSourceChosen('wikipedia');
-    console.log('Using Wikipedia data for player information');
   };
 
   const handleUseDatabaseData = () => {
@@ -232,7 +231,6 @@ export function CareerLookupDataValidation({
     setValidationDialogOpen(false);
     setChosenDataSource('database');
     onDataSourceChosen('database');
-    console.log('Using database data for player information');
   };
 
   // Don't render anything if we don't have both pieces of data
@@ -291,13 +289,13 @@ export function CareerLookupDataValidation({
           <div className="flex-1 space-y-6 overflow-y-auto pr-2">
             {/* Data Comparison Table */}
             <div className="overflow-x-auto">
-              <table className="w-full rounded-lg border border-gray-200 dark:border-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+              <table className="w-full rounded-lg border border-border">
+                <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Field</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Wikipedia Data</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Extratime DB Data</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/80">Field</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/80">Wikipedia Data</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/80">Extratime DB Data</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/80">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -541,13 +539,13 @@ export function CareerLookupDataValidation({
               </Alert>
             )}
 
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-center text-sm text-muted-foreground">
               Your choice will update the Player Information section and affect the final configuration.
             </p>
           </div>
 
           {/* Action Buttons - Fixed at bottom */}
-          <div className="flex shrink-0 justify-center gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <div className="flex shrink-0 justify-center gap-4 border-t border-border pt-4">
             <Button
               onClick={handleUseWikipediaData}
               variant="outline"

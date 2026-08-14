@@ -1,5 +1,6 @@
 'use client';
 
+import type { FootballerNation } from '@/types/player';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { FootballerAPI } from '@/lib/footballer-api';
 import { cn } from '@/lib/utils';
-import type { FootballerNation } from '@/types/player';
 
 type Props = {
   value: number | null;
@@ -24,8 +24,10 @@ type Props = {
   /** Render a smaller trigger — used inside dense table rows. */
   compact?: boolean;
   disabled?: boolean;
-  /** Hide nations that are already selected elsewhere (used by the
-   *  multi-select to avoid offering duplicates). */
+  /**
+   * Hide nations that are already selected elsewhere (used by the
+   *  multi-select to avoid offering duplicates).
+   */
   excludeIds?: number[];
 };
 
@@ -53,7 +55,9 @@ export function NationCombobox({
 
   // Fetch once on first open.
   useEffect(() => {
-    if (!open || nations !== null || loading) return;
+    if (!open || nations !== null || loading) {
+      return;
+    }
     setLoading(true);
     setError(null);
     FootballerAPI.getNations()
@@ -69,7 +73,7 @@ export function NationCombobox({
   }, [open, nations, loading]);
 
   const selected = useMemo(
-    () => (nations || []).find((n) => n.id === value) || null,
+    () => (nations || []).find(n => n.id === value) || null,
     [nations, value],
   );
 
@@ -77,8 +81,12 @@ export function NationCombobox({
     const q = debouncedQuery.trim().toLowerCase();
     const excludeSet = new Set(excludeIds);
     return (nations || []).filter((n) => {
-      if (excludeSet.has(n.id)) return false;
-      if (!q) return true;
+      if (excludeSet.has(n.id)) {
+        return false;
+      }
+      if (!q) {
+        return true;
+      }
       return (
         n.name.toLowerCase().includes(q)
         || n.nationality.toLowerCase().includes(q)
@@ -102,14 +110,20 @@ export function NationCombobox({
             !selected && 'text-muted-foreground',
           )}
         >
-          {selected ? (
-            <span className="truncate">
-              {selected.name}
-              <span className="ml-1 text-xs text-gray-400">({selected.short})</span>
-            </span>
-          ) : (
-            <span className="truncate">{placeholder}</span>
-          )}
+          {selected
+            ? (
+                <span className="truncate">
+                  {selected.name}
+                  <span className="ml-1 text-xs text-muted-foreground/70">
+                    (
+                    {selected.short}
+                    )
+                  </span>
+                </span>
+              )
+            : (
+                <span className="truncate">{placeholder}</span>
+              )}
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -122,7 +136,7 @@ export function NationCombobox({
           />
           <CommandList>
             {loading && (
-              <div className="flex items-center gap-2 px-3 py-4 text-sm text-gray-500">
+              <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
                 Loading nations…
               </div>
@@ -134,7 +148,7 @@ export function NationCombobox({
               <>
                 <CommandEmpty>No matching nation.</CommandEmpty>
                 <CommandGroup>
-                  {filtered.map((n) => (
+                  {filtered.map(n => (
                     <CommandItem
                       key={n.id}
                       value={`${n.name}-${n.short}-${n.id}`}
@@ -151,7 +165,7 @@ export function NationCombobox({
                         )}
                       />
                       <span className="flex-1 truncate">{n.name}</span>
-                      <span className="ml-2 text-xs text-gray-400">{n.short}</span>
+                      <span className="ml-2 text-xs text-muted-foreground/70">{n.short}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>

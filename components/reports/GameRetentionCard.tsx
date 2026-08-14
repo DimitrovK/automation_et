@@ -31,7 +31,7 @@ export function GameRetentionCard({ data, gameKey, gameLabel }: {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Does it keep people?</CardTitle>
+        <CardTitle>Does it keep people?</CardTitle>
         <CardDescription>
           {`Of the players whose first ${gameLabel} day was X, how many came back to it. `}
           Compared with the median across games — not the platform figure, which counts a
@@ -50,13 +50,13 @@ export function GameRetentionCard({ data, gameKey, gameLabel }: {
 
             return (
               <div key={key}>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                <p className="text-sm font-medium text-muted-foreground">
                   {`Day ${offset}`}
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-semibold tracking-tight text-foreground">
                   {pct === null ? '—' : `${pct}%`}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {pct === null
                     ? (value?.below_threshold
                         ? `only ${value.players} players — too few to state a rate`
