@@ -24,9 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        {/* `system`, not `light`: enableSystem was already on, so the provider
+            detected the OS preference and then overrode it for anyone who had
+            not picked a theme. The toggle still wins once someone does. */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
