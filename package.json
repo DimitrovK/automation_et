@@ -98,7 +98,7 @@
     "husky": "^9.1.7",
     "input-otp": "1.4.2",
     "jsdom": "^29.0.1",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^17.3.0",
     "postcss": "^8.5",
     "prettier": "^3.9.6",
     "react-hook-form": "^7.85.0",
