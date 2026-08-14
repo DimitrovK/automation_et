@@ -14,6 +14,7 @@ import { RangePicker } from '@/components/reports/RangePicker';
 import { ReachDepthChart } from '@/components/reports/ReachDepthChart';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameMeta } from '@/hooks/use-game-meta';
@@ -152,42 +153,40 @@ export default function GamesIndexPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left text-muted-foreground">
-                          <th className="py-2 pr-4 font-medium">Game</th>
-                          {COLUMNS.map(column => (
-                            <th key={column.key} className="py-2 pr-4 text-right font-medium">
-                              <button
-                                type="button"
-                                title={column.hint}
-                                onClick={() => setSortBy(column.key)}
-                                className={sortBy === column.key
-                                  ? 'font-semibold text-emerald-700 dark:text-emerald-400'
-                                  : 'hover:text-foreground dark:hover:text-white'}
-                              >
-                                {column.label}
-                              </button>
-                              <MetricInfo metric={column.metric} />
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
+                    <ReportTable>
+                      <ReportHead>
+                        <Th>Game</Th>
+                        {COLUMNS.map(column => (
+                          <Th key={column.key} align="right">
+                            <button
+                              type="button"
+                              title={column.hint}
+                              onClick={() => setSortBy(column.key)}
+                              className={sortBy === column.key
+                                ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                                : 'hover:text-foreground dark:hover:text-white'}
+                            >
+                              {column.label}
+                            </button>
+                            <MetricInfo metric={column.metric} />
+                          </Th>
+                        ))}
+                      </ReportHead>
                       <tbody>
                         {rows.map((row: GameRowWithDuration) => (
-                          <tr key={row.game_type} className="border-b last:border-0">
-                            <td className="py-2 pr-4">
+                          <ReportRow key={row.game_type}>
+                            <Td>
                               <Link href={`/reports/games/${row.game_type}`}>
                                 <GameBadge gameKey={row.game_type} meta={meta} />
                               </Link>
-                            </td>
-                            <td className="py-2 pr-4 text-right font-medium text-foreground">
+                            </Td>
+                            <Td align="right" strong>
                               {row.games_started.toLocaleString()}
-                            </td>
-                            <td className="py-2 pr-4 text-right">{num(row.completion_pct, '%')}</td>
-                            <td className="py-2 pr-4 text-right">{num(row.sessions_per_player)}</td>
-                            <td className="py-2 pr-4 text-right">{num(row.repeat_rate_pct, '%')}</td>
-                            <td className="py-2 pr-4 text-right">
+                            </Td>
+                            <Td align="right">{num(row.completion_pct, '%')}</Td>
+                            <Td align="right">{num(row.sessions_per_player)}</Td>
+                            <Td align="right">{num(row.repeat_rate_pct, '%')}</Td>
+                            <Td align="right">
                               {row.median_seconds === null || row.median_seconds === undefined
                                 ? <span className="text-muted-foreground/70">—</span>
                                 : (
@@ -201,8 +200,8 @@ export default function GamesIndexPage() {
                                       {row.single_sitting === false && ' *'}
                                     </span>
                                   )}
-                            </td>
-                            <td className="py-2 pr-4 text-right">
+                            </Td>
+                            <Td align="right">
                               {row.trend_pct === null
                                 ? <span className="text-muted-foreground/70">—</span>
                                 : (
@@ -215,11 +214,11 @@ export default function GamesIndexPage() {
                                       %
                                     </span>
                                   )}
-                            </td>
-                          </tr>
+                            </Td>
+                          </ReportRow>
                         ))}
                       </tbody>
-                    </table>
+                    </ReportTable>
                     {rows.length === 0 && (
                       <p className="py-6 text-center text-sm text-muted-foreground">
                         No game activity in this window.

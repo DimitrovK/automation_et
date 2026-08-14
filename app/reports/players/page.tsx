@@ -10,6 +10,7 @@ import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -207,22 +208,20 @@ export default function PlayersReportPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="py-2 pr-4 font-medium">#</th>
-                        <th className="py-2 pr-4 font-medium">Player</th>
-                        <th className="py-2 pr-4 text-right font-medium">Played</th>
-                        <th className="py-2 pr-4 text-right font-medium">Finished</th>
-                        <th className="py-2 pr-4 font-medium">Style</th>
-                        <th className="py-2 font-medium">Games</th>
-                      </tr>
-                    </thead>
+                  <ReportTable>
+                    <ReportHead>
+                      <Th>#</Th>
+                      <Th>Player</Th>
+                      <Th align="right">Played</Th>
+                      <Th align="right">Finished</Th>
+                      <Th>Style</Th>
+                      <Th>Games</Th>
+                    </ReportHead>
                     <tbody>
                       {data.players.map((player, index) => (
-                        <tr key={player.user_id} className="border-b last:border-0">
-                          <td className="py-2 pr-4 text-muted-foreground">{index + 1}</td>
-                          <td className="py-2 pr-4 font-medium">
+                        <ReportRow key={player.user_id}>
+                          <Td className="text-muted-foreground">{index + 1}</Td>
+                          <Td className="font-medium">
                             {/* The drill-down existed and worked; nothing linked
                                 to it, so the only way in was typing a URL. */}
                             <Link
@@ -231,13 +230,13 @@ export default function PlayersReportPage() {
                             >
                               {player.username}
                             </Link>
-                          </td>
-                          <td className="py-2 pr-4 text-right">{player.games_played.toLocaleString()}</td>
-                          <td className="py-2 pr-4 text-right">{player.games_finished.toLocaleString()}</td>
-                          <td className="py-2 pr-4">
+                          </Td>
+                          <Td align="right">{player.games_played.toLocaleString()}</Td>
+                          <Td align="right">{player.games_finished.toLocaleString()}</Td>
+                          <Td>
                             <PlayStyleBadge played={player.games_played} mp={player.mp_sessions} />
-                          </td>
-                          <td className="py-2">
+                          </Td>
+                          <Td>
                             <div className="flex flex-wrap gap-1">
                               {player.games.map(playedGame => (
                                 <GameBadge
@@ -249,11 +248,11 @@ export default function PlayersReportPage() {
                                 />
                               ))}
                             </div>
-                          </td>
-                        </tr>
+                          </Td>
+                        </ReportRow>
                       ))}
                     </tbody>
-                  </table>
+                  </ReportTable>
                   {data.players.length === 0 && (
                     <p className="py-6 text-center text-sm text-muted-foreground">
                       {search

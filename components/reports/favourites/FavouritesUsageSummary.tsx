@@ -26,7 +26,7 @@ export function FavouritesUsageSummary({ data }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">
+          <p className="text-2xl font-semibold tracking-tight">
             {withFav.toLocaleString()}
             <span className="ml-1 text-base font-normal text-muted-foreground">
               /
@@ -49,7 +49,7 @@ export function FavouritesUsageSummary({ data }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{total.toLocaleString()}</p>
+          <p className="text-2xl font-semibold tracking-tight">{total.toLocaleString()}</p>
         </CardContent>
       </Card>
 
@@ -61,7 +61,7 @@ export function FavouritesUsageSummary({ data }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{distinctGames}</p>
+          <p className="text-2xl font-semibold tracking-tight">{distinctGames}</p>
           <p className="text-xs text-muted-foreground">distinct games with ≥1 favourite</p>
         </CardContent>
       </Card>
@@ -74,7 +74,7 @@ export function FavouritesUsageSummary({ data }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{avgPerUser.toFixed(1)}</p>
+          <p className="text-2xl font-semibold tracking-tight">{avgPerUser.toFixed(1)}</p>
           <p className="text-xs text-muted-foreground">favourites per user (who has any)</p>
         </CardContent>
       </Card>

@@ -17,6 +17,7 @@ import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -185,33 +186,31 @@ export default function GameDetailPage() {
             <CardDescription>Ranked within this game only.</CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="py-2 pr-4 font-medium">#</th>
-                  <th className="py-2 pr-4 font-medium">Player</th>
-                  <th className="py-2 pr-4 text-right font-medium">Played</th>
-                  <th className="py-2 text-right font-medium">Finished</th>
-                </tr>
-              </thead>
+            <ReportTable>
+              <ReportHead>
+                <Th>#</Th>
+                <Th>Player</Th>
+                <Th align="right">Played</Th>
+                <Th align="right">Finished</Th>
+              </ReportHead>
               <tbody>
                 {players.data.players.map((player, index) => (
-                  <tr key={player.user_id} className="border-b last:border-0">
-                    <td className="py-2 pr-4 text-muted-foreground">{index + 1}</td>
-                    <td className="py-2 pr-4">
+                  <ReportRow key={player.user_id}>
+                    <Td className="text-muted-foreground">{index + 1}</Td>
+                    <Td>
                       <Link
                         href={`/reports/players/${player.user_id}`}
                         className="font-medium text-emerald-700 hover:underline dark:text-emerald-400"
                       >
                         {player.username}
                       </Link>
-                    </td>
-                    <td className="py-2 pr-4 text-right tabular-nums">{player.games_played.toLocaleString()}</td>
-                    <td className="py-2 text-right tabular-nums">{player.games_finished.toLocaleString()}</td>
-                  </tr>
+                    </Td>
+                    <Td align="right">{player.games_played.toLocaleString()}</Td>
+                    <Td align="right">{player.games_finished.toLocaleString()}</Td>
+                  </ReportRow>
                 ))}
               </tbody>
-            </table>
+            </ReportTable>
             {players.data.players.length === 0 && (
               <p className="py-6 text-center text-sm text-muted-foreground">
                 Nobody played this game in the selected range.

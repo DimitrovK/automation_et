@@ -53,7 +53,7 @@ export function GameRetentionCard({ data, gameKey, gameLabel }: {
                 <p className="text-sm font-medium text-muted-foreground">
                   {`Day ${offset}`}
                 </p>
-                <p className="text-3xl font-bold text-foreground">
+                <p className="text-2xl font-semibold tracking-tight text-foreground">
                   {pct === null ? '—' : `${pct}%`}
                 </p>
                 <p className="text-xs text-muted-foreground">

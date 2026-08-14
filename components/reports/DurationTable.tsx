@@ -6,6 +6,7 @@ import { Info } from 'lucide-react';
 import { DurationSpread } from '@/components/reports/DurationSpread';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import { formatDuration } from '@/lib/format-duration';
@@ -35,11 +36,11 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
   const maxMedian = Math.max(...comparable.map(row => row.median_seconds ?? 0), 0);
 
   const renderRows = (rows: typeof data.rows) => rows.map(row => (
-    <tr key={row.game_type} className="border-b last:border-0">
-      <td className="py-2 pr-4">
+    <ReportRow key={row.game_type}>
+      <Td>
         <GameBadge gameKey={row.game_type} meta={meta} />
-      </td>
-      <td className="py-2 pr-4">
+      </Td>
+      <Td>
         <div className="flex items-center gap-2">
           <span className="w-14 text-right font-medium tabular-nums text-foreground">
             {formatDuration(row.median_seconds)}
@@ -54,14 +55,14 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             />
           </div>
         </div>
-      </td>
+      </Td>
       {/* Where the middle half of sessions actually sit. The median beside it
           is one number, and two games with the same median can be a tight
           five-minute game and a sprawl. */}
-      <td className="py-2 pr-4"><DurationSpread row={row} /></td>
-      <td className="py-2 pr-4 text-right tabular-nums">{formatDuration(row.p90_seconds)}</td>
-      <td className="py-2 pr-4 text-right tabular-nums">{row.measured.toLocaleString()}</td>
-      <td className="py-2 text-right">
+      <Td><DurationSpread row={row} /></Td>
+      <Td align="right">{formatDuration(row.p90_seconds)}</Td>
+      <Td align="right">{row.measured.toLocaleString()}</Td>
+      <Td align="right">
         <span className={cn(
           'tabular-nums',
           (row.coverage_pct ?? 100) < 90 ? 'text-amber-700 dark:text-amber-300' : '',
@@ -69,33 +70,31 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
         >
           {row.coverage_pct === null ? '—' : `${row.coverage_pct}%`}
         </span>
-      </td>
-    </tr>
+      </Td>
+    </ReportRow>
   ));
 
   const longLivedHead = (
-    <thead>
-      <tr className="border-b text-left text-muted-foreground">
-        <th className="py-2 pr-4 font-medium">Game</th>
-        <th className="py-2 pr-4 font-medium">Median</th>
-        <th className="py-2 pr-4 font-medium">Why it's long</th>
-        <th className="py-2 pr-4 text-right font-medium">Played out</th>
-        <th className="py-2 text-right font-medium">Sessions</th>
-      </tr>
-    </thead>
+    <ReportHead>
+      <Th>Game</Th>
+      <Th>Median</Th>
+      <Th>Why it's long</Th>
+      <Th align="right">Played out</Th>
+      <Th align="right">Sessions</Th>
+    </ReportHead>
   );
 
   const renderLongLived = (rows: typeof data.rows) => rows.map((row) => {
     const why = longSessionReason(row);
     return (
-      <tr key={row.game_type} className="border-b align-top last:border-0">
-        <td className="py-2 pr-4">
+      <ReportRow key={row.game_type} className="align-top">
+        <Td>
           <GameBadge gameKey={row.game_type} meta={meta} />
-        </td>
-        <td className="py-2 pr-4 font-medium tabular-nums text-foreground">
+        </Td>
+        <Td strong>
           {formatDuration(row.median_seconds)}
-        </td>
-        <td className="max-w-md py-2 pr-4">
+        </Td>
+        <Td className="max-w-md">
           {why === null
             ? <span className="text-muted-foreground">—</span>
             : (
@@ -104,29 +103,27 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
                   <p className="text-xs text-muted-foreground">{why.detail}</p>
                 </>
               )}
-        </td>
+        </Td>
         {/* The comparable number, where the headline one isn't: a swept game's
             median is the sweeper's clock, and this is the median among the
             sessions that actually played out. */}
-        <td className="py-2 pr-4 text-right font-medium tabular-nums text-foreground">
+        <Td align="right" strong>
           {why?.playedOut ?? '—'}
-        </td>
-        <td className="py-2 text-right tabular-nums">{row.measured.toLocaleString()}</td>
-      </tr>
+        </Td>
+        <Td align="right">{row.measured.toLocaleString()}</Td>
+      </ReportRow>
     );
   });
 
   const head = (
-    <thead>
-      <tr className="border-b text-left text-muted-foreground">
-        <th className="py-2 pr-4 font-medium">Game</th>
-        <th className="py-2 pr-4 font-medium">Median</th>
-        <th className="py-2 pr-4 font-medium" title="Where the middle half of sessions sit — p25 to p75, median marked">Middle half</th>
-        <th className="py-2 pr-4 text-right font-medium">p90</th>
-        <th className="py-2 pr-4 text-right font-medium">Sessions</th>
-        <th className="py-2 text-right font-medium">Coverage</th>
-      </tr>
-    </thead>
+    <ReportHead>
+      <Th>Game</Th>
+      <Th>Median</Th>
+      <Th title="Where the middle half of sessions sit — p25 to p75, median marked">Middle half</Th>
+      <Th align="right">p90</Th>
+      <Th align="right">Sessions</Th>
+      <Th align="right">Coverage</Th>
+    </ReportHead>
   );
 
   return (
@@ -171,10 +168,10 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
           />
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <ReportTable>
             {head}
             <tbody>{renderRows(comparable)}</tbody>
-          </table>
+          </ReportTable>
           {comparable.length === 0 && (
             <p className="py-6 text-center text-sm text-muted-foreground">
               No comparable games in this range.
@@ -201,10 +198,10 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <ReportTable>
               {longLivedHead}
               <tbody>{renderLongLived(longLived)}</tbody>
-            </table>
+            </ReportTable>
           </CardContent>
         </Card>
       )}

@@ -2,7 +2,7 @@
 
 import type { ActivityMetrics, Pulse, PulseMetric } from '@/types/reports';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { StatTile } from '@/components/reports/StatTile';
 import { cn } from '@/lib/utils';
 
 const TILES: { key: keyof ActivityMetrics; label: string; hint: string }[] = [
@@ -96,14 +96,13 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
         {TILES.map(({ key, label, hint }) => {
           const metric = pulse.metrics[key];
           return (
-            <Card key={key}>
-              <CardContent className="space-y-1 p-4">
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-3xl font-bold text-foreground">
-                  {metric.today.toLocaleString()}
-                </p>
-                <Delta metric={metric} />
-                <p className="pt-1 text-xs text-muted-foreground">
+            <StatTile
+              key={key}
+              label={label}
+              value={metric.today.toLocaleString()}
+              delta={<Delta metric={metric} />}
+              hint={(
+                <>
                   {hint}
                   {' · '}
                   {metric.baseline_same_weekday === null
@@ -112,16 +111,16 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
                     // the baseline IS the whole weekday, and saying "by now"
                     // would keep implying a partial comparison that has ended.
                     : `typical ${pulse.weekday}${partial ? ' by now' : ''}: ${metric.baseline_same_weekday.toLocaleString()}`}
-                </p>
-                {/* On a part-day, the whole-day figure answers a different
-                    question — what today is heading for, not how it compares. */}
-                {partial && metric.baseline_full_day !== null && (
-                  <p className="text-xs text-muted-foreground/70">
-                    {`Full ${pulse.weekday}: ${metric.baseline_full_day.toLocaleString()}`}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                  {/* On a part-day, the whole-day figure answers a different
+                      question — what today is heading for, not how it compares. */}
+                  {partial && metric.baseline_full_day !== null && (
+                    <span className="mt-1 block text-muted-foreground/70">
+                      {`Full ${pulse.weekday}: ${metric.baseline_full_day.toLocaleString()}`}
+                    </span>
+                  )}
+                </>
+              )}
+            />
           );
         })}
       </div>

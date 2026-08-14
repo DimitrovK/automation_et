@@ -10,6 +10,7 @@ import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportError } from '@/components/reports/ReportError';
 import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
 import { StatTile } from '@/components/reports/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -126,35 +127,33 @@ export default function MultiplayerReportPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left text-muted-foreground">
-                          <th className="py-2 pr-4 font-medium">Game</th>
-                          <th className="py-2 pr-4 text-right font-medium">Created</th>
-                          <th className="py-2 pr-4 text-right font-medium">Started</th>
-                          <th className="py-2 pr-4 text-right font-medium">Finished</th>
-                          <th className="py-2 pr-4 text-right font-medium">Cancelled</th>
-                          <th className="py-2 text-right font-medium">Never started</th>
-                        </tr>
-                      </thead>
+                    <ReportTable>
+                      <ReportHead>
+                        <Th>Game</Th>
+                        <Th align="right">Created</Th>
+                        <Th align="right">Started</Th>
+                        <Th align="right">Finished</Th>
+                        <Th align="right">Cancelled</Th>
+                        <Th align="right">Never started</Th>
+                      </ReportHead>
                       <tbody>
                         {data.by_game.map(row => (
-                          <tr key={row.game_type} className="border-b last:border-0">
-                            <td className="py-2 pr-4 font-medium text-foreground">
+                          <ReportRow key={row.game_type}>
+                            <Td strong>
                               {gameName(meta[row.game_type], row.game_type)}
-                            </td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_created.toLocaleString()}</td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_started.toLocaleString()}</td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_finished.toLocaleString()}</td>
-                            <td className="py-2 pr-4 text-right">{row.rooms_cancelled.toLocaleString()}</td>
-                            <td className="py-2 text-right">
+                            </Td>
+                            <Td align="right">{row.rooms_created.toLocaleString()}</Td>
+                            <Td align="right">{row.rooms_started.toLocaleString()}</Td>
+                            <Td align="right">{row.rooms_finished.toLocaleString()}</Td>
+                            <Td align="right">{row.rooms_cancelled.toLocaleString()}</Td>
+                            <Td align="right">
                               {row.never_started_pct}
                               %
-                            </td>
-                          </tr>
+                            </Td>
+                          </ReportRow>
                         ))}
                       </tbody>
-                    </table>
+                    </ReportTable>
                     {data.by_game.length === 0 && (
                       <p className="py-6 text-center text-sm text-muted-foreground">
                         No multiplayer rooms in this window.

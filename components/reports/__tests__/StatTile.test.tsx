@@ -32,19 +32,23 @@ describe('no page keeps its own stat tile', () => {
     // Four pages had grown their own copy — two `Tile`, one `Stat`, one inlined
     // — and they had already diverged on the value's size, so the same kind of
     // figure rendered differently depending on which page you were reading.
-    const root = join(process.cwd(), 'app', 'reports');
+    // Shared components as well as pages: RetentionTable was rendering its own
+    // text-3xl figure and a page-only scan never saw it.
+    const roots = [join(process.cwd(), 'app', 'reports'), join(process.cwd(), 'components', 'reports')];
     const pages: string[] = [];
     const walk = (dir: string) => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const full = join(dir, entry.name);
-        if (entry.isDirectory()) {
+        if (entry.isDirectory() && entry.name !== '__tests__') {
           walk(full);
         } else if (entry.name.endsWith('.tsx')) {
           pages.push(full);
         }
       }
     };
-    walk(root);
+    for (const root of roots) {
+      walk(root);
+    }
 
     const offenders = pages.filter((file) => {
       const source = readFileSync(file, 'utf8');
