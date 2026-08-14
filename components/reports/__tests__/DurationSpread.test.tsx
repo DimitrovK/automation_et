@@ -26,7 +26,7 @@ describe('durationSpread', () => {
   it('shows where the middle half of sessions sit', () => {
     render(<DurationSpread row={row({})} />);
 
-    expect(screen.getByText('3.3m–7.3m')).toBeTruthy();
+    expect(screen.getByText('3.3m–7.3m')).toBeInTheDocument();
   });
 
   it('names every percentile behind the bar', () => {
@@ -61,12 +61,12 @@ describe('durationSpread', () => {
     // — worse than an obvious gap, because it looks measured.
     render(<DurationSpread row={row({ p25_seconds: undefined, p75_seconds: undefined })} />);
 
-    expect(screen.getByText('—')).toBeTruthy();
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 
   it('draws a dash for a game with no median at all', () => {
     render(<DurationSpread row={row({ median_seconds: null })} />);
 
-    expect(screen.getByText('—')).toBeTruthy();
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 });

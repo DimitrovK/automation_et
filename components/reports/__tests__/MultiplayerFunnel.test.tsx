@@ -23,8 +23,8 @@ describe('multiplayerFunnel', () => {
 
     // 40/100 started, then 30/40 of those finished — the second rate is of the
     // previous stage, not of rooms created, which is the easy thing to get wrong.
-    expect(screen.getByText(/40% started/)).toBeTruthy();
-    expect(screen.getByText(/75% of those finished/)).toBeTruthy();
+    expect(screen.getByText(/40% started/)).toBeInTheDocument();
+    expect(screen.getByText(/75% of those finished/)).toBeInTheDocument();
   });
 
   it('says nothing started rather than claiming 0% finished', () => {
@@ -32,16 +32,16 @@ describe('multiplayerFunnel', () => {
     // abandonment when in fact no game ever began.
     render(<MultiplayerFunnel rows={[row({ rooms_started: 0, rooms_finished: 0 })]} meta={META} />);
 
-    expect(screen.getByText(/none started, so nothing to finish/)).toBeTruthy();
-    expect(screen.queryByText(/0% of those finished/)).toBeNull();
+    expect(screen.getByText(/none started, so nothing to finish/)).toBeInTheDocument();
+    expect(screen.queryByText(/0% of those finished/)).not.toBeInTheDocument();
   });
 
   it('labels every bar with its count, so the shape is never the only signal', () => {
     render(<MultiplayerFunnel rows={[row()]} meta={META} />);
 
-    expect(screen.getByLabelText('Created: 100 rooms')).toBeTruthy();
-    expect(screen.getByLabelText('Started: 40 rooms')).toBeTruthy();
-    expect(screen.getByLabelText('Finished: 30 rooms')).toBeTruthy();
+    expect(screen.getByLabelText('Created: 100 rooms')).toBeInTheDocument();
+    expect(screen.getByLabelText('Started: 40 rooms')).toBeInTheDocument();
+    expect(screen.getByLabelText('Finished: 30 rooms')).toBeInTheDocument();
   });
 
   it('drops games with no rooms instead of drawing empty scaffolding', () => {
@@ -52,7 +52,7 @@ describe('multiplayerFunnel', () => {
       />,
     );
 
-    expect(screen.queryByLabelText('Created: 0 rooms')).toBeNull();
+    expect(screen.queryByLabelText('Created: 0 rooms')).not.toBeInTheDocument();
   });
 
   it('orders games by volume so the biggest funnel is read first', () => {
@@ -71,6 +71,6 @@ describe('multiplayerFunnel', () => {
   it('says so when there are no rooms at all', () => {
     render(<MultiplayerFunnel rows={[]} meta={META} />);
 
-    expect(screen.getByText(/no multiplayer rooms in this window/i)).toBeTruthy();
+    expect(screen.getByText(/no multiplayer rooms in this window/i)).toBeInTheDocument();
   });
 });

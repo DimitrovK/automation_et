@@ -36,7 +36,9 @@ function sources(): string {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === 'node_modules' || entry.name === '__tests__') continue;
+        if (entry.name === 'node_modules' || entry.name === '__tests__') {
+          continue;
+        }
         walk(full);
       } else if (/\.tsx?$/.test(entry.name) && !full.endsWith(join('types', 'reports.ts'))) {
         // Comments are stripped: a field named only in prose is documented, not
@@ -50,7 +52,9 @@ function sources(): string {
       }
     }
   };
-  for (const dir of ['app', 'components', 'hooks', 'lib']) walk(join(ROOT, dir));
+  for (const dir of ['app', 'components', 'hooks', 'lib']) {
+    walk(join(ROOT, dir));
+  }
   return out.join('\n');
 }
 

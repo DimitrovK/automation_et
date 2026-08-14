@@ -1,16 +1,14 @@
 'use client';
 
-import type { ActivityDay, MetricKey } from '@/types/reports';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { METRIC_OPTIONS } from '@/types/reports';
+import type { ActivityDay, Granularity, MetricKey } from '@/types/reports';
 import { useTheme } from 'next-themes';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
 import { metricPanels } from '@/lib/metric-panels';
-import type { Granularity } from '@/types/reports';
-import { GRANULARITIES } from '@/types/reports';
 import { cn } from '@/lib/utils';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { GRANULARITIES, METRIC_OPTIONS } from '@/types/reports';
 
 /** Day-month tick, in UTC so it renders as the intended day regardless of viewer TZ. */
 /** Labels follow the bucket: a month bar labelled "1 Aug" reads as one day. */
@@ -26,8 +24,10 @@ function formatBucket(iso: string, granularity: Granularity): string {
   return granularity === 'week' ? `w/c ${day}` : day;
 }
 
-/** A metric's total over the window, skipping uncovered days rather than
- *  counting them as zero — the same rule the chart draws by. */
+/**
+ * A metric's total over the window, skipping uncovered days rather than
+ *  counting them as zero — the same rule the chart draws by.
+ */
 function total(rows: { [key: string]: unknown }[], key: MetricKey): number {
   return rows.reduce((sum, row) => sum + (typeof row[key] === 'number' ? (row[key] as number) : 0), 0);
 }
@@ -47,7 +47,7 @@ const DEFAULT_COLORS: Record<MetricKey, string> = {
  * magnitudes flattens the small ones into a line along the bottom — distinct
  * players runs in the tens where games played runs in the thousands, so the
  * shape of the most interesting series was never visible. And a shared axis
- * *asserts* comparability: it invites reading the gap between two lines as if
+ * asserts* comparability: it invites reading the gap between two lines as if
  * it meant something, when one counts sessions and the other counts people.
  *
  * Small multiples instead. Each panel keeps its own scale, they share the

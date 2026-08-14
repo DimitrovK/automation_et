@@ -39,9 +39,9 @@ describe('activityChart', () => {
     // people.
     render(chart('games_started'));
 
-    expect(screen.getByText('Finished')).toBeTruthy();
-    expect(screen.getByText('Players')).toBeTruthy();
-    expect(screen.getByText('Multiplayer')).toBeTruthy();
+    expect(screen.getByText('Finished')).toBeInTheDocument();
+    expect(screen.getByText('Players')).toBeInTheDocument();
+    expect(screen.getByText('Multiplayer')).toBeInTheDocument();
   });
 
   it('does not give the selected metric a second panel', () => {
@@ -49,16 +49,16 @@ describe('activityChart', () => {
     // are different measurements.
     render(chart('distinct_players'));
 
-    expect(screen.queryByText('Players')).toBeNull();
-    expect(screen.getByText('Played')).toBeTruthy();
+    expect(screen.queryByText('Players')).not.toBeInTheDocument();
+    expect(screen.getByText('Played')).toBeInTheDocument();
   });
 
   it('totals each panel over the window', () => {
     render(chart('games_started'));
 
-    expect(screen.getByText('1,800')).toBeTruthy();
-    expect(screen.getByText('90')).toBeTruthy();
-    expect(screen.getByText('360')).toBeTruthy();
+    expect(screen.getByText('1,800')).toBeInTheDocument();
+    expect(screen.getByText('90')).toBeInTheDocument();
+    expect(screen.getByText('360')).toBeInTheDocument();
   });
 
   it('leaves uncovered days out of a panel total rather than counting them as zero', () => {
@@ -75,7 +75,7 @@ describe('activityChart', () => {
       />,
     );
 
-    expect(screen.getByText('600')).toBeTruthy();
+    expect(screen.getByText('600')).toBeInTheDocument();
   });
 
   it('says how many days were never computed', () => {
@@ -90,6 +90,6 @@ describe('activityChart', () => {
       />,
     );
 
-    expect(screen.getByText(/1 day in this range were never computed/)).toBeTruthy();
+    expect(screen.getByText(/1 day in this range were never computed/)).toBeInTheDocument();
   });
 });

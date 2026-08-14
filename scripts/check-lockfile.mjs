@@ -44,26 +44,34 @@ function parseRootImporter(text) {
   let pendingName = null;
 
   for (const line of lines) {
-    if (/^importers:/.test(line)) {
+    if (line.startsWith('importers:')) {
       inImporters = true; continue;
     }
-    if (!inImporters) continue;
+    if (!inImporters) {
+      continue;
+    }
 
     // A new top-level key ends the importers block.
-    if (/^\S/.test(line) && !/^importers:/.test(line)) break;
+    if (/^\S/.test(line) && !line.startsWith('importers:')) {
+      break;
+    }
 
     if (/^ {2}[^\s:]+:/.test(line)) {
       inRoot = /^ {2}\.:/.test(line);
       section = null;
       continue;
     }
-    if (!inRoot) continue;
+    if (!inRoot) {
+      continue;
+    }
 
     const sectionMatch = /^ {4}(dependencies|devDependencies):/.exec(line);
     if (sectionMatch) {
       section = sectionMatch[1]; pendingName = null; continue;
     }
-    if (!section) continue;
+    if (!section) {
+      continue;
+    }
 
     const nameMatch = /^ {6}'?([^':]+)'?:\s*$/.exec(line);
     if (nameMatch) {
@@ -107,7 +115,9 @@ for (const field of ['dependencies', 'devDependencies']) {
 
 if (problems.length > 0) {
   console.error('\npnpm-lock.yaml is out of sync with package.json:\n');
-  for (const problem of problems) console.error(`  ${problem}`);
+  for (const problem of problems) {
+    console.error(`  ${problem}`);
+  }
   console.error('\nVercel installs with `pnpm install --frozen-lockfile` and will fail the deploy.');
   console.error('Fix with:  npx pnpm@10 install --lockfile-only\n');
   process.exit(1);

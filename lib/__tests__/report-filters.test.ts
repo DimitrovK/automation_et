@@ -115,18 +115,23 @@ describe('every report page keeps its filters in the URL', () => {
     function pages(dir: string): string[] {
       return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
         const full = join(dir, entry.name);
-        if (entry.isDirectory()) return pages(full);
+        if (entry.isDirectory()) {
+          return pages(full);
+        }
         return entry.name === 'page.tsx' ? [full] : [];
       });
     }
 
     const found = pages(root);
+
     expect(found.length).toBeGreaterThan(5);
 
     const offenders = found.filter((file) => {
       const source = readFileSync(file, 'utf8');
       // A page with no range picker has no filters to share.
-      if (!source.includes('RangePicker')) return false;
+      if (!source.includes('RangePicker')) {
+        return false;
+      }
       // Holding the range in local state is the actual anti-pattern, and the
       // shape a new page naturally reaches for. Checking only for the hook's
       // name matched even after its import was removed.
@@ -153,21 +158,28 @@ describe('every report page can be exported', () => {
     function pages(dir: string): string[] {
       return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
         const full = join(dir, entry.name);
-        if (entry.isDirectory()) return pages(full);
+        if (entry.isDirectory()) {
+          return pages(full);
+        }
         return entry.name === 'page.tsx' ? [full] : [];
       });
     }
 
     const found = pages(root);
+
     expect(found.length).toBeGreaterThan(5);
 
     const offenders = found.filter((file) => {
       const source = readFileSync(file, 'utf8');
       // The glossary is reference text, and the drill-downs are a single
       // record — neither is a dataset anyone would take to a spreadsheet.
-      if (file.includes('glossary') || file.includes('[id]') || file.includes('[key]')) return false;
+      if (file.includes('glossary') || file.includes('[id]') || file.includes('[key]')) {
+        return false;
+      }
       // A page with no range picker isn't a data view.
-      if (!source.includes('RangePicker')) return false;
+      if (!source.includes('RangePicker')) {
+        return false;
+      }
       return !source.includes('ExportButton');
     });
 

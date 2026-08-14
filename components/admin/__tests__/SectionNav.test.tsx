@@ -22,15 +22,15 @@ describe('sectionNav', () => {
     // listing it.
     render(<SectionNav groups={GROUPS} />);
 
-    expect(screen.getByText('Overview')).toBeTruthy();
-    expect(screen.getByText('People')).toBeTruthy();
+    expect(screen.getByText('Overview')).toBeInTheDocument();
+    expect(screen.getByText('People')).toBeInTheDocument();
   });
 
   it('marks only the current page as current', () => {
     render(<SectionNav groups={GROUPS} />);
 
-    expect(screen.getByRole('link', { name: /Players/ }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: /Daily Pulse/ }).getAttribute('aria-current')).toBeNull();
+    expect(screen.getByRole('link', { name: /Players/ })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: /Daily Pulse/ })).not.toHaveAttribute('aria-current');
   });
 
   it('does not light up the section root on every page', () => {
@@ -39,6 +39,7 @@ describe('sectionNav', () => {
     render(<SectionNav groups={GROUPS} />);
 
     const current = screen.getAllByRole('link').filter(link => link.getAttribute('aria-current') === 'page');
+
     expect(current).toHaveLength(1);
   });
 
@@ -48,7 +49,7 @@ describe('sectionNav', () => {
     // ten — so the same nav has to work without captions.
     const { container } = render(<SectionNav groups={[{ heading: '', items: GROUPS[0].items }]} />);
 
-    expect(screen.getByRole('link', { name: /Daily Pulse/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Daily Pulse/ })).toBeInTheDocument();
     // No caption element at all — an empty one still takes its line height and
     // margin, so the group would sit oddly low for no visible reason.
     expect(container.querySelector('p')).toBeNull();
@@ -62,7 +63,7 @@ describe('sectionNav', () => {
       />,
     );
 
-    expect(screen.getByRole('link', { name: /What the numbers mean/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /What the numbers mean/ })).toBeInTheDocument();
   });
 });
 
@@ -104,7 +105,9 @@ describe('report nav groups', () => {
     const walk = (dir: string, prefix: string) => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         // Route groups and colocated tests are not pages.
-        if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name === '__tests__') continue;
+        if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name === '__tests__') {
+          continue;
+        }
         routes.add(`${prefix}/${entry.name}`);
         walk(join(dir, entry.name), `${prefix}/${entry.name}`);
       }
@@ -117,6 +120,7 @@ describe('report nav groups', () => {
     ]);
 
     const missing = [...routes].filter(route => !linked.has(route));
+
     expect(missing, `Report pages not in the nav: ${missing.join(', ')}`).toEqual([]);
   });
 });
@@ -133,9 +137,13 @@ describe('user hub nav groups', () => {
     const root = join(process.cwd(), 'app', 'user-hub');
     const routes: string[] = ['/user-hub'];
     for (const entry of readdirSync(root, { withFileTypes: true })) {
-      if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name === '__tests__') continue;
+      if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name === '__tests__') {
+        continue;
+      }
       const page = join(root, entry.name, 'page.tsx');
-      if (readFileSync(page, 'utf8').includes('permanentRedirect')) continue;
+      if (readFileSync(page, 'utf8').includes('permanentRedirect')) {
+        continue;
+      }
       routes.push(`/user-hub/${entry.name}`);
     }
 
@@ -145,6 +153,7 @@ describe('user hub nav groups', () => {
     ]);
 
     const missing = routes.filter(route => !linked.has(route));
+
     expect(missing, `User Hub pages not in the nav: ${missing.join(', ')}`).toEqual([]);
   });
 

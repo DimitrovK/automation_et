@@ -16,8 +16,8 @@ describe('reportPanel', () => {
       </ReportPanel>,
     );
 
-    expect(await screen.findByText(/Boom/)).toBeTruthy();
-    expect(screen.queryByText('content')).toBeNull();
+    expect(await screen.findByText(/Boom/)).toBeInTheDocument();
+    expect(screen.queryByText('content')).not.toBeInTheDocument();
   });
 
   it('retries only itself', async () => {
@@ -41,7 +41,7 @@ describe('reportPanel', () => {
       </ReportPanel>,
     );
 
-    expect(screen.getByText('loaded-true')).toBeTruthy();
+    expect(screen.getByText('loaded-true')).toBeInTheDocument();
   });
 
   it('gives children non-null data, so no call site repeats the guard', () => {
@@ -60,7 +60,7 @@ describe('reportPanel', () => {
       </ReportPanel>,
     );
 
-    expect(screen.queryByText('content')).toBeNull();
+    expect(screen.queryByText('content')).not.toBeInTheDocument();
   });
 
   it('keeps the previous numbers on screen while refetching', () => {
@@ -73,6 +73,6 @@ describe('reportPanel', () => {
       </ReportPanel>,
     );
 
-    expect(screen.getByText('content')).toBeTruthy();
+    expect(screen.getByText('content')).toBeInTheDocument();
   });
 });

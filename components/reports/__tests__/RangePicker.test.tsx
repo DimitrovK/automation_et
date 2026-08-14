@@ -24,13 +24,14 @@ describe('bots control', () => {
     setup(false);
 
     const control = screen.getByRole('switch', { name: /include bots/i });
-    expect(control.getAttribute('aria-checked')).toBe('false');
+
+    expect(control).not.toBeChecked();
   });
 
   it('shows on when bots are actually included', () => {
     setup(true);
 
-    expect(screen.getByRole('switch', { name: /include bots/i }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('switch', { name: /include bots/i })).toBeChecked();
   });
 
   it('does not present itself as a selected filter beside the window presets', () => {
@@ -39,6 +40,7 @@ describe('bots control', () => {
     setup(false);
 
     const buttons = screen.getAllByRole('button').map(b => b.textContent);
+
     expect(buttons.some(label => /bots/i.test(label ?? ''))).toBe(false);
   });
 
@@ -54,9 +56,9 @@ describe('bots control', () => {
     // "1d" beside a "Today" button would be the same range under two names.
     render(<RangePicker value={{ window: 30 }} onChange={() => {}} includeBots={false} onIncludeBotsChange={() => {}} />);
 
-    expect(screen.getByRole('button', { name: 'Today' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Yesterday' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: '1d' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Today' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Yesterday' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '1d' })).not.toBeInTheDocument();
   });
 
   it('asks for a one-day window when Today is picked', async () => {
@@ -76,6 +78,7 @@ describe('bots control', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Yesterday' }));
 
     const arg = onChange.mock.calls[0][0];
+
     expect(arg.start).toBe(arg.end);
     expect(arg.start).not.toBeUndefined();
     // The previous preset survives, so clearing the range returns to it.
