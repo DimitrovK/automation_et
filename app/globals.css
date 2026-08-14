@@ -29,26 +29,26 @@
    * below serve the charts with no game dimension (new-vs-returning, modes).
    */
   :root {
-    --background: 120 14% 97%;
-    --foreground: 147 27% 8%;
+    --background: 150 17% 98%;
+    --foreground: 150 13% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 147 27% 8%;
+    --card-foreground: 150 13% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 147 27% 8%;
+    --popover-foreground: 150 13% 9%;
     /* emerald-600, not -500: white on -500 is 2.5:1, which fails on every
        button the accent exists to make obvious. */
     --primary: 161 94% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 140 12% 94%;
-    --secondary-foreground: 147 20% 20%;
-    --muted: 140 12% 94%;
-    --muted-foreground: 141 9% 39%;
-    --accent: 150 20% 92%;
-    --accent-foreground: 147 25% 15%;
+    --secondary: 140 12% 95%;
+    --secondary-foreground: 153 13% 13%;
+    --muted: 140 12% 95%;
+    --muted-foreground: 152 6% 41%;
+    --accent: 140 17% 93%;
+    --accent-foreground: 153 13% 13%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 135 13% 88%;
-    --input: 135 13% 88%;
+    --border: 140 12% 91%;
+    --input: 140 12% 91%;
     --ring: 161 94% 30%;
     /* Validated as a set, not picked by eye: OKLCH lightness band, chroma
        floor, adjacent-pair separation under deutan/protan/tritan simulation,
@@ -60,33 +60,40 @@
     --chart-5: 347 77% 50%;
     --radius: 0.625rem;
     --sidebar-background: 140 12% 95%;
-    --sidebar-foreground: 147 20% 22%;
+    --sidebar-foreground: 153 13% 13%;
     --sidebar-primary: 161 94% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 20% 92%;
-    --sidebar-accent-foreground: 147 25% 15%;
-    --sidebar-border: 135 13% 88%;
+    --sidebar-accent: 140 17% 93%;
+    --sidebar-accent-foreground: 153 13% 13%;
+    --sidebar-border: 140 12% 91%;
     --sidebar-ring: 161 94% 30%;
   }
   .dark {
-    --background: 154 23% 6%;
-    --foreground: 135 21% 93%;
-    --card: 150 21% 9%;
-    --card-foreground: 135 21% 93%;
-    --popover: 150 21% 9%;
-    --popover-foreground: 135 21% 93%;
+    /*
+     * Near-neutral on purpose. A green-tinted card was the first attempt and it
+     * read as "a green card" rather than as a surface — at 20%+ saturation the
+     * hue stops being a cast and becomes the colour of the thing. Surfaces here
+     * sit at 5–8% saturation: enough that they are not sterile flat gray, not
+     * enough to compete with the emerald that marks what you can act on.
+     */
+    --background: 150 8% 5%;
+    --foreground: 140 11% 95%;
+    --card: 140 7% 8%;
+    --card-foreground: 140 11% 95%;
+    --popover: 140 7% 8%;
+    --popover-foreground: 140 11% 95%;
     --primary: 160 84% 39%;
-    --primary-foreground: 154 23% 6%;
-    --secondary: 150 18% 14%;
-    --secondary-foreground: 135 21% 93%;
-    --muted: 150 18% 14%;
-    --muted-foreground: 141 10% 60%;
-    --accent: 150 18% 16%;
-    --accent-foreground: 135 21% 93%;
+    --primary-foreground: 150 8% 5%;
+    --secondary: 150 7% 12%;
+    --secondary-foreground: 140 11% 95%;
+    --muted: 150 7% 12%;
+    --muted-foreground: 150 5% 63%;
+    --accent: 135 6% 13%;
+    --accent-foreground: 140 11% 95%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 146 18% 15%;
-    --input: 146 18% 15%;
+    --border: 144 6% 16%;
+    --input: 144 6% 16%;
     --ring: 160 84% 39%;
     /* Deliberately NOT the light steps brightened. The validator's dark
        lightness band is 0.48–0.67 — *below* the light band, not above it — so
@@ -99,13 +106,13 @@
     --chart-3: 32 95% 44%;
     --chart-4: 258 90% 66%;
     --chart-5: 350 89% 60%;
-    --sidebar-background: 150 21% 8%;
-    --sidebar-foreground: 135 21% 93%;
+    --sidebar-background: 140 7% 7%;
+    --sidebar-foreground: 140 11% 95%;
     --sidebar-primary: 160 84% 39%;
-    --sidebar-primary-foreground: 154 23% 6%;
-    --sidebar-accent: 150 18% 16%;
-    --sidebar-accent-foreground: 135 21% 93%;
-    --sidebar-border: 146 18% 15%;
+    --sidebar-primary-foreground: 150 8% 5%;
+    --sidebar-accent: 135 6% 13%;
+    --sidebar-accent-foreground: 140 11% 95%;
+    --sidebar-border: 144 6% 16%;
     --sidebar-ring: 160 84% 39%;
   }
 }
