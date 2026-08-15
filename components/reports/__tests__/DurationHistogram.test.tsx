@@ -1,7 +1,7 @@
 import type { DurationResponse, DurationRow } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { DurationHistogram } from '@/components/reports/DurationHistogram';
+import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 
 const META = {
   team_ties: { key: 'team_ties', label: 'Team Ties Game Sessions', display_name: 'Team Ties', color: '#0d9488' },

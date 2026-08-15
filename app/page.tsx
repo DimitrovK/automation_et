@@ -18,7 +18,7 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 
 import { Navigation } from '@/components/navigation';
-import { REPORT_QUICK_LINKS } from '@/components/reports/ReportsNav';
+import { REPORT_QUICK_LINKS } from '@/components/reports/shell/ReportsNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';

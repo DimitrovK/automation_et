@@ -1,14 +1,14 @@
 'use client';
 
-import type { Sensitivity } from '@/components/reports/AnomalySensitivity';
+import type { Sensitivity } from '@/components/reports/filters/AnomalySensitivity';
 import { useMemo, useState } from 'react';
-import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
-import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/AnomalySensitivity';
-import { ExportButton } from '@/components/reports/ExportButton';
-import { FilterBar } from '@/components/reports/FilterBar';
-import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportPanel } from '@/components/reports/ReportPanel';
-import { ReportsShell } from '@/components/reports/ReportsShell';
+import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/filters/AnomalySensitivity';
+import { FilterBar } from '@/components/reports/filters/FilterBar';
+import { RangePicker } from '@/components/reports/filters/RangePicker';
+import { AnomalyPanel } from '@/components/reports/panels/AnomalyPanel';
+import { ExportButton } from '@/components/reports/primitives/ExportButton';
+import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
+import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';

@@ -1,6 +1,10 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PicturesEditor } from '@/components/footballer-management/sub-editors/PicturesEditor';
+import { FootballerAPI } from '@/lib/footballer-api';
 
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: {
@@ -13,10 +17,6 @@ vi.mock('@/lib/footballer-api', () => ({
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
-
-import { PicturesEditor } from '@/components/footballer-management/sub-editors/PicturesEditor';
-import { FootballerAPI } from '@/lib/footballer-api';
-import { toast } from 'sonner';
 
 const api = vi.mocked(FootballerAPI, { deep: true });
 const mockToast = vi.mocked(toast, { deep: true });
@@ -46,6 +46,7 @@ describe('PicturesEditor', () => {
     mockToast.success.mockReset();
     mockToast.error.mockReset();
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -54,6 +55,7 @@ describe('PicturesEditor', () => {
   it('shows empty state when no pictures exist', async () => {
     api.getFootballerPictures.mockResolvedValueOnce([]);
     render(<PicturesEditor footballerId={42} />);
+
     expect(await screen.findByText(/No pictures yet/)).toBeInTheDocument();
   });
 
@@ -74,6 +76,7 @@ describe('PicturesEditor', () => {
     api.getFootballerPictures.mockResolvedValueOnce([]);
     render(<PicturesEditor footballerId={42} />);
     await screen.findByText(/No pictures yet/);
+
     expect(screen.getByRole('button', { name: /Upload/ })).toBeDisabled();
   });
 
@@ -92,14 +95,18 @@ describe('PicturesEditor', () => {
 
     // Name should auto-default to the file's basename.
     const nameInput = screen.getByLabelText('Picture name') as HTMLInputElement;
+
     expect(nameInput.value).toBe('photo');
+
     await user.clear(nameInput);
     await user.type(nameInput, 'New Headshot');
 
     await user.click(screen.getByRole('button', { name: /Upload/ }));
 
     await waitFor(() => expect(api.uploadFootballerPicture).toHaveBeenCalledTimes(1));
+
     expect(api.uploadFootballerPicture).toHaveBeenCalledWith(42, 'New Headshot', file);
+
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });
 

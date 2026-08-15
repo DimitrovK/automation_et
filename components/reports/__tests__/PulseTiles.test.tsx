@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { PulseTiles } from '@/components/reports/PulseTiles';
+import { PulseTiles } from '@/components/reports/panels/PulseTiles';
 
 function metric(today: number, byNow: number | null, fullDay: number | null, delta: number | null) {
   return {

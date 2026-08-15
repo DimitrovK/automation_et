@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { GameFilter } from '@/components/reports/GameFilter';
+import { GameFilter } from '@/components/reports/filters/GameFilter';
 
 const META = {
   grid: { key: 'grid', label: 'Grid', color: '#f97316', color_dark: '#fdba74' },

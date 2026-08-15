@@ -1,6 +1,10 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { BulkUpdateToolbar } from '@/components/footballer-management/BulkUpdateToolbar';
+import { FootballerAPI } from '@/lib/footballer-api';
 
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: { bulkUpdateFootballers: vi.fn() },
@@ -8,10 +12,6 @@ vi.mock('@/lib/footballer-api', () => ({
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
-
-import { BulkUpdateToolbar } from '@/components/footballer-management/BulkUpdateToolbar';
-import { FootballerAPI } from '@/lib/footballer-api';
-import { toast } from 'sonner';
 
 const mockBulk = vi.mocked(FootballerAPI.bulkUpdateFootballers);
 const mockSuccess = vi.mocked(toast.success);
@@ -46,6 +46,7 @@ describe('BulkUpdateToolbar', () => {
     mockSuccess.mockReset();
     mockError.mockReset();
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -53,6 +54,7 @@ describe('BulkUpdateToolbar', () => {
 
   it('starts with no selection summary and bulk-actions disabled', () => {
     renderToolbar();
+
     expect(screen.getByText('No footballers selected.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Bulk actions/ })).toBeDisabled();
   });
@@ -61,8 +63,11 @@ describe('BulkUpdateToolbar', () => {
     const user = userEvent.setup();
     const { onSelectionChange } = renderToolbar();
     await user.click(screen.getByRole('button', { name: /Select all/ }));
+
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
+
     const passed = onSelectionChange.mock.calls[0][0];
+
     expect(Array.from(passed).sort()).toEqual([1, 2, 3]);
   });
 
@@ -70,6 +75,7 @@ describe('BulkUpdateToolbar', () => {
     const user = userEvent.setup();
     const { onSelectionChange } = renderToolbar({ selected: [1, 2, 3] });
     await user.click(screen.getByRole('button', { name: /Deselect all/ }));
+
     expect(onSelectionChange.mock.calls[0][0].size).toBe(0);
   });
 
@@ -79,6 +85,7 @@ describe('BulkUpdateToolbar', () => {
     await user.click(screen.getByRole('button', { name: /Bulk actions/ }));
 
     const applyBtn = screen.getByRole('button', { name: /Apply to 2 footballers/ });
+
     expect(applyBtn).toBeDisabled();
   });
 
@@ -93,10 +100,12 @@ describe('BulkUpdateToolbar', () => {
     await user.click(screen.getByRole('button', { name: /Apply to 2 footballers/ }));
 
     await waitFor(() => expect(mockBulk).toHaveBeenCalledTimes(1));
+
     expect(mockBulk).toHaveBeenCalledWith([1, 2], { retired: true });
 
     // After success: toast, selection cleared, callback fired.
     await waitFor(() => expect(mockSuccess).toHaveBeenCalled());
+
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
     expect(onApplied).toHaveBeenCalledTimes(1);
   });

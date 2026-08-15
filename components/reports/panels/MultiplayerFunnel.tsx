@@ -3,9 +3,9 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { MultiplayerGameRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
-import { EmptyState } from '@/components/reports/EmptyState';
-import { GameBadge } from '@/components/reports/GameBadge';
-import { MetricInfo } from '@/components/reports/MetricInfo';
+import { EmptyState } from '@/components/reports/primitives/EmptyState';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
+import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
 

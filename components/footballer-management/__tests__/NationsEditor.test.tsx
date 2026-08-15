@@ -1,6 +1,10 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NationsEditor } from '@/components/footballer-management/sub-editors/NationsEditor';
+import { FootballerAPI } from '@/lib/footballer-api';
 
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: {
@@ -14,10 +18,6 @@ vi.mock('@/lib/footballer-api', () => ({
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
-
-import { NationsEditor } from '@/components/footballer-management/sub-editors/NationsEditor';
-import { FootballerAPI } from '@/lib/footballer-api';
-import { toast } from 'sonner';
 
 const api = vi.mocked(FootballerAPI, { deep: true });
 const mockToast = vi.mocked(toast, { deep: true });
@@ -51,6 +51,7 @@ describe('NationsEditor', () => {
     mockToast.success.mockReset();
     mockToast.error.mockReset();
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -59,12 +60,14 @@ describe('NationsEditor', () => {
   it('renders empty-state when there are no national stats', async () => {
     api.getFootballerNations.mockResolvedValueOnce([]);
     render(<NationsEditor footballerId={42} eligibleNations={[POR]} />);
+
     expect(await screen.findByText(/No international stats yet/)).toBeInTheDocument();
   });
 
   it('renders rows from the API', async () => {
     api.getFootballerNations.mockResolvedValueOnce([statRow()]);
     render(<NationsEditor footballerId={42} eligibleNations={[POR]} />);
+
     expect(await screen.findByText('Portugal')).toBeInTheDocument();
     expect(screen.getByText('196')).toBeInTheDocument();
     expect(screen.getByText('130')).toBeInTheDocument();
@@ -102,12 +105,14 @@ describe('NationsEditor', () => {
     await user.click(screen.getByRole('button', { name: 'Add' }));
 
     await waitFor(() => expect(api.createFootballerNation).toHaveBeenCalledTimes(1));
+
     expect(api.createFootballerNation).toHaveBeenCalledWith({
       footballer_id: 42,
       nation_id: BRA.id,
       apps: 99,
       goals: 60,
     });
+
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });
 

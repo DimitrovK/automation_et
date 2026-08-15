@@ -3,7 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import { X } from 'lucide-react';
 import { useState } from 'react';
-import { FilterGroup, Segmented } from '@/components/reports/FilterBar';
+import { FilterGroup, Segmented } from '@/components/reports/filters/FilterBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';

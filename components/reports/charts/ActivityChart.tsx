@@ -4,7 +4,7 @@ import type { ChartTheme } from '@/lib/chart-theme';
 import type { ActivityDay, Granularity, MetricKey } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
 import { metricPanels } from '@/lib/metric-panels';

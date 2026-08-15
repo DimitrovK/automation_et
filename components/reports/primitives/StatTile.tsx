@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { MetricInfo } from '@/components/reports/MetricInfo';
+import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { Card, CardContent } from '@/components/ui/card';
 
 /**

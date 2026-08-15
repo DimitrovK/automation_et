@@ -1,7 +1,7 @@
 import type { MultiplayerGameRow } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
+import { MultiplayerFunnel } from '@/components/reports/panels/MultiplayerFunnel';
 
 const META = { grid: { key: 'grid', label: 'Grid', color: '#f97316', color_dark: '#fdba74' } };
 

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ReportPanel } from '@/components/reports/ReportPanel';
+import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 
 function state(overrides = {}) {
   return { data: null, isLoading: false, error: null, notDeployed: false, refetch: vi.fn(), ...overrides };

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { RangePicker } from '@/components/reports/RangePicker';
+import { RangePicker } from '@/components/reports/filters/RangePicker';
 
 function setup(includeBots = false) {
   const onIncludeBotsChange = vi.fn();

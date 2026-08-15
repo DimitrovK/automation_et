@@ -2,9 +2,9 @@
 
 import type { RetentionResponse } from '@/types/reports';
 import { AlertTriangle } from 'lucide-react';
-import { ExportButton } from '@/components/reports/ExportButton';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
-import { StatTile } from '@/components/reports/StatTile';
+import { ExportButton } from '@/components/reports/primitives/ExportButton';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
+import { StatTile } from '@/components/reports/primitives/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 

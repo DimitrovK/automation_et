@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MetricInfo } from '@/components/reports/MetricInfo';
+import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { resetGlossaryCache, useGlossary } from '@/hooks/use-glossary';
 import { ReportsAPI } from '@/lib/reports-api';
 

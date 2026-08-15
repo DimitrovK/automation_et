@@ -2,12 +2,12 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NationsMultiSelect } from '@/components/footballer-management/NationsMultiSelect';
+import { FootballerAPI } from '@/lib/footballer-api';
+
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: { getNations: vi.fn() },
 }));
-
-import { NationsMultiSelect } from '@/components/footballer-management/NationsMultiSelect';
-import { FootballerAPI } from '@/lib/footballer-api';
 
 const mockGetNations = vi.mocked(FootballerAPI.getNations);
 
@@ -22,6 +22,7 @@ describe('NationsMultiSelect', () => {
     mockGetNations.mockReset();
     mockGetNations.mockResolvedValue(NATIONS);
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -29,6 +30,7 @@ describe('NationsMultiSelect', () => {
 
   it('shows the empty-state message when no nations are picked', () => {
     render(<NationsMultiSelect value={[]} onChange={vi.fn()} />);
+
     expect(screen.getByText(/No secondary nationalities/)).toBeInTheDocument();
   });
 
@@ -39,6 +41,7 @@ describe('NationsMultiSelect', () => {
         onChange={vi.fn()}
       />,
     );
+
     expect(screen.getByText('Portugal')).toBeInTheDocument();
     expect(screen.getByText('Brazil')).toBeInTheDocument();
     expect(screen.getByLabelText('Remove Portugal')).toBeInTheDocument();
@@ -51,6 +54,7 @@ describe('NationsMultiSelect', () => {
     render(<NationsMultiSelect value={[NATIONS[0], NATIONS[1]]} onChange={onChange} />);
 
     await user.click(screen.getByLabelText('Remove Portugal'));
+
     expect(onChange).toHaveBeenCalledWith([NATIONS[1]]);
   });
 
@@ -62,6 +66,7 @@ describe('NationsMultiSelect', () => {
     await user.click(screen.getByText(/Add a secondary/));
     // Portugal (id=1) is in `value` so it must NOT appear in the dropdown.
     await screen.findByText('Brazil');
+
     expect(screen.queryAllByText('Portugal')).toHaveLength(1); // the chip only — not the dropdown row
     expect(screen.getByText('Argentina')).toBeInTheDocument();
   });
@@ -84,6 +89,7 @@ describe('NationsMultiSelect', () => {
 
     await user.click(screen.getByText(/Add a secondary/));
     await screen.findByText('Brazil');
+
     expect(screen.queryByText('Portugal')).not.toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { StatTile } from '@/components/reports/StatTile';
+import { StatTile } from '@/components/reports/primitives/StatTile';
 
 describe('statTile', () => {
   it('shows the figure with the name of what it counts', () => {

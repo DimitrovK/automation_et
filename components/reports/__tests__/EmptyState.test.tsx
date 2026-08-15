@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { EmptyState } from '@/components/reports/EmptyState';
+import { EmptyState } from '@/components/reports/primitives/EmptyState';
 
 describe('emptyState', () => {
   it('says what is missing', () => {

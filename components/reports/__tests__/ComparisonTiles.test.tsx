@@ -1,7 +1,7 @@
 import type { PeriodComparison } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { ComparisonTiles } from '@/components/reports/ComparisonTiles';
+import { ComparisonTiles } from '@/components/reports/panels/ComparisonTiles';
 
 function metric(current: number, previous: number, pct: number | null) {
   return { current, previous, change: current - previous, change_pct: pct };

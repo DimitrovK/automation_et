@@ -2,12 +2,12 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NationCombobox } from '@/components/footballer-management/NationCombobox';
+import { FootballerAPI } from '@/lib/footballer-api';
+
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: { getNations: vi.fn() },
 }));
-
-import { NationCombobox } from '@/components/footballer-management/NationCombobox';
-import { FootballerAPI } from '@/lib/footballer-api';
 
 const mockGetNations = vi.mocked(FootballerAPI.getNations);
 
@@ -22,6 +22,7 @@ describe('NationCombobox', () => {
     mockGetNations.mockReset();
     mockGetNations.mockResolvedValue(NATIONS);
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -29,6 +30,7 @@ describe('NationCombobox', () => {
 
   it('renders the placeholder when no value is set', () => {
     render(<NationCombobox value={null} onChange={vi.fn()} placeholder="Pick one" />);
+
     // Placeholder is rendered as the trigger's visible content.
     expect(screen.getByText('Pick one')).toBeInTheDocument();
   });
@@ -59,11 +61,13 @@ describe('NationCombobox', () => {
 
     await user.click(screen.getByRole('combobox'));
     await screen.findByText('Argentina');
+
     expect(mockGetNations).toHaveBeenCalledTimes(1);
 
     await user.keyboard('{Escape}');
     await user.click(screen.getByRole('combobox'));
     await screen.findByText('Argentina');
+
     // Cached — no second fetch.
     expect(mockGetNations).toHaveBeenCalledTimes(1);
   });
@@ -108,6 +112,7 @@ describe('NationCombobox', () => {
     render(<NationCombobox value={null} onChange={vi.fn()} excludeIds={[2]} />);
     await user.click(screen.getByRole('combobox'));
     await screen.findByText('Argentina');
+
     expect(screen.queryByText('Brazil')).not.toBeInTheDocument();
   });
 });

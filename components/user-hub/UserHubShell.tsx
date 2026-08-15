@@ -1,7 +1,7 @@
 'use client';
 
-import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
 import type { ReactNode } from 'react';
+import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
 import { LayoutDashboard, Star, Users } from 'lucide-react';
 import { SectionShell } from '@/components/admin/SectionShell';
 

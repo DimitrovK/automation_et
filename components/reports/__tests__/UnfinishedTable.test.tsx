@@ -1,7 +1,7 @@
 import type { UnfinishedRow } from '@/types/reports';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { UnfinishedTable } from '@/components/reports/UnfinishedTable';
+import { UnfinishedTable } from '@/components/reports/panels/UnfinishedTable';
 
 const META = {
   grid: { key: 'grid', label: 'Grid', display_name: 'Grid', color: '#f97316', color_dark: '#fdba74' },

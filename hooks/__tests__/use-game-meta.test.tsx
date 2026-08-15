@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { GameBadge } from '@/components/reports/GameBadge';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { FALLBACK_COLOR, gameColor } from '@/hooks/use-game-meta';
 
 const GRID = { key: 'grid', label: 'Grid', color: '#f97316', color_dark: '#fdba74' };

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { SectionShell } from '@/components/admin/SectionShell';
-import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING } from '@/components/reports/ReportsNav';
+import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING } from '@/components/reports/shell/ReportsNav';
 
 /**
  * Reports chrome. Everything shared with User Hub now lives in SectionShell;

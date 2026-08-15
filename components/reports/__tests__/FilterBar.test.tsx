@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { FilterGroup } from '@/components/reports/FilterBar';
+import { FilterGroup } from '@/components/reports/filters/FilterBar';
 
 describe('filterGroup', () => {
   it('names the control it wraps', () => {

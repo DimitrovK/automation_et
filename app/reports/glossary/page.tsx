@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ReportsShell } from '@/components/reports/ReportsShell';
+import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGlossary } from '@/hooks/use-glossary';

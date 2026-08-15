@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import type { TeamHeaderInfo } from '@/types/team';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Props = { team: TeamHeaderInfo };
 
@@ -19,10 +19,14 @@ export function TeamHeader({ team }: Props) {
           </div>
           <div className="flex gap-2">
             <Badge variant="secondary" data-testid="players-count">
-              {team.total_players} players
+              {team.total_players}
+              {' '}
+              players
             </Badge>
             <Badge variant="outline" data-testid="managers-count">
-              {team.total_managers} managers
+              {team.total_managers}
+              {' '}
+              managers
             </Badge>
           </div>
         </div>

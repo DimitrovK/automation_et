@@ -2,17 +2,18 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TeamCombobox } from '@/components/footballer-management/TeamCombobox';
+import { TeamAPI } from '@/lib/team-api';
+
 vi.mock('@/lib/team-api', () => ({
   TeamAPI: { searchTeams: vi.fn() },
 }));
-
-import { TeamCombobox } from '@/components/footballer-management/TeamCombobox';
-import { TeamAPI } from '@/lib/team-api';
 
 const mockSearch = vi.mocked(TeamAPI.searchTeams);
 
 describe('TeamCombobox', () => {
   beforeEach(() => mockSearch.mockReset());
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -20,6 +21,7 @@ describe('TeamCombobox', () => {
 
   it('shows the placeholder when nothing is selected', () => {
     render(<TeamCombobox value={null} onChange={vi.fn()} placeholder="Search a team…" />);
+
     expect(screen.getByText('Search a team…')).toBeInTheDocument();
   });
 
@@ -30,7 +32,8 @@ describe('TeamCombobox', () => {
     await user.click(screen.getByRole('combobox'));
     await user.type(screen.getByPlaceholderText(/at least 2/), 'a');
     // Wait long enough for the 250ms debounce.
-    await new Promise((r) => setTimeout(r, 320));
+    await new Promise(r => setTimeout(r, 320));
+
     expect(mockSearch).not.toHaveBeenCalled();
   });
 
@@ -64,6 +67,7 @@ describe('TeamCombobox', () => {
 
   it('shows the selected team name in the trigger when value is set', async () => {
     render(<TeamCombobox value={{ id: 7, name: 'AC Milan' }} onChange={vi.fn()} />);
+
     expect(screen.getByText('AC Milan')).toBeInTheDocument();
   });
 

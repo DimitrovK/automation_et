@@ -38,9 +38,13 @@ function walk(dir: string): string[] {
 
 describe('report components', () => {
   it('are all rendered somewhere', () => {
-    const components = readdirSync(COMPONENT_DIR)
-      .filter(name => name.endsWith('.tsx'))
-      .map(name => name.replace(/\.tsx$/, ''));
+    // Walked, not listed: the components live in buckets (primitives / filters /
+    // charts / panels / shell) since #1474 R9, so reading only the top level
+    // finds nothing — which this test's own floor below caught rather than
+    // passing silently.
+    const components = walk(COMPONENT_DIR)
+      .filter(path => path.endsWith('.tsx'))
+      .map(path => path.split('/').pop()!.replace(/\.tsx$/, ''));
 
     // If this is ever empty the test would pass vacuously and guard nothing.
     expect(components.length).toBeGreaterThan(5);

@@ -1,7 +1,7 @@
 import type { DurationRow } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { DurationSpread } from '@/components/reports/DurationSpread';
+import { DurationSpread } from '@/components/reports/charts/DurationSpread';
 
 function row(over: Partial<DurationRow>): DurationRow {
   return {

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { GameBadge } from '@/components/reports/GameBadge';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
 
 const META = {
   team_ties: {
