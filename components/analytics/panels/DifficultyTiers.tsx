@@ -14,7 +14,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
  * grading is decoration.
  */
 
-/** The scale's own order. Alphabetically EXTREME leads and NORMAL ends. */
+/**
+ * The scale's own order, easiest first — which is NOT what sorting the names
+ * gives you. Alphabetically the list runs EASY, EXTREME, HARD, NORMAL, so the
+ * hardest tier lands second and the middle one last, and a reader scanning down
+ * the column sees a ranking by nothing at all.
+ */
 const TIER_ORDER = ['EASY', 'NORMAL', 'HARD', 'EXTREME'];
 
 function tierRank(difficulty: string | null): number {
