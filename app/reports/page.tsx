@@ -115,7 +115,11 @@ export default function ReportsPage() {
                 first should be the one that is mostly signal. The daily pulse
                 stays underneath rather than going: "what happened today" is a
                 real question, just not the one to open with. */}
-            <WeeklyPulseTiles pulse={data.weekly_pulse} />
+            {/* Guarded: the backend sending this may not be deployed yet, and
+                the two repositories ship independently. Absent, the page shows
+                the daily pulse alone rather than crashing on `pulse.metrics`
+                (Copilot on #124). */}
+            {data.weekly_pulse && <WeeklyPulseTiles pulse={data.weekly_pulse} />}
 
             {/* The daily pulse always describes TODAY, whatever range is
                     selected — the BE sends pulse_applies to say so. Rendering it

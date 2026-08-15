@@ -93,7 +93,10 @@ export function AnomalyPanel({ data, meta }: { data: AnomaliesResponse; meta: Ga
                     percentage alone cannot say why a +28% neighbour is absent,
                     and a panel that cannot explain an omission gets read as
                     broken. */}
-                {finding.required_pct !== null && (
+                {/* Both, not just the bar: `z_score` is null on rate findings,
+                    and gating on `required_pct` alone rendered "nullσ"
+                    (Copilot on #124). */}
+                {finding.required_pct !== null && finding.z_score !== null && (
                   <p className="mt-0.5 text-xs text-muted-foreground/80">
                     {`${finding.z_score}σ — a move of ${finding.required_pct}% would have been the bar at this volume`}
                   </p>

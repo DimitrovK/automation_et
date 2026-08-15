@@ -17,12 +17,18 @@ import { cn } from '@/lib/utils';
  * on it is therefore partial until midnight.
  */
 
-const LABELS: Record<string, string> = {
-  games_started: 'Games started',
-  games_finished: 'Games finished',
-  distinct_players: 'Players',
-  mp_player_sessions: 'Multiplayer sessions',
-};
+/**
+ * The tiles, in the order they are read — not in whatever order the API happens
+ * to serialise its keys (Copilot on #124). `PulseTiles` already does this;
+ * iterating `Object.entries` here meant a backend key reordering silently
+ * reordered the UI.
+ */
+const TILES: { metric: string; label: string }[] = [
+  { metric: 'games_started', label: 'Games started' },
+  { metric: 'games_finished', label: 'Games finished' },
+  { metric: 'distinct_players', label: 'Players' },
+  { metric: 'mp_player_sessions', label: 'Multiplayer sessions' },
+];
 
 function Delta({ value }: { value: number | null }) {
   if (value === null) {
@@ -53,25 +59,28 @@ export function WeeklyPulseTiles({ pulse }: { pulse: WeeklyPulse }) {
   return (
     <section aria-label="This week">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {Object.entries(pulse.metrics).map(([metric, values]) => (
-          <div key={metric} className="rounded-lg border bg-card p-3">
-            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {LABELS[metric] ?? metric}
-              <MetricInfo metric={metric} />
-            </p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">
-              {values.current.toLocaleString()}
-            </p>
-            <p className="mt-0.5 flex items-baseline gap-1.5">
-              <Delta value={values.delta_pct} />
-              {values.baseline !== null && (
-                <span className="text-xs text-muted-foreground">
-                  {`vs ${values.baseline.toLocaleString()} usual`}
-                </span>
-              )}
-            </p>
-          </div>
-        ))}
+        {TILES.filter(tile => pulse.metrics[tile.metric]).map(({ metric, label }) => {
+          const values = pulse.metrics[metric];
+          return (
+            <div key={metric} className="rounded-lg border bg-card p-3">
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {label}
+                <MetricInfo metric={metric} />
+              </p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">
+                {values.current.toLocaleString()}
+              </p>
+              <p className="mt-0.5 flex items-baseline gap-1.5">
+                <Delta value={values.delta_pct} />
+                {values.baseline !== null && (
+                  <span className="text-xs text-muted-foreground">
+                    {`vs ${values.baseline.toLocaleString()} usual`}
+                  </span>
+                )}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       <p className="mt-2 text-center text-xs text-muted-foreground">
