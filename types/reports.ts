@@ -911,7 +911,15 @@ export type CareerPathAnalyticsResponse = {
     footballers_seen: number;
   };
   shape: {
-    modes: { mode: string; paths: number }[];
+    modes: {
+      mode: string;
+      /** Career paths built in this mode. */
+      paths: number;
+      /** Footballer appearances inside them — distinct, not join-multiplied. */
+      appearances: number;
+      solve_rate_pct: number | null;
+      help_rate_pct: number | null;
+    }[];
     total_paths: number;
     difficulty: CareerPathTier[];
     total_appearances: number;
@@ -930,6 +938,22 @@ export type CareerPathAnalyticsResponse = {
       hinted_solve_pct: number | null;
       unhinted_guesses: number;
       unhinted_solve_pct: number | null;
+    };
+    /**
+     * Whether the similar-footballers grid rescues an attempt.
+     *
+     * `recorded: false` because nothing logs that the grid was served — this
+     * counts what each game's configuration says happens. The panel says so, so
+     * an inference is never read as a measurement.
+     */
+    similar_footballers: {
+      recorded: boolean;
+      reached: number;
+      /** Appearances that could never show it — the feature was off. */
+      ineligible: number;
+      reached_pct: number | null;
+      solved_after_pct: number | null;
+      solved_without_pct: number | null;
     };
   };
 } & ResolvedRange;

@@ -34,20 +34,32 @@ function response(over: Partial<CareerPathAnalyticsResponse> = {}): CareerPathAn
       footballers_seen: 6364,
     },
     shape: {
-      modes: [{ mode: 'SINGLE', paths: 46279 }, { mode: 'LADDER', paths: 12722 }],
-      total_paths: 65765,
-      difficulty: [
-        { difficulty: 'EXTREME', appearances: 52479, solve_rate_pct: 15.9, help_rate_pct: 0.3 },
-        { difficulty: 'EASY', appearances: 158706, solve_rate_pct: 37.5, help_rate_pct: 0.8 },
-        { difficulty: 'NORMAL', appearances: 153443, solve_rate_pct: 25.5, help_rate_pct: 0.6 },
+      modes: [
+        { mode: 'SINGLE', paths: 25131, appearances: 25131, solve_rate_pct: 70.8, help_rate_pct: 2.6 },
+        { mode: 'HEAD_TO_HEAD', paths: 580, appearances: 2794, solve_rate_pct: 83.8, help_rate_pct: 2.1 },
+        { mode: 'RACE', paths: 12, appearances: 12, solve_rate_pct: 58.7, help_rate_pct: 5.1 },
       ],
-      total_appearances: 364628,
+      total_paths: 25723,
+      difficulty: [
+        { difficulty: 'EXTREME', appearances: 6748, solve_rate_pct: 56.5, help_rate_pct: 2.3 },
+        { difficulty: 'EASY', appearances: 23557, solve_rate_pct: 84.4, help_rate_pct: 4.6 },
+        { difficulty: 'NORMAL', appearances: 21359, solve_rate_pct: 67.1, help_rate_pct: 3.9 },
+      ],
+      total_appearances: 60545,
       footballers_per_path: 3.3,
       hint_effect: {
         hinted_guesses: 3653,
         hinted_solve_pct: 35.3,
         unhinted_guesses: 102412,
         unhinted_solve_pct: 43.3,
+      },
+      similar_footballers: {
+        recorded: false,
+        reached: 15973,
+        ineligible: 4612,
+        reached_pct: 28.6,
+        solved_after_pct: 66.9,
+        solved_without_pct: 74.7,
       },
     },
     ...over,
@@ -143,5 +155,48 @@ describe('difficultyTiers', () => {
     render(<DifficultyTiers data={response()} />);
 
     expect(screen.getByText(/3.3 footballers per path/)).toBeInTheDocument();
+  });
+});
+
+describe('similar footballers', () => {
+  it('reports reach and recovery, so it can be read against the hint figure', () => {
+    // The comparison is the finding: the grid recovers about two thirds of the
+    // attempts that reach it, a hint about a third. Both are triggered by the
+    // same struggle, so comparing them is fair even though neither is a trial.
+    render(<DifficultyTiers data={response()} />);
+
+    expect(screen.getByText(/28.6% of eligible appearances, and 66.9% of those/)).toBeInTheDocument();
+  });
+
+  it('says it is derived rather than recorded', () => {
+    // Nothing logs that the grid was served. Without this line an inference
+    // reads as a measurement, and instrumenting it later would look like a
+    // change in the data rather than a change in what is being counted.
+    render(<DifficultyTiers data={response()} />);
+
+    expect(screen.getByText(/Derived, not recorded/)).toBeInTheDocument();
+    expect(screen.getByText(/4,612 appearances could never show it/)).toBeInTheDocument();
+  });
+
+  it('says nothing when the grid was never reached', () => {
+    render(
+      <DifficultyTiers
+        data={response({
+          shape: {
+            ...response().shape,
+            similar_footballers: {
+              recorded: false,
+              reached: 0,
+              ineligible: 10,
+              reached_pct: 0,
+              solved_after_pct: null,
+              solved_without_pct: 80,
+            },
+          },
+        })}
+      />,
+    );
+
+    expect(screen.queryByText(/Derived, not recorded/)).not.toBeInTheDocument();
   });
 });

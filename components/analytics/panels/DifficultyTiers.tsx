@@ -92,6 +92,29 @@ export function DifficultyTiers({ data }: { data: CareerPathAnalyticsResponse })
           </div>
         )}
 
+        {/* Beside the hint figure on purpose: both aids are triggered by the
+            same struggle, so comparing them IS fair even though neither is a
+            controlled trial — and the comparison is the finding. The grid
+            recovers about two thirds of the attempts that reach it; the hint
+            text recovers about a third. */}
+        {data.shape.similar_footballers.reached > 0 && (
+          <div className="space-y-1.5 border-t pt-4">
+            <p className="flex items-center gap-2 text-sm font-medium">
+              Does the similar-footballers grid help
+              <MetricInfo metric="similar_footballers" />
+            </p>
+            <p className="text-sm">
+              {`Shown on ${data.shape.similar_footballers.reached_pct}% of eligible appearances, and ${data.shape.similar_footballers.solved_after_pct}% of those are then solved.`}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {/* An inference, and it says so. Nothing records that the grid was
+                  served, so this counts what each game's own configuration says
+                  happens — enabled, and past its own wrong-guess threshold. */}
+              {`Derived, not recorded: nothing logs that the grid was shown, so this counts appearances past each game's own wrong-guess threshold. ${data.shape.similar_footballers.ineligible.toLocaleString()} appearances could never show it and are left out of both figures.`}
+            </p>
+          </div>
+        )}
+
         {modes.length > 0 && (
           <div className="space-y-2 border-t pt-4">
             <p className="text-xs font-medium text-muted-foreground">What was built</p>
