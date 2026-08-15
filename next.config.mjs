@@ -11,7 +11,7 @@ const nextConfig = {
       { source: '/reports/unfinished', destination: '/reports/games', permanent: true },
       { source: '/reports/favourites', destination: '/reports/games', permanent: true },
       // Patterns is gone rather than folded: play-by-hour is noise at this
-      // volume. Its one useful panel, new vs returning, is on the overview.
+      // volume. It's one useful panel, new vs returning, is on the overview.
       { source: '/reports/patterns', destination: '/reports', permanent: true },
     ];
   },

@@ -62,7 +62,12 @@ export default function ReportsPage() {
   const activity = useReport(ReportsAPI.getActivity, activityParams, enabled, 'The reporting activity endpoint');
   // Only for the new-vs-returning panel, lifted here when the Patterns page was
   // removed. Its own panel, so a slow patterns request cannot blank the pulse.
-  const patterns = useReport(ReportsAPI.getPatterns, params, enabled, 'The patterns reporting endpoint');
+  // UNFILTERED on purpose (Copilot on #117). The panel's own copy makes a
+  // platform claim — "all returning means growth has stalled" — and narrowing it
+  // to one game silently turns that into a claim about that game, with the copy
+  // still saying otherwise. Everything else on the page follows the selection;
+  // this is the one panel whose meaning changes if it does.
+  const patterns = useReport(ReportsAPI.getPatterns, allGamesParams, enabled, 'The patterns reporting endpoint');
   // Unfiltered on purpose: "what needs attention" must surface a game you
   // haven't selected, which is exactly the one you'd otherwise miss.
 
