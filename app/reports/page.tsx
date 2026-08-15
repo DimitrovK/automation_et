@@ -11,6 +11,7 @@ import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { GameLeaderboard } from '@/components/reports/panels/GameLeaderboard';
 import { PulseTiles } from '@/components/reports/panels/PulseTiles';
 import { RollupHealthBanner } from '@/components/reports/panels/RollupHealthBanner';
+import { WeeklyPulseTiles } from '@/components/reports/panels/WeeklyPulseTiles';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
@@ -108,10 +109,18 @@ export default function ReportsPage() {
       <ReportPanel state={summary} skeletonClassName="h-32 w-full">
         {data => (
           <>
-            {/* The pulse always describes TODAY, whatever range is selected —
-                    the BE sends pulse_applies to say so. Rendering it beside
-                    comparison tiles that DO follow the range invites reading
-                    today's numbers as the selected period's. */}
+            {/* Weekly first (#1474 R8). A day is not a meaningful sample at
+                this volume — 36 players on a game means one day moves by four
+                people and reads as a 30% swing — so the figure someone sees
+                first should be the one that is mostly signal. The daily pulse
+                stays underneath rather than going: "what happened today" is a
+                real question, just not the one to open with. */}
+            <WeeklyPulseTiles pulse={data.weekly_pulse} />
+
+            {/* The daily pulse always describes TODAY, whatever range is
+                    selected — the BE sends pulse_applies to say so. Rendering it
+                    beside comparison tiles that DO follow the range invites
+                    reading today's numbers as the selected period's. */}
             {data.pulse_applies
               ? (
                   <>
