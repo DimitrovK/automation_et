@@ -9,6 +9,8 @@ import { FavouredVsPlayedChart } from '@/components/reports/favourites/FavouredV
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { AbandonedPanel } from '@/components/reports/panels/AbandonedPanel';
+import { AttemptSpread } from '@/components/reports/panels/AttemptSpread';
+import { DifficultyOutcomes } from '@/components/reports/panels/DifficultyOutcomes';
 import { DurationTable } from '@/components/reports/panels/DurationTable';
 import { ProgressDropOff } from '@/components/reports/panels/ProgressDropOff';
 import { UnfinishedTable } from '@/components/reports/panels/UnfinishedTable';
@@ -80,6 +82,18 @@ export default function GamesIndexPage() {
   // ranged page because the question ("what is lying around for this game") is a
   // per-game one; the panel says so itself rather than inheriting the filter.
   const unfinishedParams = useMemo(() => ({ include_bots: includeBots }), [includeBots]);
+  const difficulty = useReport(
+    ReportsAPI.getDifficulty,
+    params,
+    enabled,
+    'The difficulty reporting endpoint',
+  );
+  const attempts = useReport(
+    ReportsAPI.getAttempts,
+    params,
+    enabled,
+    'The wrong-attempts reporting endpoint',
+  );
   const progress = useReport(
     ReportsAPI.getProgress,
     params,
@@ -251,6 +265,23 @@ export default function GamesIndexPage() {
           same request, so a reader comparing games had the ranking here and the
           shape of it somewhere else. Its own panel, because the duration request
           can fail or lag independently of the games one. */}
+      {/* Before the drop-off panel, because "is this game hard" comes before
+          "where do people give up on it" — and because one of the numbers the
+          table above carries is wrong until this panel corrects it. Conquest
+          reads 99% complete there and 44% here; the difference is a timer. */}
+      <SectionHeader
+        title="How hard each game is"
+        description="Completion has been standing in for difficulty, and on two games it does not hold."
+      />
+
+      <ReportPanel state={difficulty} skeletonClassName="h-96 w-full">
+        {data => <DifficultyOutcomes data={data} meta={meta} />}
+      </ReportPanel>
+
+      <ReportPanel state={attempts} skeletonClassName="h-56 w-full">
+        {data => <AttemptSpread data={data} meta={meta} />}
+      </ReportPanel>
+
       {/* Under the games table, not on a page of its own: it answers the next
           question that table raises. "Abandoned: 5,399" says a session ended
           incomplete; this says 44% of those got nowhere at all, which is a

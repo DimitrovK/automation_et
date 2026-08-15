@@ -644,3 +644,87 @@ export type ProgressResponse = {
   games_without_progress: string[];
   total_abandoned: number;
 } & ResolvedRange;
+
+/** One value of a game's difficulty axis, with its outcomes. */
+export type DifficultyBucket = {
+  value: string | null;
+  /**
+   * The value is not in the scale this game declared — a new difficulty nobody
+   * wired up, or a typo. Flagged rather than dropped, since both are worth seeing.
+   */
+  off_scale: boolean;
+  /** Too few sessions to state a rate. The count is still shown. */
+  below_threshold: boolean;
+  sessions: number;
+  finished: number;
+  swept: number;
+  completion_pct: number | null;
+  wins: number | null;
+  decided: number | null;
+  win_rate_pct: number | null;
+};
+
+/**
+ * How hard one game is, on the axis it actually records.
+ *
+ * `swept` is the correction that makes the rest readable: Conquest writes LOSS
+ * on anything idle for 24 hours, and 1,283 of its 2,122 losses still had lives
+ * in hand. Both rates here exclude them, and the count is present so the
+ * correction can be seen rather than taken on trust.
+ */
+export type DifficultyRow = {
+  game_type: string;
+  sessions: number;
+  finished: number;
+  swept: number;
+  /** Hours of idleness after which this game's sweeper closes a session. */
+  sweeper_hours: number | null;
+  completion_pct: number | null;
+  /** Whether this game records WIN/LOSS at all. Without it there is no win rate. */
+  has_verdict: boolean;
+  decided: number | null;
+  /**
+   * The share of sessions the win rate is computed from. Under 12% on four
+   * games, where `result` is written for multiplayer rounds only.
+   */
+  verdict_coverage_pct: number | null;
+  win_rate_pct: number | null;
+  /** What the axis IS — 'Grid size' where that differs from 'Difficulty'. */
+  difficulty_label: string | null;
+  difficulty: DifficultyBucket[];
+};
+
+export type DifficultyResponse = {
+  rows: DifficultyRow[];
+  games_with_difficulty: string[];
+  min_sessions: number;
+} & ResolvedRange;
+
+/** One band of wrong attempts per session. `to_attempts` is null on the last. */
+export type AttemptBand = {
+  from_attempts: number;
+  to_attempts: number | null;
+  count: number;
+  pct: number;
+};
+
+export type AttemptRow = {
+  game_type: string;
+  sessions: number;
+  /** 'session' or 'step' — what the allowance is per. */
+  allowance_scope: string;
+  /** Every distinct declared allowance seen in the window. */
+  allowances: number[];
+  /**
+   * Sessions recording more wrong attempts than declared — only meaningful
+   * where the allowance is per session. `null` on a per-step allowance, which
+   * a session total cannot be compared with.
+   */
+  over_allowance: number | null;
+  over_allowance_pct: number | null;
+  bands: AttemptBand[];
+};
+
+export type AttemptsResponse = {
+  rows: AttemptRow[];
+} & ResolvedRange;
