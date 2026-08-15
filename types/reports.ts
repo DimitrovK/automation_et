@@ -1012,3 +1012,44 @@ export type QuestionsAnalyticsResponse = {
     bank_used_pct: number | null;
   };
 } & ResolvedRange;
+
+/**
+ * One lineup slot — a single footballer in a single lineup.
+ *
+ * The metric is `guesses_per_session`, not the solve rate. Missing11 lets a
+ * player keep guessing, so the median slot is solved 99% of the time and a
+ * solve-rate ranking reads the same all the way down.
+ */
+export type LineupSlotRow = {
+  slot_id: number;
+  player: string;
+  shirt_number: number | null;
+  lineup_id: number;
+  lineup: string;
+  sessions: number;
+  guesses_per_session: number | null;
+  solve_rate_pct: number | null;
+  /** Share of sessions where a hint was taken on this slot — per session, not per guess. */
+  hint_rate_pct: number | null;
+};
+
+export type LineupRow = {
+  lineup_id: number;
+  title: string;
+  sessions: number;
+  finished_pct: number | null;
+  guesses_per_session: number | null;
+};
+
+export type LineupsAnalyticsResponse = {
+  slots: {
+    rows: LineupSlotRow[];
+    min_sessions: number;
+    slots_measured: number;
+  };
+  lineups: {
+    rows: LineupRow[];
+    min_sessions: number;
+    lineups_measured: number;
+  };
+} & ResolvedRange;
