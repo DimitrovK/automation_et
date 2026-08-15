@@ -16,10 +16,10 @@ import { cn } from '@/lib/utils';
  * eventually solved and effort is the only thing that separates a slot.
  */
 
-/** Above this many guesses a slot is worth an editor's attention. */
+/** At or above this many guesses, a slot is worth an editor's attention. */
 const NOTABLE_GUESSES = 3;
 
-/** Below this, a slot is not being solved at all reliably. */
+/** Under this, a slot is not being solved reliably whatever its effort says. */
 const LOW_SOLVE_PCT = 90;
 
 export function LineupSlots({ data }: { data: LineupsAnalyticsResponse }) {
@@ -46,7 +46,12 @@ export function LineupSlots({ data }: { data: LineupsAnalyticsResponse }) {
             { label: 'Rating needs', value: `${minSessions} sessions` },
             {
               label: 'Hardest',
-              value: rows[0] ? `${rows[0].guesses_per_session} guesses` : '—',
+              // The VALUE, not just the row: `guesses_per_session` is nullable
+              // and a present row with a null figure rendered "null guesses"
+              // (Copilot on #130).
+              value: rows[0]?.guesses_per_session == null
+                ? '—'
+                : `${rows[0].guesses_per_session} guesses`,
             },
           ]}
         />

@@ -43,6 +43,19 @@ describe('lineupSlots', () => {
     expect(screen.getByText('5.3 guesses')).toBeInTheDocument();
   });
 
+  it('shows a dash rather than "null guesses" when the figure is missing', () => {
+    // The field is nullable and the tile checked the ROW rather than the value
+    // (Copilot on #130).
+    render(
+      <LineupSlots
+        data={response([slot({ slot_id: 1, player: 'Unknown', guesses_per_session: null })])}
+      />,
+    );
+
+    expect(screen.queryByText(/null guesses/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+  });
+
   it('names the lineup, because the same footballer elsewhere is a different slot', () => {
     // The shirt number and the positions around them are what make a player
     // guessable — "Barmby" on its own is not a thing an editor can fix.
