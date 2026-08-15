@@ -961,6 +961,11 @@ export type CareerPathAnalyticsResponse = {
 /** One option of a quiz question, with how often it was chosen. */
 export type QuestionOption = {
   option: number;
+  /**
+   * The answer as written. "72% chose option B" cannot be judged — deciding
+   * whether a distractor is defensible means reading it.
+   */
+  text: string;
   count: number;
   /** Share of DELIBERATE answers. Null when nobody answered without timing out. */
   pct: number | null;
