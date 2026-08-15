@@ -66,15 +66,18 @@ export function GrowthFlow({ data }: { data: GrowthResponse }) {
         <MetricRow
           columns={4}
           metrics={[
-            { label: 'New players', value: data.summary.new.toLocaleString(), metric: 'new_players_weekly' },
-            { label: 'Came back', value: data.summary.resurrected.toLocaleString(), metric: 'resurrected_players' },
-            { label: 'Churned', value: data.summary.churned.toLocaleString(), metric: 'churned_players' },
             {
+              // FIRST, because this PR claims it leads and it was last — the
+              // one figure that says which way the period went should be the
+              // one read first (Copilot on #122). Gained over lost: above 1 the
+              // period added more than it lost.
               label: 'Quick ratio',
-              // Gained over lost. Above 1 the period added more than it lost.
               value: data.summary.quick_ratio === null ? '—' : String(data.summary.quick_ratio),
               metric: 'quick_ratio',
             },
+            { label: 'New players', value: data.summary.new.toLocaleString(), metric: 'new_players_weekly' },
+            { label: 'Came back', value: data.summary.resurrected.toLocaleString(), metric: 'resurrected_players' },
+            { label: 'Churned', value: data.summary.churned.toLocaleString(), metric: 'churned_players' },
           ]}
         />
         <p className="text-xs text-muted-foreground">
@@ -88,7 +91,7 @@ export function GrowthFlow({ data }: { data: GrowthResponse }) {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={rows} margin={{ top: 8, right: 8, bottom: 8, left: -12 }} stackOffset="sign">
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
-                    <XAxis dataKey="week" tick={theme.tick} interval="preserveStartEnd" minTickGap={16} />
+                    <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={16} />
                     <YAxis tick={theme.tick} allowDecimals={false} width={44} />
                     <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                     {/* The line the shape is read against. Without it, a week
@@ -112,7 +115,7 @@ export function GrowthFlow({ data }: { data: GrowthResponse }) {
 
         {provisional && (
           <p className="text-xs text-muted-foreground">
-            {`Week of ${provisional.week} is still running — its churn cannot be counted until the following week ends, so the faint bar understates what it will keep.`}
+            {`Week of ${provisional.week} is still running — its churn cannot be known until the week ends, so the faint bar understates what it will keep.`}
           </p>
         )}
       </CardContent>

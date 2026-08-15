@@ -122,7 +122,14 @@ describe('toChartRow', () => {
     expect([chart.new, chart.resurrected, chart.retained]).toEqual([40, 10, 80]);
   });
 
-  it('drops the year from the label, since every bar carries the same one', () => {
-    expect(toChartRow(row({ week: '2026-06-01' })).week).toBe('06-01');
+  it('keeps the full date as the key and shortens only the label', () => {
+    // The range picker allows arbitrary custom spans, so across a multi-year
+    // selection MM-DD repeats and a categorical axis collapses two different
+    // weeks onto one bar (Copilot on #122). The key stays unambiguous; the
+    // label is what gets shortened.
+    const chart = toChartRow(row({ week: '2026-06-01' }));
+
+    expect(chart.week).toBe('2026-06-01');
+    expect(chart.label).toBe('06-01');
   });
 });

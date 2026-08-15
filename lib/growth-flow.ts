@@ -11,9 +11,13 @@ import type { GrowthRow } from '@/types/reports';
  */
 export function toChartRow(row: GrowthRow) {
   return {
-    // The year is dropped: every bar in a window carries the same one, and the
-    // axis has room for about eight labels.
-    week: row.week.slice(5),
+    // The full date is the KEY, because the range picker allows arbitrary
+    // custom spans: across a multi-year selection, MM-DD repeats and a
+    // categorical axis collapses two different weeks onto one bar (Copilot on
+    // #122). The short form is a separate field the axis formats with, so the
+    // label stays readable without the key becoming ambiguous.
+    week: row.week,
+    label: row.week.slice(5),
     retained: row.retained,
     resurrected: row.resurrected,
     new: row.new,
