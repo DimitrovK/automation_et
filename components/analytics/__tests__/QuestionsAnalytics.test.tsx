@@ -6,8 +6,10 @@ import { QuestionQuality } from '@/components/analytics/panels/QuestionQuality';
 
 function options(counts: [number, number, number, number], correct: number) {
   const answered = counts.reduce((sum, n) => sum + n, 0);
+  const TEXTS = ['Zero', 'One goal', 'Two goals', 'A hat-trick'];
   return counts.map((count, index) => ({
     option: index + 1,
+    text: TEXTS[index],
     count,
     pct: answered ? Math.round((count * 1000) / answered) / 10 : null,
     is_correct: index + 1 === correct,
@@ -61,6 +63,16 @@ describe('questionQuality', () => {
 
     expect(screen.getByText('A wrong option won')).toBeInTheDocument();
     expect(screen.getByText('How many goals?')).toBeInTheDocument();
+  });
+
+  it('shows what each answer says, not just its letter', () => {
+    // "72% chose option B" cannot be judged. Whether a distractor is defensible
+    // is the question a dominant wrong option raises, and it cannot be asked
+    // without reading the answer.
+    render(<QuestionQuality data={response([question({ question_id: 1, text: 'How many goals?' })])} />);
+
+    expect(screen.getByText('One goal')).toBeInTheDocument();
+    expect(screen.getByText('A hat-trick')).toBeInTheDocument();
   });
 
   it('shows every option, not only the winner', () => {

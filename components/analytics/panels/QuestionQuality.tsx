@@ -36,6 +36,19 @@ function OptionBar({ option, suspect }: { option: QuestionRow['options'][number]
       >
         {OPTION_LABELS[option.option - 1] ?? option.option}
       </span>
+      {/* The answer as written, before the bar. A share attached to a letter is
+          not something anyone can judge — the question a dominant wrong option
+          raises is whether that answer is defensible, and it cannot be asked
+          without reading it. */}
+      <span
+        className={cn(
+          'w-0 min-w-32 flex-[2] truncate text-xs',
+          option.is_correct ? 'font-medium text-foreground' : 'text-muted-foreground',
+        )}
+        title={option.text}
+      >
+        {option.text || '—'}
+      </span>
       <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
         <span
           className={cn(
