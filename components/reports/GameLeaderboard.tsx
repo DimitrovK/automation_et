@@ -156,7 +156,12 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                     ['Sessions / player', row.sessions_per_player ?? '—', 'sessions_per_player'],
                     ['Multiplayer', row.mp_player_sessions.toLocaleString(), 'mp_sessions'],
                     ['Solo', (row.games_started - row.mp_player_sessions).toLocaleString(), undefined],
-                    ['Repeat players', row.repeat_players.toLocaleString(), 'repeat_rate_pct'],
+                    // No glossary key: this is the COUNT, and the only definition that
+                    // exists is `repeat_rate_pct`, a percentage. Pointing at it put the
+                    // definition of a rate beside a headcount, and the popover's
+                    // accessible name disagreed with the visible label once the glossary
+                    // loaded (Copilot on #116). The rate keeps its own key, one column left.
+                    ['Repeat players', row.repeat_players.toLocaleString(), undefined],
                     ['Share of platform', rate(row.share_pct), 'share_pct'],
                     ['Previous window', row.previous_games_started.toLocaleString(), undefined],
                   ] as [string, string | number, string | undefined][]).map(([label, value, glossaryKey]) => (
