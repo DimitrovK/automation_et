@@ -21,14 +21,24 @@ export type UnfinishedBand = {
   pct: number;
 };
 
-/** "2h", "3d", "1w" — the coarsest unit that still reads exactly. */
+/**
+ * "2h", "3d", "1w" — the coarsest unit that still reads EXACTLY.
+ *
+ * Divisibility is the whole condition. Dividing by 24 whenever the count merely
+ * reaches 24 turns a 25-hour boundary into "1.0416666666666667d" — the label
+ * stops being a boundary and becomes a float. Today's boundaries (1, 24, 168)
+ * all divide cleanly, so this was invisible; it would have surfaced the first
+ * time one of them moved, in a band label nobody re-reads.
+ */
 function hoursToWords(hours: number): string {
-  if (hours < 24) {
-    return `${hours}h`;
+  if (hours % 168 === 0) {
+    return `${hours / 168}w`;
   }
-  const days = hours / 24;
+  if (hours % 24 === 0) {
+    return `${hours / 24}d`;
+  }
 
-  return days % 7 === 0 ? `${days / 7}w` : `${days}d`;
+  return `${hours}h`;
 }
 
 export function unfinishedBands(buckets: UnfinishedBucket[]): UnfinishedBand[] {
