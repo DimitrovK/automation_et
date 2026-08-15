@@ -42,9 +42,16 @@ describe('report components', () => {
     // charts / panels / shell) since #1474 R9, so reading only the top level
     // finds nothing — which this test's own floor below caught rather than
     // passing silently.
+    // The PATH is kept, not just the basename (Copilot on #118). The exclusion
+    // below rebuilds a component's own file to leave it out of the search, and
+    // with only a name it rebuilt `components/reports/Foo.tsx` while the file
+    // actually sits in `components/reports/primitives/Foo.tsx`. That path never
+    // matched, so every component's own source counted as a render of itself
+    // and the guard passed for everything — including a genuinely orphaned
+    // component, which is the one thing it exists to catch.
     const components = walk(COMPONENT_DIR)
       .filter(path => path.endsWith('.tsx'))
-      .map(path => path.split('/').pop()!.replace(/\.tsx$/, ''));
+      .map(path => ({ path, name: path.split('/').pop()!.replace(/\.tsx$/, '') }));
 
     // If this is ever empty the test would pass vacuously and guard nothing.
     expect(components.length).toBeGreaterThan(5);
@@ -52,15 +59,24 @@ describe('report components', () => {
     // Components legitimately render each other (ReportsShell renders
     // ReportsNav), so only the component's OWN file is excluded — excluding the
     // whole directory would report a used component as orphaned.
+    // Comments are stripped before searching. A component NAMED in a comment —
+    // "MetricRow, which R9 built for exactly this" — otherwise counts as a
+    // render of it, which is how this guard kept passing while the thing it
+    // describes was deleted. The claim is "referenced in code", so it has to
+    // read code.
     const files = SEARCH_DIRS.flatMap(dir => walk(join(ROOT, dir)))
-      .map(file => ({ file, source: readFileSync(file, 'utf8') }));
+      .map(file => ({
+        file,
+        source: readFileSync(file, 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, ' ')
+          .replace(/(^|[^:])\/\/[^\n]*/g, '$1 '),
+      }));
 
-    const orphaned = components.filter((name) => {
-      const own = join(COMPONENT_DIR, `${name}.tsx`);
-      return !files.some(
-        ({ file, source }) => file !== own && new RegExp(`\\b${name}\\b`).test(source),
-      );
-    });
+    const orphaned = components
+      .filter(({ path, name }) => !files.some(
+        ({ file, source }) => file !== path && new RegExp(`\\b${name}\\b`).test(source),
+      ))
+      .map(({ name }) => name);
 
     expect(orphaned, `Built but never rendered: ${orphaned.join(', ')}`).toEqual([]);
   });

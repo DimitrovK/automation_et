@@ -1,8 +1,8 @@
 import type { GameTotals, Pulse } from '@/types/reports';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
-import { PulseTiles } from '@/components/reports/PulseTiles';
+import { GameLeaderboard } from '@/components/reports/panels/GameLeaderboard';
+import { PulseTiles } from '@/components/reports/panels/PulseTiles';
 
 /**
  * Player-level figures have to be discoverable as player-level figures.
