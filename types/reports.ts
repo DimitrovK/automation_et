@@ -997,7 +997,43 @@ export type QuestionRow = {
   beaten_by_a_wrong_answer: boolean;
 };
 
+/** One category, ranked by how often players get it wrong. */
+export type CategoryRow = {
+  category_id: number;
+  name: string;
+  /** Every question in the category — what a fix would cost. */
+  questions: number;
+  /** The part of it anyone was served in the window — what the rate is about. */
+  questions_answered: number;
+  answers: number;
+  correct_pct: number | null;
+};
+
+/**
+ * One global quiz's usage.
+ *
+ * `plays_per_day` is the figure to read: the raw total measures scheduling, so
+ * a quiz offered twice and played 40 times looks less popular than one offered
+ * 500 times and played 15,000.
+ */
+export type GlobalQuizRow = {
+  quiz_id: number;
+  title: string;
+  plays: number;
+  scheduled_days: number;
+  plays_per_day: number | null;
+};
+
 export type QuestionsAnalyticsResponse = {
+  categories: {
+    rows: CategoryRow[];
+    min_answers: number;
+    categories_measured: number;
+  };
+  quizzes: {
+    rows: GlobalQuizRow[];
+    total_plays: number;
+  };
   quality: {
     rows: QuestionRow[];
     min_answers: number;
