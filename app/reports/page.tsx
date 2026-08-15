@@ -3,6 +3,7 @@
 import type { GameTotals, Granularity } from '@/types/reports';
 import { useMemo, useState } from 'react';
 import { ActivityChart } from '@/components/reports/charts/ActivityChart';
+import { GrowthFlow } from '@/components/reports/charts/GrowthFlow';
 import { NewVsReturning } from '@/components/reports/charts/NewVsReturning';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { MetricToggle } from '@/components/reports/filters/MetricToggle';
@@ -68,6 +69,10 @@ export default function ReportsPage() {
   // still saying otherwise. Everything else on the page follows the selection;
   // this is the one panel whose meaning changes if it does.
   const patterns = useReport(ReportsAPI.getPatterns, allGamesParams, enabled, 'The patterns reporting endpoint');
+  // Growth DOES follow the selection: its bands are per-player and a per-game
+  // reading of them is a real question ("who did this game gain and lose"),
+  // which is not true of the panel above.
+  const growth = useReport(ReportsAPI.getGrowth, params, enabled, 'The growth reporting endpoint');
   // Unfiltered on purpose: "what needs attention" must surface a game you
   // haven't selected, which is exactly the one you'd otherwise miss.
 
@@ -147,6 +152,16 @@ export default function ReportsPage() {
             description={`${data.totals.games_started.toLocaleString()} played, ${data.totals.games_finished.toLocaleString()} finished, ${data.totals.distinct_players.toLocaleString()} distinct players.`}
           />
         )}
+      </ReportPanel>
+
+      {/* Above new-vs-returning, which answers a narrower version of the same
+          question: that chart splits a DAY into two bands by registration date,
+          this splits a WEEK into four by what the player actually did. Where
+          they disagree, this one is the one to trust — "new" there means the
+          account was made that day, which counts a three-month absence as
+          growth. */}
+      <ReportPanel state={growth} skeletonClassName="h-96 w-full">
+        {data => <GrowthFlow data={data} />}
       </ReportPanel>
 
       <ReportPanel state={patterns} skeletonClassName="h-72 w-full">

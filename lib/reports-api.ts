@@ -7,6 +7,7 @@ import type {
   FirstSessionResponse,
   GamesResponse,
   GlossaryResponse,
+  GrowthResponse,
   MultiplayerResponse,
   PatternsResponse,
   PlayerDetailResponse,
@@ -111,6 +112,11 @@ export class ReportsAPI {
    */
   static async getFirstSession(params?: ReportParams): Promise<FirstSessionResponse> {
     return apiFetcher<FirstSessionResponse>(`core/reporting/first-session/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/growth/ — weekly new / resurrected / retained / churned. */
+  static async getGrowth(params?: ReportParams): Promise<GrowthResponse> {
+    return apiFetcher<GrowthResponse>(`core/reporting/growth/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/difficulty/ — completion and win rate by difficulty. */
