@@ -1,7 +1,7 @@
 'use client';
 
 import type { NavGroup } from '@/components/admin/SectionNav';
-import { HelpCircle, Route, Users } from 'lucide-react';
+import { Database, HelpCircle, Route, Users } from 'lucide-react';
 
 /**
  * Analytics, which is not Reports and should not be folded into it.
@@ -24,6 +24,15 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
       { href: '/analytics/career-path', label: 'Career Path', icon: Route },
       { href: '/analytics/questions', label: 'Quiz content', icon: HelpCircle },
       { href: '/analytics/lineups', label: 'Lineups', icon: Users },
+    ],
+  },
+  {
+    // Its own group, not a fourth per-game entry: every game reads this data,
+    // so a gap here belongs to none of them in particular — and the answer it
+    // produces is "add data" rather than "rewrite content".
+    heading: 'Across the platform',
+    items: [
+      { href: '/analytics/football-data', label: 'Football data', icon: Database },
     ],
   },
 ];
