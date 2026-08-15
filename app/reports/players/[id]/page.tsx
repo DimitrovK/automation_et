@@ -84,7 +84,7 @@ export default function PlayerDetailPage() {
       <div className="flex flex-wrap items-center gap-3">
         <Link
           href="/reports/players"
-          className="inline-flex items-center gap-1 text-sm text-emerald-700 hover:underline dark:text-emerald-400"
+          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="size-4" />
           All players
@@ -197,7 +197,7 @@ export default function PlayerDetailPage() {
                   <CardContent className="space-y-2">
                     {data.by_game.map(row => (
                       <div key={row.game_type} className="flex flex-wrap items-center justify-between gap-2">
-                        <GameBadge gameKey={row.game_type} meta={meta} />
+                        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
                         <span className="text-sm tabular-nums text-muted-foreground">
                           {row.games_played.toLocaleString()}
                           {' played · '}

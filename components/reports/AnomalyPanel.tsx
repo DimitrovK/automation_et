@@ -92,10 +92,10 @@ export function AnomalyPanel({ data, meta }: { data: AnomaliesResponse; meta: Ga
               </div>
               {finding.game_type && (
                 <div className="flex items-center gap-2">
-                  <GameBadge gameKey={finding.game_type} meta={meta} />
+                  <GameBadge gameKey={finding.game_type} meta={meta} href={`/reports/games/${finding.game_type}`} />
                   <Link
                     href={`/reports/games/${finding.game_type}`}
-                    className="whitespace-nowrap text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+                    className="whitespace-nowrap text-sm font-medium text-primary hover:underline"
                   >
                     Investigate →
                   </Link>

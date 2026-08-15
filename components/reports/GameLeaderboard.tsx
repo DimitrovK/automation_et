@@ -161,7 +161,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                   <div className="col-span-2 sm:col-span-3 lg:col-span-6">
                     <Link
                       href={`/reports/games/${row.game_type}`}
-                      className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+                      className="text-sm font-medium text-primary hover:underline"
                     >
                       Open full report for this game →
                     </Link>

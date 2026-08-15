@@ -88,7 +88,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
           return (
             <div key={row.game_type} className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <GameBadge gameKey={row.game_type} meta={meta} />
+                <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
                 <span className="text-xs text-muted-foreground">
                   {startedPct === null ? '—' : `${startedPct}% started`}
                   {' · '}
