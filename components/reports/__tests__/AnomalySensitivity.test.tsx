@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/AnomalySensitivity';
+import { AnomalySensitivity, SENSITIVITY_PRESETS } from '@/components/reports/filters/AnomalySensitivity';
 
 describe('anomalySensitivity', () => {
   it('keeps the shipped defaults as the balanced preset', () => {

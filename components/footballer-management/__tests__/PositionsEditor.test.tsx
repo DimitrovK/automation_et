@@ -1,6 +1,12 @@
+import type { Position } from '@/types/player';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PositionsEditor } from '@/components/footballer-management/sub-editors/PositionsEditor';
+
+import { FootballerAPI } from '@/lib/footballer-api';
 
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: {
@@ -13,14 +19,8 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-import { PositionsEditor } from '@/components/footballer-management/sub-editors/PositionsEditor';
-import { FootballerAPI } from '@/lib/footballer-api';
-import { toast } from 'sonner';
-
 const api = vi.mocked(FootballerAPI, { deep: true });
 const mockToast = vi.mocked(toast, { deep: true });
-
-import type { Position } from '@/types/player';
 
 const ALL_POSITIONS: Position[] = [
   { id: 1, name: 'GK', full_name: 'Goalkeeper', role: 'GK', sort_order: 0 },
@@ -54,6 +54,7 @@ describe('PositionsEditor', () => {
     mockToast.error.mockReset();
     api.getPositions.mockResolvedValue(ALL_POSITIONS);
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -62,6 +63,7 @@ describe('PositionsEditor', () => {
   it('shows empty state when no positions are assigned', async () => {
     api.getFootballerPositions.mockResolvedValueOnce([]);
     render(<PositionsEditor footballerId={42} />);
+
     expect(await screen.findByText(/No positions assigned yet/)).toBeInTheDocument();
   });
 
@@ -82,6 +84,7 @@ describe('PositionsEditor', () => {
     await screen.findByText('Striker');
 
     const save = screen.getByRole('button', { name: /Save positions/ });
+
     expect(save).toBeDisabled();
   });
 
@@ -104,10 +107,13 @@ describe('PositionsEditor', () => {
     expect(await screen.findByText(/Unsaved changes/)).toBeInTheDocument();
 
     const save = screen.getByRole('button', { name: /Save positions/ });
-    expect(save).not.toBeDisabled();
+
+    expect(save).toBeEnabled();
+
     await user.click(save);
 
     await waitFor(() => expect(api.setPositions).toHaveBeenCalledTimes(1));
+
     expect(api.setPositions).toHaveBeenCalledWith({
       footballer_id: 42,
       positions: expect.arrayContaining([
@@ -115,6 +121,7 @@ describe('PositionsEditor', () => {
         expect.objectContaining({ position_id: 5, is_primary: false }),
       ]),
     });
+
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });
 
@@ -127,9 +134,11 @@ describe('PositionsEditor', () => {
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByText('Centre-Back'));
     await user.click(screen.getByRole('button', { name: /^Add$/ }));
+
     expect(screen.getByText(/Unsaved changes/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Reset' }));
+
     expect(screen.queryByText(/Unsaved changes/)).not.toBeInTheDocument();
     expect(screen.queryByText('Centre-Back')).not.toBeInTheDocument();
   });

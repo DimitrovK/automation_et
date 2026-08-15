@@ -1,7 +1,7 @@
 import type { DurationResponse, DurationRow } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { DurationTable } from '@/components/reports/DurationTable';
+import { DurationTable } from '@/components/reports/panels/DurationTable';
 
 const META = {
   conquest: { key: 'conquest', label: 'Football Conquest Game Sessions', display_name: 'Football Conquest', color: '#38bdf8', color_dark: '#7dd3fc' },

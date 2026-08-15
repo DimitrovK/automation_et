@@ -1,8 +1,10 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import type { PositionsTracker } from '@/types/player';
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PositionCard } from '@/components/career-lookup/position-card';
-import type { PositionsTracker } from '@/types/player';
+
+import { FootballerAPI } from '@/lib/footballer-api';
 
 // Mock FootballerAPI
 vi.mock('@/lib/footballer-api', () => ({
@@ -11,8 +13,6 @@ vi.mock('@/lib/footballer-api', () => ({
     getPositions: vi.fn().mockResolvedValue([]),
   },
 }));
-
-import { FootballerAPI } from '@/lib/footballer-api';
 
 const mockSetPositions = vi.mocked(FootballerAPI.setPositions);
 const mockGetPositions = vi.mocked(FootballerAPI.getPositions);
@@ -41,7 +41,8 @@ describe('PositionCard', () => {
 
   it('renders nothing when no positionsTracker provided', () => {
     const { container } = render(<PositionCard />);
-    expect(container.firstChild).toBeNull();
+
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders selected positions from Wikipedia data', () => {
@@ -130,10 +131,17 @@ describe('PositionCard', () => {
 
     mockSetPositions.mockResolvedValue([
       {
-        id: 10, footballer_id: 42, footballer_name: 'Test',
-        position_id: 16, position_name: 'ST', position_full_name: 'Striker',
-        position_role: 'FWD', is_primary: true, sort_order: 0,
-        created_at: '', updated_at: '',
+        id: 10,
+        footballer_id: 42,
+        footballer_name: 'Test',
+        position_id: 16,
+        position_name: 'ST',
+        position_full_name: 'Striker',
+        position_role: 'FWD',
+        is_primary: true,
+        sort_order: 0,
+        created_at: '',
+        updated_at: '',
       },
     ]);
 

@@ -1,7 +1,7 @@
 import type { AnomaliesResponse } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AnomalyPanel } from '@/components/reports/AnomalyPanel';
+import { AnomalyPanel } from '@/components/reports/panels/AnomalyPanel';
 
 const META = { grid: { key: 'grid', label: 'Grid', color: '#10b981' } };
 

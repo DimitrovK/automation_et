@@ -1,6 +1,11 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { TeamsEditor } from '@/components/footballer-management/sub-editors/TeamsEditor';
+import { FootballerAPI } from '@/lib/footballer-api';
+import { TeamAPI } from '@/lib/team-api';
 
 vi.mock('@/lib/footballer-api', () => ({
   FootballerAPI: {
@@ -16,11 +21,6 @@ vi.mock('@/lib/team-api', () => ({
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
-
-import { TeamsEditor } from '@/components/footballer-management/sub-editors/TeamsEditor';
-import { FootballerAPI } from '@/lib/footballer-api';
-import { TeamAPI } from '@/lib/team-api';
-import { toast } from 'sonner';
 
 // `deep: true` because FootballerAPI is a class and these are its statics:
 // without it `vi.mocked` types the properties as the real functions, so
@@ -58,6 +58,7 @@ describe('TeamsEditor', () => {
     mockToast.success.mockReset();
     mockToast.error.mockReset();
   });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -66,6 +67,7 @@ describe('TeamsEditor', () => {
   it('renders the empty-state when no stints exist', async () => {
     api.getFootballerTeams.mockResolvedValueOnce([]);
     render(<TeamsEditor footballerId={42} />);
+
     expect(await screen.findByText(/No team stints yet/)).toBeInTheDocument();
   });
 
@@ -119,6 +121,7 @@ describe('TeamsEditor', () => {
     await user.click(screen.getByRole('button', { name: 'Add' }));
 
     await waitFor(() => expect(api.createFootballerTeam).toHaveBeenCalledTimes(1));
+
     expect(api.createFootballerTeam).toHaveBeenCalledWith(
       expect.objectContaining({
         footballer_id: 42,
@@ -130,6 +133,7 @@ describe('TeamsEditor', () => {
         transfer_type: 'permanent',
       }),
     );
+
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });
 
@@ -145,6 +149,7 @@ describe('TeamsEditor', () => {
     await user.click(within(row).getByLabelText('Delete AC Milan'));
 
     expect(confirmSpy).toHaveBeenCalled();
+
     await waitFor(() => expect(api.deleteFootballerTeam).toHaveBeenCalledWith(1));
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });

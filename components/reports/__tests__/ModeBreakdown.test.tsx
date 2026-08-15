@@ -2,7 +2,7 @@ import type { MultiplayerModeRow } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
+import { ModeBreakdown } from '@/components/reports/charts/ModeBreakdown';
 
 const META = {
   grid: { key: 'grid', label: 'Grid', color: '#10b981' },

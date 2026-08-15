@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { GameBadge } from '@/components/reports/GameBadge';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { gameName } from '@/hooks/use-game-meta';
 
 describe('gameName', () => {

@@ -1,7 +1,7 @@
 import type { PatternsResponse } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { GameHourProfile } from '@/components/reports/GameHourProfile';
+import { GameHourProfile } from '@/components/reports/charts/GameHourProfile';
 
 function hours(counts: Partial<Record<number, number>>) {
   return Array.from({ length: 24 }, (_, hour) => ({ hour, games_started: counts[hour] ?? 0 }));

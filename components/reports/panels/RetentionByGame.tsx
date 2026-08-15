@@ -2,8 +2,8 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { RetentionGameRow, RetentionResponse, RetentionSummaryCell } from '@/types/reports';
-import { GameBadge } from '@/components/reports/GameBadge';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 

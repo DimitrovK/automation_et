@@ -3,7 +3,7 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { GameTotals } from '@/types/reports';
 import { useMemo } from 'react';
-import { GameBadge } from '@/components/reports/GameBadge';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import { abandonedSessions, sessionsPerPoint } from '@/lib/abandoned';

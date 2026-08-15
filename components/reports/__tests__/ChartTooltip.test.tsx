@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
+import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
 
 const PAYLOAD = [
   { name: 'Finished', value: 20123, color: '#059669', dataKey: 'games_finished' },

@@ -4,7 +4,7 @@ import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { AnomaliesResponse } from '@/types/reports';
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, Check, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
-import { GameBadge } from '@/components/reports/GameBadge';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 

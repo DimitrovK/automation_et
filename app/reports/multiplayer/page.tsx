@@ -2,17 +2,17 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
-import { EmptyState } from '@/components/reports/EmptyState';
-import { ExportButton } from '@/components/reports/ExportButton';
-import { FilterBar } from '@/components/reports/FilterBar';
-import { GameBadge } from '@/components/reports/GameBadge';
-import { ModeBreakdown } from '@/components/reports/ModeBreakdown';
-import { MultiplayerFunnel } from '@/components/reports/MultiplayerFunnel';
-import { RangePicker } from '@/components/reports/RangePicker';
-import { ReportPanel } from '@/components/reports/ReportPanel';
-import { ReportsShell } from '@/components/reports/ReportsShell';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
-import { StatTile } from '@/components/reports/StatTile';
+import { ModeBreakdown } from '@/components/reports/charts/ModeBreakdown';
+import { FilterBar } from '@/components/reports/filters/FilterBar';
+import { RangePicker } from '@/components/reports/filters/RangePicker';
+import { MultiplayerFunnel } from '@/components/reports/panels/MultiplayerFunnel';
+import { EmptyState } from '@/components/reports/primitives/EmptyState';
+import { ExportButton } from '@/components/reports/primitives/ExportButton';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
+import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
+import { StatTile } from '@/components/reports/primitives/StatTile';
+import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { gameName, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';

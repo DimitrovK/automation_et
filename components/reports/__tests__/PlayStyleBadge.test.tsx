@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { PlayStyleBadge } from '@/components/reports/PlayStyleBadge';
+import { PlayStyleBadge } from '@/components/reports/primitives/PlayStyleBadge';
 
 describe('playStyleBadge', () => {
   it('exposes the breakdown to assistive tech, not only on hover', () => {

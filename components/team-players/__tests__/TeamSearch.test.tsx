@@ -2,12 +2,12 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TeamSearch } from '@/components/team-players/TeamSearch';
+import { TeamAPI } from '@/lib/team-api';
+
 vi.mock('@/lib/team-api', () => ({
   TeamAPI: { searchTeams: vi.fn() },
 }));
-
-import { TeamAPI } from '@/lib/team-api';
-import { TeamSearch } from '@/components/team-players/TeamSearch';
 
 const mockSearch = vi.mocked(TeamAPI.searchTeams);
 
@@ -50,7 +50,8 @@ describe('TeamSearch', () => {
     await user.type(screen.getByLabelText('Search team by name'), 'a');
 
     // Wait long enough that any debounce would have fired.
-    await new Promise((r) => setTimeout(r, 350));
+    await new Promise(r => setTimeout(r, 350));
+
     expect(mockSearch).not.toHaveBeenCalled();
   });
 
@@ -70,28 +71,32 @@ describe('TeamSearch', () => {
     // under load.
     await waitFor(() =>
       expect(screen.getByRole('option', { name: /AC Milan/ })).toHaveAttribute(
-        'aria-selected', 'true',
+        'aria-selected',
+        'true',
       ),
     );
 
     await user.keyboard('{ArrowDown}');
     await waitFor(() =>
       expect(screen.getByRole('option', { name: /Inter Milan/ })).toHaveAttribute(
-        'aria-selected', 'true',
+        'aria-selected',
+        'true',
       ),
     );
 
     await user.keyboard('{ArrowDown}{ArrowDown}'); // past the end → wraps to top
     await waitFor(() =>
       expect(screen.getByRole('option', { name: /AC Milan/ })).toHaveAttribute(
-        'aria-selected', 'true',
+        'aria-selected',
+        'true',
       ),
     );
 
     await user.keyboard('{ArrowUp}'); // wraps to bottom
     await waitFor(() =>
       expect(screen.getByRole('option', { name: /Ajax/ })).toHaveAttribute(
-        'aria-selected', 'true',
+        'aria-selected',
+        'true',
       ),
     );
   });
@@ -123,6 +128,7 @@ describe('TeamSearch', () => {
     await screen.findByRole('option', { name: /AC Milan/ });
 
     await user.keyboard('{Enter}');
+
     expect(onSelect).toHaveBeenCalledWith(1);
   });
 
@@ -150,6 +156,7 @@ describe('TeamSearch', () => {
     const row = await screen.findByRole('option', { name: /Ajax/ });
 
     await user.click(row);
+
     expect(onSelect).toHaveBeenCalledWith(3);
   });
 

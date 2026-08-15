@@ -2,10 +2,10 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { UnfinishedRow } from '@/types/reports';
-import { EmptyState } from '@/components/reports/EmptyState';
-import { GameBadge } from '@/components/reports/GameBadge';
-import { MetricInfo } from '@/components/reports/MetricInfo';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { EmptyState } from '@/components/reports/primitives/EmptyState';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
+import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { unfinishedBands } from '@/lib/unfinished-bands';
 

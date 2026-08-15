@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { UseReport } from '@/hooks/use-report';
-import { ReportError } from '@/components/reports/ReportError';
+import { ReportError } from '@/components/reports/primitives/ReportError';
 import { Skeleton } from '@/components/ui/skeleton';
 
 /**

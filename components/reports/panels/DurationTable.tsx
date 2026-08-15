@@ -3,11 +3,11 @@
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { DurationResponse } from '@/types/reports';
 import { Info } from 'lucide-react';
-import { DurationSpread } from '@/components/reports/DurationSpread';
-import { EmptyState } from '@/components/reports/EmptyState';
-import { ExportButton } from '@/components/reports/ExportButton';
-import { GameBadge } from '@/components/reports/GameBadge';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { DurationSpread } from '@/components/reports/charts/DurationSpread';
+import { EmptyState } from '@/components/reports/primitives/EmptyState';
+import { ExportButton } from '@/components/reports/primitives/ExportButton';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
+import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { gameName, useGameColor } from '@/hooks/use-game-meta';
 import { formatDuration } from '@/lib/format-duration';

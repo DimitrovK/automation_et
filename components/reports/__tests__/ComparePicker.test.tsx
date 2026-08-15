@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { ComparePicker } from '@/components/reports/ComparePicker';
+import { ComparePicker } from '@/components/reports/filters/ComparePicker';
 
 describe('comparePicker', () => {
   it('clears a named period when an offset is chosen', () => {

@@ -3,8 +3,8 @@
 import type { NewReturningRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ChartTooltip } from '@/components/reports/ChartTooltip';
-import { EmptyState } from '@/components/reports/EmptyState';
+import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
+import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
 

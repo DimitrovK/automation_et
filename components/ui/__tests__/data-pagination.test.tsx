@@ -10,7 +10,8 @@ describe('DataPagination', () => {
     const { container } = render(
       <DataPagination currentPage={1} totalPages={1} onPageChange={vi.fn()} />,
     );
-    expect(container.firstChild).toBeNull();
+
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders a single-line caption when there is one page and a count', () => {
@@ -23,6 +24,7 @@ describe('DataPagination', () => {
         onPageChange={vi.fn()}
       />,
     );
+
     expect(screen.getByText(/Showing 3 results/)).toBeInTheDocument();
   });
 
@@ -42,6 +44,7 @@ describe('DataPagination', () => {
     expect(screen.getByText('Showing 50 of 250 results')).toBeInTheDocument();
     // All pages 1..5 fit in the window — no ellipsis expected.
     expect(screen.queryByText('More pages')).not.toBeInTheDocument();
+
     for (const n of ['1', '2', '3', '4', '5']) {
       expect(screen.getByText(n, { selector: 'a' })).toBeInTheDocument();
     }
@@ -66,6 +69,7 @@ describe('DataPagination', () => {
       <DataPagination currentPage={3} totalPages={5} onPageChange={vi.fn()} hideCount />,
     );
     const active = screen.getByText('3', { selector: 'a' });
+
     expect(active).toHaveAttribute('aria-current', 'page');
   });
 
@@ -82,6 +86,7 @@ describe('DataPagination', () => {
     );
 
     await user.click(screen.getByText('3', { selector: 'a' }));
+
     expect(onPageChange).toHaveBeenCalledWith(3);
   });
 
@@ -98,6 +103,7 @@ describe('DataPagination', () => {
     );
 
     await user.click(screen.getByText('3', { selector: 'a' }));
+
     expect(onPageChange).not.toHaveBeenCalled();
   });
 
@@ -114,9 +120,11 @@ describe('DataPagination', () => {
     );
 
     await user.click(screen.getByLabelText('Go to next page'));
+
     expect(onPageChange).toHaveBeenLastCalledWith(4);
 
     await user.click(screen.getByLabelText('Go to previous page'));
+
     expect(onPageChange).toHaveBeenLastCalledWith(2);
   });
 
@@ -133,6 +141,7 @@ describe('DataPagination', () => {
       />,
     );
     await user.click(screen.getByLabelText('Go to previous page'));
+
     expect(onPageChange).not.toHaveBeenCalled();
 
     rerender(
@@ -144,6 +153,7 @@ describe('DataPagination', () => {
       />,
     );
     await user.click(screen.getByLabelText('Go to next page'));
+
     expect(onPageChange).not.toHaveBeenCalled();
   });
 
@@ -162,6 +172,7 @@ describe('DataPagination', () => {
 
     await user.click(screen.getByLabelText('Go to next page'));
     await user.click(screen.getByText('1', { selector: 'a' }));
+
     expect(onPageChange).not.toHaveBeenCalled();
   });
 });

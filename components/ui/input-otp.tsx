@@ -25,7 +25,7 @@ const InputOTPGroup = ({ ref, className, ...props }: React.ComponentPropsWithout
 InputOTPGroup.displayName = 'InputOTPGroup';
 
 const InputOTPSlot = ({ ref, index, className, ...props }: React.ComponentPropsWithoutRef<'div'> & { index: number } & { ref?: React.RefObject<React.ElementRef<'div'> | null> }) => {
-  const inputOTPContext = React.useContext(OTPInputContext);
+  const inputOTPContext = React.use(OTPInputContext);
   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index];
 
   return (

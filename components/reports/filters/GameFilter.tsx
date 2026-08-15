@@ -1,8 +1,8 @@
 'use client';
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
-import { FilterGroup } from '@/components/reports/FilterBar';
-import { GameBadge } from '@/components/reports/GameBadge';
+import { FilterGroup } from '@/components/reports/filters/FilterBar';
+import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { gameName } from '@/hooks/use-game-meta';
 
 /**

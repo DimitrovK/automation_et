@@ -1,7 +1,7 @@
 'use client';
 
 import type { MetricKey } from '@/types/reports';
-import { FilterGroup, Segmented } from '@/components/reports/FilterBar';
+import { FilterGroup, Segmented } from '@/components/reports/filters/FilterBar';
 import { cn } from '@/lib/utils';
 import { METRIC_OPTIONS } from '@/types/reports';
 

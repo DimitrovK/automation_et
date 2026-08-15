@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { BarChart3, BookOpen, Users } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { SectionNav } from '@/components/admin/SectionNav';
-import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING, REPORT_QUICK_LINKS } from '@/components/reports/ReportsNav';
+import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING, REPORT_QUICK_LINKS } from '@/components/reports/shell/ReportsNav';
 import { USER_HUB_NAV_GROUPS, USER_HUB_NAV_TRAILING } from '@/components/user-hub/UserHubShell';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/reports/players' }));

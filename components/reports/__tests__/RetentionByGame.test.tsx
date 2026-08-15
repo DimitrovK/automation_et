@@ -1,7 +1,7 @@
 import type { RetentionResponse } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { RetentionByGame } from '@/components/reports/RetentionByGame';
+import { RetentionByGame } from '@/components/reports/panels/RetentionByGame';
 
 const META = {
   scout: { key: 'scout', label: 'Scout Game Sessions', display_name: 'Scout', color: '#4338ca' },

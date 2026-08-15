@@ -1,7 +1,7 @@
 import type { ActivityDay } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { ActivityChart } from '@/components/reports/ActivityChart';
+import { ActivityChart } from '@/components/reports/charts/ActivityChart';
 
 function day(date: string, over: Partial<ActivityDay> = {}): ActivityDay {
   return {

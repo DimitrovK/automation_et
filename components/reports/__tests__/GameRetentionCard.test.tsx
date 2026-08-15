@@ -1,7 +1,7 @@
 import type { RetentionResponse } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { GameRetentionCard } from '@/components/reports/GameRetentionCard';
+import { GameRetentionCard } from '@/components/reports/panels/GameRetentionCard';
 
 function summaryCell(pct: number | null, players: number, below = false) {
   return { cohorts_measured: 4, players, returned: 0, pct, ...(below ? { below_threshold: true } : {}) };

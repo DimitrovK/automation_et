@@ -2,7 +2,7 @@
 
 import type { ActivityMetrics, Pulse, PulseMetric } from '@/types/reports';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { StatTile } from '@/components/reports/StatTile';
+import { StatTile } from '@/components/reports/primitives/StatTile';
 import { cn } from '@/lib/utils';
 
 /**

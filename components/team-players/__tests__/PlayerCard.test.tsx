@@ -1,8 +1,8 @@
+import type { TeamPlayerRow } from '@/types/team';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PlayerCard } from '@/components/team-players/PlayerCard';
-import type { TeamPlayerRow } from '@/types/team';
 
 function row(overrides: Partial<TeamPlayerRow> = {}): TeamPlayerRow {
   return {
@@ -29,6 +29,7 @@ describe('PlayerCard', () => {
 
   it('renders name, nation, year range, apps and goals for a player', () => {
     render(<PlayerCard player={row()} />);
+
     expect(screen.getByText('Cristiano Ronaldo')).toBeInTheDocument();
     expect(screen.getByText(/Portugal \(POR\)/)).toBeInTheDocument();
     expect(screen.getByText('2003 – 2009')).toBeInTheDocument();
@@ -39,21 +40,25 @@ describe('PlayerCard', () => {
 
   it('renders the footballer id under the name', () => {
     render(<PlayerCard player={row({ footballer_id: 1234 })} />);
+
     expect(screen.getByText('#1234')).toBeInTheDocument();
   });
 
   it('shows "present" when end_year is null (active stint)', () => {
     render(<PlayerCard player={row({ end_year: null })} />);
+
     expect(screen.getByText(/2003 – present/)).toBeInTheDocument();
   });
 
   it('marks retired players', () => {
     render(<PlayerCard player={row({ retired: true })} />);
+
     expect(screen.getByText(/retired/)).toBeInTheDocument();
   });
 
   it('hides apps/goals/transfer for managers', () => {
     render(<PlayerCard player={row({ role: 'manager' })} />);
+
     expect(screen.getByText('manager')).toBeInTheDocument();
     expect(screen.queryByText(/apps/)).not.toBeInTheDocument();
     expect(screen.queryByText(/goals/)).not.toBeInTheDocument();
@@ -62,6 +67,7 @@ describe('PlayerCard', () => {
 
   it('renders an em dash when both years are null', () => {
     render(<PlayerCard player={row({ start_year: null, end_year: null })} />);
+
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -69,6 +75,7 @@ describe('PlayerCard', () => {
 
   it('hides the edit button when no onEdit handler is supplied', () => {
     render(<PlayerCard player={row()} />);
+
     expect(screen.queryByRole('button', { name: /Edit/ })).not.toBeInTheDocument();
   });
 
@@ -78,9 +85,11 @@ describe('PlayerCard', () => {
     render(<PlayerCard player={row({ footballer_id: 4242 })} onEdit={onEdit} />);
 
     const button = screen.getByRole('button', { name: /Edit Cristiano Ronaldo/ });
+
     expect(button).toBeInTheDocument();
 
     await user.click(button);
+
     expect(onEdit).toHaveBeenCalledWith(4242);
     expect(onEdit).toHaveBeenCalledTimes(1);
   });

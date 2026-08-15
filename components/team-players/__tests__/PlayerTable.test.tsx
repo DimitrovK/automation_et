@@ -1,8 +1,8 @@
+import type { TeamPlayerRow } from '@/types/team';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PlayerTable } from '@/components/team-players/PlayerTable';
-import type { TeamPlayerRow } from '@/types/team';
 
 function row(overrides: Partial<TeamPlayerRow> = {}): TeamPlayerRow {
   return {
@@ -29,11 +29,13 @@ describe('PlayerTable', () => {
 
   it('shows an empty-state message when no players', () => {
     render(<PlayerTable players={[]} />);
+
     expect(screen.getByText(/No players match/)).toBeInTheDocument();
   });
 
   it('renders an ID column with the footballer id', () => {
     render(<PlayerTable players={[row({ footballer_id: 4242 })]} />);
+
     expect(screen.getByText('#4242')).toBeInTheDocument();
     expect(screen.getByText('ID')).toBeInTheDocument();
   });
@@ -60,6 +62,7 @@ describe('PlayerTable', () => {
 
   it('formats years for active stints', () => {
     render(<PlayerTable players={[row({ end_year: null })]} />);
+
     expect(screen.getByText(/1985 – present/)).toBeInTheDocument();
   });
 
@@ -70,6 +73,7 @@ describe('PlayerTable', () => {
       />,
     );
     const cells = screen.getAllByText('—');
+
     expect(cells.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -77,6 +81,7 @@ describe('PlayerTable', () => {
 
   it('does not render an actions column when onEdit is omitted', () => {
     render(<PlayerTable players={[row()]} />);
+
     expect(screen.queryByRole('button', { name: /Edit/ })).not.toBeInTheDocument();
   });
 
@@ -94,9 +99,11 @@ describe('PlayerTable', () => {
     );
 
     await user.click(screen.getByRole('button', { name: /Edit Cristiano Ronaldo/ }));
+
     expect(onEdit).toHaveBeenCalledWith(22);
 
     await user.click(screen.getByRole('button', { name: /Edit Paolo Maldini/ }));
+
     expect(onEdit).toHaveBeenLastCalledWith(11);
     expect(onEdit).toHaveBeenCalledTimes(2);
   });

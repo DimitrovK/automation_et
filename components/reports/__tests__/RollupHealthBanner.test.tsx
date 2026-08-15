@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { RollupHealthBanner } from '@/components/reports/RollupHealthBanner';
+import { RollupHealthBanner } from '@/components/reports/panels/RollupHealthBanner';
 import { ReportsAPI } from '@/lib/reports-api';
 
 function health(overrides = {}) {
