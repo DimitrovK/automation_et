@@ -3,9 +3,10 @@
 import type { RangeState } from '@/lib/report-range';
 import type { GameRowWithDuration, GameSortKey } from '@/lib/report-sort';
 import { ArrowDown, ArrowUp } from 'lucide-react';
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { AbandonedPanel } from '@/components/reports/AbandonedPanel';
+import { DurationHistogram } from '@/components/reports/DurationHistogram';
+import { DurationTable } from '@/components/reports/DurationTable';
 import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
 import { FilterBar } from '@/components/reports/FilterBar';
@@ -173,9 +174,11 @@ export default function GamesIndexPage() {
                     {rows.map((row: GameRowWithDuration) => (
                       <ReportRow key={row.game_type}>
                         <Td>
-                          <Link href={`/reports/games/${row.game_type}`}>
-                            <GameBadge gameKey={row.game_type} meta={meta} />
-                          </Link>
+                          <GameBadge
+                            gameKey={row.game_type}
+                            meta={meta}
+                            href={`/reports/games/${row.game_type}`}
+                          />
                         </Td>
                         <Td align="right" strong>
                           {row.games_started.toLocaleString()}
@@ -223,6 +226,22 @@ export default function GamesIndexPage() {
                 )}
               </CardContent>
             </Card>
+          </>
+        )}
+      </ReportPanel>
+
+      {/* Session length lived on its own page, which split one question in two:
+          the table above already carries a "Typical session" column from this
+          same request, so a reader comparing games had the ranking here and the
+          shape of it somewhere else. Its own panel, because the duration request
+          can fail or lag independently of the games one. */}
+      <ReportPanel state={duration} skeletonClassName="h-80 w-full">
+        {data => (
+          <>
+            <DurationTable data={data} meta={meta} />
+            {/* After the comparison, because "which game holds attention" comes
+                before "what does this one look like". */}
+            <DurationHistogram data={data} meta={meta} />
           </>
         )}
       </ReportPanel>

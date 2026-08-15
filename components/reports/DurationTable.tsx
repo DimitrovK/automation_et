@@ -39,7 +39,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
   const renderRows = (rows: typeof data.rows) => rows.map(row => (
     <ReportRow key={row.game_type}>
       <Td>
-        <GameBadge gameKey={row.game_type} meta={meta} />
+        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
       </Td>
       <Td>
         <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
     return (
       <ReportRow key={row.game_type} className="align-top">
         <Td>
-          <GameBadge gameKey={row.game_type} meta={meta} />
+          <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
         </Td>
         <Td strong>
           {formatDuration(row.median_seconds)}

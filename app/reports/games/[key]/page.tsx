@@ -94,9 +94,12 @@ export default function GameDetailPage() {
       description="Everything about one game: volume, completion, who plays it and how long they stay."
     >
       <div className="flex flex-wrap items-center gap-3">
+        {/* /reports is the Daily Pulse, not the games list — "All games" went to
+            the wrong page, which is easy to miss because both are plausible
+            destinations from here. */}
         <Link
-          href="/reports"
-          className="inline-flex items-center gap-1 text-sm text-emerald-700 hover:underline dark:text-emerald-400"
+          href="/reports/games"
+          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="size-4" />
           All games
@@ -201,7 +204,7 @@ export default function GameDetailPage() {
                     <Td>
                       <Link
                         href={`/reports/players/${player.user_id}`}
-                        className="font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+                        className="font-medium text-primary hover:underline"
                       >
                         {player.username}
                       </Link>

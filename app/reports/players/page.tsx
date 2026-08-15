@@ -223,7 +223,7 @@ export default function PlayersReportPage() {
                             to it, so the only way in was typing a URL. */}
                         <Link
                           href={`/reports/players/${player.user_id}`}
-                          className="text-emerald-700 hover:underline dark:text-emerald-400"
+                          className="text-primary hover:underline"
                         >
                           {player.username}
                         </Link>

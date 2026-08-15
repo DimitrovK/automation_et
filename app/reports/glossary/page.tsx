@@ -70,7 +70,7 @@ export default function GlossaryPage() {
                   {definition.related.map((key, index) => (
                     <span key={key}>
                       {index > 0 && ', '}
-                      <Link href={`#${key}`} className="text-emerald-700 hover:underline dark:text-emerald-400">
+                      <Link href={`#${key}`} className="text-primary hover:underline">
                         {byKey[key]?.label ?? key}
                       </Link>
                     </span>

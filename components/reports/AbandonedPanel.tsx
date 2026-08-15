@@ -66,7 +66,7 @@ export function AbandonedPanel({ rows, meta }: { rows: GameTotals[]; meta: GameM
           {abandoned.map(row => (
             <li key={row.game_type} className="flex flex-wrap items-center gap-3 text-sm">
               <span className="min-w-40 flex-1">
-                <GameBadge gameKey={row.game_type} meta={meta} />
+                <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
               </span>
               <span className="h-2 w-full max-w-64 overflow-hidden rounded-full bg-muted">
                 <span
