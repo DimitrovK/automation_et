@@ -26,6 +26,7 @@ const ROOT = process.cwd();
 const NOT_RENDERED: Record<string, string> = {
   grain: 'A reminder in the payload that multiplayer counts rooms; the card description says it in prose.',
   games_without_duration: 'Derived per row as `supported`, which DurationTable already groups by.',
+  games_with_difficulty: 'Derived per row as `difficulty_label`, which DifficultyOutcomes already keys its per-game breakdowns off.',
   games_without_progress: 'Derived per row as `supported`, which ProgressDropOff already lists with each reason.',
   total_abandoned: 'The games table above it carries abandonment per game and in total; a second total on the same page would be the same number twice.',
   long_lived_session_games: 'Derived per row as `single_sitting`, which DurationTable already groups by.',

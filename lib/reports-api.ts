@@ -1,6 +1,8 @@
 import type {
   ActivityResponse,
   AnomaliesResponse,
+  AttemptsResponse,
+  DifficultyResponse,
   DurationResponse,
   FirstSessionResponse,
   GamesResponse,
@@ -109,6 +111,16 @@ export class ReportsAPI {
    */
   static async getFirstSession(params?: ReportParams): Promise<FirstSessionResponse> {
     return apiFetcher<FirstSessionResponse>(`core/reporting/first-session/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/difficulty/ — completion and win rate by difficulty. */
+  static async getDifficulty(params?: ReportParams): Promise<DifficultyResponse> {
+    return apiFetcher<DifficultyResponse>(`core/reporting/difficulty/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/attempts/ — wrong attempts per session, banded. */
+  static async getAttempts(params?: ReportParams): Promise<AttemptsResponse> {
+    return apiFetcher<AttemptsResponse>(`core/reporting/attempts/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/progress/ — how far into a session players got. */
