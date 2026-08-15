@@ -767,3 +767,64 @@ export type GrowthResponse = {
     quick_ratio: number | null;
   };
 } & ResolvedRange;
+
+/**
+ * One game's content supply.
+ *
+ * Two shapes in one row, distinguished by `scheduled`. Scheduled games stage
+ * material against a calendar and report `runway_days`; pooled games have no
+ * calendar and report depth. Reading a pooled game's blank runway as "no runway"
+ * would be wrong — it has no calendar to have one against.
+ */
+export type ContentRow = {
+  game_type: string;
+  /** One item, singular: 'lineup', 'quiz', 'grid'. */
+  item: string;
+  scheduled: boolean;
+  total: number;
+  unused: number;
+  /** At their run cap and unusable. A cap of 0 means unlimited, not exhausted. */
+  exhausted: number;
+  usable: number;
+  /**
+   * Days until the last staged item goes live. NEGATIVE means the well ran dry
+   * that many days ago — not clamped, because "ran out today" and "ran out three
+   * weeks ago" decide different urgencies. `null` on pooled games.
+   */
+  runway_days: number | null;
+  staged_ahead: number | null;
+  last_staged: string | null;
+  /** Below the warning threshold, or dry. */
+  low: boolean;
+  /** Already out of staged content. Branch on this, not on the sign. */
+  dry: boolean;
+  /** A shrinking pool here is a broken job, not a content shortage. */
+  topped_up_by_a_job: boolean;
+};
+
+export type ContentResponse = {
+  as_of: string;
+  rows: ContentRow[];
+  warning_days: number;
+  games_running_low: string[];
+};
+
+/** One Conquest challenge type's answer-format fallbacks. */
+export type FallbackRow = {
+  challenge_type: string;
+  challenges: number;
+  multiple_choice: number;
+  fallbacks: number;
+  /** The denominator: succeeded plus fell back. Never all challenges. */
+  wanted_multiple_choice: number;
+  fallback_pct: number | null;
+  /** Written before the flag existed. Counted, never assumed non-fallback. */
+  unstamped: number;
+};
+
+export type FallbacksResponse = {
+  rows: FallbackRow[];
+  total_wanted_multiple_choice: number;
+  total_fallbacks: number;
+  total_unstamped: number;
+} & ResolvedRange;
