@@ -52,6 +52,16 @@ describe('unfinishedBands', () => {
     ]);
   });
 
+  it('does not call zero a week', () => {
+    // `0 % 168 === 0`, so the divisibility check alone labels a band starting at
+    // zero "0w". Not reachable from the current payload — the open-ended band
+    // starts at the last boundary — but the same shape as the bug above, and
+    // that one was also unreachable right up until a boundary moved.
+    const bands = unfinishedBands([{ from_hours: 0, to_hours: null, count: 3 }]);
+
+    expect(bands[0].label).toBe('over 0h');
+  });
+
   it('gives each band its own honest rounding', () => {
     const bands = unfinishedBands(BUCKETS);
 

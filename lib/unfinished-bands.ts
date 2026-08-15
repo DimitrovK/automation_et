@@ -31,6 +31,15 @@ export type UnfinishedBand = {
  * time one of them moved, in a band label nobody re-reads.
  */
 function hoursToWords(hours: number): string {
+  // Below a day there is no coarser unit to reach for, and this also settles
+  // zero: `0 % 168 === 0` is true, so without it a band starting at 0 would be
+  // labelled "0w". Not reachable from the current payload — the open-ended band
+  // starts at the last boundary, never at 0 — but it is the same shape of bug as
+  // the one this function was just fixed for, and "unreachable today" is what
+  // was said about that one too.
+  if (hours < 24) {
+    return `${hours}h`;
+  }
   if (hours % 168 === 0) {
     return `${hours / 168}w`;
   }
