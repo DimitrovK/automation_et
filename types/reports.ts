@@ -728,3 +728,42 @@ export type AttemptRow = {
 export type AttemptsResponse = {
   rows: AttemptRow[];
 } & ResolvedRange;
+
+/**
+ * One week of growth accounting.
+ *
+ * The four bands are exhaustive and do not overlap, which is what makes the flow
+ * add up: `active - previous_active === new + resurrected - churned` on every
+ * row. `churned` is POSITIVE — stacking it downward is the client's decision, so
+ * a chart that does not expect a negative never finds one.
+ */
+export type GrowthRow = {
+  /** Monday of the week, YYYY-MM-DD. */
+  week: string;
+  /** First session ever, not first in the window. */
+  new: number;
+  /** Active this week, not last week, but has played before. */
+  resurrected: number;
+  retained: number;
+  churned: number;
+  active: number;
+  previous_active: number;
+  net: number;
+  /** Gained over lost. `null` where nothing churned — not infinity. */
+  quick_ratio: number | null;
+  /** The week is still running, so its churn cannot be known yet. */
+  provisional: boolean;
+  week_covered: boolean;
+};
+
+export type GrowthResponse = {
+  rows: GrowthRow[];
+  bands: string[];
+  weeks_covered: number;
+  summary: {
+    new: number;
+    resurrected: number;
+    churned: number;
+    quick_ratio: number | null;
+  };
+} & ResolvedRange;
