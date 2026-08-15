@@ -1,7 +1,7 @@
 'use client';
 
 import type { NavGroup } from '@/components/admin/SectionNav';
-import { HelpCircle, Route } from 'lucide-react';
+import { HelpCircle, Route, Users } from 'lucide-react';
 
 /**
  * Analytics, which is not Reports and should not be folded into it.
@@ -13,7 +13,7 @@ import { HelpCircle, Route } from 'lucide-react';
  * weekly by whoever is deciding what to build, and this is read by whoever is
  * writing content, when they are writing it.
  *
- * Grouped rather than flat because three more are coming (App#1475) and a
+ * Grouped rather than flat because two more are coming (App#1475) and a
  * heading that appears later reorganises the section under someone who had
  * learned where things were.
  */
@@ -23,6 +23,7 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/analytics/career-path', label: 'Career Path', icon: Route },
       { href: '/analytics/questions', label: 'Quiz questions', icon: HelpCircle },
+      { href: '/analytics/lineups', label: 'Lineups', icon: Users },
     ],
   },
 ];

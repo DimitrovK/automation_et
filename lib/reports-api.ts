@@ -11,6 +11,7 @@ import type {
   GamesResponse,
   GlossaryResponse,
   GrowthResponse,
+  LineupsAnalyticsResponse,
   MultiplayerResponse,
   PatternsResponse,
   PlayerDetailResponse,
@@ -132,6 +133,11 @@ export class ReportsAPI {
   /** GET /core/analytics/questions/ — question quality and answer distribution. */
   static async getQuestionsAnalytics(params?: ReportParams): Promise<QuestionsAnalyticsResponse> {
     return apiFetcher<QuestionsAnalyticsResponse>(`core/analytics/questions/${buildQuery(params)}`);
+  }
+
+  /** GET /core/analytics/lineups/ — Missing11 slot and lineup difficulty. */
+  static async getLineupsAnalytics(params?: ReportParams): Promise<LineupsAnalyticsResponse> {
+    return apiFetcher<LineupsAnalyticsResponse>(`core/analytics/lineups/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */
