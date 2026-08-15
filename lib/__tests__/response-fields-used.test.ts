@@ -26,6 +26,8 @@ const ROOT = process.cwd();
 const NOT_RENDERED: Record<string, string> = {
   grain: 'A reminder in the payload that multiplayer counts rooms; the card description says it in prose.',
   games_without_duration: 'Derived per row as `supported`, which DurationTable already groups by.',
+  games_without_progress: 'Derived per row as `supported`, which ProgressDropOff already lists with each reason.',
+  total_abandoned: 'The games table above it carries abandonment per game and in total; a second total on the same page would be the same number twice.',
   long_lived_session_games: 'Derived per row as `single_sitting`, which DurationTable already groups by.',
   window_totals: 'The comparison tiles render the same window from `comparison`, with movement attached.',
   // #1474 R4 removed the Patterns page: play-by-hour and play-by-weekday move

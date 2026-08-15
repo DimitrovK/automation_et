@@ -594,3 +594,53 @@ export type AnomaliesResponse = {
   coverage: { complete: boolean; missing_days: string[] };
   findings: AnomalyFinding[];
 } & ResolvedRange;
+
+/** One band of "how far did they get", as a share of the session's own length. */
+export type ProgressBand = {
+  /** `none`, `under_25` … `under_100`, `complete`. */
+  key: string;
+  from_pct: number;
+  /** `null` on `complete`, which has no ceiling above it. */
+  to_pct: number | null;
+  count: number;
+  pct: number;
+};
+
+/**
+ * How far into a session players got, for one game.
+ *
+ * Both shapes are present because either alone reads wrong: 44% of abandoned
+ * Missing11 sessions made zero progress, which is an indictment of the game
+ * until `finished_no_progress_pct` shows 3.6% of finished ones did the same.
+ *
+ * `supported: false` carries a `reason` and empty bands. Eight of the eleven
+ * games are in that state, each for a different cause — a length that changes
+ * with the mode, a length the map decides, or a game where guesses count
+ * against the player — so the reason is printed rather than summarised.
+ */
+export type ProgressRow = {
+  game_type: string;
+  supported: boolean;
+  reason: string | null;
+  /** What is counted, plural and qualified: 'lineup slots filled'. Printed verbatim. */
+  unit: string | null;
+  /**
+   * Opened and never started. Counted rather than filtered out: the games
+   * disagree on when the flag is set, and excluding these would report Grid's
+   * drop-off at a seventh of its real size.
+   */
+  never_started: number;
+  sessions: number;
+  abandoned: number;
+  finished: number;
+  abandoned_bands: ProgressBand[];
+  finished_bands: ProgressBand[];
+  abandoned_no_progress_pct: number | null;
+  finished_no_progress_pct: number | null;
+};
+
+export type ProgressResponse = {
+  rows: ProgressRow[];
+  games_without_progress: string[];
+  total_abandoned: number;
+} & ResolvedRange;

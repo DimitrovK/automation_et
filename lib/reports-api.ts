@@ -8,6 +8,7 @@ import type {
   MultiplayerResponse,
   PatternsResponse,
   PlayerDetailResponse,
+  ProgressResponse,
   ReportParams,
   RetentionResponse,
   RollupHealth,
@@ -108,6 +109,11 @@ export class ReportsAPI {
    */
   static async getFirstSession(params?: ReportParams): Promise<FirstSessionResponse> {
     return apiFetcher<FirstSessionResponse>(`core/reporting/first-session/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/progress/ — how far into a session players got. */
+  static async getProgress(params?: ReportParams): Promise<ProgressResponse> {
+    return apiFetcher<ProgressResponse>(`core/reporting/progress/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/patterns/ — when people play + new vs returning. */
