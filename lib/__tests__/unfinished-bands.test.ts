@@ -30,6 +30,38 @@ describe('unfinishedBands', () => {
     expect(moved.map(band => band.label)).toEqual(['under 2h', '2h–2d']);
   });
 
+  it('only uses a coarser unit when the boundary divides into it exactly', () => {
+    // The label has to stay a boundary. Dividing by 24 whenever the count merely
+    // reaches it turned a 25-hour edge into "1.0416666666666667d" — invisible
+    // today because 1/24/168 all divide cleanly, and waiting for the first time
+    // one of them moved.
+    const bands = unfinishedBands([
+      { from_hours: 0, to_hours: 25, count: 1 },
+      { from_hours: 25, to_hours: 36, count: 1 },
+      { from_hours: 36, to_hours: 48, count: 1 },
+      { from_hours: 48, to_hours: 336, count: 1 },
+      { from_hours: 336, to_hours: null, count: 1 },
+    ]);
+
+    expect(bands.map(band => band.label)).toEqual([
+      'under 25h',
+      '25h–36h',
+      '36h–2d',
+      '2d–2w',
+      'over 2w',
+    ]);
+  });
+
+  it('does not call zero a week', () => {
+    // `0 % 168 === 0`, so the divisibility check alone labels a band starting at
+    // zero "0w". Not reachable from the current payload — the open-ended band
+    // starts at the last boundary — but the same shape as the bug above, and
+    // that one was also unreachable right up until a boundary moved.
+    const bands = unfinishedBands([{ from_hours: 0, to_hours: null, count: 3 }]);
+
+    expect(bands[0].label).toBe('over 0h');
+  });
+
   it('gives each band its own honest rounding', () => {
     const bands = unfinishedBands(BUCKETS);
 

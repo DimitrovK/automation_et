@@ -21,14 +21,33 @@ export type UnfinishedBand = {
   pct: number;
 };
 
-/** "2h", "3d", "1w" — the coarsest unit that still reads exactly. */
+/**
+ * "2h", "3d", "1w" — the coarsest unit that still reads EXACTLY.
+ *
+ * Divisibility is the whole condition. Dividing by 24 whenever the count merely
+ * reaches 24 turns a 25-hour boundary into "1.0416666666666667d" — the label
+ * stops being a boundary and becomes a float. Today's boundaries (1, 24, 168)
+ * all divide cleanly, so this was invisible; it would have surfaced the first
+ * time one of them moved, in a band label nobody re-reads.
+ */
 function hoursToWords(hours: number): string {
+  // Below a day there is no coarser unit to reach for, and this also settles
+  // zero: `0 % 168 === 0` is true, so without it a band starting at 0 would be
+  // labelled "0w". Not reachable from the current payload — the open-ended band
+  // starts at the last boundary, never at 0 — but it is the same shape of bug as
+  // the one this function was just fixed for, and "unreachable today" is what
+  // was said about that one too.
   if (hours < 24) {
     return `${hours}h`;
   }
-  const days = hours / 24;
+  if (hours % 168 === 0) {
+    return `${hours / 168}w`;
+  }
+  if (hours % 24 === 0) {
+    return `${hours / 24}d`;
+  }
 
-  return days % 7 === 0 ? `${days / 7}w` : `${days}d`;
+  return `${hours}h`;
 }
 
 export function unfinishedBands(buckets: UnfinishedBucket[]): UnfinishedBand[] {
