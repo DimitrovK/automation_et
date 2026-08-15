@@ -1089,3 +1089,35 @@ export type LineupsAnalyticsResponse = {
     lineups_measured: number;
   };
 } & ResolvedRange;
+
+/**
+ * One completeness check on the football data.
+ *
+ * `served_missing` and `unserved_missing` are never averaged: a gap in a row
+ * nothing serves costs nothing, and one percentage across both is true of
+ * neither population.
+ */
+export type CoverageCheck = {
+  key: string;
+  label: string;
+  /** What breaks without it — the gaps are not equivalent. */
+  breaks: string;
+  served_missing: number;
+  served_missing_pct: number | null;
+  unserved_missing: number;
+};
+
+export type CoverageResponse = {
+  checks: CoverageCheck[];
+  /** Footballers put in front of a real player in the window. */
+  served: number;
+  /** In the bank, never served. Their gaps cost nothing today. */
+  unserved: number;
+  by_difficulty: {
+    difficulty: string | null;
+    served: number;
+    picture: number;
+    club: number;
+    nation: number;
+  }[];
+} & ResolvedRange;

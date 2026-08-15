@@ -4,6 +4,7 @@ import type {
   AttemptsResponse,
   CareerPathAnalyticsResponse,
   ContentResponse,
+  CoverageResponse,
   DifficultyResponse,
   DurationResponse,
   FallbacksResponse,
@@ -138,6 +139,11 @@ export class ReportsAPI {
   /** GET /core/analytics/lineups/ — Missing11 slot and lineup difficulty. */
   static async getLineupsAnalytics(params?: ReportParams): Promise<LineupsAnalyticsResponse> {
     return apiFetcher<LineupsAnalyticsResponse>(`core/analytics/lineups/${buildQuery(params)}`);
+  }
+
+  /** GET /core/analytics/football-data/ — data completeness where it is used. */
+  static async getCoverage(params?: ReportParams): Promise<CoverageResponse> {
+    return apiFetcher<CoverageResponse>(`core/analytics/football-data/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */
