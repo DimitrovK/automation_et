@@ -15,7 +15,8 @@ import { chartTheme } from '@/lib/chart-theme';
  * Horizontal bars because the mode names are long and there are seven of them —
  * vertical ticks would be rotated or truncated, and a mode nobody can read is a
  * bar nobody can act on. Sorted by solve rate rather than volume: the question
- * is which mode is hardest, and volume is already the label on each bar.
+ * is which mode is hardest, and the volume rides on the bar label beside the
+ * rate so neither is read without the other.
  *
  * One measure per chart. Solve rate and help rate live on different scales
  * (70-ish% against 2-ish%) and putting both on one axis would flatten the
@@ -30,16 +31,29 @@ export function ModeRates({ data }: { data: CareerPathAnalyticsResponse }) {
   const { resolvedTheme } = useTheme();
   const theme = chartTheme(resolvedTheme === 'dark');
 
-  const rows = data.shape.modes
-    .filter(mode => mode.appearances >= MIN_APPEARANCES && mode.solve_rate_pct !== null)
+  const label = (mode: string) => mode.replaceAll('_', ' ').toLowerCase();
+  const plotted = data.shape.modes.filter(
+    mode => mode.appearances >= MIN_APPEARANCES && mode.solve_rate_pct !== null,
+  );
+  const rows = plotted
     .map(mode => ({
-      mode: mode.mode.replaceAll('_', ' ').toLowerCase(),
+      mode: label(mode.mode),
       solve_rate_pct: mode.solve_rate_pct,
       appearances: mode.appearances,
     }))
     .sort((a, b) => (b.solve_rate_pct ?? 0) - (a.solve_rate_pct ?? 0));
 
-  const withheld = data.shape.modes.length - rows.length;
+  // Tracked explicitly rather than derived as "total minus plotted" (Copilot on
+  // #127). Two different reasons drop a mode — too few appearances, or no rate
+  // at all — and a single subtracted count would attribute both to the first.
+  // Naming them matters more than counting them: a bar that is simply absent is
+  // ambiguous, and the reader cannot tell which mode they are missing.
+  const thin = data.shape.modes
+    .filter(mode => mode.solve_rate_pct !== null && mode.appearances < MIN_APPEARANCES)
+    .map(mode => label(mode.mode));
+  const unrated = data.shape.modes
+    .filter(mode => mode.solve_rate_pct === null)
+    .map(mode => label(mode.mode));
 
   return (
     <Card>
@@ -66,13 +80,17 @@ export function ModeRates({ data }: { data: CareerPathAnalyticsResponse }) {
                     <YAxis type="category" dataKey="mode" tick={theme.tick} width={104} />
                     <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
                     <Bar dataKey="solve_rate_pct" name="Solved" fill={theme.series[1]} radius={[0, 4, 4, 0]}>
-                      {/* The rate on the bar, so the chart is readable without
-                          hovering — this is a seven-row comparison, not an
-                          exploration. */}
+                      {/* Rate AND volume on the bar, so the chart is readable
+                          without hovering and a rate is never read without the
+                          count behind it — this page withholds rates under a
+                          threshold precisely because that pairing matters. */}
                       <LabelList
-                        dataKey="solve_rate_pct"
+                        dataKey="mode"
                         position="right"
-                        formatter={(value: React.ReactNode) => `${value}%`}
+                        content={({ index }) => {
+                          const row = rows[Number(index)];
+                          return row ? `${row.solve_rate_pct}%  ·  ${row.appearances.toLocaleString()}` : null;
+                        }}
                         className="fill-muted-foreground text-xs"
                       />
                     </Bar>
@@ -81,11 +99,18 @@ export function ModeRates({ data }: { data: CareerPathAnalyticsResponse }) {
               )}
         </div>
 
-        {withheld > 0 && (
-          // Named rather than silently dropped: a mode missing from a chart
-          // reads as a mode nobody plays, which is a different fact.
+        {thin.length > 0 && (
           <p className="text-xs text-muted-foreground">
-            {`${withheld} ${withheld === 1 ? 'mode is' : 'modes are'} left out — under ${MIN_APPEARANCES} appearances, a rate swings on a handful of guesses.`}
+            {`Left out under ${MIN_APPEARANCES} appearances, where a rate swings on a handful of guesses: ${thin.join(', ')}.`}
+          </p>
+        )}
+
+        {unrated.length > 0 && (
+          // A separate line, because "too few to rate" and "nothing to rate at
+          // all" are different answers and one message for both would pick the
+          // wrong one for somebody.
+          <p className="text-xs text-muted-foreground">
+            {`No appearances to rate at all: ${unrated.join(', ')}.`}
           </p>
         )}
       </CardContent>

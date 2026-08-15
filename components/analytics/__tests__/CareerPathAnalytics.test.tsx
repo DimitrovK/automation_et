@@ -178,6 +178,32 @@ describe('similar footballers', () => {
     expect(screen.getByText(/4,612 appearances could never show it/)).toBeInTheDocument();
   });
 
+  it('says nothing rather than "null%" when a rate is missing', () => {
+    // `reached_pct` and `solved_after_pct` are nullable independently of
+    // `reached`, so gating on the count alone leaked "null%" into the sentence
+    // (Copilot on #127).
+    render(
+      <DifficultyTiers
+        data={response({
+          shape: {
+            ...response().shape,
+            similar_footballers: {
+              recorded: false,
+              reached: 42,
+              ineligible: 0,
+              reached_pct: null,
+              solved_after_pct: null,
+              solved_without_pct: null,
+            },
+          },
+        })}
+      />,
+    );
+
+    expect(screen.queryByText(/null%/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Derived, not recorded/)).not.toBeInTheDocument();
+  });
+
   it('says nothing when the grid was never reached', () => {
     render(
       <DifficultyTiers

@@ -97,7 +97,9 @@ export function DifficultyTiers({ data }: { data: CareerPathAnalyticsResponse })
             controlled trial — and the comparison is the finding. The grid
             recovers about two thirds of the attempts that reach it; the hint
             text recovers about a third. */}
-        {data.shape.similar_footballers.reached > 0 && (
+        {data.shape.similar_footballers.reached > 0
+          && data.shape.similar_footballers.reached_pct !== null
+          && data.shape.similar_footballers.solved_after_pct !== null && (
           <div className="space-y-1.5 border-t pt-4">
             <p className="flex items-center gap-2 text-sm font-medium">
               Does the similar-footballers grid help

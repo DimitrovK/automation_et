@@ -28,11 +28,26 @@ const RARE = { mode: 'RACE', paths: 2, appearances: 12, solve_rate_pct: 58.7, he
 describe('modeRates', () => {
   it('names the modes it left out rather than dropping them silently', () => {
     // A mode missing from a chart reads as a mode nobody plays, which is a
-    // different fact from one nobody has played enough to rate.
+    // different fact from one nobody has played enough to rate. A count alone
+    // does not resolve it either — the reader cannot tell WHICH bar is missing
+    // (Copilot on #127).
     render(<ModeRates data={data([SINGLE, RARE])} />);
 
-    expect(screen.getByText(/1 mode is left out/)).toBeInTheDocument();
+    expect(screen.getByText(/race/)).toBeInTheDocument();
     expect(screen.getByText(/under 30 appearances/)).toBeInTheDocument();
+  });
+
+  it('separates "too few to rate" from "nothing to rate at all"', () => {
+    // Two different reasons drop a mode, and one message for both picks the
+    // wrong one for somebody.
+    render(
+      <ModeRates
+        data={data([SINGLE, RARE, { mode: 'SUDDEN_DEATH', paths: 0, appearances: 0, solve_rate_pct: null, help_rate_pct: null }])}
+      />,
+    );
+
+    expect(screen.getByText(/under 30 appearances.*race/)).toBeInTheDocument();
+    expect(screen.getByText(/No appearances to rate at all: sudden death/)).toBeInTheDocument();
   });
 
   it('says nothing about omissions when every mode qualifies', () => {
