@@ -957,3 +957,53 @@ export type CareerPathAnalyticsResponse = {
     };
   };
 } & ResolvedRange;
+
+/** One option of a quiz question, with how often it was chosen. */
+export type QuestionOption = {
+  option: number;
+  count: number;
+  /** Share of DELIBERATE answers. Null when nobody answered without timing out. */
+  pct: number | null;
+  is_correct: boolean;
+};
+
+/**
+ * One question's quality.
+ *
+ * `beaten_by_a_wrong_answer` is the finding: a wrong option chosen decisively
+ * more often than the keyed one. Decisively, not merely — any margin flags 86
+ * questions on real data and most are near-ties; two sigma flags 8.
+ */
+export type QuestionRow = {
+  question_id: number;
+  text: string;
+  difficulty: string | null;
+  correct_answer: number;
+  /** Every answer, including timed-out ones. */
+  asked: number;
+  /** Deliberate answers — the denominator for every share below. */
+  answered: number;
+  timeouts: number;
+  timeout_pct: number | null;
+  options: QuestionOption[];
+  correct_pct: number | null;
+  top_wrong_option: number | null;
+  top_wrong_pct: number | null;
+  beaten_by_a_wrong_answer: boolean;
+};
+
+export type QuestionsAnalyticsResponse = {
+  quality: {
+    rows: QuestionRow[];
+    min_answers: number;
+    questions_measured: number;
+    beaten_by_a_wrong_answer: number;
+  };
+  shape: {
+    difficulty: { difficulty: string | null; answered: number; correct_pct: number | null; timeouts: number }[];
+    questions_served: number;
+    questions_in_bank: number;
+    /** Whether "we need more questions" is true. Currently 98.6%, so it is not. */
+    bank_used_pct: number | null;
+  };
+} & ResolvedRange;

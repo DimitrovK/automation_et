@@ -15,6 +15,7 @@ import type {
   PatternsResponse,
   PlayerDetailResponse,
   ProgressResponse,
+  QuestionsAnalyticsResponse,
   ReportParams,
   RetentionResponse,
   RollupHealth,
@@ -126,6 +127,11 @@ export class ReportsAPI {
    */
   static async getCareerPathAnalytics(params?: ReportParams): Promise<CareerPathAnalyticsResponse> {
     return apiFetcher<CareerPathAnalyticsResponse>(`core/analytics/career-path/${buildQuery(params)}`);
+  }
+
+  /** GET /core/analytics/questions/ — question quality and answer distribution. */
+  static async getQuestionsAnalytics(params?: ReportParams): Promise<QuestionsAnalyticsResponse> {
+    return apiFetcher<QuestionsAnalyticsResponse>(`core/analytics/questions/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */
