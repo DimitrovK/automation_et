@@ -101,6 +101,29 @@ describe('questionQuality', () => {
     expect(screen.getByText('33.3% ran out of time')).toBeInTheDocument();
   });
 
+  it('shows a count rather than "null%" when every answer timed out', () => {
+    // No deliberate answers means no share to state, and `null%` is worse than
+    // the raw number (Copilot on #128).
+    render(
+      <QuestionQuality
+        data={response([question({
+          question_id: 4,
+          text: 'All timed out',
+          answered: 0,
+          timeouts: 31,
+          timeout_pct: null,
+          options: options([0, 0, 0, 0], 1),
+          correct_pct: null,
+          top_wrong_pct: null,
+          beaten_by_a_wrong_answer: false,
+        })])}
+      />,
+    );
+
+    expect(screen.getByText('31 ran out of time')).toBeInTheDocument();
+    expect(screen.queryByText(/null%/)).not.toBeInTheDocument();
+  });
+
   it('leads with how many need a look', () => {
     render(<QuestionQuality data={response([question({ question_id: 1, text: 'Q' })])} />);
 

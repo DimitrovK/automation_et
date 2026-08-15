@@ -131,7 +131,13 @@ export function QuestionQuality({ data }: { data: QuestionsAnalyticsResponse }) 
                           out often may simply be too long to read. */}
                       {row.timeouts > 0 && (
                         <span title="Answers submitted when the clock ran out — not counted as choices above">
-                          {`${row.timeout_pct}% ran out of time`}
+                          {/* The count when the share is missing: a question
+                              where EVERY answer timed out has no deliberate
+                              denominator, and `null%` is worse than a raw
+                              number (Copilot on #128). */}
+                          {row.timeout_pct === null
+                            ? `${row.timeouts.toLocaleString()} ran out of time`
+                            : `${row.timeout_pct}% ran out of time`}
                         </span>
                       )}
                     </p>
