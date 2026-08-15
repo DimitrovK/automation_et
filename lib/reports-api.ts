@@ -2,6 +2,7 @@ import type {
   ActivityResponse,
   AnomaliesResponse,
   AttemptsResponse,
+  CareerPathAnalyticsResponse,
   ContentResponse,
   DifficultyResponse,
   DurationResponse,
@@ -114,6 +115,17 @@ export class ReportsAPI {
    */
   static async getFirstSession(params?: ReportParams): Promise<FirstSessionResponse> {
     return apiFetcher<FirstSessionResponse>(`core/reporting/first-session/${buildQuery(params)}`);
+  }
+
+  /**
+   * GET /core/analytics/career-path/ — content quality, not player behaviour.
+   *
+   * A different surface from the reporting endpoints above and deliberately so:
+   * those answer "how are players behaving", this answers "is the material any
+   * good". Same admin gate and the same range parsing.
+   */
+  static async getCareerPathAnalytics(params?: ReportParams): Promise<CareerPathAnalyticsResponse> {
+    return apiFetcher<CareerPathAnalyticsResponse>(`core/analytics/career-path/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */
