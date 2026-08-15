@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { EmptyState } from '@/components/reports/EmptyState';
 import { GameBadge } from '@/components/reports/GameBadge';
+import { MetricInfo } from '@/components/reports/MetricInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
 import { cn } from '@/lib/utils';
@@ -142,19 +143,28 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
 
               {isOpen && (
                 <dl className="grid grid-cols-2 gap-3 border-t px-4 py-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
-                  {[
-                    ['Started', row.games_started.toLocaleString()],
-                    ['Finished', row.games_finished.toLocaleString()],
-                    ['Players', row.distinct_players.toLocaleString()],
-                    ['Sessions / player', row.sessions_per_player ?? '—'],
-                    ['Multiplayer', row.mp_player_sessions.toLocaleString()],
-                    ['Solo', (row.games_started - row.mp_player_sessions).toLocaleString()],
-                    ['Repeat players', row.repeat_players.toLocaleString()],
-                    ['Share of platform', rate(row.share_pct)],
-                    ['Previous window', row.previous_games_started.toLocaleString()],
-                  ].map(([label, value]) => (
-                    <div key={label as string}>
-                      <dt className="text-xs text-muted-foreground">{label}</dt>
+                  {/* The third element is a glossary key. Players and
+                      sessions-per-player carry one because both deliberately
+                      leave anonymous play out — every anonymous session belongs
+                      to one shared account, so counting it would read hundreds
+                      of people as one. That is not inferable from the figure,
+                      and it is why the number is lower than a reader expects. */}
+                  {([
+                    ['Started', row.games_started.toLocaleString(), 'games_started'],
+                    ['Finished', row.games_finished.toLocaleString(), 'games_finished'],
+                    ['Players', row.distinct_players.toLocaleString(), 'distinct_players'],
+                    ['Sessions / player', row.sessions_per_player ?? '—', 'sessions_per_player'],
+                    ['Multiplayer', row.mp_player_sessions.toLocaleString(), 'mp_sessions'],
+                    ['Solo', (row.games_started - row.mp_player_sessions).toLocaleString(), undefined],
+                    ['Repeat players', row.repeat_players.toLocaleString(), 'repeat_rate_pct'],
+                    ['Share of platform', rate(row.share_pct), 'share_pct'],
+                    ['Previous window', row.previous_games_started.toLocaleString(), undefined],
+                  ] as [string, string | number, string | undefined][]).map(([label, value, glossaryKey]) => (
+                    <div key={label}>
+                      <dt className="flex items-center gap-1 text-xs text-muted-foreground">
+                        {label}
+                        {glossaryKey && <MetricInfo metric={glossaryKey} />}
+                      </dt>
                       <dd className="font-medium tabular-nums text-foreground">{value}</dd>
                     </div>
                   ))}
