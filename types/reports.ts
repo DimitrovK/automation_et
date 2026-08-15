@@ -487,6 +487,58 @@ export type DurationResponse = {
   rows: DurationRow[];
 } & ResolvedRange;
 
+/**
+ * One age band of a game's unfinished pool.
+ *
+ * Both bounds, not one. `to_hours` alone read as "under 24h" while meaning
+ * "1-24h" — the youngest band is reported separately, so every edge above it is
+ * a floor as well as a ceiling. A single bound produces overlapping bands that
+ * each look correct alone, which is worse than an error.
+ */
+export type UnfinishedBucket = {
+  from_hours: number;
+  /** `null` on the open-ended top band. */
+  to_hours: number | null;
+  count: number;
+};
+
+export type UnfinishedRow = {
+  game_type: string;
+  unfinished: number;
+  /**
+   * Started within the last hour. Reported apart from the stale pool, never
+   * folded into it: nothing distinguishes a session opened five minutes ago and
+   * still being played from one walked away from, so counting it as abandonment
+   * would report every game as worst during its own peak.
+   */
+  recent_sessions: number;
+  stale_sessions: number;
+  buckets: UnfinishedBucket[];
+  /**
+   * Hours of idleness after which this game's sweeper closes a session, or
+   * `null` where it has none. A swept game CANNOT accumulate an old pool, so its
+   * total is not comparable with one that never sweeps — rank without this and
+   * the swept game reads as the healthiest on the platform.
+   */
+  sweeper_hours: number | null;
+};
+
+/**
+ * A snapshot of what is unfinished right now — deliberately NOT range filtered.
+ *
+ * The abandonment figure on the games report is arithmetic over a window
+ * (`games_started - games_finished`), which answers a different question and
+ * counts a session started minutes ago as abandoned. A window on this one would
+ * not merely be unused, it would be meaningless, so there is no `ResolvedRange`.
+ */
+export type UnfinishedResponse = {
+  as_of: string;
+  include_bots: boolean;
+  rows: UnfinishedRow[];
+  total_unfinished: number;
+  total_stale_sessions: number;
+};
+
 export type AnomalyFinding = {
   scope: 'platform' | 'game';
   game_type: string | null;

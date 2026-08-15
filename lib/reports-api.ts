@@ -12,6 +12,7 @@ import type {
   RollupHealth,
   SummaryResponse,
   TopPlayersResponse,
+  UnfinishedResponse,
 } from '@/types/reports';
 import { apiFetcher } from '@/lib/api-fetcher';
 
@@ -82,6 +83,22 @@ export class ReportsAPI {
   /** GET /core/reporting/duration/ — median session length per game. */
   static async getDuration(params?: ReportParams): Promise<DurationResponse> {
     return apiFetcher<DurationResponse>(`core/reporting/duration/${buildQuery(params)}`);
+  }
+
+  /**
+   * GET /core/reporting/unfinished/ — what is sitting unfinished right now.
+   *
+   * Takes a plain flag rather than `ReportParams`, and that is load-bearing: it
+   * is a snapshot of state, so there is no range to pass and none to echo back.
+   * `reports.guard.ts` treats any method accepting `ReportParams` as
+   * range-filtered and requires the full echo — correctly — so a params object
+   * here would either fail the guard or need an exemption for an endpoint that
+   * was never range-filtered in the first place.
+   */
+  static async getUnfinished(includeBots = false): Promise<UnfinishedResponse> {
+    return apiFetcher<UnfinishedResponse>(
+      `core/reporting/unfinished/${buildQuery({ include_bots: includeBots })}`,
+    );
   }
 
   /** GET /core/reporting/patterns/ — when people play + new vs returning. */

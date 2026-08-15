@@ -1,12 +1,12 @@
 'use client';
 
 import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
-import { BarChart3, BookOpen, Clock, Gamepad2, LayoutGrid, Repeat, Star, Timer, TriangleAlert, Users } from 'lucide-react';
+import { BarChart3, BookOpen, Clock, Gamepad2, Hourglass, LayoutGrid, Repeat, Star, Timer, TriangleAlert, Users } from 'lucide-react';
 
 /**
  * Reports, grouped by the question each page answers.
  *
- * Ten flat destinations read as a wall of equally-weighted choices — you have
+ * Eleven flat destinations read as a wall of equally-weighted choices — you have
  * to already know the names to find anything. These three headings are the
  * actual shape of the section: how is the platform doing, how is each game
  * doing, how are the people doing.
@@ -18,6 +18,7 @@ export const REPORT_NAV_GROUPS: NavGroup[] = [
       { href: '/reports', label: 'Daily Pulse', icon: BarChart3 },
       { href: '/reports/anomalies', label: 'Needs attention', icon: TriangleAlert },
       { href: '/reports/patterns', label: 'Patterns', icon: Clock },
+      { href: '/reports/unfinished', label: 'Sitting unfinished', icon: Hourglass },
     ],
   },
   {
