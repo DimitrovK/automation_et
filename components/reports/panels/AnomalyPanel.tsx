@@ -33,7 +33,7 @@ export function AnomalyPanel({ data, meta }: { data: AnomaliesResponse; meta: Ga
             </p>
             <p className="text-sm text-muted-foreground">
               {coverage.complete
-                ? `No game moved more than ${thresholds.min_change_pct}% against the previous ${data.window_days} days, above ${thresholds.min_volume} sessions.`
+                ? `Nothing moved further than these metrics move on their own, against the previous ${data.window_days} days. The bar is ${thresholds.sigma} standard deviations and at least ${thresholds.min_change_pct}%, on at least ${thresholds.min_volume} sessions — so it rises as a game gets smaller, because a small game's numbers wander further by themselves.`
                 : `${coverage.missing_days.length} day(s) in this comparison were never computed, so a quiet result here can't be trusted. Run the reporting backfill.`}
             </p>
           </div>
@@ -58,7 +58,7 @@ export function AnomalyPanel({ data, meta }: { data: AnomaliesResponse; meta: Ga
           {data.compared_with.start}
           {' → '}
           {data.compared_with.end}
-          {`. Only moves over ${thresholds.min_change_pct}% on at least ${thresholds.min_volume} sessions are listed — smaller swings are ordinary variation.`}
+          {`. A move is listed when it is at least ${thresholds.sigma} standard deviations outside ordinary variation AND over ${thresholds.min_change_pct}% — so the bar rises as a game gets smaller, because a small game's numbers wander further on their own.`}
           {!coverage.complete && ' Some days in this comparison were never computed, so this list may be incomplete.'}
         </CardDescription>
       </CardHeader>
@@ -89,6 +89,15 @@ export function AnomalyPanel({ data, meta }: { data: AnomaliesResponse; meta: Ga
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-foreground">{finding.headline}</p>
                 <p className="text-sm text-muted-foreground">{finding.detail}</p>
+                {/* What the bar was, in the units the reader already has. The
+                    percentage alone cannot say why a +28% neighbour is absent,
+                    and a panel that cannot explain an omission gets read as
+                    broken. */}
+                {finding.required_pct !== null && (
+                  <p className="mt-0.5 text-xs text-muted-foreground/80">
+                    {`${finding.z_score}σ — a move of ${finding.required_pct}% would have been the bar at this volume`}
+                  </p>
+                )}
               </div>
               {finding.game_type && (
                 <div className="flex items-center gap-2">

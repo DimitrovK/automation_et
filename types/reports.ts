@@ -110,6 +110,8 @@ export type SummaryResponse = {
   pulse: Pulse;
   /** False when the range doesn't end today — the pulse describes today only. */
   pulse_applies: boolean;
+  /** The same question at the scale the platform supports. Leads over `pulse`. */
+  weekly_pulse: WeeklyPulse;
   comparison: PeriodComparison;
   window_totals: ActivityMetrics;
   by_game: GameTotals[];
@@ -579,6 +581,18 @@ export type AnomalyFinding = {
   severity: 'high' | 'medium';
   headline: string;
   detail: string;
+  /**
+   * How many standard deviations the move sits outside ordinary noise at this
+   * volume. `null` on rate findings, which have no Poisson difference to take.
+   */
+  z_score: number | null;
+  /**
+   * The smallest percentage move that would have been notable AT THIS VOLUME —
+   * 71% at 36 sessions, 9.5% at 2,000. Carried for the non-findings as much as
+   * the findings: without it, a reader seeing +28% missing from the panel
+   * concludes the panel is broken.
+   */
+  required_pct: number | null;
 };
 
 export type AnomaliesResponse = {
@@ -589,6 +603,8 @@ export type AnomaliesResponse = {
     min_volume: number;
     min_change_pct: number;
     severe_change_pct: number;
+    /** The test that actually decides. `min_change_pct` is only a floor. */
+    sigma: number;
   };
   /** Lets an empty list mean "nothing moved" rather than "we couldn't tell". */
   coverage: { complete: boolean; missing_days: string[] };
@@ -828,3 +844,23 @@ export type FallbacksResponse = {
   total_fallbacks: number;
   total_unstamped: number;
 } & ResolvedRange;
+
+/**
+ * The last seven complete days against the four weeks before them.
+ *
+ * Leads over the daily pulse because a day is not a meaningful sample at this
+ * volume. `baseline` is null when any day in the comparison was never computed —
+ * averaging over gaps divides real activity by four and calls it typical.
+ */
+export type WeeklyPulse = {
+  start: string;
+  end: string;
+  baseline_weeks: number;
+  baseline_covered: boolean;
+  baseline_missing_days: string[];
+  metrics: Record<string, {
+    current: number;
+    baseline: number | null;
+    delta_pct: number | null;
+  }>;
+};
