@@ -28,6 +28,18 @@ const NOT_RENDERED: Record<string, string> = {
   games_without_duration: 'Derived per row as `supported`, which DurationTable already groups by.',
   long_lived_session_games: 'Derived per row as `single_sitting`, which DurationTable already groups by.',
   window_totals: 'The comparison tiles render the same window from `comparison`, with movement attached.',
+  // #1474 R4 removed the Patterns page: play-by-hour and play-by-weekday move
+  // with a handful of people at ~480 sessions a day, and knowing the peak has
+  // never changed a decision. The endpoint stays — `by_hour` still feeds the
+  // per-game hour profile, and the page's one useful panel (new vs returning)
+  // moved to the overview. These are the parts that went with the page.
+  by_weekday: 'Patterns page removed (#1474 R4) — weekday shape is noise at this volume.',
+  by_hour_weekday: 'Patterns page removed (#1474 R4) — the hour x weekday heatmap went with it.',
+  peak_cell: 'Patterns page removed (#1474 R4) — describes the heatmap that is gone.',
+  busiest_cell_games: 'Patterns page removed (#1474 R4) — describes the heatmap that is gone.',
+  peak_hour: 'Patterns page removed (#1474 R4). The per-game hour profile shows shape, not a single peak.',
+  peak_weekday: 'Patterns page removed (#1474 R4) — weekday shape is noise at this volume.',
+  total_unfinished: 'The unfinished panel leads with the STALE total; the all-inclusive one counts the last hour, which is mostly people still playing.',
 };
 
 function sources(): string {

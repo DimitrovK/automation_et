@@ -17,7 +17,14 @@ import { unfinishedBands } from '@/lib/unfinished-bands';
  * mostly people currently playing. Ranking by it would put whichever game is
  * busiest right now at the top, every time you looked.
  */
-export function UnfinishedTable({ rows, meta }: { rows: UnfinishedRow[]; meta: GameMetaMap }) {
+export function UnfinishedTable({ rows, meta, asOf, totalStale }: {
+  rows: UnfinishedRow[];
+  meta: GameMetaMap;
+  /** When the snapshot was taken. */
+  asOf: string;
+  /** Platform total, older than an hour. */
+  totalStale: number;
+}) {
   const withPool = rows.filter(row => row.unfinished > 0);
 
   return (
@@ -30,6 +37,14 @@ export function UnfinishedTable({ rows, meta }: { rows: UnfinishedRow[]; meta: G
         <CardDescription>
           A snapshot of right now, not a figure for a window. The last hour is kept
           separate — on a busy game most of it is people still playing.
+          {' '}
+          {/* The timestamp travels with the panel rather than living on a page:
+              a snapshot with no time on it cannot be judged, and a tab left open
+              for an hour looks identical to one opened a second ago. */}
+          {`${totalStale.toLocaleString()} sitting unfinished as of ${new Date(asOf).toLocaleString(undefined, {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          })}.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">
