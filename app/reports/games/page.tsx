@@ -9,15 +9,17 @@ import { DurationHistogram } from '@/components/reports/DurationHistogram';
 import { DurationTable } from '@/components/reports/DurationTable';
 import { EmptyState } from '@/components/reports/EmptyState';
 import { ExportButton } from '@/components/reports/ExportButton';
+import { FavouredVsPlayedChart } from '@/components/reports/favourites/FavouredVsPlayedChart';
 import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { MetricInfo } from '@/components/reports/MetricInfo';
 import { RangePicker } from '@/components/reports/RangePicker';
-import { ReachDepthChart } from '@/components/reports/ReachDepthChart';
 import { ReportPanel } from '@/components/reports/ReportPanel';
 import { ReportsShell } from '@/components/reports/ReportsShell';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/ReportTable';
+import { UnfinishedTable } from '@/components/reports/UnfinishedTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -72,6 +74,17 @@ export default function GamesIndexPage() {
   // comparison table had to be read beside a second page to answer "which game
   // holds attention". Merged in here instead.
   const duration = useReport(ReportsAPI.getDuration, params, enabled, 'The session duration endpoint');
+  // A snapshot, so it takes no range — see UnfinishedTable. It sits under a
+  // ranged page because the question ("what is lying around for this game") is a
+  // per-game one; the panel says so itself rather than inheriting the filter.
+  const unfinishedParams = useMemo(() => ({ include_bots: includeBots }), [includeBots]);
+  const unfinished = useReport(
+    () => ReportsAPI.getUnfinished(includeBots),
+    unfinishedParams,
+    enabled,
+    'The unfinished-sessions endpoint',
+  );
+  const favourites = useFavouredVsPlayed(enabled);
   const state = useReport(
     ReportsAPI.getSummary,
     params,
@@ -129,11 +142,6 @@ export default function GamesIndexPage() {
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => (
           <>
-            {/* Before the table, because it answers a question the table
-              can't: a ranking by volume puts a game with a wide shallow
-              audience next to one with a small devoted one and says
-              nothing about the difference. */}
-            <ReachDepthChart rows={data.by_game} meta={meta} />
             {/* Reach and depth say which games are worth attention; this says
               where the recoverable sessions actually are, which is a
               different question and the one nobody could answer from a
@@ -235,6 +243,33 @@ export default function GamesIndexPage() {
           same request, so a reader comparing games had the ranking here and the
           shape of it somewhere else. Its own panel, because the duration request
           can fail or lag independently of the games one. */}
+      {/* Folded in from their own destinations (#1474 R4). Both answer per-game
+          questions and neither earned a nav entry: the unfinished pool is 93%
+          older than a week and static, and four favourites charts were more
+          surface than the feature has earned. Separate panels, so one slow
+          request cannot blank the table above. */}
+      <ReportPanel state={unfinished} skeletonClassName="h-64 w-full">
+        {data => (
+          <UnfinishedTable
+            rows={data.rows}
+            meta={meta}
+            asOf={data.as_of}
+            totalStale={data.total_stale_sessions}
+          />
+        )}
+      </ReportPanel>
+
+      {favourites.data && !favourites.error && (
+        <FavouredVsPlayedChart
+          data={favourites.data}
+          isLoading={favourites.isLoading}
+          error={favourites.error}
+          notDeployed={favourites.notDeployed}
+          meta={meta}
+          onRetry={favourites.refetch}
+        />
+      )}
+
       <ReportPanel state={duration} skeletonClassName="h-80 w-full">
         {data => (
           <>

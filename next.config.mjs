@@ -6,6 +6,13 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/reports/duration', destination: '/reports/games', permanent: true },
+      // Folded into Games (#1474 R4): the unfinished pool and the favourites
+      // panel both answer per-game questions and did not need a destination each.
+      { source: '/reports/unfinished', destination: '/reports/games', permanent: true },
+      { source: '/reports/favourites', destination: '/reports/games', permanent: true },
+      // Patterns is gone rather than folded: play-by-hour is noise at this
+      // volume. Its one useful panel, new vs returning, is on the overview.
+      { source: '/reports/patterns', destination: '/reports', permanent: true },
     ];
   },
   typescript: {

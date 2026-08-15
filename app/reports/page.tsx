@@ -8,6 +8,7 @@ import { FilterBar } from '@/components/reports/FilterBar';
 import { GameBadge } from '@/components/reports/GameBadge';
 import { GameLeaderboard } from '@/components/reports/GameLeaderboard';
 import { MetricToggle } from '@/components/reports/MetricToggle';
+import { NewVsReturning } from '@/components/reports/NewVsReturning';
 import { PulseTiles } from '@/components/reports/PulseTiles';
 import { RangePicker } from '@/components/reports/RangePicker';
 import { ReportPanel } from '@/components/reports/ReportPanel';
@@ -59,6 +60,9 @@ export default function ReportsPage() {
   const summary = useReport(ReportsAPI.getSummary, params, enabled, 'The reporting summary endpoint');
   const allGames = useReport(ReportsAPI.getSummary, allGamesParams, enabled, 'The reporting summary endpoint');
   const activity = useReport(ReportsAPI.getActivity, activityParams, enabled, 'The reporting activity endpoint');
+  // Only for the new-vs-returning panel, lifted here when the Patterns page was
+  // removed. Its own panel, so a slow patterns request cannot blank the pulse.
+  const patterns = useReport(ReportsAPI.getPatterns, params, enabled, 'The patterns reporting endpoint');
   // Unfiltered on purpose: "what needs attention" must surface a game you
   // haven't selected, which is exactly the one you'd otherwise miss.
 
@@ -138,6 +142,10 @@ export default function ReportsPage() {
             description={`${data.totals.games_started.toLocaleString()} played, ${data.totals.games_finished.toLocaleString()} finished, ${data.totals.distinct_players.toLocaleString()} distinct players.`}
           />
         )}
+      </ReportPanel>
+
+      <ReportPanel state={patterns} skeletonClassName="h-72 w-full">
+        {data => <NewVsReturning rows={data.new_vs_returning} />}
       </ReportPanel>
 
       {allGames.data && (

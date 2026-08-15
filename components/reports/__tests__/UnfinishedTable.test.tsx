@@ -35,7 +35,7 @@ describe('unfinishedTable', () => {
       row({ game_type: 'grid', unfinished: 90, recent_sessions: 88, stale_sessions: 2 }),
     ];
 
-    render(<UnfinishedTable rows={rows} meta={META} />);
+    render(<UnfinishedTable rows={rows} meta={META} asOf="2026-08-15T10:00:00Z" totalStale={5} />);
     const names = screen.getAllByRole('row').slice(1).map(r => within(r).getAllByRole('cell')[0].textContent);
 
     // Given in stale order by the API; the component must not re-sort by total.
@@ -50,6 +50,8 @@ describe('unfinishedTable', () => {
       <UnfinishedTable
         rows={[row({ game_type: 'conquest', unfinished: 5, stale_sessions: 5, sweeper_hours: 24 })]}
         meta={META}
+        asOf="2026-08-15T10:00:00Z"
+        totalStale={5}
       />,
     );
 
@@ -61,6 +63,8 @@ describe('unfinishedTable', () => {
       <UnfinishedTable
         rows={[row({ game_type: 'grid', unfinished: 5, stale_sessions: 5 })]}
         meta={META}
+        asOf="2026-08-15T10:00:00Z"
+        totalStale={5}
       />,
     );
 
@@ -72,6 +76,8 @@ describe('unfinishedTable', () => {
       <UnfinishedTable
         rows={[row({ game_type: 'grid', unfinished: 30, recent_sessions: 25, stale_sessions: 5 })]}
         meta={META}
+        asOf="2026-08-15T10:00:00Z"
+        totalStale={5}
       />,
     );
     const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
@@ -87,6 +93,8 @@ describe('unfinishedTable', () => {
       <UnfinishedTable
         rows={[row({ game_type: 'grid', unfinished: 4, stale_sessions: 4 }), row({ game_type: 'conquest' })]}
         meta={META}
+        asOf="2026-08-15T10:00:00Z"
+        totalStale={5}
       />,
     );
 
@@ -94,7 +102,14 @@ describe('unfinishedTable', () => {
   });
 
   it('says so when nothing is unfinished at all', () => {
-    render(<UnfinishedTable rows={[row({ game_type: 'grid' })]} meta={META} />);
+    render(
+      <UnfinishedTable
+        rows={[row({ game_type: 'grid' })]}
+        meta={META}
+        asOf="2026-08-15T10:00:00Z"
+        totalStale={0}
+      />,
+    );
 
     expect(screen.getByText('Nothing is sitting unfinished.')).toBeInTheDocument();
   });
