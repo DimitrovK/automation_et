@@ -17,8 +17,8 @@ vi.mock('recharts', async () => {
 });
 
 const ROWS: NewReturningRow[] = [
-  { date: '2026-06-01', new_players: 12, returning_players: 40 },
-  { date: '2026-06-02', new_players: 9, returning_players: 44 },
+  { date: '2026-06-01', new_players: 12, returning_players: 40, total_players: 52 },
+  { date: '2026-06-02', new_players: 9, returning_players: 44, total_players: 53 },
 ];
 
 describe('newVsReturning', () => {
