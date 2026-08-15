@@ -10,6 +10,7 @@ import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { AbandonedPanel } from '@/components/reports/panels/AbandonedPanel';
 import { AttemptSpread } from '@/components/reports/panels/AttemptSpread';
+import { ContentHealth, FormatFallbacks } from '@/components/reports/panels/ContentHealth';
 import { DifficultyOutcomes } from '@/components/reports/panels/DifficultyOutcomes';
 import { DurationTable } from '@/components/reports/panels/DurationTable';
 import { ProgressDropOff } from '@/components/reports/panels/ProgressDropOff';
@@ -82,6 +83,15 @@ export default function GamesIndexPage() {
   // ranged page because the question ("what is lying around for this game") is a
   // per-game one; the panel says so itself rather than inheriting the filter.
   const unfinishedParams = useMemo(() => ({ include_bots: includeBots }), [includeBots]);
+  // The content endpoint takes no range: "how many lineups are staged" is a
+  // snapshot, and a window on it would produce a number that means nothing.
+  const content = useReport(ReportsAPI.getContent, {}, enabled, 'The content reporting endpoint');
+  const fallbacks = useReport(
+    ReportsAPI.getFallbacks,
+    params,
+    enabled,
+    'The answer-format fallback endpoint',
+  );
   const difficulty = useReport(
     ReportsAPI.getDifficulty,
     params,
@@ -294,6 +304,24 @@ export default function GamesIndexPage() {
 
       <ReportPanel state={progress} skeletonClassName="h-80 w-full">
         {data => <ProgressDropOff data={data} meta={meta} />}
+      </ReportPanel>
+
+      {/* After difficulty and drop-off, because those describe how the games
+          play and this describes whether there is anything left to play. It is
+          also the only panel here that can be acted on the same afternoon:
+          everything else asks for a design change, this asks someone to stage
+          more lineups. */}
+      <SectionHeader
+        title="Whether there is material left"
+        description="Two games schedule their content against a calendar. The rest draw from a pool."
+      />
+
+      <ReportPanel state={content} skeletonClassName="h-64 w-full">
+        {data => <ContentHealth data={data} meta={meta} />}
+      </ReportPanel>
+
+      <ReportPanel state={fallbacks} skeletonClassName="h-56 w-full">
+        {data => <FormatFallbacks data={data} />}
       </ReportPanel>
 
       <SectionHeader

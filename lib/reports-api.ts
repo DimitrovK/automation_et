@@ -2,8 +2,10 @@ import type {
   ActivityResponse,
   AnomaliesResponse,
   AttemptsResponse,
+  ContentResponse,
   DifficultyResponse,
   DurationResponse,
+  FallbacksResponse,
   FirstSessionResponse,
   GamesResponse,
   GlossaryResponse,
@@ -112,6 +114,16 @@ export class ReportsAPI {
    */
   static async getFirstSession(params?: ReportParams): Promise<FirstSessionResponse> {
     return apiFetcher<FirstSessionResponse>(`core/reporting/first-session/${buildQuery(params)}`);
+  }
+
+  /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */
+  static async getContent(): Promise<ContentResponse> {
+    return apiFetcher<ContentResponse>('core/reporting/content/');
+  }
+
+  /** GET /core/reporting/fallbacks/ — Conquest answer-format fallback rate. */
+  static async getFallbacks(params?: ReportParams): Promise<FallbacksResponse> {
+    return apiFetcher<FallbacksResponse>(`core/reporting/fallbacks/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/growth/ — weekly new / resurrected / retained / churned. */
