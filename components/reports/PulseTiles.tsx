@@ -5,11 +5,19 @@ import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { StatTile } from '@/components/reports/StatTile';
 import { cn } from '@/lib/utils';
 
-const TILES: { key: keyof ActivityMetrics; label: string; hint: string }[] = [
-  { key: 'games_started', label: 'Games started', hint: 'Sessions begun today' },
-  { key: 'games_finished', label: 'Games finished', hint: 'Of those, played to the end' },
-  { key: 'distinct_players', label: 'Players', hint: 'Distinct people who played' },
-  { key: 'mp_player_sessions', label: 'Multiplayer', hint: 'Participations in rooms' },
+/**
+ * `metric` keys into the BE glossary so a tile explains itself in place.
+ *
+ * Players needs it most: the figure deliberately leaves out anonymous play,
+ * because every anonymous session belongs to one shared account and counting it
+ * would read hundreds of people as one. A reader cannot infer that from "3,412",
+ * and the number is lower than they expect precisely because of it.
+ */
+const TILES: { key: keyof ActivityMetrics; label: string; hint: string; metric: string }[] = [
+  { key: 'games_started', label: 'Games started', hint: 'Sessions begun today', metric: 'games_started' },
+  { key: 'games_finished', label: 'Games finished', hint: 'Of those, played to the end', metric: 'games_finished' },
+  { key: 'distinct_players', label: 'Players', hint: 'Distinct people who played', metric: 'distinct_players' },
+  { key: 'mp_player_sessions', label: 'Multiplayer', hint: 'Participations in rooms', metric: 'mp_sessions' },
 ];
 
 /**
@@ -93,12 +101,13 @@ export function PulseTiles({ pulse }: { pulse: Pulse }) {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {TILES.map(({ key, label, hint }) => {
+        {TILES.map(({ key, label, hint, metric: glossaryKey }) => {
           const metric = pulse.metrics[key];
           return (
             <StatTile
               key={key}
               label={label}
+              metric={glossaryKey}
               value={metric.today.toLocaleString()}
               delta={<Delta metric={metric} />}
               hint={(

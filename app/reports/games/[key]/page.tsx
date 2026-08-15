@@ -135,20 +135,24 @@ export default function GameDetailPage() {
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <StatTile
                       label="Completion"
+                      metric="completion_pct"
                       value={row.completion_pct === null ? '—' : `${row.completion_pct}%`}
                       hint="Of games started"
                     />
                     <StatTile
                       label="Repeat rate"
+                      metric="repeat_rate_pct"
                       value={row.repeat_rate_pct === null ? '—' : `${row.repeat_rate_pct}%`}
                       hint="Players who came back another day"
                     />
                     <StatTile
                       label="Sessions per player"
+                      metric="sessions_per_player"
                       value={row.sessions_per_player?.toString() ?? '—'}
                     />
                     <StatTile
                       label="Share of platform"
+                      metric="share_pct"
                       value={row.share_pct === null ? '—' : `${row.share_pct}%`}
                       hint="Of all games played"
                     />
