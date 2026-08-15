@@ -6,10 +6,12 @@ import { useMemo } from 'react';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { GameFilter } from '@/components/reports/filters/GameFilter';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
+import { FirstSessionFollowup } from '@/components/reports/panels/FirstSessionFollowup';
 import { RetentionByGame } from '@/components/reports/panels/RetentionByGame';
 import { RetentionTable } from '@/components/reports/panels/RetentionTable';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
+import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
@@ -47,6 +49,12 @@ export default function RetentionPage() {
     params,
     enabled,
     'The retention reporting endpoint',
+  );
+  const firstSession = useReport(
+    ReportsAPI.getFirstSession,
+    params,
+    enabled,
+    'The first-session reporting endpoint',
   );
 
   return (
@@ -99,6 +107,19 @@ export default function RetentionPage() {
             <RetentionTable data={data} />
           </>
         )}
+      </ReportPanel>
+
+      {/* Beside retention rather than on its own page: the two are easy to
+          confuse, and reading either alone gets the conclusion backwards. A game
+          can hold nobody itself and still be the best front door on the
+          platform. Its own panel, so one request cannot blank the other. */}
+      <SectionHeader
+        title="Where new players start"
+        description="Retention above asks whether a game keeps its own players. This asks which game keeps people on the platform at all."
+      />
+
+      <ReportPanel state={firstSession} skeletonClassName="h-72 w-full">
+        {data => <FirstSessionFollowup data={data} meta={meta} />}
       </ReportPanel>
     </ReportsShell>
   );

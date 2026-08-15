@@ -2,6 +2,7 @@ import type {
   ActivityResponse,
   AnomaliesResponse,
   DurationResponse,
+  FirstSessionResponse,
   GamesResponse,
   GlossaryResponse,
   MultiplayerResponse,
@@ -99,6 +100,14 @@ export class ReportsAPI {
     return apiFetcher<UnfinishedResponse>(
       `core/reporting/unfinished/${buildQuery({ include_bots: includeBots })}`,
     );
+  }
+
+  /**
+   * GET /core/reporting/first-session/ — which game hooks people onto the
+   * platform, rather than onto itself.
+   */
+  static async getFirstSession(params?: ReportParams): Promise<FirstSessionResponse> {
+    return apiFetcher<FirstSessionResponse>(`core/reporting/first-session/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/patterns/ — when people play + new vs returning. */
