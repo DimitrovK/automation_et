@@ -115,6 +115,20 @@ describe('progressDropOff', () => {
       />,
     );
 
+    // "Nothing measurable" — not "nothing abandoned", which claims a quiet
+    // window when the truth is that no game here can report progress at all
+    // (Copilot on #120).
+    expect(screen.getByText('No game in this window records how far a session got.')).toBeInTheDocument();
+  });
+
+  it('says a quiet window is quiet, not unmeasurable', () => {
+    render(
+      <ProgressDropOff
+        data={response([row({ game_type: 'missing11', abandoned: 0, abandoned_bands: [] })])}
+        meta={META}
+      />,
+    );
+
     expect(screen.getByText('No sessions were abandoned in this window.')).toBeInTheDocument();
   });
 
