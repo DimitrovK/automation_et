@@ -74,3 +74,37 @@ describe('weeklyPulseTiles', () => {
     expect(screen.getByText(/mean of the 4 weeks before/)).toBeInTheDocument();
   });
 });
+
+describe('weeklyPulseTiles ordering', () => {
+  it('renders the tiles in a fixed order, not the API\'s key order', () => {
+    // Iterating Object.entries meant a backend key reordering silently
+    // reordered the UI (Copilot on #124). PulseTiles already used a fixed list.
+    render(
+      <WeeklyPulseTiles
+        pulse={pulse({
+          metrics: {
+            mp_player_sessions: { current: 4, baseline: 4, delta_pct: 0 },
+            games_started: { current: 1, baseline: 1, delta_pct: 0 },
+            distinct_players: { current: 3, baseline: 3, delta_pct: 0 },
+            games_finished: { current: 2, baseline: 2, delta_pct: 0 },
+          },
+        })}
+      />,
+    );
+    const labels = screen.getAllByText(/Games started|Games finished|Players|Multiplayer sessions/)
+      .map(node => node.textContent?.trim());
+
+    expect(labels).toEqual(['Games started', 'Games finished', 'Players', 'Multiplayer sessions']);
+  });
+
+  it('skips a metric the payload does not carry rather than rendering an empty tile', () => {
+    render(
+      <WeeklyPulseTiles
+        pulse={pulse({ metrics: { games_started: { current: 1, baseline: 1, delta_pct: 0 } } })}
+      />,
+    );
+
+    expect(screen.getByText('Games started')).toBeInTheDocument();
+    expect(screen.queryByText('Multiplayer sessions')).not.toBeInTheDocument();
+  });
+});

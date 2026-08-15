@@ -110,8 +110,16 @@ export type SummaryResponse = {
   pulse: Pulse;
   /** False when the range doesn't end today — the pulse describes today only. */
   pulse_applies: boolean;
-  /** The same question at the scale the platform supports. Leads over `pulse`. */
-  weekly_pulse: WeeklyPulse;
+  /**
+   * The same question at the scale the platform supports. Leads over `pulse`.
+   *
+   * OPTIONAL because the backend that sends it may not be deployed yet
+   * (Copilot on #124). The two repositories ship independently, so for the
+   * window between them this field is simply absent — and a required type plus
+   * an unconditional render is a crash on the reports page, not a missing
+   * panel. Every field added since has been optional for the same reason.
+   */
+  weekly_pulse?: WeeklyPulse;
   comparison: PeriodComparison;
   window_totals: ActivityMetrics;
   by_game: GameTotals[];
