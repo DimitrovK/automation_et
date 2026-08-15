@@ -2,6 +2,8 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { CategoryQuality } from '@/components/analytics/panels/CategoryQuality';
+import { GlobalQuizUsage } from '@/components/analytics/panels/GlobalQuizUsage';
 import { QuestionBank } from '@/components/analytics/panels/QuestionBank';
 import { QuestionQuality } from '@/components/analytics/panels/QuestionQuality';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
@@ -52,8 +54,8 @@ export default function QuestionsAnalyticsPage() {
 
   return (
     <AnalyticsShell
-      title="Question quality"
-      description="Which questions are broken, and how — read from what players chose, not just whether they were right."
+      title="Quiz content"
+      description="Which questions are broken, which subjects are weakest, and which quizzes people played."
     >
       <FilterBar>
         <RangePicker
@@ -78,6 +80,24 @@ export default function QuestionsAnalyticsPage() {
 
       <ReportPanel state={state} skeletonClassName="h-64 w-full">
         {data => <QuestionBank data={data} />}
+      </ReportPanel>
+
+      {/* The Quiz dashboard's content half, folded in here rather than given its
+          own destination (#1475). Its other half was top players by quizzes
+          played, which is Reports and better there. Two panels about this same
+          bank do not earn a nav entry — the argument R4 used to cut the
+          reporting nav from ten destinations to six. */}
+      <SectionHeader
+        title="Categories and what ran"
+        description="Where the bank is weakest by subject, and which scheduled quizzes people actually played."
+      />
+
+      <ReportPanel state={state} skeletonClassName="h-80 w-full">
+        {data => <CategoryQuality data={data} />}
+      </ReportPanel>
+
+      <ReportPanel state={state} skeletonClassName="h-64 w-full">
+        {data => <GlobalQuizUsage data={data} />}
       </ReportPanel>
     </AnalyticsShell>
   );

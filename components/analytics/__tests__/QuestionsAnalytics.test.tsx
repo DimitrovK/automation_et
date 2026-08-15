@@ -1,6 +1,8 @@
 import type { QuestionRow, QuestionsAnalyticsResponse } from '@/types/reports';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { CategoryQuality } from '@/components/analytics/panels/CategoryQuality';
+import { GlobalQuizUsage } from '@/components/analytics/panels/GlobalQuizUsage';
 import { QuestionBank } from '@/components/analytics/panels/QuestionBank';
 import { QuestionQuality } from '@/components/analytics/panels/QuestionQuality';
 
@@ -40,6 +42,21 @@ function response(rows: QuestionRow[], over: Partial<QuestionsAnalyticsResponse[
       min_answers: 30,
       questions_measured: 2487,
       beaten_by_a_wrong_answer: rows.filter(r => r.beaten_by_a_wrong_answer).length,
+    },
+    categories: {
+      rows: [
+        { category_id: 1, name: 'Portsmouth', questions: 4, questions_answered: 4, answers: 204, correct_pct: 37.7 },
+        { category_id: 2, name: 'Japan', questions: 16, questions_answered: 9, answers: 204, correct_pct: 43.6 },
+      ],
+      min_answers: 200,
+      categories_measured: 210,
+    },
+    quizzes: {
+      rows: [
+        { quiz_id: 1, title: 'England', plays: 2940, scheduled_days: 549, plays_per_day: 5.4 },
+        { quiz_id: 2, title: 'Rare one', plays: 40, scheduled_days: 2, plays_per_day: 20 },
+      ],
+      total_plays: 12238,
     },
     shape: {
       difficulty: [
@@ -165,5 +182,58 @@ describe('questionBank', () => {
 
     expect(rows.map(row => within(row).getAllByRole('cell')[0].textContent?.trim()))
       .toEqual(['EASY', 'NORMAL', 'EXTREME']);
+  });
+});
+
+describe('categoryQuality', () => {
+  it('leads with the hardest category, not the busiest', () => {
+    // The dashboard this replaces ranked by how many quizzes used a category,
+    // which is a fact about scheduling rather than about the questions.
+    render(<CategoryQuality data={response([])} />);
+    const rows = screen.getAllByRole('row').slice(1);
+
+    expect(within(rows[0]).getAllByRole('cell')[0]).toHaveTextContent('Portsmouth');
+    expect(within(rows[0]).getAllByRole('cell')[3]).toHaveTextContent('37.7%');
+  });
+
+  it('shows how many questions sit behind a category', () => {
+    // Four questions is an afternoon; forty is a project. The rate alone does
+    // not say which.
+    render(<CategoryQuality data={response([])} />);
+    const rows = screen.getAllByRole('row').slice(1);
+
+    expect(within(rows[0]).getAllByRole('cell')[1]).toHaveTextContent('4');
+  });
+
+  it('shows how much of a category anyone was actually served', () => {
+    // A question nobody was served is invisible to the rate and still has to be
+    // rewritten, so the size of the fix and the basis of the rate are separate.
+    render(<CategoryQuality data={response([])} />);
+
+    expect(screen.getByText('9 served')).toBeInTheDocument();
+  });
+
+  it('says why the list stops where it does', () => {
+    render(<CategoryQuality data={response([])} />);
+
+    expect(screen.getByText(/answered at least 200 times/)).toBeInTheDocument();
+  });
+});
+
+describe('globalQuizUsage', () => {
+  it('shows plays per day offered, which is the comparable figure', () => {
+    // 40 plays over 2 days beats 2,940 over 549. The raw total says the
+    // opposite, and mostly measures how often a quiz was scheduled.
+    render(<GlobalQuizUsage data={response([])} />);
+    const rows = screen.getAllByRole('row').slice(1);
+
+    expect(within(rows[0]).getAllByRole('cell')[3]).toHaveTextContent('5.4');
+    expect(within(rows[1]).getAllByRole('cell')[3]).toHaveTextContent('20');
+  });
+
+  it('tells the reader which column to trust', () => {
+    render(<GlobalQuizUsage data={response([])} />);
+
+    expect(screen.getByText(/Read the per-day column rather than the total/)).toBeInTheDocument();
   });
 });
