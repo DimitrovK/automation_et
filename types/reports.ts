@@ -872,3 +872,64 @@ export type WeeklyPulse = {
     delta_pct: number | null;
   }>;
 };
+
+/**
+ * One footballer's content-quality row from the Career Path analytics endpoint.
+ *
+ * Rates are withheld below `min_appearances` and the counts are kept: a
+ * footballer shown three times and hinted on twice is a fact, and "67% needed
+ * help" from three appearances is noise that would top the table.
+ */
+export type CareerPathFootballerRow = {
+  footballer_id: number;
+  name: string;
+  /** The difficulty an editor assigned. Read against the measured solve rate. */
+  declared_difficulty: string | null;
+  appearances: number;
+  hints: number;
+  reveals: number;
+  skips: number;
+  /** Share of appearances where the player took a hint, reveal or skip. */
+  help_rate_pct: number | null;
+  solve_rate_pct: number | null;
+  below_threshold: boolean;
+};
+
+/** One declared difficulty tier, with what players actually did on it. */
+export type CareerPathTier = {
+  difficulty: string | null;
+  appearances: number;
+  solve_rate_pct: number | null;
+  help_rate_pct: number | null;
+};
+
+export type CareerPathAnalyticsResponse = {
+  content: {
+    rows: CareerPathFootballerRow[];
+    min_appearances: number;
+    footballers_measured: number;
+    footballers_seen: number;
+  };
+  shape: {
+    modes: { mode: string; paths: number }[];
+    total_paths: number;
+    difficulty: CareerPathTier[];
+    total_appearances: number;
+    /** Why the old dashboard's counts were inflated — kept visible on purpose. */
+    footballers_per_path: number | null;
+    /**
+     * Whether a hint rescues the guess it was taken on.
+     *
+     * NOT a controlled comparison: players take hints on the footballers they
+     * are already stuck on, so the hinted set is harder by construction. The
+     * panel says so rather than letting the two rates be read against each
+     * other.
+     */
+    hint_effect: {
+      hinted_guesses: number;
+      hinted_solve_pct: number | null;
+      unhinted_guesses: number;
+      unhinted_solve_pct: number | null;
+    };
+  };
+} & ResolvedRange;
