@@ -49,6 +49,20 @@ Two findings worth keeping:
 drifts from `globals.css`, since recharts needs literal hex and the palette
 therefore lives in two places.*
 
+## Where things live
+
+```
+primitives/  building blocks that know nothing about a game except by prop
+filters/     controls that narrow what a report shows
+charts/      anything that draws data as a shape
+panels/      a question answered — usually a card with a table or chart in it
+shell/       the section's own chrome
+```
+
+The split is the answer to "is there already something for this", which used to
+need prior knowledge. If a new piece does not obviously belong in one of these,
+that is worth a moment's thought before adding a sixth.
+
 ## Structure
 
 | Need | Use | Not |
@@ -59,6 +73,16 @@ therefore lives in two places.*
 | Nothing to show | `EmptyState` | a centred muted `<p>` |
 | Loading / error / retry | `ReportPanel` | branching on `error`/`isLoading` yourself |
 | Filters | `FilterBar` + `FilterGroup` | a bare flex row |
+| A share across ordered bands | `Distribution` | printing counts as a sentence |
+| A withheld number | `SmallSampleNotice` | a bare dash |
+| Figures inside a panel | `MetricRow` | a hand-built `<dl>` or `<div>` grid |
+| A group of panels on a page | `SectionHeader` | a bare `<h2>`, or nothing |
+
+`Distribution` sizes its bars from the raw counts, never the rounded shares:
+rounding each band on its own is right for the label and wrong for the geometry,
+where three bands at 33.3% leave a visible gap. `SmallSampleNotice` states the
+count *and* the threshold — "too few" invites "how few?", and a bare dash reads
+as zero.
 
 `Th`/`Td` take `align` as a **prop**, because alignment is a property of the
 data — numbers right, labels left — so the reader's eye lands in the same place
