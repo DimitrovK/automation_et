@@ -16,6 +16,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
  * draw as full on the day the game runs dry.
  */
 
+/**
+ * Plural forms for the item names the registry declares.
+ *
+ * Appending "s" turned `quiz` into "quizs" (Copilot on #123). A map rather than
+ * a rule: English pluralisation is not a rule, and the set of item names is
+ * small, closed and declared on the backend — so an unknown one falling back to
+ * "+s" is a reminder to add it here, not a silent wrong answer in the UI.
+ */
+const ITEM_PLURALS: Record<string, string> = {
+  lineup: 'lineups',
+  challenge: 'challenges',
+  quiz: 'quizzes',
+  grid: 'grids',
+};
+
+function plural(item: string): string {
+  return ITEM_PLURALS[item] ?? `${item}s`;
+}
+
 function Runway({ row }: { row: ContentRow }) {
   if (!row.scheduled) {
     // A pooled game has no calendar to have a runway against. A dash here
@@ -109,7 +128,7 @@ export function ContentHealth({ data, meta }: { data: ContentResponse; meta: Gam
                       <Td align="right">
                         {row.total.toLocaleString()}
                         <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                          {`${row.item}s`}
+                          {plural(row.item)}
                         </span>
                       </Td>
                       <Td align="right">{row.unused.toLocaleString()}</Td>

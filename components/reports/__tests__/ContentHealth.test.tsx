@@ -1,3 +1,4 @@
+import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { ContentResponse, ContentRow, FallbackRow, FallbacksResponse } from '@/types/reports';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -7,7 +8,7 @@ const META = {
   missing11: { key: 'missing11', label: 'Missing11', display_name: 'Guess The Line Up', color: '#2563eb', color_dark: '#60a5fa' },
   grid: { key: 'grid', label: 'Grid', display_name: 'Grid', color: '#f97316', color_dark: '#fdba74' },
   quiz: { key: 'quiz', label: 'Quiz', display_name: 'Quiz', color: '#059669', color_dark: '#34d399' },
-} as never;
+} satisfies GameMetaMap;
 
 function row(over: Partial<ContentRow> & Pick<ContentRow, 'game_type'>): ContentRow {
   return {
@@ -143,7 +144,16 @@ function fallbacks(rows: FallbackRow[], unstamped = 0): FallbacksResponse {
     total_wanted_multiple_choice: rows.reduce((sum, r) => sum + r.wanted_multiple_choice, 0),
     total_fallbacks: rows.reduce((sum, r) => sum + r.fallbacks, 0),
     total_unstamped: unstamped,
-  } as unknown as FallbacksResponse;
+    // The range echo, filled in rather than cast past (Copilot on #123): a cast
+    // here hides the day the response shape changes, which is the day a test
+    // fixture is most worth having.
+    start: '2026-06-01',
+    end: '2026-06-30',
+    days: 30,
+    window: 30,
+    include_bots: false,
+    game_type: null,
+  } satisfies FallbacksResponse;
 }
 
 describe('formatFallbacks', () => {
