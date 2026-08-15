@@ -10,6 +10,7 @@ import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { AbandonedPanel } from '@/components/reports/panels/AbandonedPanel';
 import { DurationTable } from '@/components/reports/panels/DurationTable';
+import { ProgressDropOff } from '@/components/reports/panels/ProgressDropOff';
 import { UnfinishedTable } from '@/components/reports/panels/UnfinishedTable';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
@@ -79,6 +80,12 @@ export default function GamesIndexPage() {
   // ranged page because the question ("what is lying around for this game") is a
   // per-game one; the panel says so itself rather than inheriting the filter.
   const unfinishedParams = useMemo(() => ({ include_bots: includeBots }), [includeBots]);
+  const progress = useReport(
+    ReportsAPI.getProgress,
+    params,
+    enabled,
+    'The in-session progress endpoint',
+  );
   const unfinished = useReport(
     () => ReportsAPI.getUnfinished(includeBots),
     unfinishedParams,
@@ -244,6 +251,20 @@ export default function GamesIndexPage() {
           same request, so a reader comparing games had the ranking here and the
           shape of it somewhere else. Its own panel, because the duration request
           can fail or lag independently of the games one. */}
+      {/* Under the games table, not on a page of its own: it answers the next
+          question that table raises. "Abandoned: 5,399" says a session ended
+          incomplete; this says 44% of those got nowhere at all, which is a
+          different problem with a different fix. Its own panel, so one slow
+          request cannot blank the table above. */}
+      <SectionHeader
+        title="Where sessions stop"
+        description="Started versus finished says a session ended incomplete. It cannot say whether the player quit on the first screen or the last."
+      />
+
+      <ReportPanel state={progress} skeletonClassName="h-80 w-full">
+        {data => <ProgressDropOff data={data} meta={meta} />}
+      </ReportPanel>
+
       <SectionHeader
         title="What is lying around"
         description="A snapshot of unfinished sessions, and whether favouriting a game predicts playing it."
