@@ -48,6 +48,12 @@ export function ProgressDropOff({ data, meta }: { data: ProgressResponse; meta: 
   const colourFor = useGameColor();
   const supported = data.rows.filter(row => row.supported);
   const unsupported = data.rows.filter(row => !row.supported);
+  // "Nothing abandoned" and "nothing measurable" are different answers, and the
+  // condition used to be `supported.length === 0` while the copy said the first
+  // (Copilot on #120). A window where every supported game happens to have zero
+  // abandoned sessions is genuinely quiet; a window with only unsupported games
+  // is not — it is a window this report cannot describe.
+  const measurable = supported.filter(row => row.abandoned > 0);
 
   return (
     <Card>
@@ -63,10 +69,12 @@ export function ProgressDropOff({ data, meta }: { data: ProgressResponse; meta: 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 overflow-x-auto">
-        {supported.length === 0
+        {measurable.length === 0
           ? (
-              <EmptyState hint="Try a wider date range.">
-                No sessions were abandoned in this window.
+              <EmptyState hint={supported.length === 0 ? undefined : 'Try a wider date range.'}>
+                {supported.length === 0
+                  ? 'No game in this window records how far a session got.'
+                  : 'No sessions were abandoned in this window.'}
               </EmptyState>
             )
           : (
@@ -83,13 +91,18 @@ export function ProgressDropOff({ data, meta }: { data: ProgressResponse; meta: 
                   <Th>How far the abandoned ones got</Th>
                 </ReportHead>
                 <tbody>
-                  {supported.map(row => (
+                  {measurable.map(row => (
                     <ReportRow key={row.game_type}>
                       <Td strong>
                         <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
-                        <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                          {`measured in ${row.unit}`}
-                        </span>
+                        {row.unit && (
+                          // Guarded: `unit` is nullable on the wire, and an
+                          // unsupported row that slipped into this table would
+                          // otherwise print "measured in null" (Copilot on #120).
+                          <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                            {`measured in ${row.unit}`}
+                          </span>
+                        )}
                       </Td>
                       <Td align="right">
                         {row.abandoned.toLocaleString()}
