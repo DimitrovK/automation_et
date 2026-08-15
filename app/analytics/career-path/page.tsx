@@ -2,6 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { ModeRates } from '@/components/analytics/charts/ModeRates';
 import { DifficultyTiers } from '@/components/analytics/panels/DifficultyTiers';
 import { FootballerContent } from '@/components/analytics/panels/FootballerContent';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
@@ -88,6 +89,13 @@ export default function CareerPathAnalyticsPage() {
 
       <ReportPanel state={state} skeletonClassName="h-64 w-full">
         {data => <DifficultyTiers data={data} />}
+      </ReportPanel>
+
+      {/* After the tiers, because it answers the objection they raise: if the
+          grading only half separates anything, what else moves the solve rate?
+          The mode does, by about as much. */}
+      <ReportPanel state={state} skeletonClassName="h-80 w-full">
+        {data => <ModeRates data={data} />}
       </ReportPanel>
     </AnalyticsShell>
   );
