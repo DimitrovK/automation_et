@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
  * true of neither.
  */
 
-/** Above this share missing, a check is worth acting on rather than noting. */
+/** At or above this share missing, a check is worth acting on rather than noting. */
 const NOTABLE_PCT = 10;
 
 export function DataCoverage({ data }: { data: CoverageResponse }) {
