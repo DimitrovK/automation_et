@@ -4,6 +4,7 @@ import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { RetentionGameRow, RetentionResponse, RetentionSummaryCell } from '@/types/reports';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
+import { SmallSampleNotice } from '@/components/reports/primitives/SmallSampleNotice';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -91,14 +92,20 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
                       <Td key={key} align="right">
                         {pct === null
                           ? (
-                              <span
-                                className="text-muted-foreground/70"
-                                title={value?.below_threshold
-                                  ? `Only ${value.players} players — too few to state a rate`
-                                  : 'No cohort has reached this offset yet'}
-                              >
-                                —
-                              </span>
+                              value?.below_threshold
+                                ? (
+                                    // Says the count AND the bar. "Too few" invites
+                                    // "how few?"; a bare dash reads as zero.
+                                    <SmallSampleNotice have={value.players} need={data.min_players ?? 20} />
+                                  )
+                                : (
+                                    <span
+                                      className="text-muted-foreground/70"
+                                      title="No cohort has reached this offset yet"
+                                    >
+                                      —
+                                    </span>
+                                  )
                             )
                           : (
                               <span className={cn(

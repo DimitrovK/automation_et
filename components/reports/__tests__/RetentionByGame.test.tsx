@@ -58,13 +58,14 @@ describe('retentionByGame', () => {
     expect(screen.getByText(/don't sum to the platform figure/)).toBeInTheDocument();
   });
 
-  it('withholds a rate for too small a sample and explains the dash', () => {
+  it('withholds a rate for too small a sample and says how small', () => {
+    // The count and the bar are VISIBLE, not in a tooltip. A bare dash reads as
+    // zero, and "too few" invites "how few?" — both are worse than the truth,
+    // which is that three players cannot support a percentage. Someone reading
+    // this can also tell at a glance whether the game will ever clear the bar.
     render(<RetentionByGame data={data()} meta={META as never} />);
 
-    const dashes = screen.getAllByText('—');
-
-    expect(dashes.length).toBeGreaterThan(0);
-    expect(dashes[0]).toHaveAttribute('title', 'Only 3 players — too few to state a rate');
+    expect(screen.getAllByText('— 3 players, needs 20').length).toBeGreaterThan(0);
     expect(screen.getByText(/fewer than 20 measurable players/)).toBeInTheDocument();
   });
 

@@ -17,6 +17,7 @@ import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
+import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
@@ -243,6 +244,11 @@ export default function GamesIndexPage() {
           same request, so a reader comparing games had the ranking here and the
           shape of it somewhere else. Its own panel, because the duration request
           can fail or lag independently of the games one. */}
+      <SectionHeader
+        title="What is lying around"
+        description="A snapshot of unfinished sessions, and whether favouriting a game predicts playing it."
+      />
+
       {/* Folded in from their own destinations (#1474 R4). Both answer per-game
           questions and neither earned a nav entry: the unfinished pool is 93%
           older than a week and static, and four favourites charts were more
@@ -269,6 +275,11 @@ export default function GamesIndexPage() {
           onRetry={favourites.refetch}
         />
       )}
+
+      <SectionHeader
+        title="How long a session lasts"
+        description="The closest available proxy for which games hold attention. Campaign-shaped games are marked — their sessions span days, not sittings."
+      />
 
       <ReportPanel state={duration} skeletonClassName="h-80 w-full">
         {data => (

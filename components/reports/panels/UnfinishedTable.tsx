@@ -2,11 +2,13 @@
 
 import type { GameMetaMap } from '@/hooks/use-game-meta';
 import type { UnfinishedRow } from '@/types/reports';
+import { Distribution } from '@/components/reports/primitives/Distribution';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useGameColor } from '@/hooks/use-game-meta';
 import { unfinishedBands } from '@/lib/unfinished-bands';
 
 /**
@@ -25,6 +27,7 @@ export function UnfinishedTable({ rows, meta, asOf, totalStale }: {
   /** Platform total, older than an hour. */
   totalStale: number;
 }) {
+  const resolveColor = useGameColor();
   const withPool = rows.filter(row => row.unfinished > 0);
 
   return (
@@ -84,16 +87,10 @@ export function UnfinishedTable({ rows, meta, asOf, totalStale }: {
                           {row.recent_sessions.toLocaleString()}
                         </Td>
                         <Td>
-                          <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                            {bands.map(band => (
-                              <span key={band.label} className="whitespace-nowrap">
-                                {band.label}
-                                {': '}
-                                <span className="text-foreground">{band.count.toLocaleString()}</span>
-                                {` (${band.pct}%)`}
-                              </span>
-                            ))}
-                          </span>
+                          {/* Was the same counts printed as a line of text. The
+                              shape is the point — "most of this pool is over a
+                              week old" is a glance, not a sentence to parse. */}
+                          <Distribution bands={bands} colour={resolveColor(meta, row.game_type)} />
                         </Td>
                       </ReportRow>
                     );
