@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
-import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
+import { MetricRow } from '@/components/reports/primitives/MetricRow';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
 import { cn } from '@/lib/utils';
@@ -142,46 +142,38 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
               </div>
 
               {isOpen && (
-                <dl className="grid grid-cols-2 gap-3 border-t px-4 py-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
-                  {/* The third element is a glossary key. Players and
-                      sessions-per-player carry one because both deliberately
-                      leave anonymous play out — every anonymous session belongs
-                      to one shared account, so counting it would read hundreds
-                      of people as one. That is not inferable from the figure,
-                      and it is why the number is lower than a reader expects. */}
-                  {([
-                    ['Started', row.games_started.toLocaleString(), 'games_started'],
-                    ['Finished', row.games_finished.toLocaleString(), 'games_finished'],
-                    ['Players', row.distinct_players.toLocaleString(), 'distinct_players'],
-                    ['Sessions / player', row.sessions_per_player ?? '—', 'sessions_per_player'],
-                    ['Multiplayer', row.mp_player_sessions.toLocaleString(), 'mp_sessions'],
-                    ['Solo', (row.games_started - row.mp_player_sessions).toLocaleString(), undefined],
-                    // No glossary key: this is the COUNT, and the only definition that
-                    // exists is `repeat_rate_pct`, a percentage. Pointing at it put the
-                    // definition of a rate beside a headcount, and the popover's
-                    // accessible name disagreed with the visible label once the glossary
-                    // loaded (Copilot on #116). The rate keeps its own key, one column left.
-                    ['Repeat players', row.repeat_players.toLocaleString(), undefined],
-                    ['Share of platform', rate(row.share_pct), 'share_pct'],
-                    ['Previous window', row.previous_games_started.toLocaleString(), undefined],
-                  ] as [string, string | number, string | undefined][]).map(([label, value, glossaryKey]) => (
-                    <div key={label}>
-                      <dt className="flex items-center gap-1 text-xs text-muted-foreground">
-                        {label}
-                        {glossaryKey && <MetricInfo metric={glossaryKey} />}
-                      </dt>
-                      <dd className="font-medium tabular-nums text-foreground">{value}</dd>
-                    </div>
-                  ))}
-                  <div className="col-span-2 sm:col-span-3 lg:col-span-6">
-                    <Link
-                      href={`/reports/games/${row.game_type}`}
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      Open full report for this game →
-                    </Link>
-                  </div>
-                </dl>
+                <div className="border-t px-4 py-3">
+                  {/* MetricRow, which R9 built for exactly this and shipped
+                      without a caller — the orphan guard caught it the moment
+                      it was fixed to compare real paths (Copilot on #118).
+                      The `metric` key is a glossary entry, present where the
+                      label cannot say what is counted: players and
+                      sessions-per-player both leave anonymous play out, since
+                      every anonymous session belongs to one shared account and
+                      counting it would read hundreds of people as one. */}
+                  <MetricRow
+                    metrics={[
+                      { label: 'Started', value: row.games_started.toLocaleString(), metric: 'games_started' },
+                      { label: 'Finished', value: row.games_finished.toLocaleString(), metric: 'games_finished' },
+                      { label: 'Players', value: row.distinct_players.toLocaleString(), metric: 'distinct_players' },
+                      { label: 'Sessions / player', value: row.sessions_per_player ?? '—', metric: 'sessions_per_player' },
+                      { label: 'Multiplayer', value: row.mp_player_sessions.toLocaleString(), metric: 'mp_sessions' },
+                      { label: 'Solo', value: (row.games_started - row.mp_player_sessions).toLocaleString() },
+                      // No glossary key: this is the COUNT, and the only
+                      // definition that exists is `repeat_rate_pct`, a
+                      // percentage (Copilot on #116). The rate keeps that key.
+                      { label: 'Repeat players', value: row.repeat_players.toLocaleString() },
+                      { label: 'Share of platform', value: rate(row.share_pct), metric: 'share_pct' },
+                      { label: 'Previous window', value: row.previous_games_started.toLocaleString() },
+                    ]}
+                  />
+                  <Link
+                    href={`/reports/games/${row.game_type}`}
+                    className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                  >
+                    Open full report for this game →
+                  </Link>
+                </div>
               )}
             </div>
           );

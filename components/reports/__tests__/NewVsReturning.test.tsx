@@ -1,7 +1,7 @@
 import type { NewReturningRow } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { NewVsReturning } from '@/components/reports/NewVsReturning';
+import { NewVsReturning } from '@/components/reports/charts/NewVsReturning';
 
 // recharts measures its container and jsdom reports zero, so the SVG never
 // renders. What is worth asserting here is the branch above it — chart or empty
