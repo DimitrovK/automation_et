@@ -539,6 +539,35 @@ export type UnfinishedResponse = {
   total_stale_sessions: number;
 };
 
+/**
+ * One starting game's first-timers, and how quickly they came back.
+ *
+ * The `returned_*` counts are CUMULATIVE: everyone in 24h is also in 48h and
+ * 7d. Reported as disjoint bands they would each look smaller than they are and
+ * could not be read against one another.
+ */
+export type FirstSessionRow = {
+  game_type: string;
+  /** Players whose first-ever session was this game, in the window. */
+  new_players: number;
+  /** True when there are too few first-timers for a rate to mean anything. */
+  below_threshold: boolean;
+  returned_24h: number;
+  returned_48h: number;
+  returned_168h: number;
+  /** Null below the threshold — the count is still given. */
+  returned_24h_pct: number | null;
+  returned_48h_pct: number | null;
+  returned_168h_pct: number | null;
+};
+
+export type FirstSessionResponse = {
+  /** First-timers needed before a rate is stated. */
+  min_players: number;
+  total_new_players: number;
+  rows: FirstSessionRow[];
+} & ResolvedRange;
+
 export type AnomalyFinding = {
   scope: 'platform' | 'game';
   game_type: string | null;
