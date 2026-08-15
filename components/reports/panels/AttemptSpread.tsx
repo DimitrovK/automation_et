@@ -94,8 +94,15 @@ export function AttemptSpread({ data, meta }: { data: AttemptsResponse; meta: Ga
                           : (
                               <>
                                 {`${row.over_allowance_pct}%`}
+                                {/* A missing count is shown as missing, not as
+                                    zero: coercing it renders "0 sessions"
+                                    beside a non-zero percentage, which reads as
+                                    data rather than as the payload
+                                    inconsistency it is (Copilot on #121). */}
                                 <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                                  {`${(row.over_allowance ?? 0).toLocaleString()} sessions`}
+                                  {row.over_allowance === null
+                                    ? '— sessions'
+                                    : `${row.over_allowance.toLocaleString()} sessions`}
                                 </span>
                               </>
                             )}

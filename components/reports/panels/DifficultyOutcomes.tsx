@@ -117,11 +117,16 @@ export function DifficultyOutcomes({ data, meta }: { data: DifficultyResponse; m
               </ReportTable>
             )}
 
-        {rows.filter(row => row.difficulty.length > 0).map(row => (
+        {/* A non-null LABEL is required, not just rows: the section header and the
+            column heading both print it, and `by ${undefined?.toLowerCase()}`
+            rendered literally as "by undefined" with a blank header beside it
+            (Copilot on #121). A game with buckets and no label is a payload
+            fault, and showing nothing beats showing that. */}
+        {rows.filter(row => row.difficulty.length > 0 && row.difficulty_label).map(row => (
           <div key={row.game_type} className="space-y-2 border-t pt-4">
             <p className="flex items-center gap-2 text-sm font-medium">
               <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
-              <span className="text-muted-foreground">{`by ${row.difficulty_label?.toLowerCase()}`}</span>
+              <span className="text-muted-foreground">{`by ${row.difficulty_label!.toLowerCase()}`}</span>
             </p>
             <ReportTable>
               <ReportHead>
