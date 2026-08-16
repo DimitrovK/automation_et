@@ -16,15 +16,18 @@ import { cn } from '@/lib/utils';
  * Debounced because every change is a query: without it, "england" is seven
  * requests and the answers can arrive out of order.
  */
-export function SearchBox({ value, onChange, placeholder, className, delay = 300 }: {
+export function SearchBox({ value, onChange, placeholder, className, delay = 300, label }: {
   value: string;
   onChange: (next: string) => void;
   placeholder: string;
   className?: string;
   delay?: number;
+  /** Accessible name. Falls back to the placeholder, which is not a label. */
+  label?: string;
 }) {
   const [draft, setDraft] = useState(value);
   const [lastCommitted, setLastCommitted] = useState(value);
+  const pending = draft !== value;
 
   // Follow the committed value when it changes from OUTSIDE (a cleared filter,
   // a restored URL) without fighting the user mid-keystroke.
@@ -57,8 +60,21 @@ export function SearchBox({ value, onChange, placeholder, className, delay = 300
         value={draft}
         onChange={event => setDraft(event.target.value)}
         placeholder={placeholder}
+        // A placeholder disappears the moment anyone types, so it cannot be the
+        // accessible name — and this box's name is the only thing that says
+        // WHAT it filters.
+        aria-label={label ?? placeholder}
         className="h-8 px-8 text-sm"
       />
+      {/* The debounce, made visible. Without it the box looks inert for a third
+          of a second after the last keystroke, which reads as "nothing
+          happened" rather than "waiting for you to stop typing". */}
+      {pending && (
+        <span
+          aria-hidden
+          className="absolute right-8 top-1/2 size-3 -translate-y-1/2 animate-spin rounded-full border border-muted-foreground/30 border-t-muted-foreground"
+        />
+      )}
       {draft && (
         <button
           type="button"
