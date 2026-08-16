@@ -60,6 +60,14 @@ export type Pulse = {
   metrics: Record<keyof ActivityMetrics, PulseMetric>;
 };
 
+/**
+ * Per-game daily series for the table sparkline.
+ *
+ * `null` is a day the rollup never computed — NOT zero. Drawn as zero it puts a
+ * hole in the line that reads as a collapse.
+ */
+export type GameSeries = Record<string, (number | null)[]>;
+
 export type GameTotals = {
   game_type: string;
   /** finished / started. Null when nobody played — 0% would read as "everyone bailed". */
@@ -123,6 +131,13 @@ export type SummaryResponse = {
   comparison: PeriodComparison;
   window_totals: ActivityMetrics;
   by_game: GameTotals[];
+  /**
+   * Sparkline series keyed by game. OPTIONAL, because the backend that sends it
+   * may not be deployed yet — the two repositories ship independently, and a
+   * required field plus an unguarded render is a crash rather than a missing
+   * column.
+   */
+  series?: GameSeries;
 } & ResolvedRange;
 
 export type MultiplayerGameRow = {
