@@ -40,6 +40,16 @@ export type DataTier = {
    *
    * A real light shade, not an opacity of a dark one. That distinction is the
    * whole reason the earlier tinted version disappeared.
+   *
+   * The fill sits at 50-100 with a 200 ring — enough hue to identify the
+   * column at a glance, not enough for four in a row to compete with the
+   * numbers they carry. The TEXT stays at 700 rather than dropping to 400-500
+   * with everything else: on a fill this pale those shades fall under the
+   * contrast floor, and an unreadable number is the one thing this table
+   * cannot afford.
+   *
+   * TO DIAL IT FURTHER, this line is the only knob — raise the fill toward 200
+   * for more colour, or drop the ring to 100 for less.
    */
   chip: string;
   /** Text colour for a column header. */
@@ -63,38 +73,38 @@ export type DataTier = {
 export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   EASY: {
     label: 'Easy',
-    bar: 'bg-gradient-to-r from-green-500 to-green-600',
-    track: 'bg-green-500/15',
-    chip: 'bg-gradient-to-br from-green-50 to-green-100 text-green-800 ring-1 ring-inset ring-green-200 dark:from-green-950 dark:to-green-900 dark:text-green-200 dark:ring-green-800',
-    head: 'text-green-700 dark:text-green-400',
-    dot: 'bg-green-500',
+    bar: 'bg-gradient-to-r from-green-400 to-green-500',
+    track: 'bg-green-400/20',
+    chip: 'bg-gradient-to-br from-green-50 to-green-100 text-green-700 ring-1 ring-inset ring-green-200 dark:from-green-900/60 dark:to-green-800/60 dark:text-green-200 dark:ring-green-700/60',
+    head: 'text-green-600 dark:text-green-400',
+    dot: 'bg-green-400',
     hex: '#22c55e',
   },
   NORMAL: {
     label: 'Normal',
-    bar: 'bg-gradient-to-r from-blue-500 to-blue-600',
-    track: 'bg-blue-500/15',
-    chip: 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800 ring-1 ring-inset ring-blue-200 dark:from-blue-950 dark:to-blue-900 dark:text-blue-200 dark:ring-blue-800',
-    head: 'text-blue-700 dark:text-blue-400',
-    dot: 'bg-blue-500',
+    bar: 'bg-gradient-to-r from-blue-400 to-blue-500',
+    track: 'bg-blue-400/20',
+    chip: 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 ring-1 ring-inset ring-blue-200 dark:from-blue-900/60 dark:to-blue-800/60 dark:text-blue-200 dark:ring-blue-700/60',
+    head: 'text-blue-600 dark:text-blue-400',
+    dot: 'bg-blue-400',
     hex: '#3b82f6',
   },
   HARD: {
     label: 'Hard',
-    bar: 'bg-gradient-to-r from-orange-500 to-orange-600',
-    track: 'bg-orange-500/15',
-    chip: 'bg-gradient-to-br from-orange-50 to-orange-100 text-orange-800 ring-1 ring-inset ring-orange-200 dark:from-orange-950 dark:to-orange-900 dark:text-orange-200 dark:ring-orange-800',
-    head: 'text-orange-700 dark:text-orange-400',
-    dot: 'bg-orange-500',
+    bar: 'bg-gradient-to-r from-orange-400 to-orange-500',
+    track: 'bg-orange-400/20',
+    chip: 'bg-gradient-to-br from-orange-50 to-orange-100 text-orange-700 ring-1 ring-inset ring-orange-200 dark:from-orange-900/60 dark:to-orange-800/60 dark:text-orange-200 dark:ring-orange-700/60',
+    head: 'text-orange-600 dark:text-orange-400',
+    dot: 'bg-orange-400',
     hex: '#f97316',
   },
   EXTREME: {
     label: 'Extreme',
-    bar: 'bg-gradient-to-r from-red-500 to-red-600',
-    track: 'bg-red-500/15',
-    chip: 'bg-gradient-to-br from-red-50 to-red-100 text-red-800 ring-1 ring-inset ring-red-200 dark:from-red-950 dark:to-red-900 dark:text-red-200 dark:ring-red-800',
-    head: 'text-red-700 dark:text-red-400',
-    dot: 'bg-red-500',
+    bar: 'bg-gradient-to-r from-red-400 to-red-500',
+    track: 'bg-red-400/20',
+    chip: 'bg-gradient-to-br from-red-50 to-red-100 text-red-700 ring-1 ring-inset ring-red-200 dark:from-red-900/60 dark:to-red-800/60 dark:text-red-200 dark:ring-red-700/60',
+    head: 'text-red-600 dark:text-red-400',
+    dot: 'bg-red-400',
     hex: '#ef4444',
   },
 };
@@ -116,10 +126,10 @@ export function difficultyTier(difficulty: string): DataTier {
 
 /** Still playing against retired: two states of a whole, not a scale. */
 export const CAREER_STATE = {
-  active: { label: 'Still playing', bar: 'bg-gradient-to-r from-teal-400 to-teal-600', track: 'bg-teal-500/15', hex: '#14b8a6' },
+  active: { label: 'Still playing', bar: 'bg-gradient-to-r from-teal-400 to-teal-500', track: 'bg-teal-400/20', hex: '#2dd4bf' },
   // Deliberately not grey: at bar heights a neutral reads as "no data" rather
   // than as a value, and this is half the catalogue.
-  retired: { label: 'Retired', bar: 'bg-gradient-to-r from-violet-400 to-violet-600', track: 'bg-violet-500/15', hex: '#8b5cf6' },
+  retired: { label: 'Retired', bar: 'bg-gradient-to-r from-violet-400 to-violet-500', track: 'bg-violet-400/20', hex: '#a78bfa' },
 } as const;
 
 /**
@@ -128,5 +138,5 @@ export const CAREER_STATE = {
  * One colour, deliberately: shading these by value would imply a threshold
  * ("amber means concerning") that a squad size does not have.
  */
-export const MAGNITUDE_BAR = 'bg-gradient-to-r from-primary/70 to-primary';
+export const MAGNITUDE_BAR = 'bg-gradient-to-r from-primary/55 to-primary/80';
 export const MAGNITUDE_TRACK = 'bg-primary/10';
