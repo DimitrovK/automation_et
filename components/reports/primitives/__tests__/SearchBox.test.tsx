@@ -37,6 +37,26 @@ describe('searchBox', () => {
     expect(onChange).toHaveBeenCalledWith('engl');
   });
 
+  it('shows that it is waiting, so the pause does not read as nothing happening', () => {
+    const onChange = vi.fn();
+    const { container, rerender } = render(<SearchBox value="" onChange={onChange} placeholder="Filter" />);
+
+    fireEvent.change(screen.getByPlaceholderText('Filter'), { target: { value: 'eng' } });
+
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+
+    // Still waiting after the debounce fires: the query is out but the results
+    // are not back, which is exactly when the reader most needs to be told.
+    act(() => void vi.advanceTimersByTime(300));
+
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+
+    // It clears when the parent commits the value, i.e. when the table updates.
+    rerender(<SearchBox value="eng" onChange={onChange} placeholder="Filter" />);
+
+    expect(container.querySelector('.animate-spin')).not.toBeInTheDocument();
+  });
+
   it('clears back to everything', () => {
     const onChange = vi.fn();
     render(<SearchBox value="eng" onChange={onChange} placeholder="Filter" />);

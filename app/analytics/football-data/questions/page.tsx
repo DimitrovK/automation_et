@@ -11,7 +11,6 @@ import { QuestionQuality } from '@/components/analytics/panels/QuestionQuality';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
-import { SearchBox } from '@/components/reports/filters/SearchBox';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { useReport } from '@/hooks/use-report';
@@ -85,12 +84,6 @@ export default function QuestionsAnalyticsPage() {
           includeBots={includeBots}
           onIncludeBotsChange={setIncludeBots}
         />
-        <SearchBox
-          value={search}
-          onChange={setSearch}
-          placeholder="Filter categories by name"
-          className="w-full sm:w-72"
-        />
       </FilterBar>
 
       <ReportPanel state={bank} skeletonClassName="h-[26rem] w-full">
@@ -101,6 +94,8 @@ export default function QuestionsAnalyticsPage() {
         {data => (
           <CategoryMatrix
             data={data}
+            search={search}
+            onSearchChange={setSearch}
             expanded={limit > PAGE}
             onExpand={() => setLimit(EXPANDED)}
           />

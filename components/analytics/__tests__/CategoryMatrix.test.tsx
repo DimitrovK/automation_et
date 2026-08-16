@@ -1,6 +1,6 @@
 import type { QuestionBankResponse } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CategoryMatrix } from '@/components/analytics/panels/CategoryMatrix';
 
 function data(over: Partial<QuestionBankResponse> = {}): QuestionBankResponse {
@@ -23,13 +23,13 @@ describe('categoryMatrix', () => {
   it('says the rows do not sum to the bank, rather than leaving it to be found', () => {
     // The one figure on the page that deliberately double-counts: most
     // questions carry more than one category.
-    render(<CategoryMatrix data={data()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
 
     expect(screen.getByText(/sum to more than the bank holds/)).toBeInTheDocument();
   });
 
   it('lays the difficulties out as columns in order', () => {
-    render(<CategoryMatrix data={data()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
 
     const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
 
@@ -37,7 +37,7 @@ describe('categoryMatrix', () => {
   });
 
   it('shows each cell and the row total', () => {
-    render(<CategoryMatrix data={data()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
 
     expect(screen.getByText('277')).toBeInTheDocument();
     expect(screen.getByText('113')).toBeInTheDocument();
@@ -45,26 +45,43 @@ describe('categoryMatrix', () => {
   });
 
   it('reports the real category count, not the rows rendered', () => {
-    render(<CategoryMatrix data={data()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
 
     expect(screen.getByText('Showing 2 of 2,017')).toBeInTheDocument();
+  });
+
+  it('puts the filter on the card it filters', () => {
+    // In the page filter bar it sat beside the date range with nothing to say
+    // which panel it applied to. It applies to this table alone.
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+
+    expect(screen.getByLabelText('Filter categories in this table')).toBeInTheDocument();
+  });
+
+  it('gives each difficulty its own column identity', () => {
+    // Difficulty is ordinal, so the columns read cool-to-hot rather than as
+    // four unrelated hues — a row is a shape before it is four numbers.
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+
+    const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
+
+    expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total']);
   });
 
   it('says which search found nothing, rather than just "no data"', () => {
     render(
       <CategoryMatrix
-        data={data({
-          search: 'zzz',
-          category_matrix: { items: [], total: 0, limit: 10 },
-        })}
+        data={data({ search: 'zzz', category_matrix: { items: [], total: 0, limit: 10 } })}
+        search="zzz"
+        onSearchChange={vi.fn()}
       />,
     );
 
     expect(screen.getByText('No category matches "zzz".')).toBeInTheDocument();
   });
 
-  it('leaves an empty cell unshaded so a gap is visible', () => {
-    // A zero tinted the lightest shade of "some" is a gap you cannot see, and
+  it('draws an empty cell as a dash, not a tinted zero', () => {
+    // A zero shaded the lightest step of the ramp is a gap you cannot see, and
     // the gaps are the reason to read this table.
     const { container } = render(
       <CategoryMatrix
@@ -75,14 +92,19 @@ describe('categoryMatrix', () => {
             limit: 10,
           },
         })}
+        search=""
+        onSearchChange={vi.fn()}
       />,
     );
 
-    const zeroCells = [...container.querySelectorAll('span')].filter(el => el.textContent === '0');
+    // Three empty tiers, each an outlined dash rather than a shaded "0".
+    const empty = container.querySelectorAll('.border-dashed');
 
-    expect(zeroCells.length).toBe(3);
+    expect(empty).toHaveLength(3);
+    expect([...empty].every(cell => cell.textContent === '—')).toBe(true);
 
-    for (const cell of zeroCells) {
+    // `--tint` is what shades a real value; an empty cell carries none.
+    for (const cell of empty) {
       expect(cell).not.toHaveAttribute('style');
     }
   });
