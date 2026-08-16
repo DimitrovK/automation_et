@@ -1144,7 +1144,42 @@ export type CoverageResponse = {
   totals?: CatalogueTotals;
   added_series?: CatalogueAddedPoint[];
   difficulty_tiers?: DifficultyTier[];
+  /**
+   * Who added the footballers. Only `Footballer` records this — Team and
+   *  Nation carry no author — so it is not catalogue-wide authorship.
+   */
+  contributors?: CappedRows<{ username: string; footballers: number }>;
+  career_state?: { retired: number; active: number };
+  review_queue?: ReviewQueue;
 } & ResolvedRange;
+
+/**
+ * A bounded sample plus the real total.
+ *
+ * `items` is capped server-side, so `items.length` is NOT the answer to "how
+ * many" — `total` is. Reporting the length is how a 101-nation gap gets
+ * described as ten.
+ */
+export type CappedRows<T> = {
+  items: T[];
+  total: number;
+  /** How many were asked for, echoed so the UI can say "10 of 101". */
+  limit: number;
+};
+
+/** Counts by non-approved status. Empty when nothing is waiting. */
+export type ReviewQueue = Record<string, number>;
+
+export type NationGapsResponse = {
+  nations_without_footballers: CappedRows<{ name: string; short: string }>;
+  nations_without_teams: CappedRows<{ name: string; short: string }>;
+  nations_by_footballers: CappedRows<{ name: string; short: string; footballers: number }>;
+};
+
+export type TeamGapsResponse = {
+  teams_without_footballers: CappedRows<{ name: string; nation: string | null }>;
+  review_queue: ReviewQueue;
+};
 
 export type CatalogueTotals = {
   /**
