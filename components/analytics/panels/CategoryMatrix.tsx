@@ -4,6 +4,7 @@ import type { QuestionBankResponse } from '@/types/reports';
 import { SearchBox } from '@/components/reports/filters/SearchBox';
 import { CappedList } from '@/components/reports/primitives/CappedList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { difficultyTier as tier } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
 
 /**
@@ -23,49 +24,6 @@ import { cn } from '@/lib/utils';
  * render every small category as one flat colour — which is exactly the row you
  * most need to see the shape of.
  */
-
-/**
- * The ordinal ramp, cool to hot.
- *
- * Fixed Tailwind class strings rather than interpolated ones: Tailwind scans
- * source text for complete class names, so a computed `bg-${hue}-500` is not
- * emitted at all and the cell renders unstyled.
- */
-const TIERS: Record<string, { label: string; head: string; cell: string; dot: string }> = {
-  EASY: {
-    label: 'Easy',
-    head: 'text-emerald-700 dark:text-emerald-400',
-    cell: 'bg-emerald-500/[var(--tint)] text-emerald-950 dark:text-emerald-50',
-    dot: 'bg-emerald-500',
-  },
-  NORMAL: {
-    label: 'Normal',
-    head: 'text-sky-700 dark:text-sky-400',
-    cell: 'bg-sky-500/[var(--tint)] text-sky-950 dark:text-sky-50',
-    dot: 'bg-sky-500',
-  },
-  HARD: {
-    label: 'Hard',
-    head: 'text-amber-700 dark:text-amber-400',
-    cell: 'bg-amber-500/[var(--tint)] text-amber-950 dark:text-amber-50',
-    dot: 'bg-amber-500',
-  },
-  EXTREME: {
-    label: 'Extreme',
-    head: 'text-rose-700 dark:text-rose-400',
-    cell: 'bg-rose-500/[var(--tint)] text-rose-950 dark:text-rose-50',
-    dot: 'bg-rose-500',
-  },
-};
-
-function tier(difficulty: string) {
-  return TIERS[difficulty] ?? {
-    label: difficulty,
-    head: 'text-muted-foreground',
-    cell: 'bg-muted text-foreground',
-    dot: 'bg-muted-foreground',
-  };
-}
 
 export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChange }: {
   data: QuestionBankResponse;
@@ -180,7 +138,7 @@ function Cell({ difficulty, count, share }: { difficulty: string; count: number;
   return (
     <td className="p-1 text-center">
       <span
-        className={cn('inline-block min-w-[3.25rem] rounded-md px-2 py-1 font-medium tabular-nums', style.cell)}
+        className={cn('inline-block min-w-[3.25rem] rounded-md px-2 py-1 font-medium tabular-nums', style.chip)}
         // Floored so the faintest real value is still visibly a box rather than
         // an empty rectangle, and capped so a 100%-of-row cell stays readable.
         style={{ '--tint': `${Math.max(12, Math.min(70, Math.round(share * 90)))}%` } as React.CSSProperties}

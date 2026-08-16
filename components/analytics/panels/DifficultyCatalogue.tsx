@@ -1,8 +1,9 @@
 'use client';
 
 import type { CoverageResponse, DifficultyTier } from '@/types/reports';
+import { DataBar } from '@/components/reports/primitives/DataBar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { difficultyTier } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
 
 /**
@@ -17,15 +18,8 @@ import { cn } from '@/lib/utils';
  * Not scoped to the date range. This is the state of the catalogue now, not what
  * changed in it, and a range filter here would answer neither question.
  */
-const TIER_LABELS: Record<string, string> = {
-  EASY: 'Easy',
-  NORMAL: 'Normal',
-  HARD: 'Hard',
-  EXTREME: 'Extreme',
-};
-
 function tierLabel(difficulty: string) {
-  return TIER_LABELS[difficulty] ?? difficulty;
+  return difficultyTier(difficulty).label || difficulty;
 }
 
 export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
@@ -61,9 +55,11 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
                     question here is which tier is biggest, and a share-of-total
                     bar answers a question nobody asked of four bars that sum
                     to one. */}
-                <Progress
-                  value={(tier.footballers / largest) * 100}
-                  aria-label={`${tierLabel(tier.difficulty)}: ${tier.footballers} footballers`}
+                <DataBar
+                  value={tier.footballers}
+                  max={largest}
+                  colour={difficultyTier(tier.difficulty).bar}
+                  label={`${tierLabel(tier.difficulty)}: ${tier.footballers} footballers`}
                 />
               </div>
             ))}
@@ -120,9 +116,11 @@ function PictureRow({ tier }: { tier: DifficultyTier }) {
               )}
         </dd>
       </div>
-      <Progress
+      <DataBar
         value={pct ?? 0}
-        aria-label={
+        max={100}
+        colour={difficultyTier(tier.difficulty).bar}
+        label={
           empty
             ? `${tierLabel(tier.difficulty)}: no footballers`
             : `${tierLabel(tier.difficulty)}: ${tier.with_picture} of ${tier.footballers} have a picture`

@@ -2,9 +2,10 @@
 
 import type { TeamGapsResponse } from '@/types/reports';
 import { CappedList } from '@/components/reports/primitives/CappedList';
+import { DataBar } from '@/components/reports/primitives/DataBar';
 import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { MAGNITUDE_BAR } from '@/lib/data-colours';
 
 /**
  * Teams with the deepest squads.
@@ -68,9 +69,11 @@ export function SquadDepth({ data, onExpand, expanded, search }: {
                     {row.players.toLocaleString()}
                   </td>
                   <td className="py-1.5">
-                    <Progress
-                      value={(row.players / largest) * 100}
-                      aria-label={`${row.name}: ${row.players} players`}
+                    <DataBar
+                      value={row.players}
+                      max={largest}
+                      colour={MAGNITUDE_BAR}
+                      label={`${row.name}: ${row.players} players`}
                     />
                   </td>
                 </tr>
