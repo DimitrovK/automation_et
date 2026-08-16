@@ -59,6 +59,7 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
                   value={tier.footballers}
                   max={largest}
                   colour={difficultyTier(tier.difficulty).bar}
+                  track={difficultyTier(tier.difficulty).track}
                   label={`${tierLabel(tier.difficulty)}: ${tier.footballers} footballers`}
                 />
               </div>
@@ -120,6 +121,7 @@ function PictureRow({ tier }: { tier: DifficultyTier }) {
         value={pct ?? 0}
         max={100}
         colour={difficultyTier(tier.difficulty).bar}
+        track={difficultyTier(tier.difficulty).track}
         label={
           empty
             ? `${tierLabel(tier.difficulty)}: no footballers`

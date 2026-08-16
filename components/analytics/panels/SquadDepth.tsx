@@ -5,7 +5,7 @@ import { CappedList } from '@/components/reports/primitives/CappedList';
 import { DataBar } from '@/components/reports/primitives/DataBar';
 import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MAGNITUDE_BAR } from '@/lib/data-colours';
+import { MAGNITUDE_BAR, MAGNITUDE_TRACK } from '@/lib/data-colours';
 
 /**
  * Teams with the deepest squads.
@@ -73,6 +73,7 @@ export function SquadDepth({ data, onExpand, expanded, search }: {
                       value={row.players}
                       max={largest}
                       colour={MAGNITUDE_BAR}
+                      track={MAGNITUDE_TRACK}
                       label={`${row.name}: ${row.players} players`}
                     />
                   </td>

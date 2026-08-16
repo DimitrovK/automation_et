@@ -27,12 +27,18 @@ import { cn } from '@/lib/utils';
  * A HAIRLINE TRACK, not a filled rail — present enough to show the full extent,
  * quiet enough that the data is the dark thing on the page.
  */
-export function DataBar({ value, max, colour, label, className }: {
+export function DataBar({ value, max, colour, track, label, className }: {
   value: number;
   /** What a full bar means. Bars sharing a max are comparable; that is the point. */
   max: number;
   /** Tailwind background class from `lib/data-colours`, never an ad-hoc hue. */
   colour: string;
+  /**
+   * The rail, in the bar's own hue. A neutral grey rail reads as chrome — part
+   * of the component rather than part of the measurement — and at low contrast
+   * it is the only thing visible when the fill fails to render.
+   */
+  track?: string;
   /** Read to anyone who cannot see the bar. The number alone is not a sentence. */
   label: string;
   className?: string;
@@ -45,12 +51,12 @@ export function DataBar({ value, max, colour, label, className }: {
     <div
       role="img"
       aria-label={label}
-      className={cn('h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.09]', className)}
+      className={cn('h-3 w-full overflow-hidden rounded-full', track ?? 'bg-foreground/[0.09]', className)}
     >
       <div
         // Rounded on the data end only. `rounded-r-[3px]` with a square left
         // edge is what anchors it to the baseline.
-        className={cn('h-full rounded-r-full animate-data-grow transition-[width] duration-300 ease-out', colour)}
+        className={cn('h-full rounded-full animate-data-grow shadow-sm transition-[width] duration-500 ease-out', colour)}
         style={{ width: `${pct}%` }}
       />
     </div>
