@@ -3,9 +3,10 @@
 import type { CoverageResponse } from '@/types/reports';
 import { CareerSplit } from '@/components/analytics/charts/CareerSplit';
 import { CappedList } from '@/components/reports/primitives/CappedList';
+import { DataBar } from '@/components/reports/primitives/DataBar';
 import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { CAREER_STATE } from '@/lib/data-colours';
 
 /**
  * Who is adding footballers, and how many of them have stopped playing.
@@ -77,8 +78,10 @@ export function FootballerBreakdown({ data, onExpand, expanded }: {
           </CardHeader>
           <CardContent className="space-y-3">
             <dl className="space-y-3">
-              <Row label="Retired" value={careerState.retired} total={total} />
-              <Row label="Still playing" value={careerState.active} total={total} />
+              {/* Playing first: the chart below stacks it at the bottom, and
+                  a legend order that disagrees with the stack is a puzzle. */}
+              <Row label={CAREER_STATE.active.label} value={careerState.active} total={total} colour={CAREER_STATE.active.bar} />
+              <Row label={CAREER_STATE.retired.label} value={careerState.retired} total={total} colour={CAREER_STATE.retired.bar} />
             </dl>
             {retiredPct !== null && (
               <p className="text-xs text-muted-foreground">
@@ -95,14 +98,14 @@ export function FootballerBreakdown({ data, onExpand, expanded }: {
   );
 }
 
-function Row({ label, value, total }: { label: string; value: number; total: number }) {
+function Row({ label, value, total, colour }: { label: string; value: number; total: number; colour: string }) {
   return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2">
         <dt className="text-sm text-muted-foreground">{label}</dt>
         <dd className="text-sm font-medium tabular-nums text-foreground">{value.toLocaleString()}</dd>
       </div>
-      <Progress value={total ? (value / total) * 100 : 0} aria-label={`${label}: ${value} of ${total}`} />
+      <DataBar value={value} max={total} colour={colour} label={`${label}: ${value} of ${total}`} />
     </div>
   );
 }

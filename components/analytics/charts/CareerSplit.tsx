@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
 import { ChartLegend } from '@/components/reports/primitives/ChartLegend';
 import { chartTheme } from '@/lib/chart-theme';
+import { CAREER_STATE } from '@/lib/data-colours';
 
 /**
  * Retired against still playing, per difficulty tier.
@@ -34,14 +35,16 @@ export function CareerSplit({ tiers }: {
           <XAxis dataKey="label" tick={theme.tick} />
           <YAxis tick={theme.tick} allowDecimals={false} width={48} />
           <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
-          <Bar dataKey="active" name="Still playing" stackId="career" fill={theme.series[0]} radius={[0, 0, 4, 4]} />
-          <Bar dataKey="retired" name="Retired" stackId="career" fill={theme.series[1]} radius={[4, 4, 0, 0]} />
+          {/* The same hexes the bars above use — a chart and a bar describing
+              the same thing in different colours is worse than either alone. */}
+          <Bar dataKey="active" name={CAREER_STATE.active.label} stackId="career" fill={CAREER_STATE.active.hex} radius={[0, 0, 4, 4]} />
+          <Bar dataKey="retired" name={CAREER_STATE.retired.label} stackId="career" fill={CAREER_STATE.retired.hex} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
       <ChartLegend
         series={[
-          { label: 'Still playing', colour: theme.series[0] },
-          { label: 'Retired', colour: theme.series[1] },
+          { label: CAREER_STATE.active.label, colour: CAREER_STATE.active.hex },
+          { label: CAREER_STATE.retired.label, colour: CAREER_STATE.retired.hex },
         ]}
       />
     </div>
