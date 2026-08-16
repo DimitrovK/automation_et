@@ -75,3 +75,36 @@ describe('catalogueGrowth', () => {
     expect(screen.getByText('Teams')).toBeInTheDocument();
   });
 });
+
+describe('catalogueGrowth — added today', () => {
+  it('names both kinds when both landed today', () => {
+    render(<CatalogueGrowth data={data({ ...TOTALS, footballers_added_today: 5, teams_added_today: 2 })} />);
+
+    expect(screen.getByText('5 footballers and 2 teams added today')).toBeInTheDocument();
+  });
+
+  it('drops the kind that had none rather than saying "0 teams"', () => {
+    render(<CatalogueGrowth data={data({ ...TOTALS, footballers_added_today: 5, teams_added_today: 0 })} />);
+
+    expect(screen.getByText('5 footballers added today')).toBeInTheDocument();
+  });
+
+  it('says nothing at all on a quiet day', () => {
+    // A zero under every tile every morning trains people to stop reading it.
+    render(<CatalogueGrowth data={data({ ...TOTALS, footballers_added_today: 0, teams_added_today: 0 })} />);
+
+    expect(screen.queryByText(/added today/)).not.toBeInTheDocument();
+  });
+
+  it('says nothing when the backend predates the field', () => {
+    render(<CatalogueGrowth data={data(TOTALS)} />);
+
+    expect(screen.queryByText(/added today/)).not.toBeInTheDocument();
+  });
+
+  it('reads "1 footballer", not "1 footballers"', () => {
+    render(<CatalogueGrowth data={data({ ...TOTALS, footballers_added_today: 1, teams_added_today: 1 })} />);
+
+    expect(screen.getByText('1 footballer and 1 team added today')).toBeInTheDocument();
+  });
+});

@@ -27,6 +27,36 @@ import { chartTheme } from '@/lib/chart-theme';
  * last ninety days; a time series of four events is four dots on an empty
  * canvas, and the date answers the same question in less space.
  */
+/**
+ * What landed today, under the window's total.
+ *
+ * Green because it is the live line on a panel of standing figures — the one
+ * thing here that can change while you are looking at it. Nothing else on the
+ * page is coloured, so it reads as "new" rather than as a status.
+ *
+ * Renders nothing at zero rather than "0 added today". A quiet day is the
+ * normal case for a catalogue edited in bursts, and a zero sitting under every
+ * tile every morning trains people to stop reading the line.
+ */
+function AddedToday({ footballers, teams }: { footballers?: number; teams?: number }) {
+  // Undefined is a backend that predates the field; zero is a real quiet day.
+  // Both render nothing, for different reasons.
+  if (!footballers && !teams) {
+    return null;
+  }
+
+  const parts = [
+    footballers ? `${footballers.toLocaleString()} footballer${footballers === 1 ? '' : 's'}` : null,
+    teams ? `${teams.toLocaleString()} team${teams === 1 ? '' : 's'}` : null,
+  ].filter(Boolean);
+
+  return (
+    <p className="text-xs font-medium text-emerald-600 dark:text-emerald-500">
+      {`${parts.join(' and ')} added today`}
+    </p>
+  );
+}
+
 export function CatalogueGrowth({ data }: { data: CoverageResponse }) {
   const { resolvedTheme } = useTheme();
   const theme = chartTheme(resolvedTheme === 'dark');
@@ -47,6 +77,7 @@ export function CatalogueGrowth({ data }: { data: CoverageResponse }) {
         <StatTile
           label="Footballers added"
           value={totals.footballers_added.toLocaleString()}
+          delta={<AddedToday footballers={totals.footballers_added_today} teams={totals.teams_added_today} />}
           hint={`${totals.teams_added.toLocaleString()} teams in the same window`}
         />
         <StatTile

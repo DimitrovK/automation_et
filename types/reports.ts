@@ -1153,6 +1153,12 @@ export type CatalogueTotals = {
    */
   footballers_added: number;
   teams_added: number;
+  /**
+   * Added TODAY, whatever range the page is showing — not the last day of the
+   * window. Optional: a backend predating it shows no line rather than "0 today".
+   */
+  footballers_added_today?: number;
+  teams_added_today?: number;
   footballers_approved: number;
   teams_approved: number;
   /** `Nation` has no approval step, so this is `is_active` — see the BE. */
