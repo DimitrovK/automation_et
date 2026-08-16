@@ -78,8 +78,23 @@ describe('categoryMatrix', () => {
     for (const cell of cells) {
       // No `--tint` custom property: the old cells set their opacity inline.
       expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
-      expect(cell.className).toMatch(/from-(green|blue|orange|red)-\d{3}/);
+      // The light-mode shade specifically — matching only `dark:from-…-950`
+      // would let a light theme regress unnoticed.
+      expect(cell.className).toMatch(/(^| )from-(green|blue|orange|red)-\d+/);
+      // And the number is written in the hue, not in white on a block of it.
+      expect(cell.className).toMatch(/(^| )text-(green|blue|orange|red)-\d+/);
     }
+  });
+
+  it('leaves air between the cells', () => {
+    // Welded edge to edge they read as one solid block and the eye has to hunt
+    // for the boundaries; this is enough to make each a box without breaking
+    // the row into four separate things.
+    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    const table = container.querySelector('table') as HTMLElement;
+
+    expect(table.className).toContain('border-spacing-x-1');
+    expect(container.querySelector('[data-difficulty]')?.className).toContain('rounded-lg');
   });
 
   it('animates the cells in rather than blinking them', () => {

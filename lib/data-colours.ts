@@ -29,7 +29,18 @@ export type DataTier = {
   bar: string;
   /** The bar's own rail, in its own hue. A neutral grey rail reads as chrome. */
   track: string;
-  /** Solid background for a matrix cell, with text that contrasts against it. */
+  /**
+   * A matrix cell: a soft tint of the hue, with the number in a strong shade of
+   * the SAME hue and a hairline ring around it.
+   *
+   * The saturated version read as shouting — four blocks of full-strength
+   * colour side by side, competing with the numbers they were meant to carry.
+   * The colour only has to say which difficulty this is; the number is the
+   * content, so the fill steps back and the text does the identifying.
+   *
+   * A real light shade, not an opacity of a dark one. That distinction is the
+   * whole reason the earlier tinted version disappeared.
+   */
   chip: string;
   /** Text colour for a column header. */
   head: string;
@@ -54,7 +65,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Easy',
     bar: 'bg-gradient-to-r from-green-500 to-green-600',
     track: 'bg-green-500/15',
-    chip: 'bg-gradient-to-br from-green-500 to-green-700 text-white dark:from-green-400 dark:to-green-600 dark:text-green-950',
+    chip: 'bg-gradient-to-br from-green-50 to-green-100 text-green-800 ring-1 ring-inset ring-green-200 dark:from-green-950 dark:to-green-900 dark:text-green-200 dark:ring-green-800',
     head: 'text-green-700 dark:text-green-400',
     dot: 'bg-green-500',
     hex: '#22c55e',
@@ -63,7 +74,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Normal',
     bar: 'bg-gradient-to-r from-blue-500 to-blue-600',
     track: 'bg-blue-500/15',
-    chip: 'bg-gradient-to-br from-blue-500 to-blue-700 text-white dark:from-blue-400 dark:to-blue-600 dark:text-blue-950',
+    chip: 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800 ring-1 ring-inset ring-blue-200 dark:from-blue-950 dark:to-blue-900 dark:text-blue-200 dark:ring-blue-800',
     head: 'text-blue-700 dark:text-blue-400',
     dot: 'bg-blue-500',
     hex: '#3b82f6',
@@ -72,7 +83,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Hard',
     bar: 'bg-gradient-to-r from-orange-500 to-orange-600',
     track: 'bg-orange-500/15',
-    chip: 'bg-gradient-to-br from-orange-500 to-orange-700 text-white dark:from-orange-400 dark:to-orange-600 dark:text-orange-950',
+    chip: 'bg-gradient-to-br from-orange-50 to-orange-100 text-orange-800 ring-1 ring-inset ring-orange-200 dark:from-orange-950 dark:to-orange-900 dark:text-orange-200 dark:ring-orange-800',
     head: 'text-orange-700 dark:text-orange-400',
     dot: 'bg-orange-500',
     hex: '#f97316',
@@ -81,7 +92,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Extreme',
     bar: 'bg-gradient-to-r from-red-500 to-red-600',
     track: 'bg-red-500/15',
-    chip: 'bg-gradient-to-br from-red-500 to-red-700 text-white dark:from-red-400 dark:to-red-600 dark:text-red-950',
+    chip: 'bg-gradient-to-br from-red-50 to-red-100 text-red-800 ring-1 ring-inset ring-red-200 dark:from-red-950 dark:to-red-900 dark:text-red-200 dark:ring-red-800',
     head: 'text-red-700 dark:text-red-400',
     dot: 'bg-red-500',
     hex: '#ef4444',
