@@ -24,10 +24,20 @@ export function SearchBox({ value, onChange, placeholder, className, delay = 300
   delay?: number;
 }) {
   const [draft, setDraft] = useState(value);
+  const [lastCommitted, setLastCommitted] = useState(value);
 
-  // Follow the committed value when it changes from outside (a cleared filter,
+  // Follow the committed value when it changes from OUTSIDE (a cleared filter,
   // a restored URL) without fighting the user mid-keystroke.
-  useEffect(() => setDraft(value), [value]);
+  //
+  // Adjusted during render rather than in an effect. Syncing props into state
+  // with `useEffect` renders once with the stale value and then again with the
+  // new one, so the box visibly shows the old text for a frame — and it is what
+  // `react-hooks-extra/no-direct-set-state-in-use-effect` is pointing at. React
+  // re-runs this component immediately, before touching the DOM.
+  if (value !== lastCommitted) {
+    setLastCommitted(value);
+    setDraft(value);
+  }
 
   useEffect(() => {
     if (draft === value) {
