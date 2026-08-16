@@ -27,7 +27,7 @@ export type DataTier = {
   label: string;
   /** Fill for a bar or chip. */
   bar: string;
-  /** Tinted background for a matrix cell; `--tint` sets the opacity. */
+  /** Solid background for a matrix cell, with text that contrasts against it. */
   chip: string;
   /** Text colour for a column header. */
   head: string;
@@ -37,39 +37,48 @@ export type DataTier = {
   hex: string;
 };
 
-/** Cool to hot. Order is the scale — do not sort these alphabetically. */
+/**
+ * Green, blue, orange, red.
+ *
+ * The previous version tinted each cell by its share of the row, floored at
+ * 12% opacity — which meant a genuine value could render at a twelfth of its
+ * colour and simply not be visible, worst of all in amber. Encoding magnitude
+ * in the fill was not worth a table you cannot read: the number is already
+ * printed in the box, so the colour's only job is to say which difficulty this
+ * is, and it does that best at full strength.
+ */
 export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   EASY: {
     label: 'Easy',
-    bar: 'bg-emerald-500',
-    chip: 'bg-emerald-500/[var(--tint)] text-emerald-950 dark:text-emerald-50',
-    head: 'text-emerald-700 dark:text-emerald-400',
-    dot: 'bg-emerald-500',
-    hex: '#10b981',
+    bar: 'bg-green-500',
+    chip: 'bg-green-600 text-white dark:bg-green-500 dark:text-green-950',
+    head: 'text-green-700 dark:text-green-400',
+    dot: 'bg-green-500',
+    hex: '#22c55e',
   },
   NORMAL: {
     label: 'Normal',
-    bar: 'bg-sky-500',
-    chip: 'bg-sky-500/[var(--tint)] text-sky-950 dark:text-sky-50',
-    head: 'text-sky-700 dark:text-sky-400',
-    dot: 'bg-sky-500',
-    hex: '#0ea5e9',
+    bar: 'bg-blue-500',
+    chip: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-blue-950',
+    head: 'text-blue-700 dark:text-blue-400',
+    dot: 'bg-blue-500',
+    hex: '#3b82f6',
   },
   HARD: {
     label: 'Hard',
-    bar: 'bg-amber-500',
-    chip: 'bg-amber-500/[var(--tint)] text-amber-950 dark:text-amber-50',
-    head: 'text-amber-700 dark:text-amber-400',
-    dot: 'bg-amber-500',
-    hex: '#f59e0b',
+    bar: 'bg-orange-500',
+    chip: 'bg-orange-600 text-white dark:bg-orange-500 dark:text-orange-950',
+    head: 'text-orange-700 dark:text-orange-400',
+    dot: 'bg-orange-500',
+    hex: '#f97316',
   },
   EXTREME: {
     label: 'Extreme',
-    bar: 'bg-rose-500',
-    chip: 'bg-rose-500/[var(--tint)] text-rose-950 dark:text-rose-50',
-    head: 'text-rose-700 dark:text-rose-400',
-    dot: 'bg-rose-500',
-    hex: '#f43f5e',
+    bar: 'bg-red-500',
+    chip: 'bg-red-600 text-white dark:bg-red-500 dark:text-red-950',
+    head: 'text-red-700 dark:text-red-400',
+    dot: 'bg-red-500',
+    hex: '#ef4444',
   },
 };
 
@@ -90,7 +99,9 @@ export function difficultyTier(difficulty: string): DataTier {
 /** Still playing against retired: two states of a whole, not a scale. */
 export const CAREER_STATE = {
   active: { label: 'Still playing', bar: 'bg-teal-500', hex: '#14b8a6' },
-  retired: { label: 'Retired', bar: 'bg-slate-400 dark:bg-slate-500', hex: '#94a3b8' },
+  // Deliberately not grey: at bar heights a neutral reads as "no data" rather
+  // than as a value, and this is half the catalogue.
+  retired: { label: 'Retired', bar: 'bg-violet-500', hex: '#8b5cf6' },
 } as const;
 
 /**
@@ -99,4 +110,4 @@ export const CAREER_STATE = {
  * One colour, deliberately: shading these by value would imply a threshold
  * ("amber means concerning") that a squad size does not have.
  */
-export const MAGNITUDE_BAR = 'bg-primary/70';
+export const MAGNITUDE_BAR = 'bg-primary';

@@ -13,8 +13,9 @@ import { cn } from '@/lib/utils';
  *
  * The differences here are the whole point:
  *
- * THIN. 6px, not 16. A data bar is read by length; height past a few pixels is
- * ink spent saying nothing, and at 16px four stacked rows read as a form.
+ * THIN, BUT NOT INVISIBLE. 10px against 16. The first attempt at this went to
+ * 6px with a 6%-opacity track, which is thin enough that the bar stops reading
+ * as a bar — "read by length" still needs something to see.
  *
  * SQUARE AT THE BASELINE, rounded only at the data end. Every bar starts on the
  * same line, so lengths compare; a rounded start pulls the eye off that line
@@ -44,12 +45,12 @@ export function DataBar({ value, max, colour, label, className }: {
     <div
       role="img"
       aria-label={label}
-      className={cn('h-1.5 w-full overflow-hidden rounded-[2px] bg-foreground/[0.06]', className)}
+      className={cn('h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.09]', className)}
     >
       <div
         // Rounded on the data end only. `rounded-r-[3px]` with a square left
         // edge is what anchors it to the baseline.
-        className={cn('h-full rounded-r-[3px] transition-[width] duration-300 ease-out', colour)}
+        className={cn('h-full rounded-r-full animate-data-grow transition-[width] duration-300 ease-out', colour)}
         style={{ width: `${pct}%` }}
       />
     </div>

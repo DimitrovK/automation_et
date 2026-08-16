@@ -41,6 +41,19 @@ describe('dataBar', () => {
     expect(fill(container).className).not.toContain('rounded-full');
   });
 
+  it('keeps the track visible enough to show the full extent', () => {
+    // The first version used a 6% track at 6px tall and the bars read as
+    // nothing at all. A bar you cannot find is not a thinner bar.
+    const { container } = render(<DataBar value={5} max={10} colour="bg-primary" label="half" />);
+    const track = container.querySelector('[role="img"]') as HTMLElement;
+
+    const opacity = Number(/bg-foreground\/\[([\d.]+)\]/.exec(track.className)?.[1] ?? 0);
+
+    expect(opacity).toBeGreaterThanOrEqual(0.08);
+    // And tall enough to be a bar rather than a rule.
+    expect(track.className).toMatch(/h-2(\.5)?|h-3/);
+  });
+
   it('carries no gradient', () => {
     // The single thing that dated the old bars: a gradient makes the same value
     // look different at different lengths.
@@ -65,6 +78,24 @@ describe('data colours', () => {
 
   it('names an unknown tier rather than dropping it', () => {
     expect(difficultyTier('LEGENDARY').label).toBe('LEGENDARY');
+  });
+
+  it('uses the agreed hues: green, blue, orange, red', () => {
+    // Pinned because they were chosen by eye and the previous set was
+    // unreadable — amber especially. A silent repaint should fail here.
+    expect(DIFFICULTY_TIERS.EASY.bar).toContain('green');
+    expect(DIFFICULTY_TIERS.NORMAL.bar).toContain('blue');
+    expect(DIFFICULTY_TIERS.HARD.bar).toContain('orange');
+    expect(DIFFICULTY_TIERS.EXTREME.bar).toContain('red');
+  });
+
+  it('fills matrix cells solidly rather than by opacity', () => {
+    // The bug this replaces: cells were tinted by their share of the row and
+    // floored at 12% opacity, so a real value could render nearly invisible.
+    for (const tier of Object.values(DIFFICULTY_TIERS)) {
+      expect(tier.chip).not.toContain('/[var(--tint)]');
+      expect(tier.chip).toMatch(/text-(white|\w+-\d{2,3})/);
+    }
   });
 
   it('keeps the two career-state colours apart', () => {

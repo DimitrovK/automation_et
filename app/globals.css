@@ -184,4 +184,44 @@
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
+
+  /* Data entrances. A cell or a bar arrives rather than appearing, so a table
+     that has just refetched reads as "this is new" instead of blinking. */
+  @keyframes data-rise {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes data-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .animate-data-rise {
+    animation: data-rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+
+  .animate-data-grow {
+    transform-origin: left center;
+    animation: data-grow 520ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+
+  /* Motion is decoration here — the number and the length carry the meaning, so
+     switching it off costs nothing. */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-data-rise,
+    .animate-data-grow {
+      animation: none;
+    }
+  }
 }
