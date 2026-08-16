@@ -69,10 +69,11 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
           {/* Its own scroller: the matrix is wider than a phone and the page
               body must never scroll sideways. */}
           <div className="-mx-2 overflow-x-auto px-2">
-            {/* `border-spacing-x-0` so the four difficulty cells meet edge to
-                edge and read as one band across the row, rather than four
-                floating chips. The band is the shape of the category. */}
-            <table className="w-full min-w-[38rem] border-separate border-spacing-x-0 border-spacing-y-1.5 text-sm">
+            {/* A hair of space between cells — 4px. Welded edge to edge they
+                read as one solid block and the eye has to hunt for the
+                boundaries; fully separated they float. This is enough to make
+                each a box without breaking the row into four. */}
+            <table className="w-full min-w-[38rem] border-separate border-spacing-x-1 border-spacing-y-1.5 text-sm">
               <thead>
                 <tr>
                   <th className="sticky left-0 z-10 bg-card py-1 pr-3 text-left text-xs font-medium text-muted-foreground">
@@ -107,15 +108,16 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                         difficulty={order[index]}
                         count={count}
                         index={index}
-                        first={index === 0}
-                        last={index === row.by_difficulty.length - 1}
                       />
                     ))}
                     <td className="py-1 pl-4">
                       {/* The row total gets the same weight as a cell so the
                           band reads as "these four, and what they come to"
                           rather than trailing off into plain text. */}
-                      <span className="block rounded-lg border border-border bg-muted/60 px-3 py-2 text-center text-sm font-bold tabular-nums text-foreground">
+                      {/* The total is the one figure here that is not a
+                          difficulty, so it stays neutral — and reads as the sum
+                          rather than as a fifth tier. */}
+                      <span className="block rounded-lg bg-muted/70 px-3 py-2 text-center text-sm font-bold tabular-nums text-foreground ring-1 ring-inset ring-border">
                         {row.total.toLocaleString()}
                       </span>
                     </td>
@@ -130,20 +132,15 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
   );
 }
 
-function Cell({ difficulty, count, index, first, last }: {
+function Cell({ difficulty, count, index }: {
   difficulty: string;
   count: number;
   index: number;
-  first: boolean;
-  last: boolean;
 }) {
   const style = tier(difficulty);
-  // Only the outer edges of the band are rounded, so the four segments read as
-  // one bar rather than four separate chips.
-  const ends = cn(first && 'rounded-l-lg', last && 'rounded-r-lg');
 
   // A dash, not a zero. An empty cell is the thing you are looking for, and the
-  // gaps are the reason to read this table — so it keeps its place in the band
+  // gaps are the reason to read this table — so it keeps its shape in the row
   // while clearly holding nothing.
   if (count === 0) {
     return (
@@ -151,12 +148,7 @@ function Cell({ difficulty, count, index, first, last }: {
         <span
           data-difficulty={difficulty}
           data-empty="true"
-          className={cn(
-            'block border-y border-dashed border-border bg-muted/30 px-3 py-2 text-center text-sm text-muted-foreground/50',
-            first && 'border-l',
-            last && 'border-r',
-            ends,
-          )}
+          className="block rounded-lg border border-dashed border-border/70 px-3 py-2 text-center text-sm text-muted-foreground/40"
         >
           —
         </span>
@@ -169,10 +161,9 @@ function Cell({ difficulty, count, index, first, last }: {
       <span
         data-difficulty={difficulty}
         className={cn(
-          'block px-3 py-2 text-center text-sm font-bold tabular-nums text-white shadow-sm',
-          'animate-data-rise transition-transform duration-150 hover:z-10 hover:scale-[1.06]',
+          'block rounded-lg px-3 py-2 text-center text-sm font-semibold tabular-nums',
+          'animate-data-rise transition-transform duration-150 hover:scale-[1.04]',
           style.chip,
-          ends,
         )}
         // Staggered across the row so a refetched table fills left to right
         // rather than flashing all at once.
