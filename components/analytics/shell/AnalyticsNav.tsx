@@ -22,7 +22,6 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
     heading: 'Per game',
     items: [
       { href: '/analytics/career-path', label: 'Career Path', icon: Route },
-      { href: '/analytics/questions', label: 'Quiz content', icon: HelpCircle },
       { href: '/analytics/lineups', label: 'Lineups', icon: Users },
     ],
   },
@@ -39,6 +38,7 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
       { href: '/analytics/football-data/footballers', label: 'Footballers', icon: User },
       { href: '/analytics/football-data/nations', label: 'Nations', icon: Flag },
       { href: '/analytics/football-data/teams', label: 'Teams', icon: Shield },
+      { href: '/analytics/football-data/questions', label: 'Questions', icon: HelpCircle },
     ],
   },
 ];
@@ -57,5 +57,5 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
 export const ANALYTICS_QUICK_LINKS: NavItem[] = [
   { href: '/analytics/football-data', label: 'Football data', icon: Database },
   { href: '/analytics/career-path', label: 'Career Path', icon: Route },
-  { href: '/analytics/questions', label: 'Quiz content', icon: HelpCircle },
+  { href: '/analytics/football-data/questions', label: 'Questions', icon: HelpCircle },
 ];
