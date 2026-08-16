@@ -47,6 +47,23 @@ describe('searchBox', () => {
     expect(onChange).toHaveBeenCalledWith('');
   });
 
+  it('follows a value changed from outside, without a stale frame', () => {
+    // A cleared filter or a restored URL changes `value` without anyone typing.
+    // The box has to follow it, and adjusting during render means it never
+    // paints the old text first.
+    const onChange = vi.fn();
+    const { rerender } = render(<SearchBox value="" onChange={onChange} placeholder="Filter" />);
+
+    rerender(<SearchBox value="italy" onChange={onChange} placeholder="Filter" />);
+
+    expect(screen.getByPlaceholderText('Filter')).toHaveValue('italy');
+
+    // Following an outside change is not a new query.
+    act(() => void vi.advanceTimersByTime(600));
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('does not re-fire when the committed value arrives back', () => {
     // The parent echoes the value back as a prop. Treating that as a change
     // would query again for the same string, forever.
