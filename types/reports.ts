@@ -1149,7 +1149,16 @@ export type CoverageResponse = {
    *  Nation carry no author — so it is not catalogue-wide authorship.
    */
   contributors?: CappedRows<{ username: string; footballers: number }>;
-  career_state?: { retired: number; active: number };
+  career_state?: {
+    retired: number;
+    active: number;
+    /**
+     * The same split per tier. The totals are kept alongside rather than
+     *  replaced — making a reader add four numbers to get the headline is
+     *  worse than printing both.
+     */
+    by_difficulty?: { difficulty: string; retired: number; active: number }[];
+  };
   review_queue?: ReviewQueue;
 } & ResolvedRange;
 
@@ -1179,7 +1188,38 @@ export type NationGapsResponse = {
 export type TeamGapsResponse = {
   teams_without_footballers: CappedRows<{ name: string; nation: string | null }>;
   review_queue: ReviewQueue;
+  /** The other end of the same table: the deepest squads. */
+  teams_by_players?: CappedRows<{ name: string; nation: string | null; players: number }>;
+  /** Echoed so an empty ranking reads as "no matches" rather than "no data". */
+  search?: string | null;
 };
+
+export type QuestionBankResponse = {
+  question_totals: {
+    /** Created in the window, approved or not — work done, not work approved. */
+    added: number;
+    added_today: number;
+    approved: number;
+    /** Categories carrying at least one approved question, after any search. */
+    categories: number;
+  };
+  question_series: { date: string; questions: number }[];
+  question_difficulty: { difficulty: string; questions: number }[];
+  /**
+   * Category x difficulty. Rows do NOT sum to `question_totals.approved`:
+   * `Question.categories` is many-to-many and most questions carry more than
+   * one, so a question tagged England and Italy appears in both rows.
+   */
+  category_matrix: CappedRows<{
+    category: string;
+    slug: string;
+    total: number;
+    /** Counts in `difficulty_order`, positionally. */
+    by_difficulty: number[];
+  }>;
+  difficulty_order: string[];
+  search: string | null;
+} & ResolvedRange;
 
 export type CatalogueTotals = {
   /**

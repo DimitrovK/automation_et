@@ -18,6 +18,7 @@ import type {
   PatternsResponse,
   PlayerDetailResponse,
   ProgressResponse,
+  QuestionBankResponse,
   QuestionsAnalyticsResponse,
   ReportParams,
   RetentionResponse,
@@ -160,8 +161,13 @@ export class ReportsAPI {
   }
 
   /** GET /core/analytics/football-data/teams/ — empty teams and the review queue. */
-  static async getTeamGaps(limit?: number): Promise<TeamGapsResponse> {
-    return apiFetcher<TeamGapsResponse>(`core/analytics/football-data/teams/${buildQuery({ limit })}`);
+  static async getTeamGaps(limit?: number, search?: string): Promise<TeamGapsResponse> {
+    return apiFetcher<TeamGapsResponse>(`core/analytics/football-data/teams/${buildQuery({ limit, search })}`);
+  }
+
+  /** GET /core/analytics/football-data/questions/ — the question bank as data. */
+  static async getQuestionBank(params?: ReportParams): Promise<QuestionBankResponse> {
+    return apiFetcher<QuestionBankResponse>(`core/analytics/football-data/questions/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */

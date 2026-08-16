@@ -1,6 +1,7 @@
 'use client';
 
 import type { CoverageResponse } from '@/types/reports';
+import { CareerSplit } from '@/components/analytics/charts/CareerSplit';
 import { CappedList } from '@/components/reports/primitives/CappedList';
 import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,6 +84,9 @@ export function FootballerBreakdown({ data, onExpand, expanded }: {
               <p className="text-xs text-muted-foreground">
                 {`${retiredPct}% of the approved catalogue has retired.`}
               </p>
+            )}
+            {careerState.by_difficulty && careerState.by_difficulty.length > 0 && (
+              <CareerSplit tiers={careerState.by_difficulty} />
             )}
           </CardContent>
         </Card>

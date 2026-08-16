@@ -48,8 +48,8 @@ export const ANALYTICS_CHILDREN: NavigationPage[] = [
   { label: 'Footballers', href: '/analytics/football-data/footballers', icon: User, description: 'How the catalogue is shaped, and who built it' },
   { label: 'Nations', href: '/analytics/football-data/nations', icon: Flag, description: 'Nations nothing points at' },
   { label: 'Teams', href: '/analytics/football-data/teams', icon: Shield, description: 'Teams nobody plays for' },
+  { label: 'Questions', href: '/analytics/football-data/questions', icon: HelpCircle, description: 'How big the question bank is, and which questions are broken' },
   { label: 'Career Path', href: '/analytics/career-path', icon: Route, description: 'Which footballers make everyone take a hint' },
-  { label: 'Quiz content', href: '/analytics/questions', icon: HelpCircle, description: 'Which questions nobody gets right' },
   { label: 'Lineups', href: '/analytics/lineups', icon: Users2, description: 'Which slots cost the most guesses' },
 ];
 
