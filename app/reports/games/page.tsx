@@ -22,6 +22,7 @@ import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
+import { Sparkline } from '@/components/reports/primitives/Sparkline';
 import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
@@ -209,6 +210,10 @@ export default function GamesIndexPage() {
                         <MetricInfo metric={column.metric} />
                       </Th>
                     ))}
+                    {/* Not sortable: there is no single number to sort a shape
+                        by, and the Trend column beside it already sorts on the
+                        figure this draws. */}
+                    <Th title="Daily sessions over the last 30 days of the window">Shape</Th>
                   </ReportHead>
                   <tbody>
                     {rows.map((row: GameRowWithDuration) => (
@@ -254,6 +259,22 @@ export default function GamesIndexPage() {
                                   %
                                 </span>
                               )}
+                        </Td>
+                        {/* The shape beside the figure (#1474 R9). A trend
+                            percentage says a game is down 12% and cannot say
+                            whether it fell off a cliff on Tuesday or has been
+                            sliding for a month — those want different
+                            responses, and the second page nobody opens is where
+                            that distinction used to live. */}
+                        <Td>
+                          {data.series?.[row.game_type]
+                            ? (
+                                <Sparkline
+                                  points={data.series[row.game_type]}
+                                  label={`Daily sessions for ${meta[row.game_type]?.display_name ?? row.game_type}`}
+                                />
+                              )
+                            : <span className="text-muted-foreground/70">—</span>}
                         </Td>
                       </ReportRow>
                     ))}
