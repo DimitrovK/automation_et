@@ -1,7 +1,7 @@
 'use client';
 
 import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
-import { Database, HelpCircle, Route, Users } from 'lucide-react';
+import { Database, Flag, HelpCircle, Route, Shield, User, Users } from 'lucide-react';
 
 /**
  * Analytics, which is not Reports and should not be folded into it.
@@ -30,9 +30,15 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
     // Its own group, not a fourth per-game entry: every game reads this data,
     // so a gap here belongs to none of them in particular — and the answer it
     // produces is "add data" rather than "rewrite content".
-    heading: 'Across the platform',
+    // Four destinations rather than one page with nine sections. Each entity
+    // is a different worklist for a different afternoon, and splitting them
+    // means the nations page never runs the difficulty query.
+    heading: 'Football data',
     items: [
-      { href: '/analytics/football-data', label: 'Football data', icon: Database },
+      { href: '/analytics/football-data', label: 'Overview', icon: Database },
+      { href: '/analytics/football-data/footballers', label: 'Footballers', icon: User },
+      { href: '/analytics/football-data/nations', label: 'Nations', icon: Flag },
+      { href: '/analytics/football-data/teams', label: 'Teams', icon: Shield },
     ],
   },
 ];

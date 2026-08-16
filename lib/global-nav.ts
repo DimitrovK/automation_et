@@ -2,12 +2,15 @@ import {
   BarChart3,
   BookOpen,
   Database,
+  Flag,
   Gamepad2,
   HelpCircle,
   LayoutGrid,
   Repeat,
   Route,
+  Shield,
   TriangleAlert,
+  User,
   Users,
   Users2,
 } from 'lucide-react';
@@ -42,6 +45,9 @@ export const REPORTS_CHILDREN: NavigationPage[] = [
 
 export const ANALYTICS_CHILDREN: NavigationPage[] = [
   { label: 'Football data', href: '/analytics/football-data', icon: Database, description: 'What the games are missing, and what is being added' },
+  { label: 'Footballers', href: '/analytics/football-data/footballers', icon: User, description: 'How the catalogue is shaped, and who built it' },
+  { label: 'Nations', href: '/analytics/football-data/nations', icon: Flag, description: 'Nations nothing points at' },
+  { label: 'Teams', href: '/analytics/football-data/teams', icon: Shield, description: 'Teams nobody plays for' },
   { label: 'Career Path', href: '/analytics/career-path', icon: Route, description: 'Which footballers make everyone take a hint' },
   { label: 'Quiz content', href: '/analytics/questions', icon: HelpCircle, description: 'Which questions nobody gets right' },
   { label: 'Lineups', href: '/analytics/lineups', icon: Users2, description: 'Which slots cost the most guesses' },

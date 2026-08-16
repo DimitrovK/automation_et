@@ -14,6 +14,7 @@ import type {
   GrowthResponse,
   LineupsAnalyticsResponse,
   MultiplayerResponse,
+  NationGapsResponse,
   PatternsResponse,
   PlayerDetailResponse,
   ProgressResponse,
@@ -22,6 +23,7 @@ import type {
   RetentionResponse,
   RollupHealth,
   SummaryResponse,
+  TeamGapsResponse,
   TopPlayersResponse,
   UnfinishedResponse,
 } from '@/types/reports';
@@ -144,6 +146,22 @@ export class ReportsAPI {
   /** GET /core/analytics/football-data/ — data completeness where it is used. */
   static async getCoverage(params?: ReportParams): Promise<CoverageResponse> {
     return apiFetcher<CoverageResponse>(`core/analytics/football-data/${buildQuery(params)}`);
+  }
+
+  /**
+   * GET /core/analytics/football-data/nations/ — nation gaps.
+   *
+   * No range parameter: these describe the catalogue as it stands, not what
+   * changed in a window, and offering a date filter would imply the number
+   * moves with it.
+   */
+  static async getNationGaps(limit?: number): Promise<NationGapsResponse> {
+    return apiFetcher<NationGapsResponse>(`core/analytics/football-data/nations/${buildQuery({ limit })}`);
+  }
+
+  /** GET /core/analytics/football-data/teams/ — empty teams and the review queue. */
+  static async getTeamGaps(limit?: number): Promise<TeamGapsResponse> {
+    return apiFetcher<TeamGapsResponse>(`core/analytics/football-data/teams/${buildQuery({ limit })}`);
   }
 
   /** GET /core/reporting/content/ — content runway and pool depth. A snapshot. */
