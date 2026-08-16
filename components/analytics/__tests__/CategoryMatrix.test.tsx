@@ -68,6 +68,26 @@ describe('categoryMatrix', () => {
     expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total']);
   });
 
+  it('gives every cell a visible solid fill, not an opacity tint', () => {
+    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+
+    const cells = [...container.querySelectorAll('td span')].filter(el => !el.className.includes('border-dashed'));
+
+    expect(cells.length).toBeGreaterThan(0);
+
+    for (const cell of cells) {
+      // No `--tint` custom property: the old cells set their opacity inline.
+      expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
+      expect(cell.className).toMatch(/bg-(green|blue|orange|red)-\d{3}/);
+    }
+  });
+
+  it('animates the cells in rather than blinking them', () => {
+    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+
+    expect(container.querySelectorAll('.animate-data-rise').length).toBeGreaterThan(0);
+  });
+
   it('says which search found nothing, rather than just "no data"', () => {
     render(
       <CategoryMatrix

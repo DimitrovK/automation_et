@@ -103,7 +103,7 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                         key={order[index]}
                         difficulty={order[index]}
                         count={count}
-                        share={row.total ? count / row.total : 0}
+                        index={index}
                       />
                     ))}
                     <td className="py-1 pl-3 text-right font-semibold tabular-nums text-foreground">
@@ -120,15 +120,15 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
   );
 }
 
-function Cell({ difficulty, count, share }: { difficulty: string; count: number; share: number }) {
+function Cell({ difficulty, count, index }: { difficulty: string; count: number; index: number }) {
   const style = tier(difficulty);
 
-  // A dash, not a tinted zero. An empty cell is the thing you are looking for,
-  // and the lightest shade of "some" is a gap you cannot see.
+  // A dash, not a zero. An empty cell is the thing you are looking for, and the
+  // gaps are the reason to read this table.
   if (count === 0) {
     return (
       <td className="p-1 text-center">
-        <span className="inline-block min-w-[3.25rem] rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground/50">
+        <span className="inline-block min-w-14 rounded-md border border-dashed border-border px-2 py-1.5 text-xs text-muted-foreground/50">
           —
         </span>
       </td>
@@ -138,10 +138,15 @@ function Cell({ difficulty, count, share }: { difficulty: string; count: number;
   return (
     <td className="p-1 text-center">
       <span
-        className={cn('inline-block min-w-[3.25rem] rounded-md px-2 py-1 font-medium tabular-nums', style.chip)}
-        // Floored so the faintest real value is still visibly a box rather than
-        // an empty rectangle, and capped so a 100%-of-row cell stays readable.
-        style={{ '--tint': `${Math.max(12, Math.min(70, Math.round(share * 90)))}%` } as React.CSSProperties}
+        className={cn(
+          'inline-block min-w-[3.5rem] rounded-md px-2 py-1.5 text-sm font-semibold tabular-nums shadow-sm',
+          'animate-data-rise transition-transform duration-150 hover:scale-105',
+          style.chip,
+        )}
+        // Staggered across the row so a refetched table reads left to right
+        // rather than flashing all at once. Capped so a wide row still finishes
+        // promptly.
+        style={{ animationDelay: `${Math.min(index, 5) * 45}ms` }}
       >
         {count.toLocaleString()}
       </span>
