@@ -1135,4 +1135,46 @@ export type CoverageResponse = {
     club: number;
     nation: number;
   }[];
+  /**
+   * The catalogue-growth half. OPTIONAL for the same reason as every field
+   * added since: the two repositories ship independently, so between the FE
+   * deploy and the BE deploy these are simply absent — and a required type plus
+   * an unconditional render is a crash on the page, not a missing panel.
+   */
+  totals?: CatalogueTotals;
+  added_series?: CatalogueAddedPoint[];
+  difficulty_tiers?: DifficultyTier[];
 } & ResolvedRange;
+
+export type CatalogueTotals = {
+  /**
+   * Rows created in the window — NOT filtered to approved, so a pending
+   *  footballer still counts as work done in the window.
+   */
+  footballers_added: number;
+  teams_added: number;
+  footballers_approved: number;
+  teams_approved: number;
+  /** `Nation` has no approval step, so this is `is_active` — see the BE. */
+  nations_active: number;
+  nations_total: number;
+  /** ISO timestamp, or null when there are no nations at all. */
+  nations_last_added: string | null;
+};
+
+export type CatalogueAddedPoint = {
+  date: string;
+  footballers: number;
+  teams: number;
+};
+
+export type DifficultyTier = {
+  difficulty: string;
+  footballers: number;
+  with_picture: number;
+  /**
+   * Null for an empty tier: "0% covered" reads as a gap to fill, and there is
+   *  nothing there to fill.
+   */
+  with_picture_pct: number | null;
+};
