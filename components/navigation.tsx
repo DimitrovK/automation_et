@@ -1,23 +1,19 @@
 'use client';
 
+import type { NavigationPage } from '@/lib/global-nav';
 import {
-  BarChart3,
   ChevronDown,
   ChevronUp,
-  Clock,
   Database,
   FileQuestion,
-  Gamepad2,
   Home,
   LayoutDashboard,
   LineChart,
   Menu,
   MessageCircle,
-  Repeat,
+  Microscope,
   Search,
   Sparkles,
-  Star,
-  Timer,
   UserCog,
   Users,
   Users2,
@@ -32,19 +28,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserMenu } from '@/components/user-menu';
+import { ANALYTICS_CHILDREN, REPORTS_CHILDREN } from '@/lib/global-nav';
 import { cn } from '@/lib/utils';
 
 type NavigationProps = {
   className?: string;
-};
-
-type NavigationPage = {
-  label: string;
-  href?: string;
-  icon: any;
-  description: string;
-  children?: NavigationPage[];
-  defaultExpanded?: boolean;
 };
 
 export function Navigation({ className }: NavigationProps) {
@@ -56,6 +44,7 @@ export function Navigation({ className }: NavigationProps) {
     'Footballer Data': true, // Expanded by default
     'User Hub': true,
     'Reports': true,
+    'Analytics': true,
   });
 
   // State for mobile menu
@@ -123,50 +112,17 @@ export function Navigation({ className }: NavigationProps) {
       label: 'Reports',
       icon: LineChart,
       description: 'Platform activity and multiplayer reporting',
-      children: [
-        {
-          label: 'Daily Pulse',
-          href: '/reports',
-          icon: BarChart3,
-          description: 'How today compares with a typical day',
-        },
-        {
-          label: 'Multiplayer',
-          href: '/reports/multiplayer',
-          icon: Gamepad2,
-          description: 'Room funnel: created, started, finished',
-        },
-        {
-          label: 'Patterns',
-          href: '/reports/patterns',
-          icon: Clock,
-          description: 'When people play, new vs returning',
-        },
-        {
-          label: 'Players',
-          href: '/reports/players',
-          icon: Users,
-          description: 'Most active players over a window',
-        },
-        {
-          label: 'Session length',
-          href: '/reports/duration',
-          icon: Timer,
-          description: 'How long people stay in each game',
-        },
-        {
-          label: 'Retention',
-          href: '/reports/retention',
-          icon: Repeat,
-          description: 'Do players come back? D1/D7/D30 cohorts',
-        },
-        {
-          label: 'Favourites',
-          href: '/reports/favourites',
-          icon: Star,
-          description: 'Which games players save, and whether they play them',
-        },
-      ],
+      children: REPORTS_CHILDREN,
+    },
+    {
+      // Analytics is not Reports: reports answer "how are players behaving",
+      // analytics answer "is the material any good". Different question,
+      // different reader — so it gets its own section rather than a fifth
+      // entry under Reports.
+      label: 'Analytics',
+      icon: Microscope,
+      description: 'Whether the content and the data behind it are any good',
+      children: ANALYTICS_CHILDREN,
     },
     {
       label: 'Discord Control',
