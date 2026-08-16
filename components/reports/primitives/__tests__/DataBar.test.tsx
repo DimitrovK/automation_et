@@ -32,13 +32,15 @@ describe('dataBar', () => {
     expect(screen.getByRole('img', { name: 'Hard: 3 of 10 have a picture' })).toBeInTheDocument();
   });
 
-  it('rounds only the data end, so every bar starts on one line', () => {
-    // A rounded start pulls the eye off the baseline and shortens short bars
-    // visually more than long ones, which is the comparison the bar is for.
+  it('sits as a pill inside its own rail', () => {
+    // Each bar has its own track on its own row, so lengths are compared within
+    // a row rather than across a shared axis — which is what the earlier
+    // square-baseline version was protecting, and it is not the shape here.
     const { container } = render(<DataBar value={5} max={10} colour="bg-primary" label="half" />);
+    const track = container.querySelector('[role="img"]') as HTMLElement;
 
-    expect(fill(container).className).toContain('rounded-r-');
-    expect(fill(container).className).not.toContain('rounded-full');
+    expect(track.className).toContain('rounded-full');
+    expect(fill(container).className).toContain('rounded-full');
   });
 
   it('keeps the track visible enough to show the full extent', () => {
@@ -54,12 +56,22 @@ describe('dataBar', () => {
     expect(track.className).toMatch(/h-2(\.5)?|h-3/);
   });
 
-  it('carries no gradient', () => {
-    // The single thing that dated the old bars: a gradient makes the same value
-    // look different at different lengths.
-    const { container } = render(<DataBar value={5} max={10} colour="bg-emerald-500" label="half" />);
+  it('runs its gradient ALONG the bar, never across it', () => {
+    // A gradient across the height is the dated one — it shades a bar darker at
+    // the bottom for no reason. Along the length is a direction the eye already
+    // reads, and it is what was asked for.
+    for (const tier of Object.values(DIFFICULTY_TIERS)) {
+      expect(tier.bar).toContain('bg-gradient-to-r');
+    }
+  });
 
-    expect(fill(container).className).not.toContain('gradient');
+  it('rails each bar in its own hue, not in grey', () => {
+    // A neutral rail reads as chrome rather than as part of the measurement.
+    for (const tier of Object.values(DIFFICULTY_TIERS)) {
+      expect(tier.track).toMatch(/(green|blue|orange|red)-\d{3}\/\d+/);
+    }
+
+    expect(CAREER_STATE.retired.track).not.toContain('slate');
   });
 });
 

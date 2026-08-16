@@ -80,8 +80,8 @@ export function FootballerBreakdown({ data, onExpand, expanded }: {
             <dl className="space-y-3">
               {/* Playing first: the chart below stacks it at the bottom, and
                   a legend order that disagrees with the stack is a puzzle. */}
-              <Row label={CAREER_STATE.active.label} value={careerState.active} total={total} colour={CAREER_STATE.active.bar} />
-              <Row label={CAREER_STATE.retired.label} value={careerState.retired} total={total} colour={CAREER_STATE.retired.bar} />
+              <Row label={CAREER_STATE.active.label} value={careerState.active} total={total} colour={CAREER_STATE.active.bar} track={CAREER_STATE.active.track} />
+              <Row label={CAREER_STATE.retired.label} value={careerState.retired} total={total} colour={CAREER_STATE.retired.bar} track={CAREER_STATE.retired.track} />
             </dl>
             {retiredPct !== null && (
               <p className="text-xs text-muted-foreground">
@@ -98,14 +98,14 @@ export function FootballerBreakdown({ data, onExpand, expanded }: {
   );
 }
 
-function Row({ label, value, total, colour }: { label: string; value: number; total: number; colour: string }) {
+function Row({ label, value, total, colour, track }: { label: string; value: number; total: number; colour: string; track: string }) {
   return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2">
         <dt className="text-sm text-muted-foreground">{label}</dt>
         <dd className="text-sm font-medium tabular-nums text-foreground">{value.toLocaleString()}</dd>
       </div>
-      <DataBar value={value} max={total} colour={colour} label={`${label}: ${value} of ${total}`} />
+      <DataBar value={value} max={total} colour={colour} track={track} label={`${label}: ${value} of ${total}`} />
     </div>
   );
 }

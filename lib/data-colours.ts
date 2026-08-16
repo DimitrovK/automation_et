@@ -25,8 +25,10 @@
  */
 export type DataTier = {
   label: string;
-  /** Fill for a bar or chip. */
+  /** Fill for a bar. A gradient along the bar's length, not across it. */
   bar: string;
+  /** The bar's own rail, in its own hue. A neutral grey rail reads as chrome. */
+  track: string;
   /** Solid background for a matrix cell, with text that contrasts against it. */
   chip: string;
   /** Text colour for a column header. */
@@ -50,32 +52,36 @@ export type DataTier = {
 export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   EASY: {
     label: 'Easy',
-    bar: 'bg-green-500',
-    chip: 'bg-green-600 text-white dark:bg-green-500 dark:text-green-950',
+    bar: 'bg-gradient-to-r from-green-500 to-green-600',
+    track: 'bg-green-500/15',
+    chip: 'bg-gradient-to-br from-green-500 to-green-700 text-white dark:from-green-400 dark:to-green-600 dark:text-green-950',
     head: 'text-green-700 dark:text-green-400',
     dot: 'bg-green-500',
     hex: '#22c55e',
   },
   NORMAL: {
     label: 'Normal',
-    bar: 'bg-blue-500',
-    chip: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-blue-950',
+    bar: 'bg-gradient-to-r from-blue-500 to-blue-600',
+    track: 'bg-blue-500/15',
+    chip: 'bg-gradient-to-br from-blue-500 to-blue-700 text-white dark:from-blue-400 dark:to-blue-600 dark:text-blue-950',
     head: 'text-blue-700 dark:text-blue-400',
     dot: 'bg-blue-500',
     hex: '#3b82f6',
   },
   HARD: {
     label: 'Hard',
-    bar: 'bg-orange-500',
-    chip: 'bg-orange-600 text-white dark:bg-orange-500 dark:text-orange-950',
+    bar: 'bg-gradient-to-r from-orange-500 to-orange-600',
+    track: 'bg-orange-500/15',
+    chip: 'bg-gradient-to-br from-orange-500 to-orange-700 text-white dark:from-orange-400 dark:to-orange-600 dark:text-orange-950',
     head: 'text-orange-700 dark:text-orange-400',
     dot: 'bg-orange-500',
     hex: '#f97316',
   },
   EXTREME: {
     label: 'Extreme',
-    bar: 'bg-red-500',
-    chip: 'bg-red-600 text-white dark:bg-red-500 dark:text-red-950',
+    bar: 'bg-gradient-to-r from-red-500 to-red-600',
+    track: 'bg-red-500/15',
+    chip: 'bg-gradient-to-br from-red-500 to-red-700 text-white dark:from-red-400 dark:to-red-600 dark:text-red-950',
     head: 'text-red-700 dark:text-red-400',
     dot: 'bg-red-500',
     hex: '#ef4444',
@@ -86,6 +92,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
 const UNKNOWN_TIER: DataTier = {
   label: '',
   bar: 'bg-muted-foreground/40',
+  track: 'bg-muted-foreground/10',
   chip: 'bg-muted text-foreground',
   head: 'text-muted-foreground',
   dot: 'bg-muted-foreground',
@@ -98,10 +105,10 @@ export function difficultyTier(difficulty: string): DataTier {
 
 /** Still playing against retired: two states of a whole, not a scale. */
 export const CAREER_STATE = {
-  active: { label: 'Still playing', bar: 'bg-teal-500', hex: '#14b8a6' },
+  active: { label: 'Still playing', bar: 'bg-gradient-to-r from-teal-400 to-teal-600', track: 'bg-teal-500/15', hex: '#14b8a6' },
   // Deliberately not grey: at bar heights a neutral reads as "no data" rather
   // than as a value, and this is half the catalogue.
-  retired: { label: 'Retired', bar: 'bg-violet-500', hex: '#8b5cf6' },
+  retired: { label: 'Retired', bar: 'bg-gradient-to-r from-violet-400 to-violet-600', track: 'bg-violet-500/15', hex: '#8b5cf6' },
 } as const;
 
 /**
@@ -110,4 +117,5 @@ export const CAREER_STATE = {
  * One colour, deliberately: shading these by value would imply a threshold
  * ("amber means concerning") that a squad size does not have.
  */
-export const MAGNITUDE_BAR = 'bg-primary';
+export const MAGNITUDE_BAR = 'bg-gradient-to-r from-primary/70 to-primary';
+export const MAGNITUDE_TRACK = 'bg-primary/10';

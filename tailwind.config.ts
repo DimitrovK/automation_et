@@ -8,6 +8,13 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    // `lib/` holds the shared colour vocabulary, and leaving it out here is a
+    // SILENT failure: Tailwind simply never emits those classes, so the element
+    // renders unstyled with no error anywhere. It cost a release — the matrix
+    // shipped with boxes on Hard alone, because `bg-orange-600` happened to
+    // also appear in a scanned component and the other three did not.
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+    './hooks/**/*.{js,ts,jsx,tsx,mdx}',
     '*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {

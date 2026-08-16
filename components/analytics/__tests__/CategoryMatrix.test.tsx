@@ -71,14 +71,14 @@ describe('categoryMatrix', () => {
   it('gives every cell a visible solid fill, not an opacity tint', () => {
     const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
 
-    const cells = [...container.querySelectorAll('td span')].filter(el => !el.className.includes('border-dashed'));
+    const cells = container.querySelectorAll('[data-difficulty]:not([data-empty])');
 
     expect(cells.length).toBeGreaterThan(0);
 
     for (const cell of cells) {
       // No `--tint` custom property: the old cells set their opacity inline.
       expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
-      expect(cell.className).toMatch(/bg-(green|blue|orange|red)-\d{3}/);
+      expect(cell.className).toMatch(/from-(green|blue|orange|red)-\d{3}/);
     }
   });
 
@@ -118,7 +118,7 @@ describe('categoryMatrix', () => {
     );
 
     // Three empty tiers, each an outlined dash rather than a shaded "0".
-    const empty = container.querySelectorAll('.border-dashed');
+    const empty = container.querySelectorAll('[data-empty]');
 
     expect(empty).toHaveLength(3);
     expect([...empty].every(cell => cell.textContent === '—')).toBe(true);

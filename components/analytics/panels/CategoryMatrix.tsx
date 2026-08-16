@@ -69,14 +69,17 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
           {/* Its own scroller: the matrix is wider than a phone and the page
               body must never scroll sideways. */}
           <div className="-mx-2 overflow-x-auto px-2">
-            <table className="w-full min-w-[34rem] border-separate border-spacing-y-1 text-sm">
+            {/* `border-spacing-x-0` so the four difficulty cells meet edge to
+                edge and read as one band across the row, rather than four
+                floating chips. The band is the shape of the category. */}
+            <table className="w-full min-w-[38rem] border-separate border-spacing-x-0 border-spacing-y-1.5 text-sm">
               <thead>
                 <tr>
                   <th className="sticky left-0 z-10 bg-card py-1 pr-3 text-left text-xs font-medium text-muted-foreground">
                     Category
                   </th>
                   {order.map(difficulty => (
-                    <th key={difficulty} className="px-1 pb-1 text-center">
+                    <th key={difficulty} className="pb-1.5 text-center">
                       <span className={cn('inline-flex items-center gap-1.5 text-xs font-semibold', tier(difficulty).head)}>
                         {/* The dot carries the colour into the header, so a
                             column and its cells are visibly the same thing. */}
@@ -85,7 +88,7 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                       </span>
                     </th>
                   ))}
-                  <th className="py-1 pl-3 text-right text-xs font-medium text-muted-foreground">Total</th>
+                  <th className="py-1 pl-4 text-right text-xs font-medium text-muted-foreground">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -104,10 +107,17 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                         difficulty={order[index]}
                         count={count}
                         index={index}
+                        first={index === 0}
+                        last={index === row.by_difficulty.length - 1}
                       />
                     ))}
-                    <td className="py-1 pl-3 text-right font-semibold tabular-nums text-foreground">
-                      {row.total.toLocaleString()}
+                    <td className="py-1 pl-4">
+                      {/* The row total gets the same weight as a cell so the
+                          band reads as "these four, and what they come to"
+                          rather than trailing off into plain text. */}
+                      <span className="block rounded-lg border border-border bg-muted/60 px-3 py-2 text-center text-sm font-bold tabular-nums text-foreground">
+                        {row.total.toLocaleString()}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -120,15 +130,34 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
   );
 }
 
-function Cell({ difficulty, count, index }: { difficulty: string; count: number; index: number }) {
+function Cell({ difficulty, count, index, first, last }: {
+  difficulty: string;
+  count: number;
+  index: number;
+  first: boolean;
+  last: boolean;
+}) {
   const style = tier(difficulty);
+  // Only the outer edges of the band are rounded, so the four segments read as
+  // one bar rather than four separate chips.
+  const ends = cn(first && 'rounded-l-lg', last && 'rounded-r-lg');
 
   // A dash, not a zero. An empty cell is the thing you are looking for, and the
-  // gaps are the reason to read this table.
+  // gaps are the reason to read this table — so it keeps its place in the band
+  // while clearly holding nothing.
   if (count === 0) {
     return (
-      <td className="p-1 text-center">
-        <span className="inline-block min-w-14 rounded-md border border-dashed border-border px-2 py-1.5 text-xs text-muted-foreground/50">
+      <td className="p-0">
+        <span
+          data-difficulty={difficulty}
+          data-empty="true"
+          className={cn(
+            'block border-y border-dashed border-border bg-muted/30 px-3 py-2 text-center text-sm text-muted-foreground/50',
+            first && 'border-l',
+            last && 'border-r',
+            ends,
+          )}
+        >
           —
         </span>
       </td>
@@ -136,16 +165,17 @@ function Cell({ difficulty, count, index }: { difficulty: string; count: number;
   }
 
   return (
-    <td className="p-1 text-center">
+    <td className="p-0">
       <span
+        data-difficulty={difficulty}
         className={cn(
-          'inline-block min-w-[3.5rem] rounded-md px-2 py-1.5 text-sm font-semibold tabular-nums shadow-sm',
-          'animate-data-rise transition-transform duration-150 hover:scale-105',
+          'block px-3 py-2 text-center text-sm font-bold tabular-nums text-white shadow-sm',
+          'animate-data-rise transition-transform duration-150 hover:z-10 hover:scale-[1.06]',
           style.chip,
+          ends,
         )}
-        // Staggered across the row so a refetched table reads left to right
-        // rather than flashing all at once. Capped so a wide row still finishes
-        // promptly.
+        // Staggered across the row so a refetched table fills left to right
+        // rather than flashing all at once.
         style={{ animationDelay: `${Math.min(index, 5) * 45}ms` }}
       >
         {count.toLocaleString()}
