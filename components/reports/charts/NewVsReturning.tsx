@@ -4,6 +4,7 @@ import type { NewReturningRow } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
+import { ChartLegend } from '@/components/reports/primitives/ChartLegend';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
@@ -35,11 +36,13 @@ export function NewVsReturning({ rows }: { rows: NewReturningRow[] }) {
           returning means growth has stalled, all new means nobody is staying.
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-64 sm:h-72">
+      {/* A column rather than a fixed-height box: the legend is a real row that
+          has to come out of the card's height, not overlap the plot. */}
+      <CardContent className="flex h-72 flex-col gap-3 sm:h-80">
         {rows.length === 0
           ? <EmptyState hint="Try a wider date range.">No player activity in this window.</EmptyState>
           : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" className="min-h-0 flex-1">
                 <AreaChart data={rows} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
                   <XAxis dataKey="date" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
@@ -66,6 +69,16 @@ export function NewVsReturning({ rows }: { rows: NewReturningRow[] }) {
                 </AreaChart>
               </ResponsiveContainer>
             )}
+
+        {rows.length > 0 && (
+          <ChartLegend
+            series={[
+              // Stack order, bottom to top — matching the chart.
+              { label: 'Returning', colour: theme.series[1] },
+              { label: 'New', colour: theme.series[0], metric: 'new_players' },
+            ]}
+          />
+        )}
       </CardContent>
     </Card>
   );

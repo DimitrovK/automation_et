@@ -4,6 +4,7 @@ import type { GrowthResponse } from '@/types/reports';
 import { useTheme } from 'next-themes';
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
+import { ChartLegend } from '@/components/reports/primitives/ChartLegend';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { MetricRow } from '@/components/reports/primitives/MetricRow';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +34,20 @@ const BAND_NAMES = {
   new: 'New',
   churned: 'Churned',
 } as const;
+
+/** The glossary entry behind each band. None of these four words define themselves. */
+const BAND_METRICS = {
+  retained: 'retained_players',
+  resurrected: 'resurrected_players',
+  new: 'new_players_weekly',
+  churned: 'churned_players',
+} as const;
+
+/**
+ * Stack order, bottom to top — and the order the legend reads in, so the key
+ *  and the chart cannot drift apart.
+ */
+const BAND_ORDER = ['retained', 'resurrected', 'new', 'churned'] as const;
 
 export function GrowthFlow({ data }: { data: GrowthResponse }) {
   const { resolvedTheme } = useTheme();
@@ -97,7 +112,7 @@ export function GrowthFlow({ data }: { data: GrowthResponse }) {
                     {/* The line the shape is read against. Without it, a week
                         that lost more than it gained still looks like a bar. */}
                     <ReferenceLine y={0} stroke={theme.axisLine.stroke} />
-                    {(['retained', 'resurrected', 'new', 'churned'] as const).map(band => (
+                    {BAND_ORDER.map(band => (
                       <Bar key={band} dataKey={band} name={BAND_NAMES[band]} stackId="players" fill={colours[band]}>
                         {rows.map(row => (
                           // The provisional week is drawn faint rather than
@@ -112,6 +127,16 @@ export function GrowthFlow({ data }: { data: GrowthResponse }) {
                 </ResponsiveContainer>
               )}
         </div>
+
+        {rows.length > 0 && (
+          <ChartLegend
+            series={BAND_ORDER.map(band => ({
+              label: BAND_NAMES[band],
+              colour: colours[band],
+              metric: BAND_METRICS[band],
+            }))}
+          />
+        )}
 
         {provisional && (
           <p className="text-xs text-muted-foreground">
