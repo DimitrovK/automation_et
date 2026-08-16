@@ -26,7 +26,9 @@ export const USER_HUB_NAV_GROUPS: NavGroup[] = [
  * teaches people the page is gone.
  */
 export const USER_HUB_NAV_TRAILING: NavItem = {
-  href: '/reports/favourites',
+  // The final destination. `/reports/favourites` is itself retired into the
+  // games report, so linking it sent people through two redirects.
+  href: '/reports/games',
   label: 'Favourites moved to Reports',
   icon: Star,
 };

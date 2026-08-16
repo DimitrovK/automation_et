@@ -2,8 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { BarChart3, BookOpen, Users } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { SectionNav } from '@/components/admin/SectionNav';
+import { ANALYTICS_NAV_GROUPS, ANALYTICS_QUICK_LINKS } from '@/components/analytics/shell/AnalyticsNav';
 import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING, REPORT_QUICK_LINKS } from '@/components/reports/shell/ReportsNav';
 import { USER_HUB_NAV_GROUPS, USER_HUB_NAV_TRAILING } from '@/components/user-hub/UserHubShell';
+import { GLOBAL_NAV_SECTION_HREFS } from '@/lib/global-nav';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/reports/players' }));
 
@@ -157,8 +159,45 @@ describe('user hub nav groups', () => {
     expect(missing, `User Hub pages not in the nav: ${missing.join(', ')}`).toEqual([]);
   });
 
-  it('points at where favourites went', () => {
+  it('points at where favourites went, in one hop', () => {
     // The section lost a tab. A pointer beats a page that quietly disappears.
-    expect(USER_HUB_NAV_TRAILING.href).toBe('/reports/favourites');
+    //
+    // The FINAL destination, not `/reports/favourites`. That address was itself
+    // retired into the games report, so this pointer was two redirects deep —
+    // an extra round trip, no permanent-cache benefit on the first hop, and a
+    // dead link the day the middle one is cleaned up. This test previously
+    // asserted the middle hop, which is how the chain survived unnoticed.
+    expect(USER_HUB_NAV_TRAILING.href).toBe('/reports/games');
+  });
+});
+
+describe('the global nav agrees with the sections it links into', () => {
+  // The section navs already guard their own shortcuts. Nothing guarded the
+  // GLOBAL nav, which is a hand-maintained second copy of the same lists — and
+  // it had drifted: it still offered Patterns, Session length and Favourites,
+  // three routes retired in #1474 R4, while omitting Needs attention, Games and
+  // the glossary. Every one of those was a click into a redirect.
+  const sectionHrefs = new Set([
+    ...REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
+    REPORT_NAV_TRAILING.href,
+    ...ANALYTICS_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
+  ]);
+
+  it.each([...GLOBAL_NAV_SECTION_HREFS])('%s is a real destination', (href) => {
+    expect(sectionHrefs).toContain(href);
+  });
+
+  it('offers every reports and analytics destination', () => {
+    // The other direction: a page nobody links to is a page nobody finds.
+    for (const href of sectionHrefs) {
+      expect(GLOBAL_NAV_SECTION_HREFS).toContain(href);
+    }
+  });
+
+  it('every analytics shortcut is a real nav destination', () => {
+    const analyticsHrefs = ANALYTICS_NAV_GROUPS.flatMap(g => g.items.map(i => i.href));
+    for (const link of ANALYTICS_QUICK_LINKS) {
+      expect(analyticsHrefs).toContain(link.href);
+    }
   });
 });

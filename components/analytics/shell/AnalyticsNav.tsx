@@ -1,6 +1,6 @@
 'use client';
 
-import type { NavGroup } from '@/components/admin/SectionNav';
+import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
 import { Database, HelpCircle, Route, Users } from 'lucide-react';
 
 /**
@@ -35,4 +35,21 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
       { href: '/analytics/football-data', label: 'Football data', icon: Database },
     ],
   },
+];
+
+/**
+ * The handful of analytics worth offering from the dashboard.
+ *
+ * A shortlist, not the nav — same reasoning as `REPORT_QUICK_LINKS`: a card
+ * that reprints every destination is the nav with worse typography. These are
+ * the two someone arrives with (is the material too hard, is the data behind
+ * it complete); the per-game pages are where you go once you know which.
+ *
+ * Every entry must be a real nav destination, guarded in
+ * `components/admin/__tests__/SectionNav.test.tsx`.
+ */
+export const ANALYTICS_QUICK_LINKS: NavItem[] = [
+  { href: '/analytics/football-data', label: 'Football data', icon: Database },
+  { href: '/analytics/career-path', label: 'Career Path', icon: Route },
+  { href: '/analytics/questions', label: 'Quiz content', icon: HelpCircle },
 ];
