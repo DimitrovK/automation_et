@@ -2,8 +2,7 @@
 
 import type { CoverageResponse, DifficultyTier } from '@/types/reports';
 import { DataBar } from '@/components/reports/primitives/DataBar';
-import { InfoHint } from '@/components/reports/primitives/InfoHint';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { difficultyTier } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
 
@@ -41,12 +40,10 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Footballers by difficulty
-            <InfoHint label="footballers by difficulty">
-              Approved footballers only — the pool a game can actually draw from.
-            </InfoHint>
-          </CardTitle>
+          <CardTitle>Footballers by difficulty</CardTitle>
+          <CardDescription>
+            Approved footballers only — the pool a game can actually draw from.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <dl className="space-y-3">
@@ -77,13 +74,11 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Pictures by difficulty
-            <InfoHint label="pictures by difficulty">
-              How many of each tier have an active picture. Scout serves the dossier with
-              no image rather than failing, so a gap here degrades quietly.
-            </InfoHint>
-          </CardTitle>
+          <CardTitle>Pictures by difficulty</CardTitle>
+          <CardDescription>
+            How many of each tier have an active picture. Scout serves the dossier with
+            no image rather than failing, so a gap here degrades quietly.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <dl className="space-y-3">

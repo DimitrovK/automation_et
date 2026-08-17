@@ -19,8 +19,20 @@ export type Band = {
   pct: number;
 };
 
-export function Distribution({ bands, colour, className }: {
+export function Distribution({ bands, colour, bandColours, className }: {
   bands: Band[];
+  /**
+   * A class per band, when the bands ARE different kinds of thing worth telling
+   * apart at a glance — difficulty tiers, most obviously. Takes precedence over
+   * `colour`.
+   *
+   * The single-colour default is still right for a genuine scale (duration
+   * buckets, progress bands): a categorical palette there would claim the bands
+   * are unrelated. Difficulty is the case where the reader wants to spot one
+   * tier without reading four labels, so it gets real colours and a dot beside
+   * each label to tie the two together.
+   */
+  bandColours?: string[];
   /**
    * Fill for the bars. One colour, varied by opacity across bands — a
    * categorical palette here would say the bands are different KINDS of thing,
@@ -38,7 +50,7 @@ export function Distribution({ bands, colour, className }: {
 
   return (
     <span className={cn('flex flex-col gap-1', className)}>
-      <span className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+      <span className={cn('flex w-full overflow-hidden rounded-full bg-muted', bandColours ? 'h-3 gap-px' : 'h-2')}>
         {bands.map((band, index) => (
           <span
             key={band.label}
@@ -47,22 +59,31 @@ export function Distribution({ bands, colour, className }: {
             // where the remainders have to add up or the bar has a gap in it.
             style={{
               width: `${(band.count / total) * 100}%`,
-              backgroundColor: colour,
+              backgroundColor: bandColours ? undefined : colour,
               // Later bands sit further along the scale, so they read heavier.
-              opacity: colour ? 0.35 + (0.65 * (index + 1)) / bands.length : undefined,
+              // Not applied when each band has its own colour — dimming a hue
+              // undoes the point of giving it one.
+              opacity: colour && !bandColours ? 0.35 + (0.65 * (index + 1)) / bands.length : undefined,
             }}
-            className={cn('h-full', !colour && 'bg-muted-foreground/40')}
+            className={cn('h-full', bandColours?.[index] ?? (!colour && 'bg-muted-foreground/40'))}
             title={`${band.label}: ${band.count.toLocaleString()} (${band.pct}%)`}
           />
         ))}
       </span>
       <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-        {bands.map(band => (
-          <span key={band.label} className="whitespace-nowrap">
-            {band.label}
-            {': '}
-            <span className="text-foreground">{band.count.toLocaleString()}</span>
-            {` (${band.pct}%)`}
+        {bands.map((band, index) => (
+          <span key={band.label} className="inline-flex items-center gap-1 whitespace-nowrap">
+            {/* Ties the label to its segment. Without it a coloured bar is four
+                colours and four words with nothing joining them. */}
+            {bandColours && (
+              <span aria-hidden className={cn('size-2 shrink-0 rounded-full', bandColours[index])} />
+            )}
+            <span>
+              {band.label}
+              {': '}
+              <span className="text-foreground">{band.count.toLocaleString()}</span>
+              {` (${band.pct}%)`}
+            </span>
           </span>
         ))}
       </span>

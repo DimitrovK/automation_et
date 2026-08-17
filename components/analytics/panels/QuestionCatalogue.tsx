@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { StatTile } from '@/components/reports/primitives/StatTile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { chartTheme } from '@/lib/chart-theme';
+import { difficultyTier } from '@/lib/data-colours';
 
 /**
  * How big the question bank is, and what arrived in the window.
@@ -50,25 +51,6 @@ export function QuestionCatalogue({ data }: { data: QuestionBankResponse }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>How hard the bank is</CardTitle>
-          <CardDescription>
-            Across every approved question. Unlike the matrix below, each question is
-            counted once here — difficulty is a single field, categories are not.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Distribution
-            bands={data.question_difficulty.map(tier => ({
-              label: `${tier.difficulty[0]}${tier.difficulty.slice(1).toLowerCase()}`,
-              count: tier.questions,
-              pct: bank ? Math.round((tier.questions / bank) * 1000) / 10 : 0,
-            }))}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle>Questions added, by day</CardTitle>
           <CardDescription>
             Whether the bank is still growing, or has been the same size since April.
@@ -96,6 +78,26 @@ export function QuestionCatalogue({ data }: { data: QuestionBankResponse }) {
                   </AreaChart>
                 </ResponsiveContainer>
               )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>How hard the bank is</CardTitle>
+          <CardDescription>
+            Across every approved question. Unlike the matrix below, each question is
+            counted once here — difficulty is a single field, categories are not.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Distribution
+            bands={data.question_difficulty.map(tier => ({
+              label: difficultyTier(tier.difficulty).label,
+              count: tier.questions,
+              pct: bank ? Math.round((tier.questions / bank) * 1000) / 10 : 0,
+            }))}
+            bandColours={data.question_difficulty.map(tier => difficultyTier(tier.difficulty).bar)}
+          />
         </CardContent>
       </Card>
     </div>

@@ -2,10 +2,46 @@
 
 import { useTheme } from 'next-themes';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
 import { ChartLegend } from '@/components/reports/primitives/ChartLegend';
 import { chartTheme } from '@/lib/chart-theme';
 import { difficultyTier } from '@/lib/data-colours';
+
+/**
+ * A tooltip that reports the count AND its share of the bucket.
+ *
+ * `ChartTooltip` is the shared one and shows raw values, which is right almost
+ * everywhere. Here the count alone is half an answer: "512 hard" means nothing
+ * until you know whether that decade holds 600 footballers or 6,000.
+ */
+function BucketTooltip({ active, payload, label, share }: {
+  active?: boolean;
+  payload?: { name?: string; value?: number; color?: string }[];
+  label?: string;
+  share: (label: string, value: number) => number | null;
+}) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs shadow-md">
+      <p className="mb-1 font-medium text-foreground">{label}</p>
+      {payload.map((entry) => {
+        const pct = share(String(label ?? ''), entry.value ?? 0);
+        return (
+          <p key={entry.name} className="flex items-center gap-1.5 text-muted-foreground">
+            <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            {entry.name}
+            <span className="font-medium tabular-nums text-foreground">
+              {(entry.value ?? 0).toLocaleString()}
+            </span>
+            {pct !== null && <span className="tabular-nums">{`(${pct}%)`}</span>}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
 
 /**
  * Four bars per bucket, one per difficulty.
@@ -40,6 +76,15 @@ export function DifficultyBars({ rows, order, bucketLabel, height = 'h-72' }: {
     ...Object.fromEntries(order.map((tier, index) => [tier, row.by_difficulty[index] ?? 0])),
   }));
 
+  // Share of the BUCKET, not of the chart: "41% of the 1970s" is the reading
+  // someone wants from a decade, and share-of-everything would just restate the
+  // decade's size four times.
+  const shareOfBucket = (label: string, value: number) => {
+    const row = rows.find(candidate => candidate.label === label);
+    const total = row ? row.by_difficulty.reduce((sum, n) => sum + n, 0) : 0;
+    return total > 0 ? Math.round((value / total) * 1000) / 10 : null;
+  };
+
   return (
     <div className={`flex flex-col gap-3 ${height}`}>
       <ResponsiveContainer width="100%" height="100%" className="min-h-0 flex-1">
@@ -47,7 +92,7 @@ export function DifficultyBars({ rows, order, bucketLabel, height = 'h-72' }: {
           <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} vertical={false} />
           <XAxis dataKey="label" tick={theme.tick} interval={0} angle={rows.length > 6 ? -35 : 0} textAnchor={rows.length > 6 ? 'end' : 'middle'} height={rows.length > 6 ? 52 : 30} />
           <YAxis tick={theme.tick} allowDecimals={false} width={48} />
-          <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
+          <Tooltip content={<BucketTooltip share={shareOfBucket} />} cursor={theme.tooltip.cursor} />
           {order.map(tier => (
             <Bar
               key={tier}
@@ -66,7 +111,15 @@ export function DifficultyBars({ rows, order, bucketLabel, height = 'h-72' }: {
         className="justify-center"
       />
       <span className="sr-only">
-        {`${bucketLabel} breakdown: ${rows.map(row => `${row.label} — ${order.map((tier, index) => `${difficultyTier(tier).label} ${row.by_difficulty[index] ?? 0}`).join(', ')}`).join('; ')}`}
+        {`${bucketLabel} breakdown: ${rows.map((row) => {
+          const total = row.by_difficulty.reduce((sum, n) => sum + n, 0);
+          const parts = order.map((tier, index) => {
+            const value = row.by_difficulty[index] ?? 0;
+            const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0;
+            return `${difficultyTier(tier).label} ${value} (${pct}%)`;
+          });
+          return `${row.label} — ${parts.join(', ')}`;
+        }).join('; ')}`}
       </span>
     </div>
   );

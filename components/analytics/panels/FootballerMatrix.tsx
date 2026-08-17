@@ -3,7 +3,6 @@
 import type { DifficultyMatrixResponse } from '@/types/reports';
 import { TileMatrix } from '@/components/analytics/panels/TileMatrix';
 import { SearchBox } from '@/components/reports/filters/SearchBox';
-import { InfoHint } from '@/components/reports/primitives/InfoHint';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { difficultyTier as tier } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
@@ -38,21 +37,16 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
     <Card>
       <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1.5">
-          <CardTitle className="flex items-center gap-2">
-            {`Footballers by ${data.dimension} and difficulty`}
-            <InfoHint label={`footballers by ${data.dimension}`}>
-              {data.rows_double_count
+          <CardTitle>{`Footballers by ${data.dimension} and difficulty`}</CardTitle>
+          <CardDescription>
+            {data.rows_double_count
               // Said outright, because the same footballer legitimately appears
               // in several rows here and the column will not add up.
-                ? 'A footballer belongs to every club they played for, so these rows deliberately sum to more than the catalogue holds. Approved footballers only, which is why a squad here is smaller than on the teams page.'
-                : 'A footballer has one nation, so these rows add up. Approved footballers only.'}
-            </InfoHint>
-          </CardTitle>
-          {/* Ranking stays visible: it changes what you are looking at. */}
-          <CardDescription>
+              ? 'A footballer belongs to every club they played for, so these rows deliberately sum to more than the catalogue holds. Approved footballers only, which is why a squad here is smaller than on the teams page.'
+              : 'A footballer has one nation, so these rows add up. Approved footballers only.'}
             {difficulty
-              ? `Ranked by ${tier(difficulty).label} — every tier is still shown beside it.`
-              : 'Ranked by total.'}
+              ? ` Ranked by ${tier(difficulty).label} — every tier is still shown beside it.`
+              : ' Ranked by total.'}
           </CardDescription>
         </div>
         <div className="flex shrink-0 flex-col gap-2 sm:items-end">

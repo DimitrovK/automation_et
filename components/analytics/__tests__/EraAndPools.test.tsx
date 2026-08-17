@@ -1,5 +1,5 @@
 import type { CoverageResponse } from '@/types/reports';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { EraAndPools } from '@/components/analytics/panels/EraAndPools';
 
@@ -47,27 +47,23 @@ describe('eraAndPools', () => {
     }
   });
 
-  it('carries every bucket and count as text, not only as bars', () => {
+  it('carries every bucket, count and share as text, not only as bars', () => {
     // A chart in a zero-height container, a screen reader, and a printout all
     // need the numbers to exist outside the SVG.
     render(<EraAndPools data={data({ game_pools: undefined })} />);
 
-    expect(
-      screen.getByText(/Before 1950 — Easy 16, Normal 40, Hard 79, Extreme 149/),
-    ).toBeInTheDocument();
+    // Counts AND shares: "149 extreme" means nothing until you know whether the
+    // decade holds 284 footballers or 2,840.
+    expect(screen.getByText(/Before 1950 — Easy 16 \(5\.6%\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Extreme 149 \(52\.5%\)/)).toBeInTheDocument();
     expect(screen.getByText(/2000s — Easy 138/)).toBeInTheDocument();
   });
 
-  it('keeps "a share of what" reachable from the pools card', async () => {
-    // "6,724" means nothing without the catalogue it is drawn from, so the
-    // number must stay findable even though the sentence moved into a hint.
+  it('says what a pool is a share of', () => {
+    // "6,724" means nothing without the catalogue it is drawn from.
     render(<EraAndPools data={data()} />);
 
-    fireEvent.focus(screen.getByRole('button', { name: 'About what each game can draw on' }));
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Of 6,729 approved footballers/).length).toBeGreaterThan(0);
-    });
+    expect(screen.getByText(/Of 6,729 approved footballers/)).toBeInTheDocument();
   });
 
   it('keeps the oldest bucket named rather than dated', () => {

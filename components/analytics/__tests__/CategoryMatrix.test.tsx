@@ -1,5 +1,5 @@
 import type { QuestionBankResponse } from '@/types/reports';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { CategoryMatrix } from '@/components/analytics/panels/CategoryMatrix';
 
@@ -20,18 +20,12 @@ function data(over: Partial<QuestionBankResponse> = {}): QuestionBankResponse {
 }
 
 describe('categoryMatrix', () => {
-  it('keeps the double-counting caveat reachable, not always on screen', async () => {
-    // The one figure here that deliberately double-counts. It moved into a hint
-    // so it stops being prose on every visit — but it must still be findable,
-    // which is the part worth guarding.
+  it('states the double-counting caveat on the card, not behind a hover', () => {
+    // Tried as a hover hint and reverted: a caveat explaining why a column does
+    // not add up has to be read BEFORE the number is, and nobody hovers first.
     render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
-    const hint = screen.getByRole('button', { name: 'About questions by category and difficulty' });
-    fireEvent.focus(hint);
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/sum to more than the bank holds/).length).toBeGreaterThan(0);
-    });
+    expect(screen.getByText(/sum to more than the bank holds/)).toBeInTheDocument();
   });
 
   it('lays the difficulties out as columns in order', () => {
@@ -91,8 +85,10 @@ describe('categoryMatrix', () => {
       expect(cell.className).toMatch(/(^| )text-(green|blue|orange|red)-900/);
       // Dark theme carries its own steps — a dark tile on a light page is a
       // hole punched in it, and the reverse is just as wrong.
-      expect(cell.className).toMatch(/dark:(from|to)-(green|blue|orange|red)-(700|900)/);
-      expect(cell.className).toMatch(/dark:text-(green|blue|orange|red)-100/);
+      // Dark: near-black slate at one end, the hue's 500 at the other, white text.
+      expect(cell.className).toMatch(/dark:(from|to)-slate-950/);
+      expect(cell.className).toMatch(/dark:(from|to)-(green|blue|orange|red)-500/);
+      expect(cell.className).toContain('dark:text-white');
     }
   });
 
