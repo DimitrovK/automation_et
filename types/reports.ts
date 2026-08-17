@@ -213,6 +213,8 @@ export type ReportParams = {
   granularity?: Granularity;
   /** Username fragment, case-insensitive. Narrows who is counted, not who survives. */
   search?: string;
+  /** Rank the question matrix by one tier. Rejected server-side if unknown. */
+  difficulty?: string;
 };
 
 /**
@@ -1219,6 +1221,8 @@ export type QuestionBankResponse = {
   }>;
   difficulty_order: string[];
   search: string | null;
+  /** Echoed, so a rejected filter cannot look as if it applied. */
+  difficulty: string | null;
 } & ResolvedRange;
 
 export type CatalogueTotals = {
