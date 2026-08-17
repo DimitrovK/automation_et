@@ -20,8 +20,11 @@ export function SectionHeader({ title, description, actions, className }: {
   title: string;
   /**
    * Optional. Most sections say what they are in their title, and a subtitle
-   * that only rephrases it is prose the reader has to skip on every visit. The
-   * per-panel caveats moved to `InfoHint` for the same reason.
+   * that only rephrases it is prose the reader has to skip on every visit.
+   *
+   * The per-panel caveats stay INSIDE their cards. Moving them to hover hints
+   * was tried and reverted: a caveat that explains why a column does not add up
+   * has to be read before the number is, and nobody hovers first.
    */
   description?: string;
   /** Controls scoped to this section rather than the page. */
