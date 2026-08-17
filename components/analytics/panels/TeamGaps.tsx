@@ -2,8 +2,7 @@
 
 import type { TeamGapsResponse } from '@/types/reports';
 import { CappedList } from '@/components/reports/primitives/CappedList';
-import { ReportTable } from '@/components/reports/primitives/ReportTable';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /**
  * Teams nobody plays for.
@@ -21,10 +20,6 @@ export function TeamGaps({ data, onExpand, expanded }: {
     <Card>
       <CardHeader>
         <CardTitle>Teams with no footballers</CardTitle>
-        <CardDescription>
-          A team with an empty squad cannot be a career step or a grid criterion — it is a
-          row that exists and does nothing.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <CappedList
@@ -34,19 +29,21 @@ export function TeamGaps({ data, onExpand, expanded }: {
           expanded={expanded}
           emptyLabel="Every team has at least one footballer."
         >
-          <ReportTable>
-            <tbody>
-              {data.teams_without_footballers.items.map(row => (
-                <tr key={`${row.name}-${row.nation ?? ''}`} className="border-b last:border-0">
-                  <td className="py-1.5 pr-4 text-sm text-foreground">{row.name}</td>
-                  <td className="py-1.5 text-right text-xs text-muted-foreground">
-                    {/* Not `null` — a team with no nation is its own small gap. */}
-                    {row.nation ?? 'No nation'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </ReportTable>
+          {/* Chips rather than rows: every entry here is the same fact — an
+              empty squad — so a table would spend two columns repeating it. A
+              wrapped list of names is a worklist you can scan. */}
+          <ul className="flex flex-wrap gap-1.5">
+            {data.teams_without_footballers.items.map(row => (
+              <li
+                key={`${row.name}-${row.nation ?? ''}`}
+                className="inline-flex items-baseline gap-1.5 rounded-md bg-muted/60 px-2 py-1 text-sm ring-1 ring-inset ring-border transition-colors hover:bg-muted"
+              >
+                <span className="font-medium text-foreground">{row.name}</span>
+                {/* Not `null` — a team with no nation is its own small gap. */}
+                <span className="text-xs text-muted-foreground">{row.nation ?? 'No nation'}</span>
+              </li>
+            ))}
+          </ul>
         </CappedList>
       </CardContent>
     </Card>

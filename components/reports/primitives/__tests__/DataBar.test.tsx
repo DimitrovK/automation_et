@@ -110,21 +110,27 @@ describe('data colours', () => {
     }
   });
 
-  it('gives the gradient three stops with different ends, in both themes', () => {
-    // Same shade at both ends is a flat fill wearing a gradient class. And two
-    // stops — neutral straight to saturated — reads as brushed metal, which is
-    // why the middle stop is required rather than optional.
+  it('fills tiles flat, with no gradient and no shadow', () => {
+    // Three attempts at a gradient all read as brushed metal: a fade from a
+    // neutral into a hue is what a specular highlight looks like, and adding
+    // stops only made it a nicer piece of metal.
     for (const [name, tier] of Object.entries(DIFFICULTY_TIERS)) {
-      // `via-` sits between the ends now, so the pattern has to step over it.
-      const light = /(?:^| )from-\w+-(\d+) via-\w+-\d+ to-\w+-(\d+)/.exec(tier.chip);
+      expect(tier.chip, `${name} still has a gradient`).not.toMatch(/(^| )(from|via|to)-/);
+      expect(tier.chipAlt, `${name} alt still has a gradient`).not.toMatch(/(^| )(from|via|to)-/);
+      expect(tier.chip).toMatch(/(^| )bg-\w+-\d+/);
+    }
+  });
 
-      expect(light, `${name} has no light gradient`).not.toBeNull();
-      expect(light![1], `${name} light ends match`).not.toBe(light![2]);
+  it('makes the alternating tile one shade deeper, not a different hue', () => {
+    // The rhythm has to survive losing the gradient, without implying the two
+    // tiles are different KINDS of thing.
+    for (const [name, tier] of Object.entries(DIFFICULTY_TIERS)) {
+      const base = /(?:^| )bg-(\w+)-(\d+)/.exec(tier.chip);
+      const alt = /(?:^| )bg-(\w+)-(\d+)/.exec(tier.chipAlt);
 
-      const dark = /dark:from-\w+-(\d+) dark:via-\w+-\d+ dark:to-\w+-(\d+)/.exec(tier.chip);
-
-      expect(dark, `${name} has no dark gradient`).not.toBeNull();
-      expect(dark![1], `${name} dark ends match`).not.toBe(dark![2]);
+      expect(base, `${name} has no fill`).not.toBeNull();
+      expect(alt![1], `${name} alt changed hue`).toBe(base![1]);
+      expect(Number(alt![2]), `${name} alt is not deeper`).toBeGreaterThan(Number(base![2]));
     }
   });
 
@@ -132,9 +138,9 @@ describe('data colours', () => {
     // A dark tile on a light page is a hole punched in it, and the reverse is
     // just as wrong — this shape has to belong to whichever surface it is on.
     for (const [name, tier] of Object.entries(DIFFICULTY_TIERS)) {
-      expect(tier.chip, `${name} has no dark-theme fill`).toMatch(/dark:(from|to)-/);
+      expect(tier.chip, `${name} has no dark-theme fill`).toMatch(/dark:bg-/);
       expect(tier.chip, `${name} has no dark-theme text`).toMatch(/dark:text-/);
-      expect(tier.chipAlt, `${name} alt has no dark-theme fill`).toMatch(/dark:(from|to)-/);
+      expect(tier.chipAlt, `${name} alt has no dark-theme fill`).toMatch(/dark:bg-/);
     }
   });
 
