@@ -5,10 +5,7 @@ import { ReviewQueue } from '@/components/analytics/panels/ReviewQueue';
 import { SquadDepth } from '@/components/analytics/panels/SquadDepth';
 import { TeamGaps } from '@/components/analytics/panels/TeamGaps';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
-import { FilterBar } from '@/components/reports/filters/FilterBar';
-import { SearchBox } from '@/components/reports/filters/SearchBox';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
-import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -38,30 +35,18 @@ export default function TeamsAnalyticsPage() {
       title="Teams"
       description="Which teams the catalogue leans on, which it forgot, and what is waiting on review."
     >
-      <FilterBar>
-        <SearchBox
-          value={search}
-          onChange={setSearch}
-          placeholder="Filter teams by name"
-          className="w-full sm:w-72"
-        />
-      </FilterBar>
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => (
           <SquadDepth
             data={data}
             search={search}
+            onSearchChange={setSearch}
             expanded={limit > PAGE}
             onExpand={() => setLimit(EXPANDED)}
           />
         )}
       </ReportPanel>
-
-      <SectionHeader
-        title="The other end of the table"
-        description="Teams nothing points at. Not narrowed by the search above — a worklist filtered by an unrelated box would report a smaller job than there is."
-      />
 
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => (

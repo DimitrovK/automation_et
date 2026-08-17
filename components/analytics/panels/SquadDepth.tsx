@@ -1,9 +1,9 @@
 'use client';
 
 import type { TeamGapsResponse } from '@/types/reports';
+import { SearchBox } from '@/components/reports/filters/SearchBox';
 import { CappedList } from '@/components/reports/primitives/CappedList';
 import { DataBar } from '@/components/reports/primitives/DataBar';
-import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MAGNITUDE_BAR, MAGNITUDE_TRACK } from '@/lib/data-colours';
 
@@ -17,11 +17,12 @@ import { MAGNITUDE_BAR, MAGNITUDE_TRACK } from '@/lib/data-colours';
  * ceiling, because the question is relative — which of these is deep — and an
  * absolute scale would flatten every row once one team ran away with it.
  */
-export function SquadDepth({ data, onExpand, expanded, search }: {
+export function SquadDepth({ data, onExpand, expanded, search, onSearchChange }: {
   data: TeamGapsResponse;
   onExpand?: () => void;
   expanded?: boolean;
-  search?: string;
+  search: string;
+  onSearchChange: (next: string) => void;
 }) {
   const ranked = data.teams_by_players;
 
@@ -34,12 +35,23 @@ export function SquadDepth({ data, onExpand, expanded, search }: {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Teams with the most players</CardTitle>
-        <CardDescription>
-          Squad size as the catalogue holds it — not a real squad, but everyone ever
-          recorded at the club.
-        </CardDescription>
+      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1.5">
+          <CardTitle>Teams with the most players</CardTitle>
+          <CardDescription>
+            Squad size as the catalogue holds it — not a real squad, but everyone ever
+            recorded at the club.
+          </CardDescription>
+        </div>
+        {/* ON this card. In the page filter bar it sat with nothing to say which
+            of the two tables it narrowed — and it narrows only this one. */}
+        <SearchBox
+          value={search}
+          onChange={onSearchChange}
+          label="Filter teams in this table"
+          placeholder="Filter these teams…"
+          className="w-full shrink-0 sm:w-56"
+        />
       </CardHeader>
       <CardContent>
         <CappedList
@@ -49,38 +61,40 @@ export function SquadDepth({ data, onExpand, expanded, search }: {
           expanded={expanded}
           emptyLabel={search ? `No team matches "${search}".` : 'No team has a squad yet.'}
         >
-          <ReportTable>
-            <thead>
-              <tr className="border-b">
-                <th className="py-2 pr-4 text-left text-xs font-medium text-muted-foreground">Team</th>
-                <th className="py-2 pr-4 text-left text-xs font-medium text-muted-foreground">Nation</th>
-                <th className="py-2 pr-4 text-right text-xs font-medium text-muted-foreground">Players</th>
-                <th className="w-1/3 py-2 text-left text-xs font-medium text-muted-foreground">
-                  <span className="sr-only">Relative squad size</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {ranked.items.map(row => (
-                <tr key={`${row.name}-${row.nation ?? ''}`} className="border-b last:border-0">
-                  <td className="py-1.5 pr-4 text-sm text-foreground">{row.name}</td>
-                  <td className="py-1.5 pr-4 text-xs text-muted-foreground">{row.nation ?? 'No nation'}</td>
-                  <td className="py-1.5 pr-4 text-right text-sm font-medium tabular-nums text-foreground">
+          <ol className="space-y-1.5">
+            {ranked.items.map((row, index) => (
+              <li
+                key={`${row.name}-${row.nation ?? ''}`}
+                className="group flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
+              >
+                {/* The rank, because a ranked list should say where you are in
+                    it — row four of a hundred reads differently from row four
+                    of four. */}
+                <span className="w-6 shrink-0 text-right text-xs font-medium tabular-nums text-muted-foreground">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-foreground">{row.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {row.nation ?? 'No nation'}
+                  </span>
+                </span>
+                <span className="flex w-1/2 shrink-0 items-center gap-2">
+                  <DataBar
+                    value={row.players}
+                    max={largest}
+                    colour={MAGNITUDE_BAR}
+                    track={MAGNITUDE_TRACK}
+                    label={`${row.name}: ${row.players} players`}
+                    className="flex-1"
+                  />
+                  <span className="w-12 shrink-0 text-right text-sm font-semibold tabular-nums text-foreground">
                     {row.players.toLocaleString()}
-                  </td>
-                  <td className="py-1.5">
-                    <DataBar
-                      value={row.players}
-                      max={largest}
-                      colour={MAGNITUDE_BAR}
-                      track={MAGNITUDE_TRACK}
-                      label={`${row.name}: ${row.players} players`}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </ReportTable>
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
         </CappedList>
       </CardContent>
     </Card>

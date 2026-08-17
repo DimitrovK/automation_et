@@ -80,7 +80,7 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                   className={cn(
                     'rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
                     active
-                      ? cn('bg-gradient-to-br text-white ring-transparent', tier(tierKey).chip)
+                      ? cn('ring-transparent', tier(tierKey).chip)
                       : 'text-muted-foreground ring-border hover:bg-muted',
                   )}
                 >

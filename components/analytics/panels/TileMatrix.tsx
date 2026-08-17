@@ -215,7 +215,9 @@ function Tile({ difficulty, count, index, ranked }: {
       <span
         data-difficulty={difficulty}
         className={cn(
-          'flex h-14 items-center justify-center rounded-lg bg-gradient-to-br text-sm font-bold tabular-nums shadow-sm',
+          // No gradient and no shadow: both were reading as metal. A flat tile
+          // is a coloured surface, not a polished one.
+          'flex h-14 items-center justify-center rounded-lg text-sm font-bold tabular-nums',
           // Hover lifts the colour as well as the size. Scale alone reads as a
           // rendering quirk; a brightness change reads as a response.
           'animate-data-rise transition-all duration-150 hover:scale-[1.03] hover:brightness-125',

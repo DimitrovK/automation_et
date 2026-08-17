@@ -80,21 +80,18 @@ describe('categoryMatrix', () => {
       expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
       // The light-mode shade specifically — matching only `dark:from-…-950`
       // would let a light theme regress unnoticed.
-      // THREE stops per theme: a neutral, a mid hue, then the hue itself. Two
-      // stops read as brushed metal — nothing goes neutral to saturated in one
-      // step — so the `via-` is load-bearing rather than decoration.
-      // Direction alternates along the row, so the slate stop is `from-` on one
-      // cell and `to-` on its neighbour — assert the stops exist, not their order.
-      expect(cell.className).toMatch(/(^| )(from|to)-slate-200/);
-      expect(cell.className).toMatch(/(^| )via-(emerald|sky|amber|rose)-200/);
-      expect(cell.className).toMatch(/(^| )(from|to)-(green|blue|orange|red)-100/);
+      // FLAT, in both themes. The gradient was what read as brushed metal —
+      // a fade from a neutral into a hue is what a specular highlight looks
+      // like — so its absence is the behaviour worth guarding.
+      expect(cell.className).not.toMatch(/bg-gradient/);
+      expect(cell.className).not.toMatch(/(^| )(via|from|to)-/);
+      expect(cell.className).toMatch(/(^| )bg-(green|blue|orange|red)-(100|200)/);
       expect(cell.className).toMatch(/(^| )text-(green|blue|orange|red)-900/);
-      // Dark theme carries its OWN ramp from its own neutral — a dark tile on a
-      // light page is a hole punched in it, and the reverse is just as wrong.
-      expect(cell.className).toMatch(/dark:(from|to)-slate-900/);
-      expect(cell.className).toMatch(/dark:via-(emerald|sky|amber|rose)-800/);
-      expect(cell.className).toMatch(/dark:(from|to)-(green|blue|orange|red)-600/);
-      expect(cell.className).toContain('dark:text-white');
+      // Dark carries its own shade rather than inheriting the light one.
+      expect(cell.className).toMatch(/dark:bg-(green|blue|orange|red)-(800|900)/);
+      expect(cell.className).toMatch(/dark:text-(green|blue|orange|red)-100/);
+      // No shadow either: a raised edge is the other half of the metal look.
+      expect(cell.className).not.toContain('shadow');
     }
   });
 
@@ -190,17 +187,16 @@ describe('categoryMatrix', () => {
     expect(tile?.className).toContain('hover:brightness-125');
   });
 
-  it('alternates the gradient direction along a row', () => {
-    // Neighbours meet light against dark rather than repeating one direction,
-    // which is what makes the seam legible without a border between tiles.
+  it('alternates the shade along a row', () => {
+    // One step deeper on every other tile keeps the row's rhythm. With flat
+    // fills there is no direction left to alternate, so the shade does it.
     const { container } = render(
       <CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />,
     );
     const cells = [...container.querySelectorAll('[data-difficulty]:not([data-empty])')];
 
-    // Neutral-first on one, hue-first on the next.
-    expect(cells[0].className).toContain('from-slate-200');
-    expect(cells[1].className).toContain('from-blue-100');
+    expect(cells[0].className).toContain('bg-green-100');
+    expect(cells[1].className).toContain('bg-blue-200');
   });
 
   it('shows growth as a signed figure, and a quiet week as a dash', () => {
