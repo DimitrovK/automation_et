@@ -26,7 +26,7 @@ export function FootballerBreakdown({ data }: { data: CoverageResponse }) {
   const retiredPct = total ? Math.round((careerState!.retired / total) * 1000) / 10 : null;
 
   return (
-    <div className="grid gap-4">
+    <>
       {careerState && (
         <Card>
           <CardHeader>
@@ -54,7 +54,7 @@ export function FootballerBreakdown({ data }: { data: CoverageResponse }) {
           </CardContent>
         </Card>
       )}
-    </div>
+    </>
   );
 }
 

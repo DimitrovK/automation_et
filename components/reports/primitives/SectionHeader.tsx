@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { sectionId } from '@/lib/section-id';
 import { cn } from '@/lib/utils';
 
 /**
@@ -21,7 +22,20 @@ export function SectionHeader({ title, description, actions, className }: {
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-wrap items-end justify-between gap-3 pt-2', className)}>
+    <div
+      // The anchor and the label `OnThisPage` reads. Derived from the title
+      // rather than passed in, so a section cannot appear in the jump list under
+      // a name that differs from its own heading.
+      id={sectionId(title)}
+      data-section-title={title}
+      className={cn(
+        'flex flex-wrap items-end justify-between gap-3 pt-2',
+        // Without this a jumped-to heading lands flush against the top of the
+        // viewport, under any sticky chrome.
+        'scroll-mt-20',
+        className,
+      )}
+    >
       <div className="space-y-1">
         {/* Between the page title (text-2xl) and a card title (text-base), so a
             reader can tell a section from the panels inside it without reading
