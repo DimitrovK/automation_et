@@ -1,7 +1,20 @@
 import type { CoverageResponse } from '@/types/reports';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EraAndPools } from '@/components/analytics/panels/EraAndPools';
+
+// jsdom gives recharts a zero-size container, so bars and axis ticks never
+// render. What matters here is what identifies them: the legend and the
+// text alternative.
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 800, height: 300 }}>{children}</div>
+    ),
+  };
+});
 
 function data(over: Partial<CoverageResponse> = {}): CoverageResponse {
   return {
@@ -24,19 +37,25 @@ describe('eraAndPools', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('keeps the oldest bucket named rather than dated', () => {
-    render(<EraAndPools data={data()} />);
+  it('names all four difficulties in a legend', () => {
+    // The whole complaint about the segmented version: four series and nothing
+    // saying which was which.
+    render(<EraAndPools data={data({ game_pools: undefined })} />);
 
-    expect(screen.getByText('Before 1950')).toBeInTheDocument();
-    expect(screen.getByText('284')).toBeInTheDocument();
+    for (const label of ['Easy', 'Normal', 'Hard', 'Extreme']) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
   });
 
-  it('reads each era as its difficulty split, for anyone who cannot see it', () => {
-    render(<EraAndPools data={data()} />);
+  it('carries every bucket and count as text, not only as bars', () => {
+    // A chart in a zero-height container, a screen reader, and a printout all
+    // need the numbers to exist outside the SVG.
+    render(<EraAndPools data={data({ game_pools: undefined })} />);
 
     expect(
-      screen.getByRole('img', { name: 'Before 1950: 16 easy, 40 normal, 79 hard, 149 extreme' }),
+      screen.getByText(/Before 1950 — Easy 16, Normal 40, Hard 79, Extreme 149/),
     ).toBeInTheDocument();
+    expect(screen.getByText(/2000s — Easy 138/)).toBeInTheDocument();
   });
 
   it('says what a pool is a share of', () => {
@@ -46,15 +65,10 @@ describe('eraAndPools', () => {
     expect(screen.getByText(/Of 6,729 approved footballers/)).toBeInTheDocument();
   });
 
-  it('scales the bars against the biggest row, not each row', () => {
-    // Each row scaled to itself would make every bar full width and say nothing
-    // about size — the 284 era would look like the 839 one.
-    const { container } = render(<EraAndPools data={data()} />);
-    const segments = [...container.querySelectorAll('[role="img"] > span')];
-    const firstEra = segments.slice(0, 4).map(s => Number.parseFloat((s as HTMLElement).style.width));
+  it('keeps the oldest bucket named rather than dated', () => {
+    render(<EraAndPools data={data({ game_pools: undefined })} />);
 
-    // 16 of the largest total (839), not 16 of 284.
-    expect(firstEra[0]).toBeCloseTo((16 / 839) * 100, 1);
+    expect(screen.getByText(/Before 1950/)).toBeInTheDocument();
   });
 
   it('shows one panel when only one has arrived', () => {

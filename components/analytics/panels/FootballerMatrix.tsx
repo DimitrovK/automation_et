@@ -102,6 +102,7 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
         <TileMatrix
           rows={matrix.items}
           order={order}
+          rankedBy={difficulty}
           rowHeading={data.dimension_label}
           total={matrix.total}
           shown={matrix.items.length}
