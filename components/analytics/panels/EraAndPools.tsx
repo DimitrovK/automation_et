@@ -1,15 +1,21 @@
 'use client';
 
 import type { CoverageResponse } from '@/types/reports';
+import { DifficultyBars } from '@/components/analytics/charts/DifficultyBars';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { difficultyTier } from '@/lib/data-colours';
-import { cn } from '@/lib/utils';
+
+/** Column order, matching the backend's `DIFFICULTY_ORDER`. */
+const ORDER = ['EASY', 'NORMAL', 'HARD', 'EXTREME'];
 
 /**
  * When the catalogue's footballers were born, and what each game may use.
  *
- * Two panels that share a shape — a row per bucket, split by difficulty — and
- * answer questions the tier counts alone cannot.
+ * Two panels that share a chart — four bars per bucket, one per difficulty —
+ * and answer questions the tier counts alone cannot.
+ *
+ * Grouped bars, not the segmented rail this started as. That version showed
+ * composition but never said which segment was which: no legend, no hover, and
+ * a 3px sliver with nothing to read it against.
  *
  * The era chart is the more interesting of the two: it shows whether "hard" has
  * quietly become a synonym for "old". Locally it partly has, and that is a
@@ -35,8 +41,10 @@ export function EraAndPools({ data }: { data: CoverageResponse }) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <StackedRows
-              rows={eras.map(era => ({ label: era.era, parts: era.by_difficulty, total: era.total }))}
+            <DifficultyBars
+              rows={eras.map(era => ({ label: era.era, by_difficulty: era.by_difficulty }))}
+              order={ORDER}
+              bucketLabel="Decade of birth"
             />
           </CardContent>
         </Card>
@@ -53,58 +61,15 @@ export function EraAndPools({ data }: { data: CoverageResponse }) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <StackedRows
-              rows={pools.map(pool => ({ label: pool.label, parts: pool.by_difficulty, total: pool.total }))}
+            <DifficultyBars
+              rows={pools.map(pool => ({ label: pool.label, by_difficulty: pool.by_difficulty }))}
+              order={ORDER}
+              bucketLabel="Game"
+              height="h-64"
             />
           </CardContent>
         </Card>
       )}
     </div>
-  );
-}
-
-/**
- * One row per bucket: the label, the total, and the difficulty split as a
- * single segmented bar.
- *
- * Segmented rather than four bars per row because the question is composition —
- * how this decade divides — and four separate bars make the reader add up to
- * see the whole. Each segment is scaled against the LARGEST row so rows stay
- * comparable; scaling each to its own width would make every row full and say
- * nothing about size.
- */
-function StackedRows({ rows }: { rows: { label: string; parts: number[]; total: number }[] }) {
-  const order = ['EASY', 'NORMAL', 'HARD', 'EXTREME'];
-  const largest = Math.max(...rows.map(row => row.total), 1);
-
-  return (
-    <dl className="space-y-2.5">
-      {rows.map(row => (
-        <div key={row.label} className="space-y-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <dt className="text-sm text-muted-foreground">{row.label}</dt>
-            <dd className="text-sm font-medium tabular-nums text-foreground">{row.total.toLocaleString()}</dd>
-          </div>
-          <div
-            className="flex h-3 w-full gap-px overflow-hidden rounded-full"
-            role="img"
-            aria-label={`${row.label}: ${order.map((tier, index) => `${row.parts[index]} ${difficultyTier(tier).label.toLowerCase()}`).join(', ')}`}
-          >
-            {row.parts.map((count, index) => (
-              <span
-                key={order[index]}
-                className={cn('h-full first:rounded-l-full last:rounded-r-full', difficultyTier(order[index]).bar)}
-                // Widths are shares of the LARGEST row, so a short row stays
-                // short. The row's own total would make every bar full-width.
-                style={{ width: `${(count / largest) * 100}%` }}
-              />
-            ))}
-            {/* The remainder, so the track shows how far short of the biggest
-                row this one falls. */}
-            <span className="h-full flex-1 bg-foreground/[0.06]" />
-          </div>
-        </div>
-      ))}
-    </dl>
   );
 }

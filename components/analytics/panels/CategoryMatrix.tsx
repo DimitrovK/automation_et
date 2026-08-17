@@ -101,6 +101,7 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
             extra: row.added ?? null,
           }))}
           order={order}
+          rankedBy={difficulty}
           rowHeading="Category"
           total={matrix.total}
           shown={matrix.items.length}

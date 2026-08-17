@@ -80,9 +80,9 @@ describe('categoryMatrix', () => {
       expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
       // The light-mode shade specifically — matching only `dark:from-…-950`
       // would let a light theme regress unnoticed.
-      expect(cell.className).toMatch(/(^| )from-(green|blue|orange|red)-\d+/);
-      // And the number is written in the hue, not in white on a block of it.
-      expect(cell.className).toMatch(/(^| )text-(green|blue|orange|red)-\d+/);
+      // Muffled now: slate at one end, a deep muted hue at the other.
+      expect(cell.className).toMatch(/(^| )(from|to)-slate-800/);
+      expect(cell.className).toMatch(/(from|to)-(emerald|blue|orange|rose)-800/);
     }
   });
 
@@ -115,8 +115,14 @@ describe('categoryMatrix', () => {
       />,
     );
 
-    expect(screen.getAllByRole('columnheader').map(h => h.textContent))
-      .toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total', 'Added']);
+    // The sorted column carries an arrow and a note for screen readers, so match
+    // on the tier names rather than on exact header text.
+    const headers = screen.getAllByRole('columnheader').map(h => h.textContent ?? '');
+    for (const label of ['Easy', 'Normal', 'Hard', 'Extreme']) {
+      expect(headers.some(text => text.includes(label))).toBe(true);
+    }
+
+    expect(headers).toHaveLength(7);
   });
 
   it('clears the ranking when the active tier is pressed again', () => {
@@ -136,6 +142,42 @@ describe('categoryMatrix', () => {
     expect(onDifficultyChange).toHaveBeenCalledWith(null);
   });
 
+  it('marks the sorted column in the grid, not only in the copy', () => {
+    // Pressing a difficulty re-ordered the rows and left nothing in the table
+    // to say which column caused it, so the new order looked arbitrary.
+    const { container } = render(
+      <CategoryMatrix
+        data={data({ difficulty: 'HARD' })}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty="HARD"
+        onDifficultyChange={vi.fn()}
+      />,
+    );
+
+    const sorted = container.querySelector('th[aria-sort="descending"]');
+
+    expect(sorted).toHaveTextContent('Hard');
+
+    // Every tile in that column is ringed too, so the eye can follow it down.
+    const hardTiles = [...container.querySelectorAll('[data-difficulty="HARD"]')];
+
+    expect(hardTiles.length).toBeGreaterThan(0);
+    expect(hardTiles.every(tile => tile.className.includes('ring-primary/40'))).toBe(true);
+  });
+
+  it('lifts the colour on hover, not just the size', () => {
+    // Scale alone reads as a rendering quirk; a brightness change reads as a
+    // response to the pointer.
+    const { container } = render(
+      <CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />,
+    );
+
+    const tile = container.querySelector('[data-difficulty]:not([data-empty])');
+
+    expect(tile?.className).toContain('hover:brightness-125');
+  });
+
   it('alternates the gradient direction along a row', () => {
     // Neighbours meet light against dark rather than repeating one direction,
     // which is what makes the seam legible without a border between tiles.
@@ -144,8 +186,9 @@ describe('categoryMatrix', () => {
     );
     const cells = [...container.querySelectorAll('[data-difficulty]:not([data-empty])')];
 
-    expect(cells[0].className).toContain('from-green-900');
-    expect(cells[1].className).toContain('from-blue-500');
+    // slate -> hue on the first, hue -> slate on the next.
+    expect(cells[0].className).toContain('from-slate-800');
+    expect(cells[1].className).toContain('from-blue-800');
   });
 
   it('shows growth as a signed figure, and a quiet week as a dash', () => {
