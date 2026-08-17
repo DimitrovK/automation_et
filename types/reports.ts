@@ -1188,13 +1188,54 @@ export type NationGapsResponse = {
   nations_by_footballers: CappedRows<{ name: string; short: string; footballers: number }>;
 };
 
+/**
+ * A page of rows, plus where the page sits in the whole set.
+ *
+ * `CappedRows` says "here are the first ten of 4,402 and that is all you get".
+ * This says which ten, out of how many pages — the difference between a sample
+ * and a table you can walk.
+ */
+export type PagedRows<T> = {
+  items: T[];
+  total: number;
+  /** Rows per page, echoed. */
+  limit: number;
+  /** 1-based, and clamped server-side: asking for page 900 returns the last. */
+  page: number;
+  pages: number;
+};
+
+/** Who a team is, in either of the two lists on the teams page. */
+export type TeamRow = {
+  id: number;
+  name: string;
+  nation: string | null;
+  /** The nation's flag. 230 of 233 active nations have one. */
+  flag: string | null;
+  /** The club crest. Only 377 of 4,455 teams have one — expect null. */
+  badge: string | null;
+};
+
+/**
+ * The empty-team rows gained `id`, `flag` and `badge` in a later backend PR
+ * than the ranking did, so they are optional: this app can deploy first and
+ * the chips become clickable when the API catches up.
+ */
+export type TeamGapRow
+  = Omit<TeamRow, 'id' | 'flag' | 'badge'> & Partial<Pick<TeamRow, 'id' | 'flag' | 'badge'>>;
+
+/** How the squad-depth table may be ordered. Rejected server-side if unknown. */
+export type TeamOrdering = 'players' | 'players_asc' | 'name';
+
 export type TeamGapsResponse = {
-  teams_without_footballers: CappedRows<{ name: string; nation: string | null }>;
+  teams_without_footballers: CappedRows<TeamGapRow>;
   review_queue: ReviewQueue;
-  /** The other end of the same table: the deepest squads. */
-  teams_by_players?: CappedRows<{ name: string; nation: string | null; players: number }>;
+  /** The other end of the same table: the deepest squads, one page at a time. */
+  teams_by_players?: PagedRows<TeamRow & { players: number }>;
   /** Echoed so an empty ranking reads as "no matches" rather than "no data". */
   search?: string | null;
+  /** Echoed so the header can mark the column the server actually sorted by. */
+  ordering?: TeamOrdering | null;
 };
 
 export type QuestionBankResponse = {
