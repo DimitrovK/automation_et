@@ -3,7 +3,8 @@
 import type { CoverageResponse } from '@/types/reports';
 import { CareerSplit } from '@/components/analytics/charts/CareerSplit';
 import { DataBar } from '@/components/reports/primitives/DataBar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoHint } from '@/components/reports/primitives/InfoHint';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CAREER_STATE } from '@/lib/data-colours';
 
 /**
@@ -30,11 +31,13 @@ export function FootballerBreakdown({ data }: { data: CoverageResponse }) {
       {careerState && (
         <Card>
           <CardHeader>
-            <CardTitle>Still playing, or retired</CardTitle>
-            <CardDescription>
-              Which games can use whom: a retired footballer cannot appear in anything
-              scoped to a current squad.
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              Still playing, or retired
+              <InfoHint label="still playing or retired">
+                Which games can use whom: a retired footballer cannot appear in anything
+                scoped to a current squad.
+              </InfoHint>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <dl className="space-y-3">

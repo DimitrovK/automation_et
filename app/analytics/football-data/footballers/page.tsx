@@ -83,7 +83,6 @@ export default function FootballersAnalyticsPage() {
 
       <SectionHeader
         title="The catalogue by difficulty"
-        description="How much of each tier exists, how much of it has a face, and how much has retired. Not windowed — this is the catalogue as it stands, whatever the range says."
       />
 
       {/* Three across: the same axis asked three ways, so reading one row of
@@ -99,7 +98,6 @@ export default function FootballersAnalyticsPage() {
 
       <SectionHeader
         title="When they played, and who can use them"
-        description="Whether the catalogue skews modern, and what each game is allowed to draw on."
       />
 
       <ReportPanel state={state} skeletonClassName="h-72 w-full">
@@ -113,7 +111,6 @@ export default function FootballersAnalyticsPage() {
 
       <SectionHeader
         title="The catalogue by nation and team"
-        description="Which rows the catalogue leans on, and where it thins out at the top end."
       />
 
       <ReportPanel state={matrix} skeletonClassName="h-[30rem] w-full">
@@ -141,7 +138,6 @@ export default function FootballersAnalyticsPage() {
 
       <SectionHeader
         title="Coverage where it is used"
-        description="Gaps among the footballers actually put in front of players in the window, and the untouched remainder."
       />
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
