@@ -56,13 +56,14 @@ export default function QuestionsAnalyticsPage() {
 
   const [limit, setLimit] = useState(PAGE);
   const [search, setSearch] = useState('');
+  const [difficulty, setDifficulty] = useState<string | null>(null);
 
   const bank = useReport(
-    () => ReportsAPI.getQuestionBank({ ...params, limit, search: search || undefined }),
+    () => ReportsAPI.getQuestionBank({ ...params, limit, search: search || undefined, difficulty: difficulty ?? undefined }),
     params,
     enabled,
     'The question bank endpoint',
-    `${limit}:${search}`,
+    `${limit}:${search}:${difficulty ?? ''}`,
   );
 
   const state = useReport(
@@ -96,6 +97,8 @@ export default function QuestionsAnalyticsPage() {
             data={data}
             search={search}
             onSearchChange={setSearch}
+            difficulty={difficulty}
+            onDifficultyChange={setDifficulty}
             expanded={limit > PAGE}
             onExpand={() => setLimit(EXPANDED)}
           />

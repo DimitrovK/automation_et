@@ -25,12 +25,15 @@ import { cn } from '@/lib/utils';
  * most need to see the shape of.
  */
 
-export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChange }: {
+export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChange, difficulty, onDifficultyChange }: {
   data: QuestionBankResponse;
   onExpand?: () => void;
   expanded?: boolean;
   search: string;
   onSearchChange: (next: string) => void;
+  /** Rank by one tier, or null for overall size. */
+  difficulty: string | null;
+  onDifficultyChange: (next: string | null) => void;
 }) {
   const { category_matrix: matrix, difficulty_order: order } = data;
 
@@ -45,18 +48,48 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
             A question can carry several categories, so these rows deliberately sum to more
             than the bank holds. Each cell is "questions carrying this category", never a
             share of the total.
+            {difficulty
+              ? ` Ranked by ${tier(difficulty).label} questions — every tier is still shown beside it.`
+              : ' Ranked by total questions.'}
           </CardDescription>
         </div>
         {/* ON the card it filters, not in the page filter bar. Up there it sat
             beside the date range with nothing to say which panel it applied to
             — and it applies to this table alone. */}
-        <SearchBox
-          value={search}
-          onChange={onSearchChange}
-          label="Filter categories in this table"
-          placeholder="Filter these categories…"
-          className="w-full shrink-0 sm:w-56"
-        />
+        <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+          <SearchBox
+            value={search}
+            onChange={onSearchChange}
+            label="Filter categories in this table"
+            placeholder="Filter these categories…"
+            className="w-full sm:w-56"
+          />
+          {/* Ranking, not column-hiding. "Which categories are thin at the top
+              end" is answered by re-ordering the list, not by removing three
+              columns — the other tiers are the context that makes the answer
+              mean anything. */}
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Rank categories by difficulty">
+            {order.map((tierKey) => {
+              const active = difficulty === tierKey;
+              return (
+                <button
+                  key={tierKey}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => onDifficultyChange(active ? null : tierKey)}
+                  className={cn(
+                    'rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+                    active
+                      ? cn('bg-gradient-to-br text-white ring-transparent', tier(tierKey).chip)
+                      : 'text-muted-foreground ring-border hover:bg-muted',
+                  )}
+                >
+                  {tier(tierKey).label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <CappedList
@@ -73,10 +106,10 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                 read as one solid block and the eye has to hunt for the
                 boundaries; fully separated they float. This is enough to make
                 each a box without breaking the row into four. */}
-            <table className="w-full min-w-[38rem] border-separate border-spacing-x-1 border-spacing-y-1.5 text-sm">
+            <table className="w-full min-w-[42rem] table-fixed border-separate border-spacing-x-1 border-spacing-y-1.5 text-sm">
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 bg-card py-1 pr-3 text-left text-xs font-medium text-muted-foreground">
+                  <th className="sticky left-0 z-10 w-52 bg-card py-1 pr-3 text-left text-xs font-medium text-muted-foreground">
                     Category
                   </th>
                   {order.map(difficulty => (
@@ -89,7 +122,7 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                       </span>
                     </th>
                   ))}
-                  <th className="py-1 pl-4 text-right text-xs font-medium text-muted-foreground">Total</th>
+                  <th className="pb-1.5 pl-2 text-center text-xs font-medium text-muted-foreground">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,14 +143,17 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                         index={index}
                       />
                     ))}
-                    <td className="py-1 pl-4">
+                    <td className="p-0 pl-2">
                       {/* The row total gets the same weight as a cell so the
                           band reads as "these four, and what they come to"
                           rather than trailing off into plain text. */}
                       {/* The total is the one figure here that is not a
                           difficulty, so it stays neutral — and reads as the sum
                           rather than as a fifth tier. */}
-                      <span className="block rounded-lg bg-muted/70 px-3 py-2 text-center text-sm font-bold tabular-nums text-foreground ring-1 ring-inset ring-border">
+                      {/* Same height and shape as a difficulty cell so the row
+                          reads as one set of tiles, and centred like them —
+                          right-aligned it drifted away from the band. */}
+                      <span className="flex h-14 items-center justify-center rounded-lg bg-muted/70 text-sm font-bold tabular-nums text-foreground ring-1 ring-inset ring-border">
                         {row.total.toLocaleString()}
                       </span>
                     </td>
@@ -140,15 +176,15 @@ function Cell({ difficulty, count, index }: {
   const style = tier(difficulty);
 
   // A dash, not a zero. An empty cell is the thing you are looking for, and the
-  // gaps are the reason to read this table — so it keeps its shape in the row
-  // while clearly holding nothing.
+  // gaps are the reason to read this table — so it keeps the tile's shape while
+  // clearly holding nothing.
   if (count === 0) {
     return (
       <td className="p-0">
         <span
           data-difficulty={difficulty}
           data-empty="true"
-          className="block rounded-lg border border-dashed border-border/70 px-3 py-2 text-center text-sm text-muted-foreground/40"
+          className="flex h-14 items-center justify-center rounded-lg border border-dashed border-border/70 text-sm text-muted-foreground/40"
         >
           —
         </span>
@@ -161,12 +197,15 @@ function Cell({ difficulty, count, index }: {
       <span
         data-difficulty={difficulty}
         className={cn(
-          'block rounded-lg px-3 py-2 text-center text-sm font-semibold tabular-nums',
+          // h-14 against a ~4.5rem column: near enough to square that the row
+          // reads as tiles rather than as a bar chart lying on its side.
+          'flex h-14 items-center justify-center rounded-lg bg-gradient-to-br text-sm font-bold tabular-nums shadow-sm',
           'animate-data-rise transition-transform duration-150 hover:scale-[1.04]',
-          style.chip,
+          // Alternating direction: dark-to-colour, then colour-to-dark. Two
+          // neighbours meet light against dark instead of repeating, so the
+          // seam is legible without a border between them.
+          index % 2 === 0 ? style.chip : style.chipAlt,
         )}
-        // Staggered across the row so a refetched table fills left to right
-        // rather than flashing all at once.
         style={{ animationDelay: `${Math.min(index, 5) * 45}ms` }}
       >
         {count.toLocaleString()}

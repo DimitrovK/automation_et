@@ -1,5 +1,5 @@
 import type { QuestionBankResponse } from '@/types/reports';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { CategoryMatrix } from '@/components/analytics/panels/CategoryMatrix';
 
@@ -23,13 +23,13 @@ describe('categoryMatrix', () => {
   it('says the rows do not sum to the bank, rather than leaving it to be found', () => {
     // The one figure on the page that deliberately double-counts: most
     // questions carry more than one category.
-    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     expect(screen.getByText(/sum to more than the bank holds/)).toBeInTheDocument();
   });
 
   it('lays the difficulties out as columns in order', () => {
-    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
 
@@ -37,7 +37,7 @@ describe('categoryMatrix', () => {
   });
 
   it('shows each cell and the row total', () => {
-    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     expect(screen.getByText('277')).toBeInTheDocument();
     expect(screen.getByText('113')).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('categoryMatrix', () => {
   });
 
   it('reports the real category count, not the rows rendered', () => {
-    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     expect(screen.getByText('Showing 2 of 2,017')).toBeInTheDocument();
   });
@@ -53,7 +53,7 @@ describe('categoryMatrix', () => {
   it('puts the filter on the card it filters', () => {
     // In the page filter bar it sat beside the date range with nothing to say
     // which panel it applied to. It applies to this table alone.
-    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     expect(screen.getByLabelText('Filter categories in this table')).toBeInTheDocument();
   });
@@ -61,7 +61,7 @@ describe('categoryMatrix', () => {
   it('gives each difficulty its own column identity', () => {
     // Difficulty is ordinal, so the columns read cool-to-hot rather than as
     // four unrelated hues — a row is a shape before it is four numbers.
-    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
 
@@ -69,7 +69,7 @@ describe('categoryMatrix', () => {
   });
 
   it('gives every cell a visible solid fill, not an opacity tint', () => {
-    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     const cells = container.querySelectorAll('[data-difficulty]:not([data-empty])');
 
@@ -86,11 +86,73 @@ describe('categoryMatrix', () => {
     }
   });
 
+  it('ranks by a tier when one is chosen, and says so', () => {
+    const onDifficultyChange = vi.fn();
+    render(
+      <CategoryMatrix
+        data={data({ difficulty: 'EXTREME' })}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty="EXTREME"
+        onDifficultyChange={onDifficultyChange}
+      />,
+    );
+
+    expect(screen.getByText(/Ranked by Extreme questions/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Extreme' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('keeps every tier visible while ranking by one', () => {
+    // Hiding the other three would answer a different question: "thin at the
+    // top end" only means something against the tiers beside it.
+    render(
+      <CategoryMatrix
+        data={data({ difficulty: 'EXTREME' })}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty="EXTREME"
+        onDifficultyChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByRole('columnheader').map(h => h.textContent))
+      .toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total']);
+  });
+
+  it('clears the ranking when the active tier is pressed again', () => {
+    const onDifficultyChange = vi.fn();
+    render(
+      <CategoryMatrix
+        data={data({ difficulty: 'HARD' })}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty="HARD"
+        onDifficultyChange={onDifficultyChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hard' }));
+
+    expect(onDifficultyChange).toHaveBeenCalledWith(null);
+  });
+
+  it('alternates the gradient direction along a row', () => {
+    // Neighbours meet light against dark rather than repeating one direction,
+    // which is what makes the seam legible without a border between tiles.
+    const { container } = render(
+      <CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />,
+    );
+    const cells = [...container.querySelectorAll('[data-difficulty]:not([data-empty])')];
+
+    expect(cells[0].className).toContain('from-green-900');
+    expect(cells[1].className).toContain('from-blue-500');
+  });
+
   it('leaves air between the cells', () => {
     // Welded edge to edge they read as one solid block and the eye has to hunt
     // for the boundaries; this is enough to make each a box without breaking
     // the row into four separate things.
-    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
     const table = container.querySelector('table') as HTMLElement;
 
     expect(table.className).toContain('border-spacing-x-1');
@@ -98,7 +160,7 @@ describe('categoryMatrix', () => {
   });
 
   it('animates the cells in rather than blinking them', () => {
-    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} />);
+    const { container } = render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
     expect(container.querySelectorAll('.animate-data-rise').length).toBeGreaterThan(0);
   });
@@ -109,6 +171,8 @@ describe('categoryMatrix', () => {
         data={data({ search: 'zzz', category_matrix: { items: [], total: 0, limit: 10 } })}
         search="zzz"
         onSearchChange={vi.fn()}
+        difficulty={null}
+        onDifficultyChange={vi.fn()}
       />,
     );
 
@@ -129,6 +193,8 @@ describe('categoryMatrix', () => {
         })}
         search=""
         onSearchChange={vi.fn()}
+        difficulty={null}
+        onDifficultyChange={vi.fn()}
       />,
     );
 

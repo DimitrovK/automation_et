@@ -30,8 +30,13 @@ export type DataTier = {
   /** The bar's own rail, in its own hue. A neutral grey rail reads as chrome. */
   track: string;
   /**
-   * A matrix cell: a soft tint of the hue, with the number in a strong shade of
-   * the SAME hue and a hairline ring around it.
+   * A matrix cell: dark at one end of the gradient, the hue at the other.
+   *
+   * `chip` runs dark to colour, `chipAlt` runs colour to dark, and the matrix
+   * alternates them across a row. Neighbouring cells meet light-against-dark
+   * rather than repeating one direction, which gives the band a rhythm instead
+   * of four identical tiles — and the seam between two cells stops needing a
+   * border to be legible.
    *
    * The saturated version read as shouting — four blocks of full-strength
    * colour side by side, competing with the numbers they were meant to carry.
@@ -52,6 +57,8 @@ export type DataTier = {
    * for more colour, or drop the ring to 100 for less.
    */
   chip: string;
+  /** The same fill with the gradient reversed. Alternated along a row. */
+  chipAlt: string;
   /** Text colour for a column header. */
   head: string;
   /** Solid dot carrying the colour into a legend or header. */
@@ -75,7 +82,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Easy',
     bar: 'bg-gradient-to-r from-green-400 to-green-500',
     track: 'bg-green-400/20',
-    chip: 'bg-gradient-to-br from-green-50 to-green-100 text-green-700 ring-1 ring-inset ring-green-200 dark:from-green-900/60 dark:to-green-800/60 dark:text-green-200 dark:ring-green-700/60',
+    chip: 'from-green-900 to-green-500 text-green-50 ring-1 ring-inset ring-green-400/30',
+    chipAlt: 'from-green-500 to-green-900 text-green-50 ring-1 ring-inset ring-green-400/30',
     head: 'text-green-600 dark:text-green-400',
     dot: 'bg-green-400',
     hex: '#22c55e',
@@ -84,7 +92,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Normal',
     bar: 'bg-gradient-to-r from-blue-400 to-blue-500',
     track: 'bg-blue-400/20',
-    chip: 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 ring-1 ring-inset ring-blue-200 dark:from-blue-900/60 dark:to-blue-800/60 dark:text-blue-200 dark:ring-blue-700/60',
+    chip: 'from-blue-900 to-blue-500 text-blue-50 ring-1 ring-inset ring-blue-400/30',
+    chipAlt: 'from-blue-500 to-blue-900 text-blue-50 ring-1 ring-inset ring-blue-400/30',
     head: 'text-blue-600 dark:text-blue-400',
     dot: 'bg-blue-400',
     hex: '#3b82f6',
@@ -93,7 +102,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Hard',
     bar: 'bg-gradient-to-r from-orange-400 to-orange-500',
     track: 'bg-orange-400/20',
-    chip: 'bg-gradient-to-br from-orange-50 to-orange-100 text-orange-700 ring-1 ring-inset ring-orange-200 dark:from-orange-900/60 dark:to-orange-800/60 dark:text-orange-200 dark:ring-orange-700/60',
+    chip: 'from-orange-900 to-orange-500 text-orange-50 ring-1 ring-inset ring-orange-400/30',
+    chipAlt: 'from-orange-500 to-orange-900 text-orange-50 ring-1 ring-inset ring-orange-400/30',
     head: 'text-orange-600 dark:text-orange-400',
     dot: 'bg-orange-400',
     hex: '#f97316',
@@ -102,7 +112,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Extreme',
     bar: 'bg-gradient-to-r from-red-400 to-red-500',
     track: 'bg-red-400/20',
-    chip: 'bg-gradient-to-br from-red-50 to-red-100 text-red-700 ring-1 ring-inset ring-red-200 dark:from-red-900/60 dark:to-red-800/60 dark:text-red-200 dark:ring-red-700/60',
+    chip: 'from-red-900 to-red-500 text-red-50 ring-1 ring-inset ring-red-400/30',
+    chipAlt: 'from-red-500 to-red-900 text-red-50 ring-1 ring-inset ring-red-400/30',
     head: 'text-red-600 dark:text-red-400',
     dot: 'bg-red-400',
     hex: '#ef4444',
@@ -114,6 +125,7 @@ const UNKNOWN_TIER: DataTier = {
   label: '',
   bar: 'bg-muted-foreground/40',
   track: 'bg-muted-foreground/10',
+  chipAlt: 'bg-muted text-foreground',
   chip: 'bg-muted text-foreground',
   head: 'text-muted-foreground',
   dot: 'bg-muted-foreground',
