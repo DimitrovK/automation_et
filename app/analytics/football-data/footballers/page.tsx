@@ -4,7 +4,9 @@ import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
 import { DataCoverage } from '@/components/analytics/panels/DataCoverage';
 import { DifficultyCatalogue } from '@/components/analytics/panels/DifficultyCatalogue';
+import { EraAndPools } from '@/components/analytics/panels/EraAndPools';
 import { FootballerBreakdown } from '@/components/analytics/panels/FootballerBreakdown';
+import { FootballerMatrix } from '@/components/analytics/panels/FootballerMatrix';
 import { ReviewQueue } from '@/components/analytics/panels/ReviewQueue';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
@@ -31,7 +33,10 @@ const EXPANDED = 100;
 export default function FootballersAnalyticsPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
-  const [limit, setLimit] = useState(PAGE);
+  const [dimension, setDimension] = useState('nation');
+  const [matrixSearch, setMatrixSearch] = useState('');
+  const [matrixDifficulty, setMatrixDifficulty] = useState<string | null>(null);
+  const [matrixLimit, setMatrixLimit] = useState(PAGE);
 
   const { filters, update } = useReportFilters({
     range: { window: 90 },
@@ -43,8 +48,16 @@ export default function FootballersAnalyticsPage() {
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots, limit }),
-    [range, includeBots, limit],
+    () => ({ ...rangeToParams(range), include_bots: includeBots }),
+    [range, includeBots],
+  );
+
+  const matrix = useReport(
+    () => ReportsAPI.getDifficultyMatrix(dimension, matrixLimit, matrixSearch || undefined, matrixDifficulty ?? undefined),
+    {},
+    enabled,
+    'The difficulty matrix endpoint',
+    `${dimension}:${matrixLimit}:${matrixSearch}:${matrixDifficulty ?? ''}`,
   );
 
   const state = useReport(
@@ -73,20 +86,45 @@ export default function FootballersAnalyticsPage() {
       </ReportPanel>
 
       <SectionHeader
-        title="Who built it, and who is still playing"
+        title="Who is still playing, and what each game can use"
         description="Not windowed — this is the catalogue as it stands, whatever the range says."
       />
 
       <ReportPanel state={state} skeletonClassName="h-72 w-full">
         {data => (
           <div className="space-y-4">
-            <FootballerBreakdown
-              data={data}
-              expanded={limit > PAGE}
-              onExpand={() => setLimit(EXPANDED)}
-            />
+            <FootballerBreakdown data={data} />
+            <EraAndPools data={data} />
             <ReviewQueue counts={data.review_queue} subject="footballers" />
           </div>
+        )}
+      </ReportPanel>
+
+      <SectionHeader
+        title="The catalogue by nation and team"
+        description="Which rows the catalogue leans on, and where it thins out at the top end."
+      />
+
+      <ReportPanel state={matrix} skeletonClassName="h-[30rem] w-full">
+        {matrixData => (
+          <FootballerMatrix
+            data={matrixData}
+            dimension={dimension}
+            onDimensionChange={(next) => {
+              // Reset the row filters: a search for an Italian club means
+              // nothing once the rows are nations.
+              setDimension(next);
+              setMatrixSearch('');
+              setMatrixDifficulty(null);
+              setMatrixLimit(PAGE);
+            }}
+            search={matrixSearch}
+            onSearchChange={setMatrixSearch}
+            difficulty={matrixDifficulty}
+            onDifficultyChange={setMatrixDifficulty}
+            expanded={matrixLimit > PAGE}
+            onExpand={() => setMatrixLimit(EXPANDED)}
+          />
         )}
       </ReportPanel>
 

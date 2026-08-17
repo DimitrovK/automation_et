@@ -1146,11 +1146,6 @@ export type CoverageResponse = {
   totals?: CatalogueTotals;
   added_series?: CatalogueAddedPoint[];
   difficulty_tiers?: DifficultyTier[];
-  /**
-   * Who added the footballers. Only `Footballer` records this — Team and
-   *  Nation carry no author — so it is not catalogue-wide authorship.
-   */
-  contributors?: CappedRows<{ username: string; footballers: number }>;
   career_state?: {
     retired: number;
     active: number;
@@ -1162,6 +1157,12 @@ export type CoverageResponse = {
     by_difficulty?: { difficulty: string; retired: number; active: number }[];
   };
   review_queue?: ReviewQueue;
+  /** Footballers by decade of birth. Optional until the BE ships. */
+  eras?: EraRow[];
+  /** What each game may actually draw on, by tier. */
+  game_pools?: GamePool[];
+  /** Approved footballers overall, for reading the pools against. */
+  catalogue?: number;
 } & ResolvedRange;
 
 /**
@@ -1218,12 +1219,46 @@ export type QuestionBankResponse = {
     total: number;
     /** Counts in `difficulty_order`, positionally. */
     by_difficulty: number[];
+    /**
+     * Questions added to this category in the window, approved or not.
+     *  Optional: a backend predating it shows no column rather than zeros.
+     */
+    added?: number;
   }>;
   difficulty_order: string[];
   search: string | null;
   /** Echoed, so a rejected filter cannot look as if it applied. */
   difficulty: string | null;
 } & ResolvedRange;
+
+export type DifficultyMatrixResponse = {
+  dimension: string;
+  dimension_label: string;
+  matrix: CappedRows<{
+    key: string;
+    name: string;
+    total: number;
+    by_difficulty: number[];
+  }>;
+  difficulty_order: string[];
+  search: string | null;
+  difficulty: string | null;
+  /**
+   * True when a row can contain the same footballer more than once — a team
+   * row does, because a footballer belongs to every club they played for. A
+   * nation row does not.
+   */
+  rows_double_count: boolean;
+};
+
+export type EraRow = { era: string; by_difficulty: number[]; total: number };
+
+export type GamePool = {
+  key: string;
+  label: string;
+  by_difficulty: number[];
+  total: number;
+};
 
 export type CatalogueTotals = {
   /**

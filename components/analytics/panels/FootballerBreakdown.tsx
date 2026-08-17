@@ -2,29 +2,23 @@
 
 import type { CoverageResponse } from '@/types/reports';
 import { CareerSplit } from '@/components/analytics/charts/CareerSplit';
-import { CappedList } from '@/components/reports/primitives/CappedList';
 import { DataBar } from '@/components/reports/primitives/DataBar';
-import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CAREER_STATE } from '@/lib/data-colours';
 
 /**
- * Who is adding footballers, and how many of them have stopped playing.
+ * How much of the catalogue has stopped playing, overall and per tier.
  *
- * Contributors is footballers ONLY. `Footballer` is the single model of the
- * three that records who added it — `Team` and `Nation` carry no author — so
- * presenting this as catalogue-wide authorship would credit one person with
- * work the schema cannot attribute.
+ * The contributor list that used to sit beside this was dropped: only
+ * `Footballer` records who added it, so it could never describe the catalogue,
+ * and "one account added 86% of these" is a fact you act on once rather than
+ * watch. Era and per-game pools took the space.
  */
-export function FootballerBreakdown({ data, onExpand, expanded }: {
-  data: CoverageResponse;
-  onExpand?: () => void;
-  expanded?: boolean;
-}) {
-  const { contributors, career_state: careerState } = data;
+export function FootballerBreakdown({ data }: { data: CoverageResponse }) {
+  const { career_state: careerState } = data;
 
-  // The BE may not carry these yet — the repositories deploy independently.
-  if (!contributors && !careerState) {
+  // The BE may not carry this yet — the repositories deploy independently.
+  if (!careerState) {
     return null;
   }
 
@@ -32,41 +26,7 @@ export function FootballerBreakdown({ data, onExpand, expanded }: {
   const retiredPct = total ? Math.round((careerState!.retired / total) * 1000) / 10 : null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      {contributors && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Who added them</CardTitle>
-            <CardDescription>
-              Footballers only — teams and nations do not record who added them, so this is
-              not the whole catalogue.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CappedList
-              total={contributors.total}
-              shown={contributors.items.length}
-              onExpand={onExpand}
-              expanded={expanded}
-              emptyLabel="No footballer records who added it."
-            >
-              <ReportTable>
-                <tbody>
-                  {contributors.items.map(row => (
-                    <tr key={row.username} className="border-b last:border-0">
-                      <td className="py-1.5 pr-4 text-sm text-foreground">{row.username}</td>
-                      <td className="py-1.5 text-right text-sm font-medium tabular-nums text-foreground">
-                        {row.footballers.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </ReportTable>
-            </CappedList>
-          </CardContent>
-        </Card>
-      )}
-
+    <div className="grid gap-4">
       {careerState && (
         <Card>
           <CardHeader>
