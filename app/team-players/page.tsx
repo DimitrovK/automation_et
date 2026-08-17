@@ -8,8 +8,8 @@ import type {
   TransferFilter,
 } from '@/types/team';
 import { LayoutGrid, List, Users2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
@@ -32,12 +32,18 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useAuth } from '@/lib/auth';
 import config from '@/lib/config';
 import { TeamAPI } from '@/lib/team-api';
+import { parseTeamId } from '@/lib/team-id-param';
 
 const PAGE_SIZE = 50;
 
-export default function TeamPlayersPage() {
+function TeamPlayers() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Consumed once. The URL is a starting point, not a binding — picking a
+  // different team from the search box must not be undone by a re-render
+  // reading the original id back out of the query string.
+  const consumedTeamIdParam = useRef(false);
 
   // ---- selected team + payload ------------------------------------------
   const [teamId, setTeamId] = useState<number | null>(null);
@@ -56,6 +62,22 @@ export default function TeamPlayersPage() {
   const [view, setView] = useState<'cards' | 'table'>('table');
 
   // ---- effects -----------------------------------------------------------
+  // Deep-link entry point for `/team-players?teamId=<id>`. The teams analytics
+  // page links every row and every empty-team chip here, which is the point of
+  // that page: a club with a thin or missing squad is one click from the screen
+  // where you fix it.
+  useEffect(() => {
+    if (consumedTeamIdParam.current || !isAuthenticated) {
+      return;
+    }
+    const fromUrl = parseTeamId(searchParams?.get('teamId'));
+    if (fromUrl === null) {
+      return;
+    }
+    consumedTeamIdParam.current = true;
+    setTeamId(fromUrl);
+  }, [isAuthenticated, searchParams]);
+
   useEffect(() => {
     if (teamId === null) {
       return;
@@ -128,6 +150,13 @@ export default function TeamPlayersPage() {
   function handleTeamSelect(id: number) {
     setTeamId(id);
     setError(null);
+    // Keep the address bar honest. Arriving by deep link and then picking a
+    // different team would otherwise leave the URL naming the previous club,
+    // so a refresh or a shared link would land somewhere else than the screen.
+    // Marked consumed first, so the resulting `searchParams` change cannot
+    // re-enter the deep-link effect.
+    consumedTeamIdParam.current = true;
+    router.replace(`/team-players?teamId=${id}`);
   }
 
   function handleEditFootballer(footballerId: number) {
@@ -301,5 +330,19 @@ export default function TeamPlayersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * `useSearchParams` suspends, and a client page that reads it without a
+ * boundary makes the whole route bail out of prerendering — a build error in
+ * Next 16, not a runtime one. The fallback is what the page already shows while
+ * it works out who you are.
+ */
+export default function TeamPlayersPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner message="Loading" subtitle="Preparing team lookup..." />}>
+      <TeamPlayers />
+    </Suspense>
   );
 }

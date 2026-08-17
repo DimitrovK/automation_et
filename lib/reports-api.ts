@@ -26,6 +26,7 @@ import type {
   RollupHealth,
   SummaryResponse,
   TeamGapsResponse,
+  TeamOrdering,
   TopPlayersResponse,
   UnfinishedResponse,
 } from '@/types/reports';
@@ -169,9 +170,24 @@ export class ReportsAPI {
     return apiFetcher<NationGapsResponse>(`core/analytics/football-data/nations/${buildQuery({ limit })}`);
   }
 
-  /** GET /core/analytics/football-data/teams/ — empty teams and the review queue. */
-  static async getTeamGaps(limit?: number, search?: string): Promise<TeamGapsResponse> {
-    return apiFetcher<TeamGapsResponse>(`core/analytics/football-data/teams/${buildQuery({ limit, search })}`);
+  /**
+   * GET /core/analytics/football-data/teams/ — empty teams, the review queue,
+   * and one page of the squad-depth table.
+   *
+   * `limit` is the page size of that table AND the cap on the empty-team
+   * worklist — the endpoint takes one for both. `page` is clamped server-side,
+   * so an out-of-range page shows the last one instead of an empty table, and
+   * an unknown `ordering` is a 400 rather than a silently different sort.
+   */
+  static async getTeamGaps(
+    limit?: number,
+    search?: string,
+    page?: number,
+    ordering?: TeamOrdering,
+  ): Promise<TeamGapsResponse> {
+    return apiFetcher<TeamGapsResponse>(
+      `core/analytics/football-data/teams/${buildQuery({ limit, search, page, ordering })}`,
+    );
   }
 
   /**
