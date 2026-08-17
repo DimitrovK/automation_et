@@ -1,5 +1,5 @@
 import type { CoverageResponse } from '@/types/reports';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { EraAndPools } from '@/components/analytics/panels/EraAndPools';
 
@@ -58,11 +58,16 @@ describe('eraAndPools', () => {
     expect(screen.getByText(/2000s — Easy 138/)).toBeInTheDocument();
   });
 
-  it('says what a pool is a share of', () => {
-    // "6,724" means nothing without the catalogue it is drawn from.
+  it('keeps "a share of what" reachable from the pools card', async () => {
+    // "6,724" means nothing without the catalogue it is drawn from, so the
+    // number must stay findable even though the sentence moved into a hint.
     render(<EraAndPools data={data()} />);
 
-    expect(screen.getByText(/Of 6,729 approved footballers/)).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('button', { name: 'About what each game can draw on' }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Of 6,729 approved footballers/).length).toBeGreaterThan(0);
+    });
   });
 
   it('keeps the oldest bucket named rather than dated', () => {

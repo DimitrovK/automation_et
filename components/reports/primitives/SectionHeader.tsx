@@ -11,12 +11,19 @@ import { cn } from '@/lib/utils';
  * and it exists because folding pages together (R4) turned several one-topic
  * pages into several topics on one page.
  *
- * The description is not optional decoration. A section that cannot say what it
- * is for in one line is usually two sections.
+ * The description IS optional. It was required on the theory that a section
+ * which cannot say what it is for in one line is really two — true, but it also
+ * produced subtitles that restated the title, and four of those down a page is
+ * furniture.
  */
 export function SectionHeader({ title, description, actions, className }: {
   title: string;
-  description: string;
+  /**
+   * Optional. Most sections say what they are in their title, and a subtitle
+   * that only rephrases it is prose the reader has to skip on every visit. The
+   * per-panel caveats moved to `InfoHint` for the same reason.
+   */
+  description?: string;
   /** Controls scoped to this section rather than the page. */
   actions?: ReactNode;
   className?: string;
@@ -41,7 +48,7 @@ export function SectionHeader({ title, description, actions, className }: {
             reader can tell a section from the panels inside it without reading
             either. */}
         <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
-        <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>
+        {description && <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>}
       </div>
       {actions}
     </div>

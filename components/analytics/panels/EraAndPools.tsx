@@ -2,7 +2,8 @@
 
 import type { CoverageResponse } from '@/types/reports';
 import { DifficultyBars } from '@/components/analytics/charts/DifficultyBars';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoHint } from '@/components/reports/primitives/InfoHint';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /** Column order, matching the backend's `DIFFICULTY_ORDER`. */
 const ORDER = ['EASY', 'NORMAL', 'HARD', 'EXTREME'];
@@ -34,11 +35,13 @@ export function EraAndPools({ data }: { data: CoverageResponse }) {
       {eras && eras.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>When they were born</CardTitle>
-            <CardDescription>
-              Whether the catalogue skews modern — and whether "hard" is really standing in
-              for "old". Everything before 1950 is one bucket; those decades hold a handful each.
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              When they were born
+              <InfoHint label="when they were born">
+                Whether the catalogue skews modern — and whether "hard" is really standing in
+                for "old". Everything before 1950 is one bucket; those decades hold a handful each.
+              </InfoHint>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <DifficultyBars
@@ -53,12 +56,14 @@ export function EraAndPools({ data }: { data: CoverageResponse }) {
       {pools && pools.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>What each game can draw on</CardTitle>
-            <CardDescription>
-              {catalogue
-                ? `Of ${catalogue.toLocaleString()} approved footballers, how many each game is allowed to use — a full catalogue with an empty Extreme tier still cannot serve a hard round.`
-                : 'How many approved footballers each game is allowed to use.'}
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              What each game can draw on
+              <InfoHint label="what each game can draw on">
+                {catalogue
+                  ? `Of ${catalogue.toLocaleString()} approved footballers, how many each game is allowed to use — a full catalogue with an empty Extreme tier still cannot serve a hard round.`
+                  : 'How many approved footballers each game is allowed to use.'}
+              </InfoHint>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <DifficultyBars

@@ -3,6 +3,7 @@
 import type { QuestionBankResponse } from '@/types/reports';
 import { TileMatrix } from '@/components/analytics/panels/TileMatrix';
 import { SearchBox } from '@/components/reports/filters/SearchBox';
+import { InfoHint } from '@/components/reports/primitives/InfoHint';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { difficultyTier as tier } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
@@ -41,16 +42,22 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
     <Card>
       <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1.5">
-          <CardTitle>Questions by category and difficulty</CardTitle>
-          <CardDescription>
-            {/* Said here rather than discovered later: this is the one figure on
+          <CardTitle className="flex items-center gap-2">
+            Questions by category and difficulty
+            <InfoHint label="questions by category and difficulty">
+              {/* Said here rather than discovered later: this is the one figure on
                 the page that does not add up, and for a good reason. */}
-            A question can carry several categories, so these rows deliberately sum to more
-            than the bank holds. Each cell is "questions carrying this category", never a
-            share of the total.
+              A question can carry several categories, so these rows deliberately sum to more
+              than the bank holds. Each cell is "questions carrying this category", never a
+              share of the total.
+            </InfoHint>
+          </CardTitle>
+          {/* The ranking stays visible rather than hiding in the hint: it
+              changes what you are looking at, so it is state, not a footnote. */}
+          <CardDescription>
             {difficulty
-              ? ` Ranked by ${tier(difficulty).label} questions — every tier is still shown beside it.`
-              : ' Ranked by total questions.'}
+              ? `Ranked by ${tier(difficulty).label} questions — every tier is still shown beside it.`
+              : 'Ranked by total questions.'}
           </CardDescription>
         </div>
         {/* ON the card it filters, not in the page filter bar. Up there it sat
