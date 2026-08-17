@@ -110,16 +110,18 @@ describe('data colours', () => {
     }
   });
 
-  it('gives the gradient two different ends, in both themes', () => {
-    // Same shade at both ends is a flat fill wearing a gradient class — the
-    // depth is what stops four tiles in a row reading as painted blocks.
+  it('gives the gradient three stops with different ends, in both themes', () => {
+    // Same shade at both ends is a flat fill wearing a gradient class. And two
+    // stops — neutral straight to saturated — reads as brushed metal, which is
+    // why the middle stop is required rather than optional.
     for (const [name, tier] of Object.entries(DIFFICULTY_TIERS)) {
-      const light = /(?:^| )from-\w+-(\d+) to-\w+-(\d+)/.exec(tier.chip);
+      // `via-` sits between the ends now, so the pattern has to step over it.
+      const light = /(?:^| )from-\w+-(\d+) via-\w+-\d+ to-\w+-(\d+)/.exec(tier.chip);
 
       expect(light, `${name} has no light gradient`).not.toBeNull();
       expect(light![1], `${name} light ends match`).not.toBe(light![2]);
 
-      const dark = /dark:from-\w+-(\d+) dark:to-\w+-(\d+)/.exec(tier.chip);
+      const dark = /dark:from-\w+-(\d+) dark:via-\w+-\d+ dark:to-\w+-(\d+)/.exec(tier.chip);
 
       expect(dark, `${name} has no dark gradient`).not.toBeNull();
       expect(dark![1], `${name} dark ends match`).not.toBe(dark![2]);

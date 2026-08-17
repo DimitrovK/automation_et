@@ -26,7 +26,7 @@ export type TileRow = {
   extra?: number | null;
 };
 
-export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, expanded, emptyLabel, extraHeading, extraLabel, rankedBy }: {
+export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, expanded, emptyLabel, extraHeading, extraLabel, rankedBy, onRankBy }: {
   rows: TileRow[];
   order: string[];
   /**
@@ -51,6 +51,14 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
    * column had caused it, so the new order looked arbitrary.
    */
   rankedBy?: string | null;
+  /**
+   * Rank by a tier from the header itself. The chips above the table already do
+   * this, but a column header is where a reader reaches for a sort — leaving it
+   * inert teaches them the table cannot be sorted.
+   *
+   * Called with null when the active column is clicked again, matching the chips.
+   */
+  onRankBy?: (difficulty: string | null) => void;
 }): ReactNode {
   return (
     <CappedList
@@ -73,21 +81,46 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
                 const ranked = rankedBy === difficulty;
                 return (
                   <th key={difficulty} className="pb-1.5 text-center" aria-sort={ranked ? 'descending' : undefined}>
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-semibold',
-                        tier(difficulty).head,
-                        ranked && 'bg-primary/10 ring-1 ring-inset ring-primary/40',
-                      )}
-                    >
-                      {/* The dot stays saturated even though the tiles are
-                          muted: a 6px dot needs far more saturation than a 56px
-                          tile to register at all. */}
-                      <span aria-hidden className={cn('size-1.5 rounded-full', tier(difficulty).dot)} />
-                      {tier(difficulty).label}
-                      {ranked && <span aria-hidden className="text-primary">↓</span>}
-                      {ranked && <span className="sr-only">(sorted by this column)</span>}
-                    </span>
+                    {/* A button when the caller can sort, a span when it cannot
+                        — an inert control that looks clickable is worse than a
+                        plain label. */}
+                    {onRankBy
+                      ? (
+                          <button
+                            type="button"
+                            onClick={() => onRankBy(ranked ? null : difficulty)}
+                            aria-pressed={ranked}
+                            className={cn(
+                              'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-semibold transition-colors',
+                              tier(difficulty).head,
+                              ranked ? 'bg-primary/10 ring-1 ring-inset ring-primary/40' : 'hover:bg-muted',
+                            )}
+                          >
+                            <span aria-hidden className={cn('size-1.5 rounded-full', tier(difficulty).dot)} />
+                            {tier(difficulty).label}
+                            {ranked && <span aria-hidden className="text-primary">↓</span>}
+                            <span className="sr-only">
+                              {ranked ? '(sorted by this column — press to clear)' : '(press to sort by this column)'}
+                            </span>
+                          </button>
+                        )
+                      : (
+                          <span
+                            className={cn(
+                              'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-semibold',
+                              tier(difficulty).head,
+                              ranked && 'bg-primary/10 ring-1 ring-inset ring-primary/40',
+                            )}
+                          >
+                            {/* The dot stays saturated even though the tiles are
+                                muted: a 6px dot needs far more saturation than a
+                                56px tile to register at all. */}
+                            <span aria-hidden className={cn('size-1.5 rounded-full', tier(difficulty).dot)} />
+                            {tier(difficulty).label}
+                            {ranked && <span aria-hidden className="text-primary">↓</span>}
+                            {ranked && <span className="sr-only">(sorted by this column)</span>}
+                          </span>
+                        )}
                   </th>
                 );
               })}

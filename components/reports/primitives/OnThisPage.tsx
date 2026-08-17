@@ -3,6 +3,7 @@
 import { ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { sectionId } from '@/lib/section-id';
 import { cn } from '@/lib/utils';
 
 /**
@@ -30,10 +31,30 @@ export function OnThisPage({ className }: { className?: string }) {
 
   useEffect(() => {
     const scan = () => {
-      const found = [...document.querySelectorAll('[data-section-title]')].map(el => ({
-        id: el.id,
-        title: el.getAttribute('data-section-title') ?? '',
-      }));
+      const sectionEls = [...document.querySelectorAll('[data-section-title]')];
+
+      // Sections when the page has them; card titles when it does not. Some
+      // pages were deliberately stripped of section headings, and a jump list
+      // that disappears on the longest page is the wrong answer to that.
+      const found = sectionEls.length >= 2
+        ? sectionEls.map(el => ({
+            id: el.id,
+            title: el.getAttribute('data-section-title') ?? '',
+          }))
+        : [...document.querySelectorAll('[data-card-title]')]
+            .map((el) => {
+              const title = (el.textContent ?? '').trim();
+              // Anchored on the CARD rather than the title, so a jump lands
+              // above the card edge instead of mid-header. Setting an attribute
+              // does not retrigger the observer, which watches childList only.
+              const anchor = el.closest('.rounded-lg') ?? el;
+              if (!anchor.id) {
+                anchor.id = sectionId(title);
+                anchor.classList.add('scroll-mt-20');
+              }
+              return { id: anchor.id, title };
+            })
+            .filter(entry => entry.title.length > 0 && entry.title.length < 60);
       // Only update on a real change: setting state on every mutation would
       // re-render this component into the mutation that triggered it.
       setSections(prev =>
