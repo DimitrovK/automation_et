@@ -38,6 +38,10 @@ CardHeader.displayName = 'CardHeader';
 const CardTitle = ({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) => (
   <div
     ref={ref}
+    // Marks the title slot so `OnThisPage` can build a jump list from cards on
+    // pages that have no section headings. A class-based selector would break
+    // the first time this component is restyled.
+    data-card-title=""
     className={cn(
       'text-base font-semibold leading-none tracking-tight',
       className,

@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OnThisPage } from '@/components/reports/primitives/OnThisPage';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { sectionId } from '@/lib/section-id';
 
 afterEach(() => {
@@ -26,6 +27,61 @@ describe('sectionId', () => {
 
   it('does not leave a trailing separator on punctuation', () => {
     expect(sectionId('Still playing, or retired?')).toBe('section-still-playing-or-retired');
+  });
+});
+
+describe('onThisPage — card fallback', () => {
+  it('lists card titles on a page with no sections', async () => {
+    // Some pages were deliberately stripped of section headings. A jump list
+    // that vanishes on the longest page is the wrong answer to that.
+    render(
+      <>
+        <OnThisPage />
+        <Card><CardHeader><CardTitle>Footballers by difficulty</CardTitle></CardHeader></Card>
+        <Card><CardHeader><CardTitle>Pictures by difficulty</CardTitle></CardHeader></Card>
+      </>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Pictures by difficulty' })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('link', { name: 'Footballers by difficulty' }))
+      .toHaveAttribute('href', '#section-footballers-by-difficulty');
+  });
+
+  it('anchors on the card, not the title, so a jump clears the header', async () => {
+    const { container } = render(
+      <>
+        <OnThisPage />
+        <Card><CardHeader><CardTitle>One</CardTitle></CardHeader></Card>
+        <Card><CardHeader><CardTitle>Two</CardTitle></CardHeader></Card>
+      </>,
+    );
+
+    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2));
+
+    const target = container.querySelector('#section-one')!;
+
+    expect(target).not.toHaveAttribute('data-card-title');
+    expect(target.className).toContain('scroll-mt-');
+  });
+
+  it('prefers real sections when the page has them', async () => {
+    // Cards are the fallback, not the default: a section groups several cards
+    // and listing both levels would be the same page twice.
+    render(
+      <>
+        <OnThisPage />
+        <SectionHeader title="Alpha" />
+        <SectionHeader title="Beta" />
+        <Card><CardHeader><CardTitle>A card nobody asked to jump to</CardTitle></CardHeader></Card>
+      </>,
+    );
+
+    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2));
+
+    expect(screen.queryByRole('link', { name: /A card nobody/ })).not.toBeInTheDocument();
   });
 });
 

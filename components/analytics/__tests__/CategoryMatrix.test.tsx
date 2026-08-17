@@ -31,7 +31,7 @@ describe('categoryMatrix', () => {
   it('lays the difficulties out as columns in order', () => {
     render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
-    const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
+    const headers = screen.getAllByRole('columnheader').map(h => (h.textContent ?? '').replace(/\s*\(press[^)]*\)/, ''));
 
     expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total', 'Added']);
   });
@@ -63,7 +63,7 @@ describe('categoryMatrix', () => {
     // four unrelated hues — a row is a shape before it is four numbers.
     render(<CategoryMatrix data={data()} search="" onSearchChange={vi.fn()} difficulty={null} onDifficultyChange={vi.fn()} />);
 
-    const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
+    const headers = screen.getAllByRole('columnheader').map(h => (h.textContent ?? '').replace(/\s*\(press[^)]*\)/, ''));
 
     expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total', 'Added']);
   });
@@ -80,14 +80,20 @@ describe('categoryMatrix', () => {
       expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
       // The light-mode shade specifically — matching only `dark:from-…-950`
       // would let a light theme regress unnoticed.
-      // Light theme: two adjacent light steps of the hue, number in its 900.
-      expect(cell.className).toMatch(/(^| )(from|to)-(green|blue|orange|red)-(100|300)/);
+      // THREE stops per theme: a neutral, a mid hue, then the hue itself. Two
+      // stops read as brushed metal — nothing goes neutral to saturated in one
+      // step — so the `via-` is load-bearing rather than decoration.
+      // Direction alternates along the row, so the slate stop is `from-` on one
+      // cell and `to-` on its neighbour — assert the stops exist, not their order.
+      expect(cell.className).toMatch(/(^| )(from|to)-slate-200/);
+      expect(cell.className).toMatch(/(^| )via-(emerald|sky|amber|rose)-200/);
+      expect(cell.className).toMatch(/(^| )(from|to)-(green|blue|orange|red)-100/);
       expect(cell.className).toMatch(/(^| )text-(green|blue|orange|red)-900/);
-      // Dark theme carries its own steps — a dark tile on a light page is a
-      // hole punched in it, and the reverse is just as wrong.
-      // Dark: near-black slate at one end, the hue's 500 at the other, white text.
-      expect(cell.className).toMatch(/dark:(from|to)-slate-950/);
-      expect(cell.className).toMatch(/dark:(from|to)-(green|blue|orange|red)-500/);
+      // Dark theme carries its OWN ramp from its own neutral — a dark tile on a
+      // light page is a hole punched in it, and the reverse is just as wrong.
+      expect(cell.className).toMatch(/dark:(from|to)-slate-900/);
+      expect(cell.className).toMatch(/dark:via-(emerald|sky|amber|rose)-800/);
+      expect(cell.className).toMatch(/dark:(from|to)-(green|blue|orange|red)-600/);
       expect(cell.className).toContain('dark:text-white');
     }
   });
@@ -192,8 +198,8 @@ describe('categoryMatrix', () => {
     );
     const cells = [...container.querySelectorAll('[data-difficulty]:not([data-empty])')];
 
-    // Darker step first on one, lighter step first on the next.
-    expect(cells[0].className).toContain('from-green-300');
+    // Neutral-first on one, hue-first on the next.
+    expect(cells[0].className).toContain('from-slate-200');
     expect(cells[1].className).toContain('from-blue-100');
   });
 
@@ -222,6 +228,51 @@ describe('categoryMatrix', () => {
     expect(screen.getByText('+4')).toBeInTheDocument();
     expect(screen.queryByText('+0')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Static: 0 added in this window')).toBeInTheDocument();
+  });
+
+  it('sorts from the column header, not only from the chips', () => {
+    // A column header is where a reader reaches for a sort. Leaving it inert
+    // teaches them the table cannot be sorted.
+    const onDifficultyChange = vi.fn();
+    render(
+      <CategoryMatrix
+        data={data()}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty={null}
+        onDifficultyChange={onDifficultyChange}
+      />,
+    );
+
+    // Scoped to the column header, NOT "any button named Hard": the filter chip
+    // above the table calls the same handler, so a loose query passes even when
+    // the header is inert.
+    const header = screen.getAllByRole('columnheader').find(h => h.textContent?.includes('Hard'))!;
+    const headerButton = header.querySelector('button');
+
+    expect(headerButton, 'the column header is not clickable').not.toBeNull();
+
+    fireEvent.click(headerButton!);
+
+    expect(onDifficultyChange).toHaveBeenCalledWith('HARD');
+  });
+
+  it('clears the sort when the active header is clicked again', () => {
+    const onDifficultyChange = vi.fn();
+    render(
+      <CategoryMatrix
+        data={data({ difficulty: 'HARD' })}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty="HARD"
+        onDifficultyChange={onDifficultyChange}
+      />,
+    );
+
+    const header = screen.getAllByRole('columnheader').find(h => h.textContent?.includes('Hard'))!;
+    fireEvent.click(header.querySelector('button')!);
+
+    expect(onDifficultyChange).toHaveBeenCalledWith(null);
   });
 
   it('leaves air between the cells', () => {
