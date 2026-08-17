@@ -17,6 +17,10 @@ import { cn } from '@/lib/utils';
  *
  * Not scoped to the date range. This is the state of the catalogue now, not what
  * changed in it, and a range filter here would answer neither question.
+ *
+ * Returns two bare cards rather than its own grid: the page places them in a row
+ * beside the career split, and a panel that owns its own columns cannot be laid
+ * out next to anything.
  */
 function tierLabel(difficulty: string) {
   return difficultyTier(difficulty).label || difficulty;
@@ -33,7 +37,7 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
   const largest = Math.max(...tiers.map(tier => tier.footballers), 1);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <>
       <Card>
         <CardHeader>
           <CardTitle>Footballers by difficulty</CardTitle>
@@ -84,7 +88,7 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
           </dl>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }
 

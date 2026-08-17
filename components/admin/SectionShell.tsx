@@ -7,6 +7,7 @@ import { SectionNav } from '@/components/admin/SectionNav';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
+import { OnThisPage } from '@/components/reports/primitives/OnThisPage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
 
@@ -79,6 +80,11 @@ export function SectionShell({
           ? (
               <>
                 <SectionNav groups={groups} trailing={trailing} />
+                {/* Between the section nav and the page: the section nav says
+                    which PAGE you are on, this says what is on it. Renders
+                    nothing on a page with fewer than two sections, so short
+                    pages are unaffected. */}
+                <OnThisPage />
                 {children}
               </>
             )

@@ -81,19 +81,30 @@ export default function FootballersAnalyticsPage() {
         />
       </FilterBar>
 
+      <SectionHeader
+        title="The catalogue by difficulty"
+        description="How much of each tier exists, how much of it has a face, and how much has retired. Not windowed — this is the catalogue as it stands, whatever the range says."
+      />
+
+      {/* Three across: the same axis asked three ways, so reading one row of
+          cards left to right answers "is this tier big, usable, and current". */}
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
-        {data => <DifficultyCatalogue data={data} />}
+        {data => (
+          <div className="grid gap-4 lg:grid-cols-3">
+            <DifficultyCatalogue data={data} />
+            <FootballerBreakdown data={data} />
+          </div>
+        )}
       </ReportPanel>
 
       <SectionHeader
-        title="Who is still playing, and what each game can use"
-        description="Not windowed — this is the catalogue as it stands, whatever the range says."
+        title="When they played, and who can use them"
+        description="Whether the catalogue skews modern, and what each game is allowed to draw on."
       />
 
       <ReportPanel state={state} skeletonClassName="h-72 w-full">
         {data => (
           <div className="space-y-4">
-            <FootballerBreakdown data={data} />
             <EraAndPools data={data} />
             <ReviewQueue counts={data.review_queue} subject="footballers" />
           </div>
