@@ -32,14 +32,18 @@ export type DataTier = {
   /**
    * A matrix cell: dark at one end of the gradient, the hue at the other.
    *
-   * Near-neutral on purpose: slate at one end, a DEEP MUTED shade of the hue at
-   * the other. Full-strength colour was shouting over the numbers it was meant
-   * to carry, and the numbers are the content.
+   * THEME-AWARE, and that is the point of this shape.
    *
-   * The cost of muffling this far is that Easy and Normal are no longer told
-   * apart by hue alone — so they are not asked to be. Every column is named in
-   * its header, the header dots stay saturated (a 6px dot needs far more
-   * saturation than a 56px tile to register), and every tile prints its number.
+   * A dark tile on a light page is a hole punched in it — the earlier
+   * slate-to-hue version was legible but belonged to a dark background and sat
+   * on both. So light mode runs 300 to 100 with the number in the hue's 900,
+   * and dark mode runs 950 to 800 with the number in its 100. Each theme keeps
+   * the tile a shade OF its own surface rather than a block dropped onto it.
+   *
+   * Muted either way: the fill is two adjacent steps, so the gradient reads as
+   * depth rather than as a second colour, and the number stays the darkest (or
+   * lightest) thing in the tile. Colour identifies the column; the number is
+   * the content.
    *
    * `chip` runs slate to hue, `chipAlt` runs hue to slate, and the matrix
    * alternates them across a row. Neighbouring cells meet light-against-dark
@@ -90,8 +94,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Easy',
     bar: 'bg-gradient-to-r from-green-400 to-green-500',
     track: 'bg-green-400/20',
-    chip: 'from-slate-800 to-emerald-800 text-slate-50 ring-1 ring-inset ring-white/10',
-    chipAlt: 'from-emerald-800 to-slate-800 text-slate-50 ring-1 ring-inset ring-white/10',
+    chip: 'from-green-300 to-green-100 text-green-900 ring-1 ring-inset ring-green-400/40 dark:from-green-950 dark:to-green-800 dark:text-green-100 dark:ring-green-700/50',
+    chipAlt: 'from-green-100 to-green-300 text-green-900 ring-1 ring-inset ring-green-400/40 dark:from-green-800 dark:to-green-950 dark:text-green-100 dark:ring-green-700/50',
     head: 'text-green-600 dark:text-green-400',
     dot: 'bg-green-400',
     hex: '#22c55e',
@@ -100,8 +104,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Normal',
     bar: 'bg-gradient-to-r from-blue-400 to-blue-500',
     track: 'bg-blue-400/20',
-    chip: 'from-slate-800 to-blue-800 text-slate-50 ring-1 ring-inset ring-white/10',
-    chipAlt: 'from-blue-800 to-slate-800 text-slate-50 ring-1 ring-inset ring-white/10',
+    chip: 'from-blue-300 to-blue-100 text-blue-900 ring-1 ring-inset ring-blue-400/40 dark:from-blue-950 dark:to-blue-800 dark:text-blue-100 dark:ring-blue-700/50',
+    chipAlt: 'from-blue-100 to-blue-300 text-blue-900 ring-1 ring-inset ring-blue-400/40 dark:from-blue-800 dark:to-blue-950 dark:text-blue-100 dark:ring-blue-700/50',
     head: 'text-blue-600 dark:text-blue-400',
     dot: 'bg-blue-400',
     hex: '#3b82f6',
@@ -110,8 +114,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Hard',
     bar: 'bg-gradient-to-r from-orange-400 to-orange-500',
     track: 'bg-orange-400/20',
-    chip: 'from-slate-800 to-orange-800 text-slate-50 ring-1 ring-inset ring-white/10',
-    chipAlt: 'from-orange-800 to-slate-800 text-slate-50 ring-1 ring-inset ring-white/10',
+    chip: 'from-orange-300 to-orange-100 text-orange-900 ring-1 ring-inset ring-orange-400/40 dark:from-orange-950 dark:to-orange-800 dark:text-orange-100 dark:ring-orange-700/50',
+    chipAlt: 'from-orange-100 to-orange-300 text-orange-900 ring-1 ring-inset ring-orange-400/40 dark:from-orange-800 dark:to-orange-950 dark:text-orange-100 dark:ring-orange-700/50',
     head: 'text-orange-600 dark:text-orange-400',
     dot: 'bg-orange-400',
     hex: '#f97316',
@@ -120,8 +124,8 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
     label: 'Extreme',
     bar: 'bg-gradient-to-r from-red-400 to-red-500',
     track: 'bg-red-400/20',
-    chip: 'from-slate-800 to-rose-800 text-slate-50 ring-1 ring-inset ring-white/10',
-    chipAlt: 'from-rose-800 to-slate-800 text-slate-50 ring-1 ring-inset ring-white/10',
+    chip: 'from-red-300 to-red-100 text-red-900 ring-1 ring-inset ring-red-400/40 dark:from-red-950 dark:to-red-800 dark:text-red-100 dark:ring-red-700/50',
+    chipAlt: 'from-red-100 to-red-300 text-red-900 ring-1 ring-inset ring-red-400/40 dark:from-red-800 dark:to-red-950 dark:text-red-100 dark:ring-red-700/50',
     head: 'text-red-600 dark:text-red-400',
     dot: 'bg-red-400',
     hex: '#ef4444',

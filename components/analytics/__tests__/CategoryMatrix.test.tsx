@@ -80,9 +80,13 @@ describe('categoryMatrix', () => {
       expect(cell.getAttribute('style') ?? '').not.toContain('--tint');
       // The light-mode shade specifically — matching only `dark:from-…-950`
       // would let a light theme regress unnoticed.
-      // Muffled now: slate at one end, a deep muted hue at the other.
-      expect(cell.className).toMatch(/(^| )(from|to)-slate-800/);
-      expect(cell.className).toMatch(/(from|to)-(emerald|blue|orange|rose)-800/);
+      // Light theme: two adjacent light steps of the hue, number in its 900.
+      expect(cell.className).toMatch(/(^| )(from|to)-(green|blue|orange|red)-(100|300)/);
+      expect(cell.className).toMatch(/(^| )text-(green|blue|orange|red)-900/);
+      // Dark theme carries its own steps — a dark tile on a light page is a
+      // hole punched in it, and the reverse is just as wrong.
+      expect(cell.className).toMatch(/dark:(from|to)-(green|blue|orange|red)-(800|950)/);
+      expect(cell.className).toMatch(/dark:text-(green|blue|orange|red)-100/);
     }
   });
 
@@ -186,9 +190,9 @@ describe('categoryMatrix', () => {
     );
     const cells = [...container.querySelectorAll('[data-difficulty]:not([data-empty])')];
 
-    // slate -> hue on the first, hue -> slate on the next.
-    expect(cells[0].className).toContain('from-slate-800');
-    expect(cells[1].className).toContain('from-blue-800');
+    // Darker step first on one, lighter step first on the next.
+    expect(cells[0].className).toContain('from-green-300');
+    expect(cells[1].className).toContain('from-blue-100');
   });
 
   it('shows growth as a signed figure, and a quiet week as a dash', () => {

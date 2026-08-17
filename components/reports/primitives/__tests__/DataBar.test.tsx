@@ -110,6 +110,32 @@ describe('data colours', () => {
     }
   });
 
+  it('gives the gradient two different ends, in both themes', () => {
+    // Same shade at both ends is a flat fill wearing a gradient class — the
+    // depth is what stops four tiles in a row reading as painted blocks.
+    for (const [name, tier] of Object.entries(DIFFICULTY_TIERS)) {
+      const light = /(?:^| )from-\w+-(\d+) to-\w+-(\d+)/.exec(tier.chip);
+
+      expect(light, `${name} has no light gradient`).not.toBeNull();
+      expect(light![1], `${name} light ends match`).not.toBe(light![2]);
+
+      const dark = /dark:from-\w+-(\d+) dark:to-\w+-(\d+)/.exec(tier.chip);
+
+      expect(dark, `${name} has no dark gradient`).not.toBeNull();
+      expect(dark![1], `${name} dark ends match`).not.toBe(dark![2]);
+    }
+  });
+
+  it('gives every tile a light-theme AND a dark-theme fill', () => {
+    // A dark tile on a light page is a hole punched in it, and the reverse is
+    // just as wrong — this shape has to belong to whichever surface it is on.
+    for (const [name, tier] of Object.entries(DIFFICULTY_TIERS)) {
+      expect(tier.chip, `${name} has no dark-theme fill`).toMatch(/dark:(from|to)-/);
+      expect(tier.chip, `${name} has no dark-theme text`).toMatch(/dark:text-/);
+      expect(tier.chipAlt, `${name} alt has no dark-theme fill`).toMatch(/dark:(from|to)-/);
+    }
+  });
+
   it('keeps the two career-state colours apart', () => {
     // They sit in one stacked bar; identical hues would make the split invisible.
     expect(CAREER_STATE.active.hex).not.toBe(CAREER_STATE.retired.hex);
