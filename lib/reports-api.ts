@@ -5,6 +5,7 @@ import type {
   CareerPathAnalyticsResponse,
   ContentResponse,
   CoverageResponse,
+  DifficultyMatrixResponse,
   DifficultyResponse,
   DurationResponse,
   FallbacksResponse,
@@ -35,7 +36,15 @@ import { apiFetcher } from '@/lib/api-fetcher';
  * `include_bots` is passed through even when false: the BE echoes the resolved
  * filters back, and being explicit keeps request and response readable together.
  */
-function buildQuery(params?: ReportParams): string {
+/**
+ * Query string from a flat param bag.
+ *
+ * Typed as a plain record rather than `ReportParams` because not every endpoint
+ * is range-filtered — the catalogue matrices take a dimension and a limit and
+ * have no window at all. Widening `ReportParams` to fit them would have made
+ * them look range-filtered to `reports.guard.ts`, which is the opposite of true.
+ */
+function buildQuery(params?: Record<string, string | number | boolean | null | undefined>): string {
   if (!params) {
     return '';
   }
@@ -163,6 +172,21 @@ export class ReportsAPI {
   /** GET /core/analytics/football-data/teams/ — empty teams and the review queue. */
   static async getTeamGaps(limit?: number, search?: string): Promise<TeamGapsResponse> {
     return apiFetcher<TeamGapsResponse>(`core/analytics/football-data/teams/${buildQuery({ limit, search })}`);
+  }
+
+  /**
+   * GET /core/analytics/football-data/matrix/ — footballers by nation or team,
+   * split by difficulty. No range: this is the catalogue as it stands.
+   */
+  static async getDifficultyMatrix(
+    dimension: string,
+    limit?: number,
+    search?: string,
+    difficulty?: string,
+  ): Promise<DifficultyMatrixResponse> {
+    return apiFetcher<DifficultyMatrixResponse>(
+      `core/analytics/football-data/matrix/${buildQuery({ dimension, limit, search, difficulty })}`,
+    );
   }
 
   /** GET /core/analytics/football-data/questions/ — the question bank as data. */

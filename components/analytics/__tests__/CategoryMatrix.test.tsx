@@ -33,7 +33,7 @@ describe('categoryMatrix', () => {
 
     const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
 
-    expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total']);
+    expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total', 'Added']);
   });
 
   it('shows each cell and the row total', () => {
@@ -65,7 +65,7 @@ describe('categoryMatrix', () => {
 
     const headers = screen.getAllByRole('columnheader').map(h => h.textContent);
 
-    expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total']);
+    expect(headers).toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total', 'Added']);
   });
 
   it('gives every cell a visible solid fill, not an opacity tint', () => {
@@ -116,7 +116,7 @@ describe('categoryMatrix', () => {
     );
 
     expect(screen.getAllByRole('columnheader').map(h => h.textContent))
-      .toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total']);
+      .toEqual(['Category', 'Easy', 'Normal', 'Hard', 'Extreme', 'Total', 'Added']);
   });
 
   it('clears the ranking when the active tier is pressed again', () => {
@@ -146,6 +146,33 @@ describe('categoryMatrix', () => {
 
     expect(cells[0].className).toContain('from-green-900');
     expect(cells[1].className).toContain('from-blue-500');
+  });
+
+  it('shows growth as a signed figure, and a quiet week as a dash', () => {
+    // A column of "+0" reads as a broken feed rather than a week nobody added
+    // anything, and this column exists to answer "is this still being worked on".
+    render(
+      <CategoryMatrix
+        data={data({
+          category_matrix: {
+            items: [
+              { category: 'Growing', slug: 'g', total: 10, by_difficulty: [10, 0, 0, 0], added: 4 },
+              { category: 'Static', slug: 's', total: 10, by_difficulty: [10, 0, 0, 0], added: 0 },
+            ],
+            total: 2,
+            limit: 10,
+          },
+        })}
+        search=""
+        onSearchChange={vi.fn()}
+        difficulty={null}
+        onDifficultyChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('+4')).toBeInTheDocument();
+    expect(screen.queryByText('+0')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Static: 0 added in this window')).toBeInTheDocument();
   });
 
   it('leaves air between the cells', () => {

@@ -1,8 +1,8 @@
 'use client';
 
 import type { QuestionBankResponse } from '@/types/reports';
+import { TileMatrix } from '@/components/analytics/panels/TileMatrix';
 import { SearchBox } from '@/components/reports/filters/SearchBox';
-import { CappedList } from '@/components/reports/primitives/CappedList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { difficultyTier as tier } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
@@ -92,124 +92,25 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
         </div>
       </CardHeader>
       <CardContent>
-        <CappedList
+        <TileMatrix
+          rows={matrix.items.map(row => ({
+            key: row.slug,
+            name: row.category,
+            total: row.total,
+            by_difficulty: row.by_difficulty,
+            extra: row.added ?? null,
+          }))}
+          order={order}
+          rowHeading="Category"
           total={matrix.total}
           shown={matrix.items.length}
           onExpand={onExpand}
           expanded={expanded}
           emptyLabel={search ? `No category matches "${search}".` : 'No categories carry an approved question.'}
-        >
-          {/* Its own scroller: the matrix is wider than a phone and the page
-              body must never scroll sideways. */}
-          <div className="-mx-2 overflow-x-auto px-2">
-            {/* A hair of space between cells — 4px. Welded edge to edge they
-                read as one solid block and the eye has to hunt for the
-                boundaries; fully separated they float. This is enough to make
-                each a box without breaking the row into four. */}
-            <table className="w-full min-w-[42rem] table-fixed border-separate border-spacing-x-1 border-spacing-y-1.5 text-sm">
-              <thead>
-                <tr>
-                  <th className="sticky left-0 z-10 w-52 bg-card py-1 pr-3 text-left text-xs font-medium text-muted-foreground">
-                    Category
-                  </th>
-                  {order.map(difficulty => (
-                    <th key={difficulty} className="pb-1.5 text-center">
-                      <span className={cn('inline-flex items-center gap-1.5 text-xs font-semibold', tier(difficulty).head)}>
-                        {/* The dot carries the colour into the header, so a
-                            column and its cells are visibly the same thing. */}
-                        <span aria-hidden className={cn('size-1.5 rounded-full', tier(difficulty).dot)} />
-                        {tier(difficulty).label}
-                      </span>
-                    </th>
-                  ))}
-                  <th className="pb-1.5 pl-2 text-center text-xs font-medium text-muted-foreground">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matrix.items.map(row => (
-                  <tr key={row.slug} className="group">
-                    <th
-                      scope="row"
-                      className="sticky left-0 z-10 max-w-48 truncate bg-card py-1 pr-3 text-left font-medium text-foreground transition-colors group-hover:bg-muted/40"
-                      title={row.category}
-                    >
-                      {row.category}
-                    </th>
-                    {row.by_difficulty.map((count, index) => (
-                      <Cell
-                        key={order[index]}
-                        difficulty={order[index]}
-                        count={count}
-                        index={index}
-                      />
-                    ))}
-                    <td className="p-0 pl-2">
-                      {/* The row total gets the same weight as a cell so the
-                          band reads as "these four, and what they come to"
-                          rather than trailing off into plain text. */}
-                      {/* The total is the one figure here that is not a
-                          difficulty, so it stays neutral — and reads as the sum
-                          rather than as a fifth tier. */}
-                      {/* Same height and shape as a difficulty cell so the row
-                          reads as one set of tiles, and centred like them —
-                          right-aligned it drifted away from the band. */}
-                      <span className="flex h-14 items-center justify-center rounded-lg bg-muted/70 text-sm font-bold tabular-nums text-foreground ring-1 ring-inset ring-border">
-                        {row.total.toLocaleString()}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CappedList>
+          extraHeading="Added"
+          extraLabel={row => `${row.name}: ${row.extra ?? 0} added in this window`}
+        />
       </CardContent>
     </Card>
-  );
-}
-
-function Cell({ difficulty, count, index }: {
-  difficulty: string;
-  count: number;
-  index: number;
-}) {
-  const style = tier(difficulty);
-
-  // A dash, not a zero. An empty cell is the thing you are looking for, and the
-  // gaps are the reason to read this table — so it keeps the tile's shape while
-  // clearly holding nothing.
-  if (count === 0) {
-    return (
-      <td className="p-0">
-        <span
-          data-difficulty={difficulty}
-          data-empty="true"
-          className="flex h-14 items-center justify-center rounded-lg border border-dashed border-border/70 text-sm text-muted-foreground/40"
-        >
-          —
-        </span>
-      </td>
-    );
-  }
-
-  return (
-    <td className="p-0">
-      <span
-        data-difficulty={difficulty}
-        className={cn(
-          // h-14 against a ~4.5rem column: near enough to square that the row
-          // reads as tiles rather than as a bar chart lying on its side.
-          'flex h-14 items-center justify-center rounded-lg bg-gradient-to-br text-sm font-bold tabular-nums shadow-sm',
-          'animate-data-rise transition-transform duration-150 hover:scale-[1.04]',
-          // Alternating direction: dark-to-colour, then colour-to-dark. Two
-          // neighbours meet light against dark instead of repeating, so the
-          // seam is legible without a border between them.
-          index % 2 === 0 ? style.chip : style.chipAlt,
-        )}
-        style={{ animationDelay: `${Math.min(index, 5) * 45}ms` }}
-      >
-        {count.toLocaleString()}
-      </span>
-    </td>
   );
 }
