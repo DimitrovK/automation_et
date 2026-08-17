@@ -1,9 +1,12 @@
 'use client';
 
 import type { QuestionRow, QuestionsAnalyticsResponse } from '@/types/reports';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { MetricRow } from '@/components/reports/primitives/MetricRow';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -75,6 +78,7 @@ function OptionBar({ option, suspect }: { option: QuestionRow['options'][number]
 export function QuestionQuality({ data }: { data: QuestionsAnalyticsResponse }) {
   const { rows, min_answers: minAnswers, questions_measured: measured } = data.quality;
   const suspect = data.quality.beaten_by_a_wrong_answer;
+  const [open, setOpen] = useState(false);
 
   return (
     <Card>
@@ -90,6 +94,9 @@ export function QuestionQuality({ data }: { data: QuestionsAnalyticsResponse }) 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* The summary stays out of the collapse: "how many need a look" is the
+            reason to open this at all, and hiding it would make the reader expand
+            the panel to find out whether it was worth expanding. */}
         <MetricRow
           columns={3}
           metrics={[
@@ -103,61 +110,83 @@ export function QuestionQuality({ data }: { data: QuestionsAnalyticsResponse }) 
           ]}
         />
 
-        {rows.length === 0
-          ? (
-              <EmptyState hint="Try a wider date range.">
-                No question was answered enough times to rate.
-              </EmptyState>
-            )
-          : (
-              <ul className="space-y-4">
-                {rows.map(row => (
-                  <li key={row.question_id} className="space-y-2 rounded-md border p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="min-w-0 flex-1 text-sm font-medium">{row.text}</p>
-                      {row.beaten_by_a_wrong_answer && (
-                        <span
-                          className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
-                          title="More players chose one wrong option than the keyed answer, by more than chance"
-                        >
-                          A wrong option won
-                        </span>
-                      )}
-                    </div>
+        {/* Collapsed by default, and the list is not RENDERED until it opens.
+            It is one bordered block plus four labelled bars per question, which
+            is the heaviest DOM on the page — and it sits under a summary that
+            already says whether anything needs attention.
 
-                    <div className="space-y-1">
-                      {row.options.map(option => (
-                        <OptionBar
-                          key={option.option}
-                          option={option}
-                          suspect={option.option === row.top_wrong_option && row.beaten_by_a_wrong_answer}
-                        />
-                      ))}
-                    </div>
+            A render deferral rather than a fetch one: this data arrives with the
+            page payload, so there is no request left to postpone. Splitting it
+            onto its own endpoint would make the payload smaller too, and is the
+            obvious next step if the page ever feels slow to arrive. */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-between"
+          aria-expanded={open}
+          onClick={() => setOpen(value => !value)}
+        >
+          <span>{open ? 'Hide the answer split' : `Show the answer split for ${rows.length.toLocaleString()} questions`}</span>
+          <ChevronDown className={cn('size-4 transition-transform', open && 'rotate-180')} />
+        </Button>
 
-                    <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
-                      <span>{`${row.answered.toLocaleString()} answered`}</span>
-                      {row.difficulty && <span>{`graded ${row.difficulty.toLowerCase()}`}</span>}
-                      {/* Timeouts sit here rather than in the bars: they carry
+        {!open
+          ? null
+          : rows.length === 0
+            ? (
+                <EmptyState hint="Try a wider date range.">
+                  No question was answered enough times to rate.
+                </EmptyState>
+              )
+            : (
+                <ul className="space-y-4">
+                  {rows.map(row => (
+                    <li key={row.question_id} className="space-y-2 rounded-md border p-3">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <p className="min-w-0 flex-1 text-sm font-medium">{row.text}</p>
+                        {row.beaten_by_a_wrong_answer && (
+                          <span
+                            className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                            title="More players chose one wrong option than the keyed answer, by more than chance"
+                          >
+                            A wrong option won
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        {row.options.map(option => (
+                          <OptionBar
+                            key={option.option}
+                            option={option}
+                            suspect={option.option === row.top_wrong_option && row.beaten_by_a_wrong_answer}
+                          />
+                        ))}
+                      </div>
+
+                      <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                        <span>{`${row.answered.toLocaleString()} answered`}</span>
+                        {row.difficulty && <span>{`graded ${row.difficulty.toLowerCase()}`}</span>}
+                        {/* Timeouts sit here rather than in the bars: they carry
                           whatever option was highlighted when the clock ran out,
                           so they are not a choice — but a question that times
                           out often may simply be too long to read. */}
-                      {row.timeouts > 0 && (
-                        <span title="Answers submitted when the clock ran out — not counted as choices above">
-                          {/* The count when the share is missing: a question
+                        {row.timeouts > 0 && (
+                          <span title="Answers submitted when the clock ran out — not counted as choices above">
+                            {/* The count when the share is missing: a question
                               where EVERY answer timed out has no deliberate
                               denominator, and `null%` is worse than a raw
                               number (Copilot on #128). */}
-                          {row.timeout_pct === null
-                            ? `${row.timeouts.toLocaleString()} ran out of time`
-                            : `${row.timeout_pct}% ran out of time`}
-                        </span>
-                      )}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
+                            {row.timeout_pct === null
+                              ? `${row.timeouts.toLocaleString()} ran out of time`
+                              : `${row.timeout_pct}% ran out of time`}
+                          </span>
+                        )}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
       </CardContent>
     </Card>
   );

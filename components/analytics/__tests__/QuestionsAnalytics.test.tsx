@@ -1,5 +1,5 @@
 import type { QuestionRow, QuestionsAnalyticsResponse } from '@/types/reports';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CategoryQuality } from '@/components/analytics/panels/CategoryQuality';
 import { GlobalQuizUsage } from '@/components/analytics/panels/GlobalQuizUsage';
@@ -73,10 +73,43 @@ function response(rows: QuestionRow[], over: Partial<QuestionsAnalyticsResponse[
 }
 
 describe('questionQuality', () => {
+  /**
+   * The answer split is collapsed by default — it is the heaviest DOM on the
+   * page and sits under a summary that already says whether it is worth opening.
+   * Tests that assert on the list have to open it, which is the point.
+   */
+  function openSplit() {
+    fireEvent.click(screen.getByRole('button', { name: /answer split/ }));
+  }
+
+  it('keeps the split collapsed until asked', () => {
+    render(<QuestionQuality data={response([question({ question_id: 1, text: 'How many goals?' })])} />);
+
+    expect(screen.queryByText('How many goals?')).not.toBeInTheDocument();
+    // The summary stays visible: it is the reason to open the panel at all.
+    expect(screen.getByText('Need a look')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Show the answer split for 1 question/ }))
+      .toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('renders the list only once opened, and hides it again', () => {
+    render(<QuestionQuality data={response([question({ question_id: 1, text: 'How many goals?' })])} />);
+
+    openSplit();
+
+    expect(screen.getByText('How many goals?')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Hide the answer split/ }));
+
+    expect(screen.queryByText('How many goals?')).not.toBeInTheDocument();
+  });
+
   it('marks a question a wrong option won', () => {
     // The finding. Without it the row is just a low correct rate, which a hard
     // question produces too.
     render(<QuestionQuality data={response([question({ question_id: 1, text: 'How many goals?' })])} />);
+
+    openSplit();
 
     expect(screen.getByText('A wrong option won')).toBeInTheDocument();
     expect(screen.getByText('How many goals?')).toBeInTheDocument();
@@ -88,6 +121,8 @@ describe('questionQuality', () => {
     // without reading the answer.
     render(<QuestionQuality data={response([question({ question_id: 1, text: 'How many goals?' })])} />);
 
+    openSplit();
+
     expect(screen.getByText('One goal')).toBeInTheDocument();
     expect(screen.getByText('A hat-trick')).toBeInTheDocument();
   });
@@ -96,6 +131,8 @@ describe('questionQuality', () => {
     // The split IS the evidence: 75/25 across two options is a different
     // question from 25/25/25/25, and both have the same correct rate.
     render(<QuestionQuality data={response([question({ question_id: 1, text: 'Q' })])} />);
+
+    openSplit();
 
     expect(screen.getByText('75%')).toBeInTheDocument();
     expect(screen.getByText('25%')).toBeInTheDocument();
@@ -127,6 +164,8 @@ describe('questionQuality', () => {
       />,
     );
 
+    openSplit();
+
     expect(screen.getByText('33.3% ran out of time')).toBeInTheDocument();
   });
 
@@ -149,6 +188,8 @@ describe('questionQuality', () => {
       />,
     );
 
+    openSplit();
+
     expect(screen.getByText('31 ran out of time')).toBeInTheDocument();
     expect(screen.queryByText(/null%/)).not.toBeInTheDocument();
   });
@@ -156,11 +197,15 @@ describe('questionQuality', () => {
   it('leads with how many need a look', () => {
     render(<QuestionQuality data={response([question({ question_id: 1, text: 'Q' })])} />);
 
+    openSplit();
+
     expect(screen.getByText('Need a look')).toBeInTheDocument();
   });
 
   it('says nothing was rated rather than showing an empty list', () => {
     render(<QuestionQuality data={response([])} />);
+
+    openSplit();
 
     expect(screen.getByText('No question was answered enough times to rate.')).toBeInTheDocument();
   });
