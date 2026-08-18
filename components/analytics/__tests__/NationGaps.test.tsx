@@ -52,14 +52,15 @@ describe('nationDepth', () => {
     expect(within(rows[0]).getByText('21')).toBeInTheDocument();
   });
 
-  it('sends every nation to its footballers', () => {
-    // The short code, not the id: `/data/footballers/` filters by name,
-    // nationality or short code, and the id is not one of them.
+  it('sends every nation to its footballers, by id', () => {
+    // The id, not the short code: `/data/footballers/` filters `nation`
+    // through a ModelChoiceFilter, so a code is rejected outright with
+    // "Select a valid choice" rendered as a page-level error.
     render(<NationDepth data={data()} {...depthProps} />);
 
     expect(screen.getByRole('link', { name: /Italy/ })).toHaveAttribute(
       'href',
-      '/footballer-management?nation=ITA',
+      '/footballer-management?nation=1',
     );
   });
 
@@ -102,7 +103,7 @@ describe('nationGaps', () => {
 
     expect(screen.getByRole('link', { name: /Tuvalu/ })).toHaveAttribute(
       'href',
-      '/footballer-management?nation=TUV',
+      '/footballer-management?nation=40',
     );
   });
 

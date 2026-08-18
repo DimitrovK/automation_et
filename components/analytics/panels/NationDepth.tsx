@@ -89,7 +89,7 @@ export function NationDepth({ data, ordering, onSort, onPageChange, onPageSizeCh
                           </td>
                           <td className="px-2 py-1.5">
                             <Link
-                              href={nationFootballersHref(row.short)}
+                              href={nationFootballersHref(row.id)}
                               className="flex items-center gap-2.5 rounded-md py-0.5"
                             >
                               <NationCrest short={row.short} flag={row.flag} />
