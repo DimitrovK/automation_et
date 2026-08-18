@@ -40,7 +40,7 @@ const props = {
   ordering: 'players' as const,
   onSort: vi.fn(),
   onPageChange: vi.fn(),
-  onLimitChange: vi.fn(),
+  onPageSizeChange: vi.fn(),
 };
 
 describe('squadDepth', () => {

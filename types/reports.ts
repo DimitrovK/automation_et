@@ -1182,10 +1182,25 @@ export type CappedRows<T> = {
 /** Counts by non-approved status. Empty when nothing is waiting. */
 export type ReviewQueue = Record<string, number>;
 
+/** Who a nation is, in any of the three lists on the nations page. */
+export type NationRow = {
+  id: number;
+  name: string;
+  /** The three-letter code. Doubles as the fallback when there is no flag. */
+  short: string;
+  /** 230 of 233 active nations have one, so expect this to be set. */
+  flag: string | null;
+};
+
+/** How the ranked nation table may be ordered. Rejected server-side if unknown. */
+export type NationOrdering = 'footballers' | 'footballers_asc' | 'name';
+
 export type NationGapsResponse = {
-  nations_without_footballers: CappedRows<{ name: string; short: string }>;
-  nations_without_teams: CappedRows<{ name: string; short: string }>;
-  nations_by_footballers: CappedRows<{ name: string; short: string; footballers: number }>;
+  nations_without_footballers: CappedRows<NationRow>;
+  nations_without_teams: CappedRows<NationRow>;
+  nations_by_footballers: PagedRows<NationRow & { footballers: number }>;
+  /** Echoed so the header can mark the column the server actually sorted by. */
+  ordering?: NationOrdering | null;
 };
 
 /**

@@ -1,76 +1,57 @@
 'use client';
 
-import type { TeamGapsResponse, TeamOrdering } from '@/types/reports';
+import type { NationGapsResponse, NationOrdering } from '@/types/reports';
 import Link from 'next/link';
-import { NationFlag } from '@/components/analytics/NationFlag';
+import { NationCrest } from '@/components/analytics/NationCrest';
 import { SortableHeader, TableControls } from '@/components/analytics/RankedTable';
-import { TeamCrest } from '@/components/analytics/TeamCrest';
-import { SearchBox } from '@/components/reports/filters/SearchBox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { nationFootballersHref } from '@/lib/nation-param';
 
 /**
- * Teams by squad size — the whole table, a page at a time.
+ * Where the catalogue is deepest.
  *
- * It used to be a top ten with a bar scaled against the biggest row on screen,
- * and an "expand to 100" for anyone who wanted more. Across 4,402 teams that
- * bar compares ten rows to the largest of the same ten, which says nothing, and
- * "expand to 100" cannot answer what is on page 40 of 441. So: a real table,
- * ordered and paged by the server, with the count as the figure.
+ * Context for the two gap lists beside it: those say what cannot be used at
+ * all, this says what the games will actually feel like to play. A nation with
+ * four footballers is not a gap, but it is not depth either, and only a ranked
+ * table shows you where the falloff starts.
  *
- * Sorting goes back to the API rather than reordering what arrived. Sorting the
- * fetched page would order ten rows out of 4,402 and look broken the moment
- * there is a page two.
- *
- * Every row is a link into `/team-players`, which shows the squad with the
- * years each footballer was there. A ranked list of clubs whose squads you
- * cannot open is a list you can only read.
+ * Paged and sorted by the server, like the teams table. There are far fewer
+ * nations than teams — around 233 against 4,402 — so this is a shorter table,
+ * but the sort is the point: reading it by name and reading it by depth are two
+ * different questions.
  */
-export function SquadDepth({ data, search, onSearchChange, ordering, onSort, onPageChange, onPageSizeChange, busy }: {
-  data: TeamGapsResponse;
-  search: string;
-  onSearchChange: (next: string) => void;
-  ordering: TeamOrdering;
+export function NationDepth({ data, ordering, onSort, onPageChange, onPageSizeChange, busy }: {
+  data: NationGapsResponse;
+  ordering: NationOrdering;
   onSort: (column: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  /** A request is in flight — the controls stay visible but inert. */
   busy?: boolean;
 }) {
-  const ranked = data.teams_by_players;
+  const ranked = data.nations_by_footballers;
 
-  // The BE may not carry this yet — the repositories deploy independently.
+  // The BE may not carry the paged shape yet — the repositories deploy
+  // independently, and before that this was a capped list with no `page`.
   if (!ranked) {
     return null;
   }
 
-  // The page's place in the whole table, so row one of page five reads as 41.
   const offset = (ranked.page - 1) * ranked.limit;
 
   return (
     <Card>
-      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1.5">
-          <CardTitle>Teams with the most players</CardTitle>
-          <CardDescription>
-            Squad size as the catalogue holds it — not a real squad, but everyone ever
-            recorded at the club. Every row opens that club's squad.
-          </CardDescription>
-        </div>
-        {/* ON this card. In the page filter bar it sat with nothing to say which
-            of the two tables it narrowed — and it narrows only this one. */}
-        <SearchBox
-          value={search}
-          onChange={onSearchChange}
-          label="Filter teams in this table"
-          placeholder="Filter these teams…"
-          className="w-full shrink-0 sm:w-56"
-        />
+      <CardHeader>
+        <CardTitle>Where the catalogue is deepest</CardTitle>
+        <CardDescription>
+          Context for the gaps above: this is what the games will actually feel like to play.
+          Every row opens that nation's footballers.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {ranked.total === 0
           ? (
               <p className="text-sm text-muted-foreground">
-                {search ? `No team matches "${search}".` : 'No team has a squad yet.'}
+                No footballers are assigned to a nation yet.
               </p>
             )
           : (
@@ -84,18 +65,18 @@ export function SquadDepth({ data, search, onSearchChange, ordering, onSort, onP
                           #
                         </th>
                         <SortableHeader
-                          label="Team"
+                          label="Nation"
                           column="name"
                           ordering={ordering}
                           onSort={onSort}
                           className="text-left"
                         />
                         <SortableHeader
-                          label="Players"
-                          column="players"
+                          label="Footballers"
+                          column="footballers"
                           ordering={ordering}
                           onSort={onSort}
-                          className="w-28 text-right [&>button]:justify-end"
+                          className="w-32 text-right [&>button]:justify-end"
                         />
                       </tr>
                     </thead>
@@ -108,23 +89,22 @@ export function SquadDepth({ data, search, onSearchChange, ordering, onSort, onP
                           </td>
                           <td className="px-2 py-1.5">
                             <Link
-                              href={`/team-players?teamId=${row.id}`}
-                              className="flex items-center gap-2.5 rounded-md py-0.5 transition-colors group-hover:text-primary"
+                              href={nationFootballersHref(row.short)}
+                              className="flex items-center gap-2.5 rounded-md py-0.5"
                             >
-                              <TeamCrest name={row.name} badge={row.badge} />
+                              <NationCrest short={row.short} flag={row.flag} />
                               <span className="min-w-0">
                                 <span className="block truncate font-medium text-foreground group-hover:text-primary">
                                   {row.name}
                                 </span>
-                                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                  <NationFlag flag={row.flag} />
-                                  <span className="truncate">{row.nation ?? 'No nation'}</span>
+                                <span className="block truncate text-xs text-muted-foreground">
+                                  {row.short}
                                 </span>
                               </span>
                             </Link>
                           </td>
                           <td className="px-2 py-1.5 text-right text-sm font-semibold tabular-nums text-foreground">
-                            {row.players.toLocaleString()}
+                            {row.footballers.toLocaleString()}
                           </td>
                         </tr>
                       ))}

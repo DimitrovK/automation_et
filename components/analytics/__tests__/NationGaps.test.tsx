@@ -1,69 +1,128 @@
 import type { NationGapsResponse } from '@/types/reports';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { NationDepth } from '@/components/analytics/panels/NationDepth';
 import { NationGaps } from '@/components/analytics/panels/NationGaps';
-import { ReviewQueue } from '@/components/analytics/panels/ReviewQueue';
 
-function data(): NationGapsResponse {
+function data(over: Partial<NationGapsResponse> = {}): NationGapsResponse {
   return {
-    nations_without_footballers: {
-      items: [{ name: 'Afghanistan', short: 'AFG' }, { name: 'American Samoa', short: 'ASM' }],
-      total: 101,
-      limit: 10,
-    },
-    nations_without_teams: { items: [{ name: 'Aruba', short: 'ABW' }], total: 94, limit: 10 },
     nations_by_footballers: {
-      items: [{ name: 'England', short: 'ENG', footballers: 467 }],
-      total: 132,
+      items: [
+        { id: 1, name: 'Italy', short: 'ITA', flag: '/media/nation_flags/italy-flag.png', footballers: 812 },
+        { id: 2, name: 'Spain', short: 'ESP', flag: null, footballers: 640 },
+      ],
+      total: 178,
+      limit: 10,
+      page: 1,
+      pages: 18,
+    },
+    nations_without_footballers: {
+      items: [{ id: 40, name: 'Tuvalu', short: 'TUV', flag: '/media/nation_flags/tuvalu-flag.png' }],
+      total: 55,
       limit: 10,
     },
-  };
+    nations_without_teams: {
+      items: [{ id: 41, name: 'Nauru', short: 'NRU', flag: null }],
+      total: 61,
+      limit: 10,
+    },
+    ordering: 'footballers',
+    ...over,
+  } as NationGapsResponse;
 }
 
-describe('nationGaps', () => {
-  it('describes the gap by its real size, not by the sample', () => {
-    render(<NationGaps data={data()} />);
+const depthProps = {
+  ordering: 'footballers' as const,
+  onSort: vi.fn(),
+  onPageChange: vi.fn(),
+  onPageSizeChange: vi.fn(),
+};
 
-    expect(screen.getByText('Showing 2 of 101')).toBeInTheDocument();
-    expect(screen.getByText('Showing 1 of 94')).toBeInTheDocument();
+describe('nationDepth', () => {
+  it('numbers rows by their place in the whole table, not in the page', () => {
+    render(
+      <NationDepth
+        data={data({ nations_by_footballers: { ...data().nations_by_footballers, page: 3, limit: 10 } })}
+        {...depthProps}
+      />,
+    );
+
+    const rows = screen.getAllByRole('row').slice(1);
+
+    expect(within(rows[0]).getByText('21')).toBeInTheDocument();
   });
 
-  it('keeps "no footballers" and "no teams" as separate jobs', () => {
-    // They overlap heavily but are not the same fix: a nation can have players
-    // and no clubs, and club-based content needs the clubs.
+  it('sends every nation to its footballers', () => {
+    // The short code, not the id: `/data/footballers/` filters by name,
+    // nationality or short code, and the id is not one of them.
+    render(<NationDepth data={data()} {...depthProps} />);
+
+    expect(screen.getByRole('link', { name: /Italy/ })).toHaveAttribute(
+      'href',
+      '/footballer-management?nation=ITA',
+    );
+  });
+
+  it('marks the sorted column and sorts through the server', () => {
+    const onSort = vi.fn();
+    render(<NationDepth data={data()} {...depthProps} onSort={onSort} />);
+
+    const header = screen.getByRole('columnheader', { name: /Footballers/ });
+
+    expect(header).toHaveAttribute('aria-sort', 'descending');
+
+    fireEvent.click(within(header).getByRole('button'));
+
+    expect(onSort).toHaveBeenCalledWith('footballers');
+  });
+
+  it('pages rather than expanding once', () => {
+    render(<NationDepth data={data()} {...depthProps} />);
+
+    expect(screen.getByText('Showing 2 of 178 results')).toBeInTheDocument();
+    expect(screen.getByLabelText('Rows per page')).toBeInTheDocument();
+  });
+});
+
+describe('nationGaps', () => {
+  it('keeps the two gaps apart, because they are different jobs', () => {
+    // A nation with no footballers cannot appear in anything nation-scoped; a
+    // nation with no teams cannot appear in club-based content. They overlap
+    // heavily but fixing one does not fix the other.
     render(<NationGaps data={data()} />);
 
     expect(screen.getByText('Nations with no footballers')).toBeInTheDocument();
     expect(screen.getByText('Nations with no teams')).toBeInTheDocument();
+    expect(screen.getByText('Tuvalu')).toBeInTheDocument();
+    expect(screen.getByText('Nauru')).toBeInTheDocument();
   });
 
-  it('shows the depth ranking with its counts', () => {
+  it('sends a footballer-less nation to the screen that fills it', () => {
     render(<NationGaps data={data()} />);
 
-    expect(screen.getByText('England')).toBeInTheDocument();
-    expect(screen.getByText('467')).toBeInTheDocument();
-  });
-});
-
-describe('reviewQueue', () => {
-  it('renders nothing when nothing is pending', () => {
-    // Not every deployment uses the review states. A permanent row of zeros
-    // would be a workflow the page invented.
-    const { container } = render(<ReviewQueue counts={{}} subject="teams" />);
-
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.getByRole('link', { name: /Tuvalu/ })).toHaveAttribute(
+      'href',
+      '/footballer-management?nation=TUV',
+    );
   });
 
-  it('renders nothing when the backend predates the field', () => {
-    const { container } = render(<ReviewQueue counts={undefined} subject="teams" />);
+  it('sends a team-less nation to the admin, since nothing in here adds a team', () => {
+    // The one external link on the page. There is no team-management screen in
+    // this app, so the alternative is a chip that names a job with nowhere to
+    // do it.
+    render(<NationGaps data={data()} />);
 
-    expect(container).toBeEmptyDOMElement();
+    const link = screen.getByRole('link', { name: /Nauru/ });
+
+    expect(link).toHaveAttribute('href', expect.stringContaining('FootballData/team/add/'));
+    expect(link).toHaveAttribute('href', expect.stringContaining('nation=41'));
+    expect(link).toHaveAttribute('target', '_blank');
   });
 
-  it('names the status in words when something is waiting', () => {
-    render(<ReviewQueue counts={{ AWAITING_REVISION: 12 }} subject="footballers" />);
+  it('reports the real gaps, not the chips shown', () => {
+    render(<NationGaps data={data()} />);
 
-    expect(screen.getByText('Awaiting revision')).toBeInTheDocument();
-    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1 of 55')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1 of 61')).toBeInTheDocument();
   });
 });

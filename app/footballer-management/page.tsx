@@ -30,6 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth';
 import { FootballerAPI } from '@/lib/footballer-api';
+import { parseNationFilter } from '@/lib/nation-param';
 
 export default function FootballerManagementPage() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -38,6 +39,8 @@ export default function FootballerManagementPage() {
   // Track whether we've already consumed the ``?edit=<id>`` deep-link
   // so a re-render (e.g. nations finishing loading) doesn't re-fire it.
   const consumedEditParam = useRef(false);
+  // Same idea for `?nation=<code>`, which arrives from the nations page.
+  const consumedNationParam = useRef(false);
   const [footballers, setFootballers] = useState<Footballer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +54,10 @@ export default function FootballerManagementPage() {
 
   // Filter and search states
   const [searchQuery, setSearchQuery] = useState('');
+  // Set from `?nation=<code>` by the nations analytics page, which links every
+  // row and every gap chip here. Not a control in the filter bar: it arrives
+  // with the link and is cleared with the others.
+  const [nationFilter, setNationFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [retiredFilter, setRetiredFilter] = useState('all');
   const [isPlayerFilter, setIsPlayerFilter] = useState('all');
@@ -144,7 +151,35 @@ export default function FootballerManagementPage() {
     handleLoadNations();
   }, []);
 
-  const handleGetFootballers = async (page: number = 1, resetPage: boolean = false) => {
+  // Deep-link entry point for `/footballer-management?nation=<code>`, used by
+  // the nations analytics page. It loads the list straight away rather than
+  // only setting the filter: arriving from a link that says "show me Italy's
+  // footballers" onto an empty screen with a primed filter is a page that did
+  // three quarters of what was asked.
+  //
+  // Consumed once, so re-renders cannot undo a filter cleared by hand.
+  useEffect(() => {
+    if (consumedNationParam.current || !isAuthenticated) {
+      return;
+    }
+    const fromUrl = parseNationFilter(searchParams?.get('nation'));
+    if (fromUrl === null) {
+      return;
+    }
+    consumedNationParam.current = true;
+    setNationFilter(fromUrl);
+    // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleGetFootballers is defined below.
+    handleGetFootballers(1, true, fromUrl);
+  }, [isAuthenticated, searchParams]);
+
+  const handleGetFootballers = async (
+    page: number = 1,
+    resetPage: boolean = false,
+    // The deep-link effect fetches in the same tick it sets the filter, so the
+    // state it just set is not readable yet. Passing the value avoids a fetch
+    // that silently ignores the nation it was opened for.
+    nationOverride?: string,
+  ) => {
     setLoading(true);
     setError(null);
     setSingleFootballer(null); // Clear single footballer result
@@ -162,6 +197,11 @@ export default function FootballerManagementPage() {
       }
 
       // Add filters
+      const nation = (nationOverride ?? nationFilter).trim();
+      if (nation) {
+        // Matched server-side against name, nationality or short code.
+        params.nation = nation;
+      }
       if (statusFilter && statusFilter !== 'all') {
         params.status = statusFilter;
       }
@@ -614,6 +654,7 @@ export default function FootballerManagementPage() {
 
   const handleClearFilters = () => {
     setSearchQuery('');
+    setNationFilter('');
     setStatusFilter('all');
     setRetiredFilter('all');
     setIsPlayerFilter('all');
@@ -632,6 +673,11 @@ export default function FootballerManagementPage() {
 
     if (searchQuery.trim()) {
       filters.push(`Search: "${searchQuery}"`);
+    }
+    // Listed like any other filter, because it is one — arriving by link should
+    // not leave a narrowing nobody can see and nobody can clear.
+    if (nationFilter.trim()) {
+      filters.push(`Nation: ${nationFilter.trim()}`);
     }
     if (statusFilter !== 'all') {
       const statusLabels = {
