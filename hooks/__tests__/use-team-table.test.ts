@@ -2,6 +2,10 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { nextOrdering, useTeamTable } from '@/hooks/use-team-table';
 
+// The page/size/sort/search rules these two tables share live in
+// `use-ranked-table` and are tested there. What is left here is the one thing
+// the teams table decides for itself: what a second press on a column means.
+
 describe('nextOrdering', () => {
   it('toggles the players column between most and fewest', () => {
     expect(nextOrdering('players', 'players')).toBe('players_asc');
@@ -30,70 +34,11 @@ describe('useTeamTable', () => {
     expect(result.current.search).toBe('');
   });
 
-  it('goes back to page 1 when the page size changes', () => {
-    // Otherwise page 40 of 441 becomes page 40 of 45 — the backend clamps to
-    // the last page, so you land somewhere you did not ask for and the table
-    // looks like it jumped.
+  it('sorts through the team toggle', () => {
     const { result } = renderHook(() => useTeamTable());
 
-    act(() => result.current.setPage(40));
-    act(() => result.current.setLimit(100));
+    act(() => result.current.sortBy('players'));
 
-    expect(result.current.limit).toBe(100);
-    expect(result.current.page).toBe(1);
-  });
-
-  it('goes back to page 1 when the sort changes', () => {
-    // Page 12 of one ordering has nothing to do with page 12 of another.
-    const { result } = renderHook(() => useTeamTable());
-
-    act(() => result.current.setPage(12));
-    act(() => result.current.sortBy('name'));
-
-    expect(result.current.ordering).toBe('name');
-    expect(result.current.page).toBe(1);
-  });
-
-  it('goes back to page 1 when the search changes', () => {
-    // A filter that matches four teams has no page 12 at all.
-    const { result } = renderHook(() => useTeamTable());
-
-    act(() => result.current.setPage(12));
-    act(() => result.current.setSearch('inter'));
-
-    expect(result.current.search).toBe('inter');
-    expect(result.current.page).toBe(1);
-  });
-
-  it('still lets the paginator move between pages', () => {
-    const { result } = renderHook(() => useTeamTable());
-
-    act(() => result.current.setPage(3));
-
-    expect(result.current.page).toBe(3);
-  });
-
-  it('gives one identity string covering everything the request depends on', () => {
-    // `use-report` refetches on this value. Leave any of the four out and that
-    // control stops refetching — the sort button goes dead, or paging shows
-    // page one again.
-    const { result } = renderHook(() => useTeamTable());
-    const first = result.current.requestKey;
-
-    act(() => result.current.setPage(2));
-
-    expect(result.current.requestKey).not.toBe(first);
-
-    act(() => result.current.setLimit(25));
-    const afterLimit = result.current.requestKey;
-
-    act(() => result.current.sortBy('name'));
-
-    expect(result.current.requestKey).not.toBe(afterLimit);
-
-    const afterSort = result.current.requestKey;
-    act(() => result.current.setSearch('inter'));
-
-    expect(result.current.requestKey).not.toBe(afterSort);
+    expect(result.current.ordering).toBe('players_asc');
   });
 });

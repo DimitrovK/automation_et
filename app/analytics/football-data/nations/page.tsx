@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { NationDepth } from '@/components/analytics/panels/NationDepth';
 import { NationGaps } from '@/components/analytics/panels/NationGaps';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
+import { useNationTable } from '@/hooks/use-nation-table';
 import { useReport } from '@/hooks/use-report';
 import { useAuth } from '@/lib/auth';
 import { ReportsAPI } from '@/lib/reports-api';
 
 /** Rows a gap list shows before you ask for more, and after. */
-const PAGE = 10;
+const WORKLIST = 10;
 const EXPANDED = 100;
 
 /**
@@ -22,15 +24,18 @@ const EXPANDED = 100;
 export default function NationsAnalyticsPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
-  const [limit, setLimit] = useState(PAGE);
+  const table = useNationTable();
+  // Separate from the table's page size. One number used to drive all three
+  // lists, so the row-count dropdown rewrote both worklists underneath it.
+  const [worklistLimit, setWorklistLimit] = useState(WORKLIST);
 
   const state = useReport(
-    () => ReportsAPI.getNationGaps(limit),
+    () => ReportsAPI.getNationGaps(worklistLimit, table.pageSize, table.page, table.ordering),
     {},
     enabled,
     'The nation gaps endpoint',
-    // Part of the fetch identity: without it, asking for more would not refetch.
-    String(limit),
+    // Every value the request is built from — without it, nothing refetches.
+    `${table.requestKey}:${worklistLimit}`,
   );
 
   return (
@@ -38,12 +43,25 @@ export default function NationsAnalyticsPage() {
       title="Nations"
       description="Which nations nothing points at, and where the catalogue is deepest."
     >
-      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+      <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => (
           <NationGaps
             data={data}
-            expanded={limit > PAGE}
-            onExpand={() => setLimit(EXPANDED)}
+            expanded={worklistLimit >= EXPANDED}
+            onExpand={() => setWorklistLimit(EXPANDED)}
+          />
+        )}
+      </ReportPanel>
+
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => (
+          <NationDepth
+            data={data}
+            ordering={table.ordering}
+            onSort={table.sortBy}
+            onPageChange={table.setPage}
+            onPageSizeChange={table.setPageSize}
+            busy={state.isLoading}
           />
         )}
       </ReportPanel>

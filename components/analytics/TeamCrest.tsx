@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { mediaUrl } from '@/lib/media-url';
-import { cn } from '@/lib/utils';
+import { IdentityTile } from '@/components/analytics/IdentityTile';
 
 /** The first letter of the first two words — "Manchester United" → "MU". */
 function initials(name: string): string {
@@ -15,17 +13,15 @@ function initials(name: string): string {
 }
 
 /**
- * A club's crest, or the tile that stands in for it.
+ * A club's crest, or the monogram that stands in for it.
  *
- * Built fallback-first on purpose. 377 of 4,455 approved teams carry a badge —
- * 8.5% — so the initials tile is what most of this table renders, and treating
- * it as the error path would leave nine rows in ten looking broken. The image
- * is the bonus layered on top, and it steps aside again if it fails to load:
- * a column of broken-image glyphs is worse than a column of tidy monograms.
+ * The monogram is the usual outcome: 377 of 4,455 approved teams carry a badge,
+ * so nine rows in ten render initials and treating that as the error path would
+ * leave most of the table looking broken. The crest is the bonus on top.
  *
- * Plain `<img>` rather than `next/image`. This is a staff-only dashboard, so
- * there is nothing to gain from optimisation that would justify a remote-pattern
- * entry in `next.config.mjs` and per-image Vercel billing.
+ * Initials rather than a short code, which is what `NationCrest` falls back to —
+ * teams have no short code, and their names are long enough that two letters is
+ * the only thing that fits.
  */
 export function TeamCrest({ name, badge, className }: {
   name: string;
@@ -33,33 +29,5 @@ export function TeamCrest({ name, badge, className }: {
   badge: string | null;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
-  const src = failed ? null : mediaUrl(badge);
-
-  return (
-    <span
-      className={cn(
-        'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md',
-        'bg-muted text-[0.65rem] font-semibold text-muted-foreground ring-1 ring-inset ring-border',
-        className,
-      )}
-    >
-      {src
-        ? (
-            // eslint-disable-next-line next/no-img-element -- deliberate, see above
-            <img
-              src={src}
-              // Decorative: the club name sits next to it in every caller, and
-              // an alt here would have a screen reader say it twice.
-              alt=""
-              loading="lazy"
-              className="size-full object-contain"
-              onError={() => setFailed(true)}
-            />
-          )
-        : (
-            <span aria-hidden>{initials(name)}</span>
-          )}
-    </span>
-  );
+  return <IdentityTile image={badge} fallback={initials(name)} className={className} />;
 }

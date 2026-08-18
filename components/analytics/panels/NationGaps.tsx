@@ -1,17 +1,44 @@
 'use client';
 
-import type { NationGapsResponse } from '@/types/reports';
+import type { NationGapsResponse, NationRow } from '@/types/reports';
+import Link from 'next/link';
+import { NationCrest } from '@/components/analytics/NationCrest';
 import { CappedList } from '@/components/reports/primitives/CappedList';
-import { ReportTable } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import config from '@/lib/config';
+import { nationFootballersHref } from '@/lib/nation-param';
+
+const CHIP = 'inline-flex items-center gap-2 rounded-md bg-muted/60 px-2 py-1 text-sm ring-1 ring-inset ring-border transition-colors hover:bg-muted';
 
 /**
- * Nations nothing points at, and the ones the catalogue leans on.
+ * Where a team for this nation can be created.
  *
- * Two gaps and one skew, in that order, because the first two are worklists and
- * the third is context for them. A nation with no footballers cannot appear in
- * anything nation-scoped; a nation with no teams cannot appear in club-based
- * content. They overlap heavily but are not the same job.
+ * The Django admin, and the only external link on the page. There is no
+ * team-management screen in this app, so the alternative is a chip that names
+ * a job with nowhere to do it.
+ */
+function addTeamHref(nationId: number) {
+  return config.getAdminUrl(`FootballData/team/add/?nation=${nationId}`);
+}
+
+/** Flag, name, short code — the same identity in both lists. */
+function NationChip({ row }: { row: NationRow }) {
+  return (
+    <>
+      <NationCrest short={row.short} flag={row.flag} className="size-6 rounded" />
+      <span className="font-medium text-foreground">{row.name}</span>
+      <span className="text-xs text-muted-foreground">{row.short}</span>
+    </>
+  );
+}
+
+/**
+ * Nations nothing points at.
+ *
+ * Two gaps, kept apart because they are different jobs. A nation with no
+ * footballers cannot appear in anything nation-scoped — no national-team clue,
+ * no nation criterion. A nation with no teams cannot appear in club-based
+ * content. They overlap heavily, and fixing one does not fix the other.
  *
  * Active nations only. A defunct country with no footballers is not a gap to
  * fill — mixing the two turns a worklist into a list nobody will action.
@@ -38,7 +65,17 @@ export function NationGaps({ data, onExpand, expanded }: {
             expanded={expanded}
             emptyLabel="Every active nation has at least one footballer."
           >
-            <NameList rows={data.nations_without_footballers.items} />
+            <ul className="flex flex-wrap gap-1.5">
+              {data.nations_without_footballers.items.map(row => (
+                <li key={row.short}>
+                  {/* Lands on an empty filtered list, which is the honest view
+                      of the gap — and the Add form is on the same screen. */}
+                  <Link href={nationFootballersHref(row.short)} className={CHIP}>
+                    <NationChip row={row} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </CappedList>
         </CardContent>
       </Card>
@@ -58,56 +95,23 @@ export function NationGaps({ data, onExpand, expanded }: {
             expanded={expanded}
             emptyLabel="Every active nation has at least one team."
           >
-            <NameList rows={data.nations_without_teams.items} />
-          </CappedList>
-        </CardContent>
-      </Card>
-
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Where the catalogue is deepest</CardTitle>
-          <CardDescription>
-            Context for the gaps above: this is what the games will actually feel like to play.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CappedList
-            total={data.nations_by_footballers.total}
-            shown={data.nations_by_footballers.items.length}
-            onExpand={onExpand}
-            expanded={expanded}
-            emptyLabel="No footballers are assigned to a nation yet."
-          >
-            <ReportTable>
-              <tbody>
-                {data.nations_by_footballers.items.map(row => (
-                  <tr key={row.short} className="border-b last:border-0">
-                    <td className="py-1.5 pr-4 text-sm text-foreground">{row.name}</td>
-                    <td className="py-1.5 pr-4 text-xs text-muted-foreground">{row.short}</td>
-                    <td className="py-1.5 text-right text-sm font-medium tabular-nums text-foreground">
-                      {row.footballers.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </ReportTable>
+            <ul className="flex flex-wrap gap-1.5">
+              {data.nations_without_teams.items.map(row => (
+                <li key={row.short}>
+                  <a
+                    href={addTeamHref(row.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={CHIP}
+                  >
+                    <NationChip row={row} />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </CappedList>
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-/** A plain list of names — no counts, because every row here is a zero. */
-function NameList({ rows }: { rows: { name: string; short: string }[] }) {
-  return (
-    <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-sm">
-      {rows.map(row => (
-        <li key={row.short} className="text-foreground">
-          {row.name}
-          <span className="ml-1 text-xs text-muted-foreground">{row.short}</span>
-        </li>
-      ))}
-    </ul>
   );
 }

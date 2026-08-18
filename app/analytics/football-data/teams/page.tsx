@@ -11,7 +11,8 @@ import { useTeamTable } from '@/hooks/use-team-table';
 import { useAuth } from '@/lib/auth';
 import { ReportsAPI } from '@/lib/reports-api';
 
-/** What the gap worklist expands to. The ranking pages instead. */
+/** Rows the empty-team worklist shows before you ask for more, and after. */
+const WORKLIST = 10;
 const EXPANDED = 100;
 
 /** Team coverage. No date filter — see the nations page for why. */
@@ -19,25 +20,24 @@ export default function TeamsAnalyticsPage() {
   const { isAuthenticated, user } = useAuth();
   const enabled = isAuthenticated && !!(user?.is_staff || user?.is_superuser);
   const table = useTeamTable();
-  // The endpoint takes ONE limit for both lists, so the ranking's page size is
-  // also the gap list's cap. Expanding the worklist therefore sets the page
-  // size — coupled at the API, and worth splitting there rather than papering
-  // over it here.
-  const [expanded, setExpanded] = useState(false);
+  // Its own control now. The endpoint used to take one `limit` for the table
+  // and the worklist, so the row-count dropdown quietly rewrote this list too.
+  const [worklistLimit, setWorklistLimit] = useState(WORKLIST);
 
   const state = useReport(
     () => ReportsAPI.getTeamGaps(
-      table.limit,
+      worklistLimit,
       table.search || undefined,
       table.page,
       table.ordering,
+      table.pageSize,
     ),
     {},
     enabled,
     'The team gaps endpoint',
     // Every value the request is built from. Drop one and the control that
-    // changes it stops refetching — see `use-team-table`.
-    table.requestKey,
+    // changes it stops refetching — see `use-ranked-table`.
+    `${table.requestKey}:${worklistLimit}`,
   );
 
   return (
@@ -55,10 +55,7 @@ export default function TeamsAnalyticsPage() {
             ordering={table.ordering}
             onSort={table.sortBy}
             onPageChange={table.setPage}
-            onLimitChange={(next) => {
-              setExpanded(next >= EXPANDED);
-              table.setLimit(next);
-            }}
+            onPageSizeChange={table.setPageSize}
             busy={state.isLoading}
           />
         )}
@@ -69,11 +66,8 @@ export default function TeamsAnalyticsPage() {
           <div className="space-y-4">
             <TeamGaps
               data={data}
-              expanded={expanded}
-              onExpand={() => {
-                setExpanded(true);
-                table.setLimit(EXPANDED);
-              }}
+              expanded={worklistLimit >= EXPANDED}
+              onExpand={() => setWorklistLimit(EXPANDED)}
             />
             <ReviewQueue counts={data.review_queue} subject="teams" />
           </div>

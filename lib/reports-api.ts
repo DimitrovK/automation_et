@@ -16,6 +16,7 @@ import type {
   LineupsAnalyticsResponse,
   MultiplayerResponse,
   NationGapsResponse,
+  NationOrdering,
   PatternsResponse,
   PlayerDetailResponse,
   ProgressResponse,
@@ -166,27 +167,38 @@ export class ReportsAPI {
    * changed in a window, and offering a date filter would imply the number
    * moves with it.
    */
-  static async getNationGaps(limit?: number): Promise<NationGapsResponse> {
-    return apiFetcher<NationGapsResponse>(`core/analytics/football-data/nations/${buildQuery({ limit })}`);
+  static async getNationGaps(
+    limit?: number,
+    pageSize?: number,
+    page?: number,
+    ordering?: NationOrdering,
+  ): Promise<NationGapsResponse> {
+    return apiFetcher<NationGapsResponse>(
+      `core/analytics/football-data/nations/${buildQuery({ limit, page_size: pageSize, page, ordering })}`,
+    );
   }
 
   /**
    * GET /core/analytics/football-data/teams/ — empty teams, the review queue,
    * and one page of the squad-depth table.
    *
-   * `limit` is the page size of that table AND the cap on the empty-team
-   * worklist — the endpoint takes one for both. `page` is clamped server-side,
-   * so an out-of-range page shows the last one instead of an empty table, and
-   * an unknown `ordering` is a 400 rather than a silently different sort.
+   * `limit` caps the empty-team worklist; `pageSize` sizes the depth table.
+   * Two parameters because they answer to different controls — sharing one
+   * meant the table's row-count dropdown also rewrote the worklist.
+   *
+   * `page` is clamped server-side, so an out-of-range page shows the last one
+   * instead of an empty table, and an unknown `ordering` is a 400 rather than a
+   * silently different sort.
    */
   static async getTeamGaps(
     limit?: number,
     search?: string,
     page?: number,
     ordering?: TeamOrdering,
+    pageSize?: number,
   ): Promise<TeamGapsResponse> {
     return apiFetcher<TeamGapsResponse>(
-      `core/analytics/football-data/teams/${buildQuery({ limit, search, page, ordering })}`,
+      `core/analytics/football-data/teams/${buildQuery({ limit, search, page, ordering, page_size: pageSize })}`,
     );
   }
 
