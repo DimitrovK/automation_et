@@ -1,32 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { parseNationFilter } from '@/lib/nation-param';
+import { nationFootballersHref, parseNationId } from '@/lib/nation-param';
 
-describe('parseNationFilter', () => {
-  it('reads a nation code out of the query string', () => {
-    expect(parseNationFilter('ITA')).toBe('ITA');
+describe('parseNationId', () => {
+  it('reads a nation id out of the query string', () => {
+    expect(parseNationId('5')).toBe(5);
+  });
+
+  it('refuses a short code, which the endpoint cannot use', () => {
+    // `/data/footballers/` filters `nation` through a django-filter
+    // ModelChoiceFilter, so the value has to be a primary key. A code gets
+    // "Select a valid choice. That choice is not one of the available choices."
+    // rendered at the top of the page, which reads as the page being broken.
+    //
+    // The name/nationality/short-code form of this filter exists, but on
+    // `FootballerSearchView` — a different endpoint from the one this page uses.
+    expect(parseNationId('ENG')).toBeNull();
+    expect(parseNationId('England')).toBeNull();
   });
 
   it('ignores a missing or blank parameter', () => {
-    // Blank is not a filter: sending `nation=` would look like a filter that is
-    // on while narrowing nothing.
-    expect(parseNationFilter(null)).toBeNull();
-    expect(parseNationFilter(undefined)).toBeNull();
-    expect(parseNationFilter('   ')).toBeNull();
+    expect(parseNationId(null)).toBeNull();
+    expect(parseNationId(undefined)).toBeNull();
+    expect(parseNationId('   ')).toBeNull();
   });
+});
 
-  it('trims what a copied link arrives with', () => {
-    expect(parseNationFilter(' ESP ')).toBe('ESP');
-  });
-
-  it('refuses a value too long to be a nation', () => {
-    // The endpoint matches name, nationality or short code with a LIKE, so an
-    // unbounded value is an unbounded scan for something that cannot match.
-    expect(parseNationFilter('x'.repeat(200))).toBeNull();
-  });
-
-  it('keeps a full nation name, since the endpoint accepts one', () => {
-    // `?nation=` matches name, nationality or short code — the links send the
-    // short code, but a hand-typed name is a legitimate thing to arrive with.
-    expect(parseNationFilter('Portugal')).toBe('Portugal');
+describe('nationFootballersHref', () => {
+  it('links by id, because that is what the filter accepts', () => {
+    expect(nationFootballersHref(5)).toBe('/footballer-management?nation=5');
   });
 });

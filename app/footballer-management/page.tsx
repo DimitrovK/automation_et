@@ -30,7 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth';
 import { FootballerAPI } from '@/lib/footballer-api';
-import { parseNationFilter } from '@/lib/nation-param';
+import { parseNationId } from '@/lib/nation-param';
 
 export default function FootballerManagementPage() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -54,10 +54,12 @@ export default function FootballerManagementPage() {
 
   // Filter and search states
   const [searchQuery, setSearchQuery] = useState('');
-  // Set from `?nation=<code>` by the nations analytics page, which links every
-  // row and every gap chip here. Not a control in the filter bar: it arrives
+  // Set from `?nation=<id>` by the nations analytics page, which links every
+  // row and every gap chip here. An id rather than a code: `nation` is filtered
+  // through a ModelChoiceFilter on the ForeignKey, so anything else comes back
+  // as "Select a valid choice". Not a control in the filter bar — it arrives
   // with the link and is cleared with the others.
-  const [nationFilter, setNationFilter] = useState('');
+  const [nationFilter, setNationFilter] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [retiredFilter, setRetiredFilter] = useState('all');
   const [isPlayerFilter, setIsPlayerFilter] = useState('all');
@@ -162,7 +164,7 @@ export default function FootballerManagementPage() {
     if (consumedNationParam.current || !isAuthenticated) {
       return;
     }
-    const fromUrl = parseNationFilter(searchParams?.get('nation'));
+    const fromUrl = parseNationId(searchParams?.get('nation'));
     if (fromUrl === null) {
       return;
     }
@@ -178,7 +180,7 @@ export default function FootballerManagementPage() {
     // The deep-link effect fetches in the same tick it sets the filter, so the
     // state it just set is not readable yet. Passing the value avoids a fetch
     // that silently ignores the nation it was opened for.
-    nationOverride?: string,
+    nationOverride?: number,
   ) => {
     setLoading(true);
     setError(null);
@@ -197,9 +199,8 @@ export default function FootballerManagementPage() {
       }
 
       // Add filters
-      const nation = (nationOverride ?? nationFilter).trim();
-      if (nation) {
-        // Matched server-side against name, nationality or short code.
+      const nation = nationOverride ?? nationFilter;
+      if (nation !== null) {
         params.nation = nation;
       }
       if (statusFilter && statusFilter !== 'all') {
@@ -654,7 +655,7 @@ export default function FootballerManagementPage() {
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    setNationFilter('');
+    setNationFilter(null);
     setStatusFilter('all');
     setRetiredFilter('all');
     setIsPlayerFilter('all');
@@ -675,9 +676,12 @@ export default function FootballerManagementPage() {
       filters.push(`Search: "${searchQuery}"`);
     }
     // Listed like any other filter, because it is one — arriving by link should
-    // not leave a narrowing nobody can see and nobody can clear.
-    if (nationFilter.trim()) {
-      filters.push(`Nation: ${nationFilter.trim()}`);
+    // not leave a narrowing nobody can see and nobody can clear. Named rather
+    // than numbered: the nations are already loaded for the create form, and
+    // "Nation: 5" tells the reader nothing.
+    if (nationFilter !== null) {
+      const named = nations.find(n => n.id === nationFilter);
+      filters.push(`Nation: ${named ? named.name : `#${nationFilter}`}`);
     }
     if (statusFilter !== 'all') {
       const statusLabels = {

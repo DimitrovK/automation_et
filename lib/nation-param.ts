@@ -1,34 +1,28 @@
-/** Longer than any nation name or code, short enough to bound the LIKE. */
-const MAX_NATION_FILTER = 60;
+import { parsePositiveIntParam } from '@/lib/url-params';
 
 /**
- * The nation carried in `/footballer-management?nation=<code>`.
+ * The nation carried in `/footballer-management?nation=<id>`.
  *
- * The nations analytics page links every row here, so this arrives from a URL
- * and can be anything. `/data/footballers/` matches it against name,
- * nationality or short code with a LIKE, so the risk is not a bad query but an
- * unbounded one — and a blank value would read as a filter that is switched on
- * while narrowing nothing.
+ * An id, not a short code. `/data/footballers/` filters `nation` through a
+ * django-filter `ModelChoiceFilter` built from the ForeignKey, so the value has
+ * to be a primary key — `?nation=ENG` comes back as "Select a valid choice.
+ * That choice is not one of the available choices." and the page renders it as
+ * a top-level error, which reads as the page being broken.
  *
- * The links send the short code. A hand-typed full name is equally valid,
- * because the endpoint accepts both.
+ * The name/nationality/short-code form of this filter does exist, but on
+ * `FootballerSearchView`, which is a different endpoint from the one this page
+ * lists with. Every nations analytics row carries the id anyway.
  */
-export function parseNationFilter(raw: string | null | undefined): string | null {
-  const value = (raw ?? '').trim();
-  if (!value || value.length > MAX_NATION_FILTER) {
-    return null;
-  }
-  return value;
+export function parseNationId(raw: string | null | undefined): number | null {
+  return parsePositiveIntParam(raw);
 }
 
 /**
  * Where a nation's footballers can be seen and edited.
  *
- * The other end of `parseNationFilter`, kept in the same module so the two
- * halves of the link cannot drift apart. The short code rather than the id:
- * `/data/footballers/` filters by name, nationality or short code, and the id
- * is not one of them.
+ * The other end of `parseNationId`, kept in the same module so the two halves
+ * of the link cannot drift apart.
  */
-export function nationFootballersHref(short: string): string {
-  return `/footballer-management?nation=${encodeURIComponent(short)}`;
+export function nationFootballersHref(id: number): string {
+  return `/footballer-management?nation=${id}`;
 }

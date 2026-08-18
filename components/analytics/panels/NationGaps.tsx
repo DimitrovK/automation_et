@@ -70,7 +70,7 @@ export function NationGaps({ data, onExpand, expanded }: {
                 <li key={row.short}>
                   {/* Lands on an empty filtered list, which is the honest view
                       of the gap — and the Add form is on the same screen. */}
-                  <Link href={nationFootballersHref(row.short)} className={CHIP}>
+                  <Link href={nationFootballersHref(row.id)} className={CHIP}>
                     <NationChip row={row} />
                   </Link>
                 </li>
