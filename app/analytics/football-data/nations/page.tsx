@@ -30,7 +30,13 @@ export default function NationsAnalyticsPage() {
   const [worklistLimit, setWorklistLimit] = useState(WORKLIST);
 
   const state = useReport(
-    () => ReportsAPI.getNationGaps(worklistLimit, table.pageSize, table.page, table.ordering),
+    () => ReportsAPI.getNationGaps(
+      worklistLimit,
+      table.pageSize,
+      table.page,
+      table.ordering,
+      table.search || undefined,
+    ),
     {},
     enabled,
     'The nation gaps endpoint',
@@ -41,27 +47,32 @@ export default function NationsAnalyticsPage() {
   return (
     <AnalyticsShell
       title="Nations"
-      description="Which nations nothing points at, and where the catalogue is deepest."
+      description="Where the catalogue is deepest, and which nations nothing points at."
     >
+      {/* The table first. It is what the page is for — the two worklists below
+          are the follow-up, and at the top they pushed the ranking under the
+          fold on every laptop. */}
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => (
+          <NationDepth
+            data={data}
+            search={table.search}
+            onSearchChange={table.setSearch}
+            ordering={table.ordering}
+            onSort={table.sortBy}
+            onPageChange={table.setPage}
+            onPageSizeChange={table.setPageSize}
+            busy={state.isLoading}
+          />
+        )}
+      </ReportPanel>
+
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => (
           <NationGaps
             data={data}
             expanded={worklistLimit >= EXPANDED}
             onExpand={() => setWorklistLimit(EXPANDED)}
-          />
-        )}
-      </ReportPanel>
-
-      <ReportPanel state={state} skeletonClassName="h-96 w-full">
-        {data => (
-          <NationDepth
-            data={data}
-            ordering={table.ordering}
-            onSort={table.sortBy}
-            onPageChange={table.setPage}
-            onPageSizeChange={table.setPageSize}
-            busy={state.isLoading}
           />
         )}
       </ReportPanel>

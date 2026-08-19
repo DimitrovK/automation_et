@@ -1,5 +1,5 @@
 import type { NationGapsResponse } from '@/types/reports';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { NationDepth } from '@/components/analytics/panels/NationDepth';
 import { NationGaps } from '@/components/analytics/panels/NationGaps';
@@ -32,6 +32,8 @@ function data(over: Partial<NationGapsResponse> = {}): NationGapsResponse {
 }
 
 const depthProps = {
+  search: '',
+  onSearchChange: vi.fn(),
   ordering: 'footballers' as const,
   onSort: vi.fn(),
   onPageChange: vi.fn(),
@@ -83,6 +85,58 @@ describe('nationDepth', () => {
     expect(screen.getByText('Showing 2 of 178 results')).toBeInTheDocument();
     expect(screen.getByLabelText('Rows per page')).toBeInTheDocument();
   });
+
+  it('names what the filter box filters', () => {
+    // The box sits on the card rather than in a page filter bar, so its
+    // accessible name is the only thing saying WHICH of the three lists it
+    // narrows. A placeholder cannot do that job — it disappears on the first
+    // keystroke.
+    render(<NationDepth data={data()} {...depthProps} />);
+
+    expect(screen.getByLabelText('Filter nations in this table')).toBeInTheDocument();
+  });
+
+  it('debounces the filter instead of firing a request per keystroke', async () => {
+    vi.useFakeTimers();
+    try {
+      const onSearchChange = vi.fn();
+      render(<NationDepth data={data()} {...depthProps} onSearchChange={onSearchChange} />);
+
+      const box = screen.getByLabelText('Filter nations in this table');
+
+      fireEvent.change(box, { target: { value: 'i' } });
+      fireEvent.change(box, { target: { value: 'it' } });
+      fireEvent.change(box, { target: { value: 'ita' } });
+
+      // Nothing yet: "ita" as three requests can also answer out of order.
+      expect(onSearchChange).not.toHaveBeenCalled();
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(onSearchChange).toHaveBeenCalledTimes(1);
+      expect(onSearchChange).toHaveBeenCalledWith('ita');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('tells an empty search apart from an empty catalogue', () => {
+    // "No footballers are assigned to a nation yet" under a filter that matched
+    // nothing reads as the data having vanished.
+    const empty = data({
+      nations_by_footballers: { ...data().nations_by_footballers, items: [], total: 0 },
+    });
+
+    const { rerender } = render(<NationDepth data={empty} {...depthProps} search="zz" />);
+
+    expect(screen.getByText('No nation matches "zz".')).toBeInTheDocument();
+
+    rerender(<NationDepth data={empty} {...depthProps} search="" />);
+
+    expect(screen.getByText('No footballers are assigned to a nation yet.')).toBeInTheDocument();
+  });
 });
 
 describe('nationGaps', () => {
@@ -125,5 +179,41 @@ describe('nationGaps', () => {
 
     expect(screen.getByText('Showing 1 of 55')).toBeInTheDocument();
     expect(screen.getByText('Showing 1 of 61')).toBeInTheDocument();
+  });
+
+  it('leads with the count, because the count is the signal', () => {
+    // The list is a sample — rows 40 to 55 are identical in kind — so the
+    // number is the thing to read first, not 12px grey text under the chips.
+    render(<NationGaps data={data()} />);
+
+    expect(screen.getByText('55')).toBeInTheDocument();
+    expect(screen.getByText('61')).toBeInTheDocument();
+  });
+
+  it('reads zero as good news rather than as a blank panel', () => {
+    render(
+      <NationGaps
+        data={data({
+          nations_without_footballers: { items: [], total: 0, limit: 10 },
+          nations_without_teams: { items: [], total: 0, limit: 10 },
+        })}
+      />,
+    );
+
+    expect(screen.getByText('Every active nation has at least one footballer.')).toBeInTheDocument();
+    expect(screen.getByText('Every active nation has at least one team.')).toBeInTheDocument();
+    // No "Showing 0 of 0" and no expand button to press.
+    expect(screen.queryByRole('button', { name: /Show/ })).not.toBeInTheDocument();
+  });
+
+  it('says the admin link leaves the app', () => {
+    // The one link on the page that opens a new tab. Unannounced, it reads as
+    // the page having jumped somewhere on its own.
+    render(<NationGaps data={data()} />);
+
+    expect(screen.getByRole('link', { name: /opens the Django admin in a new tab/ })).toHaveAttribute(
+      'target',
+      '_blank',
+    );
   });
 });
