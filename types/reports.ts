@@ -1199,6 +1199,11 @@ export type NationGapsResponse = {
   nations_without_footballers: CappedRows<NationRow>;
   nations_without_teams: CappedRows<NationRow>;
   nations_by_footballers: PagedRows<NationRow & { footballers: number }>;
+  /**
+   * Echoed. Narrows the ranked table only — the two worklists keep their full
+   * counts, because they are jobs to do rather than rows to browse.
+   */
+  search?: string | null;
   /** Echoed so the header can mark the column the server actually sorted by. */
   ordering?: NationOrdering | null;
 };

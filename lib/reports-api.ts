@@ -166,15 +166,20 @@ export class ReportsAPI {
    * No range parameter: these describe the catalogue as it stands, not what
    * changed in a window, and offering a date filter would imply the number
    * moves with it.
+   *
+   * `search` narrows the ranked table only — matching name or short code — and
+   * leaves the two worklists at their full counts. They are jobs to do, not
+   * rows to browse.
    */
   static async getNationGaps(
     limit?: number,
     pageSize?: number,
     page?: number,
     ordering?: NationOrdering,
+    search?: string,
   ): Promise<NationGapsResponse> {
     return apiFetcher<NationGapsResponse>(
-      `core/analytics/football-data/nations/${buildQuery({ limit, page_size: pageSize, page, ordering })}`,
+      `core/analytics/football-data/nations/${buildQuery({ limit, page_size: pageSize, page, ordering, search })}`,
     );
   }
 
