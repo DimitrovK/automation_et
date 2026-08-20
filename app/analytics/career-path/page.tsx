@@ -2,9 +2,10 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
-import { ModeRates } from '@/components/analytics/charts/ModeRates';
 import { DifficultyTiers } from '@/components/analytics/panels/DifficultyTiers';
 import { FootballerContent } from '@/components/analytics/panels/FootballerContent';
+import { ModeRates } from '@/components/analytics/panels/ModeRates';
+import { ModeVolume } from '@/components/analytics/panels/ModeVolume';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
@@ -74,6 +75,26 @@ export default function CareerPathAnalyticsPage() {
         />
       </FilterBar>
 
+      {/* The two per-mode panels lead, side by side, because they are the same
+          seven rows asked two opposite questions — how much of a mode there is,
+          and how it plays. Read apart they mislead: Head to Head has the best
+          solve rate on this data and about 2% of the volume, so the rate alone
+          points an editor at the mode almost nobody is in.
+
+          Deliberately NOT under a SectionHeader. `OnThisPage` uses section
+          headings when a page has two or more and falls back to card titles
+          otherwise, so adding one here would collapse four card-level jump
+          links into two section-level ones. */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ReportPanel state={state} skeletonClassName="h-[26rem] w-full">
+          {data => <ModeVolume data={data} />}
+        </ReportPanel>
+
+        <ReportPanel state={state} skeletonClassName="h-[26rem] w-full">
+          {data => <ModeRates data={data} />}
+        </ReportPanel>
+      </div>
+
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => <FootballerContent data={data} />}
       </ReportPanel>
@@ -89,13 +110,6 @@ export default function CareerPathAnalyticsPage() {
 
       <ReportPanel state={state} skeletonClassName="h-64 w-full">
         {data => <DifficultyTiers data={data} />}
-      </ReportPanel>
-
-      {/* After the tiers, because it answers the objection they raise: if the
-          grading only half separates anything, what else moves the solve rate?
-          The mode does, by about as much. */}
-      <ReportPanel state={state} skeletonClassName="h-80 w-full">
-        {data => <ModeRates data={data} />}
       </ReportPanel>
     </AnalyticsShell>
   );
