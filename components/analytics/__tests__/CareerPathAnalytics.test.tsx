@@ -1,5 +1,5 @@
 import type { CareerPathAnalyticsResponse, CareerPathFootballerRow } from '@/types/reports';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { DifficultyTiers } from '@/components/analytics/panels/DifficultyTiers';
 import { FootballerContent } from '@/components/analytics/panels/FootballerContent';
@@ -13,6 +13,12 @@ function footballer(over: Partial<CareerPathFootballerRow> & Pick<CareerPathFoot
     hints: 4,
     reveals: 1,
     skips: 2,
+    help: {
+      hint: { used: 4, events: 4, eligible: 80 },
+      reveal: { used: 1, events: 1, eligible: null },
+      skip: { used: 2, events: 2, eligible: 0 },
+      similar: { used: 30, events: null, eligible: 90, derived: true },
+    },
     help_rate_pct: 7,
     solve_rate_pct: 44,
     below_threshold: false,
@@ -89,7 +95,20 @@ describe('footballerContent', () => {
       <FootballerContent
         data={response({
           content: {
-            rows: [footballer({ name: 'Rare', appearances: 3, hints: 2, help_rate_pct: null, solve_rate_pct: null, below_threshold: true })],
+            rows: [footballer({
+              name: 'Rare',
+              appearances: 3,
+              hints: 2,
+              help: {
+                hint: { used: 2, events: 2, eligible: 3 },
+                reveal: { used: 0, events: 0, eligible: null },
+                skip: { used: 0, events: 0, eligible: 3 },
+                similar: { used: 0, events: null, eligible: 3, derived: true },
+              },
+              help_rate_pct: null,
+              solve_rate_pct: null,
+              below_threshold: true,
+            })],
             min_appearances: 20,
             footballers_measured: 0,
             footballers_seen: 1,
@@ -102,10 +121,74 @@ describe('footballerContent', () => {
 
     // The counts survive the withheld rate: "shown 3 times, hinted twice" is a
     // fact, and it is how you tell a footballer nobody sees from a fine one.
+    // They moved into the expansion when the raw-count columns did, so the
+    // guard follows them rather than being dropped.
     const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
 
     expect(cells[1]).toHaveTextContent('3');
-    expect(cells[4]).toHaveTextContent('2');
+
+    fireEvent.click(screen.getByRole('button', { name: /Show how Rare was helped/ }));
+
+    expect(screen.getByText('2 of 3 hinted')).toBeInTheDocument();
+  });
+
+  it('opens onto how the footballer was helped, and not before', () => {
+    // Four tiles across fifty rows is the heaviest DOM the page could build,
+    // and almost none of it would ever be looked at.
+    render(<FootballerContent data={response()} />);
+
+    expect(screen.queryByText(/of 80 hinted/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Show how Rui Pedro was helped/ }));
+
+    expect(screen.getByText('4 of 80 hinted')).toBeInTheDocument();
+  });
+
+  it('tells a helper nobody needed apart from one never offered', () => {
+    // The reason the breakdown exists. Both read "0" in the old flat columns.
+    render(<FootballerContent data={response()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Show how Rui Pedro was helped/ }));
+
+    expect(screen.getByText('never offered on these appearances')).toBeInTheDocument();
+  });
+
+  it('admits when a helper\'s availability is not knowable', () => {
+    // `reveals_allowed = 0` means UNLIMITED on the backend, so the obvious
+    // predicate reports the reverse of the truth. Better to say so than to
+    // print a denominator that is confidently backwards.
+    render(<FootballerContent data={response()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Show how Rui Pedro was helped/ }));
+
+    expect(screen.getByText(/how often it was on offer is not recorded/)).toBeInTheDocument();
+  });
+
+  it('marks the similar-footballers figure as inferred', () => {
+    // Nothing logs that the grid was shown. An inference must never be read as
+    // a measurement.
+    render(<FootballerContent data={response()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Show how Rui Pedro was helped/ }));
+
+    expect(screen.getByText('derived')).toBeInTheDocument();
+    expect(screen.getByText('30 of 90 reached')).toBeInTheDocument();
+  });
+
+  it('leaves the row shut when the backend has no breakdown yet', () => {
+    // The repositories deploy independently, so a row without `help` must not
+    // offer a control that opens onto nothing.
+    render(
+      <FootballerContent
+        data={response({
+          content: {
+            rows: [footballer({ name: 'Old Payload', help: undefined })],
+            min_appearances: 20,
+            footballers_measured: 1,
+            footballers_seen: 1,
+          },
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /was helped/ })).not.toBeInTheDocument();
   });
 
   it('says how many footballers were rated against how many were seen', () => {

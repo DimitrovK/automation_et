@@ -897,6 +897,34 @@ export type WeeklyPulse = {
  * footballer shown three times and hinted on twice is a fact, and "67% needed
  * help" from three appearances is noise that would top the table.
  */
+/**
+ * One helper, and how far it got.
+ *
+ * `used` counts APPEARANCES that took it; `events` counts how many times it was
+ * taken, which is larger when someone hints twice on one footballer.
+ */
+export type HelperUse = {
+  used: number;
+  /** Null where nothing records an event — the similar-footballers grid. */
+  events: number | null;
+  /**
+   * Appearances that could have used this helper at all, or `null` where the
+   * config cannot say.
+   *
+   * The whole point of the breakdown. A zero `used` means "nobody needed it"
+   * against a real denominator and "it was never offered" against zero, and the
+   * flat table could not tell those apart.
+   *
+   * Null for reveals, and that is an answer rather than a gap in the payload:
+   * `reveals_allowed = 0` means UNLIMITED on the backend, so the obvious
+   * predicate reports the exact opposite of the truth, and Sudden Death earns
+   * its helpers mid-game rather than allocating them.
+   */
+  eligible: number | null;
+  /** Inferred from configuration rather than logged. Shown as such. */
+  derived?: boolean;
+};
+
 export type CareerPathFootballerRow = {
   footballer_id: number;
   name: string;
@@ -906,7 +934,18 @@ export type CareerPathFootballerRow = {
   hints: number;
   reveals: number;
   skips: number;
-  /** Share of appearances where the player took a hint, reveal or skip. */
+  /**
+   * Per-helper detail. Optional because the repositories deploy independently —
+   * a backend that predates it leaves the row's expansion unavailable rather
+   * than rendering an empty one.
+   */
+  help?: {
+    hint: HelperUse;
+    reveal: HelperUse;
+    skip: HelperUse;
+    similar: HelperUse;
+  };
+  /** Share of APPEARANCES that took a hint, reveal or skip — not help events. */
   help_rate_pct: number | null;
   solve_rate_pct: number | null;
   below_threshold: boolean;
