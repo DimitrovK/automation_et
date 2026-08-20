@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { DifficultyTiers } from '@/components/analytics/panels/DifficultyTiers';
 import { FootballerContent } from '@/components/analytics/panels/FootballerContent';
+import { ModeVolume } from '@/components/analytics/panels/ModeVolume';
 
 function footballer(over: Partial<CareerPathFootballerRow> & Pick<CareerPathFootballerRow, 'name'>): CareerPathFootballerRow {
   return {
@@ -152,9 +153,21 @@ describe('difficultyTiers', () => {
   });
 
   it('keeps the footballers-per-path figure, which is why the old numbers were wrong', () => {
+    // Moved with the figure. It used to close the difficulty card under "What
+    // was built"; that block is now `ModeVolume`, which draws the same counts
+    // with lengths and shares. The GUARD stays either way — this number is the
+    // one that explains why the dashboard this replaced was inflated, so it
+    // must not quietly disappear in a re-layout.
+    render(<ModeVolume data={response()} />);
+
+    expect(screen.getByText(/3.3 footballers per game/)).toBeInTheDocument();
+  });
+
+  it('no longer prints the per-mode counts twice', () => {
+    // Two presentations of one set of numbers is how they drift.
     render(<DifficultyTiers data={response()} />);
 
-    expect(screen.getByText(/3.3 footballers per path/)).toBeInTheDocument();
+    expect(screen.queryByText('What was built')).not.toBeInTheDocument();
   });
 });
 

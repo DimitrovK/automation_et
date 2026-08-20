@@ -10,14 +10,7 @@ import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor } from '@/hooks/use-game-meta';
 import { chartTheme } from '@/lib/chart-theme';
-
-/** Quiz has no mode column, so its rooms arrive as null rather than being dropped. */
-function modeLabel(mode: string | null): string {
-  if (!mode) {
-    return 'No mode';
-  }
-  return mode.split('_').map(part => part.charAt(0) + part.slice(1).toLowerCase()).join(' ');
-}
+import { modeLabel } from '@/lib/mode-label';
 
 /**
  * Modes are shared across games, so the totals answer "is Elimination working

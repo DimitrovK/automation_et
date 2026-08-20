@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
  * A HAIRLINE TRACK, not a filled rail — present enough to show the full extent,
  * quiet enough that the data is the dark thing on the page.
  */
-export function DataBar({ value, max, colour, track, label, className }: {
+export function DataBar({ value, max, colour, track, label, minPct = 0, className }: {
   value: number;
   /** What a full bar means. Bars sharing a max are comparable; that is the point. */
   max: number;
@@ -41,11 +41,25 @@ export function DataBar({ value, max, colour, track, label, className }: {
   track?: string;
   /** Read to anyone who cannot see the bar. The number alone is not a sentence. */
   label: string;
+  /**
+   * Floor for a NON-ZERO value, so the smallest row is still a bar.
+   *
+   * Off by default, because a floor is a small lie about length and most bars
+   * do not need one. It earns its place where the range is wide enough that the
+   * tail rounds to nothing: career-path modes run 7,854 against 29, so the last
+   * row draws at 0.4% of the track — no pixels at all, which reads as zero
+   * rather than as few. Only ever applied when the value is genuinely above
+   * zero, and only where the real number is printed beside the bar.
+   */
+  minPct?: number;
   className?: string;
 }) {
   // Clamped rather than trusted: one bad row should not render a bar through
   // the side of the card, and a negative width silently disappears.
-  const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+  const raw = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+  // Zero keeps an empty track. Lifting it to the floor too would draw a bar for
+  // a mode nobody played, which is the one thing the floor must not do.
+  const pct = value > 0 ? Math.max(raw, minPct) : raw;
 
   return (
     <div

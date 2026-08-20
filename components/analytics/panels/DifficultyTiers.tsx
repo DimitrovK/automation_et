@@ -12,6 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
  * The only way to ask it: put each declared tier next to what players actually
  * did on it. If EXTREME footballers solve at the same rate as EASY ones, the
  * grading is decoration.
+ *
+ * The per-mode counts that used to close this card under "What was built" are
+ * in `ModeVolume` at the top of the page, where they get lengths and shares
+ * rather than a run of inline text. Do not bring them back: two presentations
+ * of one set of numbers is how they drift.
  */
 
 /**
@@ -29,7 +34,6 @@ function tierRank(difficulty: string | null): number {
 
 export function DifficultyTiers({ data }: { data: CareerPathAnalyticsResponse }) {
   const tiers = [...data.shape.difficulty].sort((a, b) => tierRank(a.difficulty) - tierRank(b.difficulty));
-  const modes = data.shape.modes;
 
   return (
     <Card>
@@ -122,28 +126,6 @@ export function DifficultyTiers({ data }: { data: CareerPathAnalyticsResponse })
           </div>
         )}
 
-        {modes.length > 0 && (
-          <div className="space-y-2 border-t pt-4">
-            <p className="text-xs font-medium text-muted-foreground">What was built</p>
-            <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-              {modes.map(mode => (
-                <div key={mode.mode} className="flex items-baseline gap-1.5">
-                  <dt className="text-muted-foreground">{mode.mode.replaceAll('_', ' ').toLowerCase()}</dt>
-                  <dd className="font-medium tabular-nums">{mode.paths.toLocaleString()}</dd>
-                </div>
-              ))}
-            </dl>
-            {data.shape.footballers_per_path !== null && (
-              // Kept visible on purpose: this number is why the dashboard this
-              // replaces was wrong. It counted one hint once per footballer in
-              // the path, so everything it reported was inflated by roughly
-              // this factor.
-              <p className="text-xs text-muted-foreground">
-                {`${data.shape.footballers_per_path} footballers per path on average, across ${data.shape.total_paths.toLocaleString()} paths.`}
-              </p>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
