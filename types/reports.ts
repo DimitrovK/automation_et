@@ -897,20 +897,139 @@ export type WeeklyPulse = {
  * footballer shown three times and hinted on twice is a fact, and "67% needed
  * help" from three appearances is noise that would top the table.
  */
+/**
+ * One helper, and how far it got.
+ *
+ * `used` counts APPEARANCES that took it; `events` counts how many times it was
+ * taken, which is larger when someone hints twice on one footballer.
+ */
+export type HelperUse = {
+  used: number;
+  /** Null where nothing records an event — the similar-footballers grid. */
+  events: number | null;
+  /**
+   * Appearances that could have used this helper at all, or `null` where the
+   * config cannot say.
+   *
+   * The whole point of the breakdown. A zero `used` means "nobody needed it"
+   * against a real denominator and "it was never offered" against zero, and the
+   * flat table could not tell those apart.
+   *
+   * Null for reveals, and that is an answer rather than a gap in the payload:
+   * `reveals_allowed = 0` means UNLIMITED on the backend, so the obvious
+   * predicate reports the exact opposite of the truth, and Sudden Death earns
+   * its helpers mid-game rather than allocating them.
+   */
+  eligible: number | null;
+  /** Inferred from configuration rather than logged. Shown as such. */
+  derived?: boolean;
+};
+
+/**
+ * What happened across every play, as a partition rather than four unrelated
+ * rates. Counted server-side, not derived from percentages — three rounded
+ * figures do not reliably reconstruct a whole.
+ */
+export type PlayOutcome = {
+  solved_unaided: number;
+  solved_helped: number;
+  unsolved: number;
+  /** Sessions that met this footballer and never ended. Not "gave up here". */
+  unfinished: number;
+};
+
 export type CareerPathFootballerRow = {
   footballer_id: number;
   name: string;
   /** The difficulty an editor assigned. Read against the measured solve rate. */
   declared_difficulty: string | null;
-  appearances: number;
+  /**
+   * Paths this footballer sits in. Bigger than `plays` whenever a path was
+   * built and not played through — a ladder nobody finished leaves its later
+   * footballers here and out of `plays`.
+   */
+  in_paths?: number;
+  /**
+   * Sessions that actually met this footballer: one player, one footballer,
+   * once. The denominator of every rate on the row.
+   *
+   * Optional so a backend predating the change reads as absent rather than
+   * zero — the two repositories deploy independently.
+   */
+  plays?: number;
+  outcome?: PlayOutcome;
+  /** Share of plays whose session was never finished. */
+  unfinished_pct?: number | null;
+  /**
+   * Averaged over SOLVED plays only. An unsolved play is censored: the player
+   * stopped, so how many guesses it would have taken is not in the data.
+   */
+  avg_guesses_to_solve?: number | null;
   hints: number;
   reveals: number;
   skips: number;
-  /** Share of appearances where the player took a hint, reveal or skip. */
+  /**
+   * Per-helper detail. Optional because the repositories deploy independently —
+   * a backend that predates it leaves the row's expansion unavailable rather
+   * than rendering an empty one.
+   */
+  help?: {
+    hint: HelperUse;
+    reveal: HelperUse;
+    skip: HelperUse;
+    similar: HelperUse;
+  };
+  /** Share of PLAYS that took a hint, reveal or skip — not help events. */
   help_rate_pct: number | null;
+  /**
+   * The Wilson lower bound on that rate, which is what the default order ranks
+   * by. Displayed nowhere: the raw rate describes the footballer, this only
+   * decides who goes first. Sent so the ordering is reproducible from the
+   * payload rather than being a server-side secret.
+   */
+  help_confidence_pct?: number | null;
   solve_rate_pct: number | null;
   below_threshold: boolean;
 };
+
+/** How the content table may be ordered. Rejected server-side if unknown. */
+export type CareerPathOrdering
+  = | 'help' | 'help_asc' | 'plays' | 'unfinished' | 'guesses' | 'solve_asc' | 'name';
+
+/** One footballer, opened up. The table says which; this says what about it. */
+export type CareerPathFootballerDetail = {
+  footballer: {
+    id: number;
+    name: string;
+    declared_difficulty: string | null;
+    status: string | null;
+    retired: boolean;
+    available_for_career_path: boolean;
+  };
+  totals: {
+    in_paths: number;
+    plays: number;
+    help_rate_pct: number | null;
+    solve_rate_pct: number | null;
+    unfinished_pct: number | null;
+    avg_guesses_to_solve: number | null;
+    outcome: PlayOutcome;
+    help: { hint: HelperUse; reveal: HelperUse; skip: HelperUse; similar: HelperUse };
+  };
+  /**
+   * Split by mode because modes are not comparable: Ladder gives five tries
+   * where Single gives one, so one blended rate describes neither.
+   */
+  by_mode: {
+    mode: string;
+    plays: number;
+    solve_rate_pct: number | null;
+    help_rate_pct: number | null;
+    unfinished_pct: number | null;
+  }[];
+  /** Guesses it took to SOLVE. Unsolved plays are censored, not zero. */
+  guess_distribution: { guesses: number; plays: number }[];
+} & ResolvedRange;
 
 /** One declared difficulty tier, with what players actually did on it. */
 export type CareerPathTier = {
@@ -926,6 +1045,13 @@ export type CareerPathAnalyticsResponse = {
     min_appearances: number;
     footballers_measured: number;
     footballers_seen: number;
+    /** Paging. Optional until the backend carrying it is deployed. */
+    total?: number;
+    limit?: number;
+    page?: number;
+    pages?: number;
+    ordering?: CareerPathOrdering | null;
+    search?: string | null;
   };
   shape: {
     modes: {

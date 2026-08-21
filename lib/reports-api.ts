@@ -3,6 +3,8 @@ import type {
   AnomaliesResponse,
   AttemptsResponse,
   CareerPathAnalyticsResponse,
+  CareerPathFootballerDetail,
+  CareerPathOrdering,
   ContentResponse,
   CoverageResponse,
   DifficultyMatrixResponse,
@@ -141,8 +143,35 @@ export class ReportsAPI {
    * those answer "how are players behaving", this answers "is the material any
    * good". Same admin gate and the same range parsing.
    */
-  static async getCareerPathAnalytics(params?: ReportParams): Promise<CareerPathAnalyticsResponse> {
-    return apiFetcher<CareerPathAnalyticsResponse>(`core/analytics/career-path/${buildQuery(params)}`);
+  static async getCareerPathAnalytics(
+    params?: ReportParams,
+    table?: { search?: string; page?: number; pageSize?: number; ordering?: CareerPathOrdering },
+  ): Promise<CareerPathAnalyticsResponse> {
+    return apiFetcher<CareerPathAnalyticsResponse>(
+      `core/analytics/career-path/${buildQuery({
+        ...params,
+        search: table?.search,
+        page: table?.page,
+        page_size: table?.pageSize,
+        ordering: table?.ordering,
+      })}`,
+    );
+  }
+
+  /**
+   * GET /core/analytics/career-path/footballer/<id>/ — one footballer opened up.
+   *
+   * A different question from the table's, so a different shape: split by mode,
+   * because Ladder gives five tries where Single gives one and one blended rate
+   * describes neither.
+   */
+  static async getCareerPathFootballer(
+    footballerId: number,
+    params?: ReportParams,
+  ): Promise<CareerPathFootballerDetail> {
+    return apiFetcher<CareerPathFootballerDetail>(
+      `core/analytics/career-path/footballer/${footballerId}/${buildQuery(params)}`,
+    );
   }
 
   /** GET /core/analytics/questions/ — question quality and answer distribution. */

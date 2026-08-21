@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type ApiButtonProps = {
-  onClick: () => void;
+  /** Optional for a submit button, whose form owns the handler. */
+  onClick?: () => void;
+  /** Defaults to `button`, so a stray one inside a form cannot submit it. */
+  type?: 'button' | 'submit';
   disabled?: boolean;
   loading?: boolean;
   loadingText?: string;
@@ -20,6 +23,7 @@ type ApiButtonProps = {
 
 export function ApiButton({
   onClick,
+  type = 'button',
   disabled = false,
   loading = false,
   loadingText = 'Loading...',
@@ -36,6 +40,7 @@ export function ApiButton({
 
   return (
     <Button
+      type={type}
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(baseClasses, className)}
