@@ -615,20 +615,13 @@ export default function FootballerManagementPage() {
     }
   };
 
-  const handleUpdateFootballer = async () => {
+  // Takes the values from the form rather than reading page state, because the
+  // form owns them now. Field-level rules run before this is reached, so the
+  // "last name is required" alert that used to live here — above the form,
+  // naming no field and focusing nothing — is gone with them.
+  const handleUpdateFootballer = async (values: CreateFootballerRequest) => {
     if (!footballerToUpdate) {
       setError('Please load a footballer to update first');
-      return;
-    }
-
-    // Basic validation
-    if (!updateForm.last_name.trim()) {
-      setError('Last name is required');
-      return;
-    }
-
-    if (!updateForm.date_of_birth) {
-      setError('Date of birth is required');
       return;
     }
 
@@ -646,7 +639,7 @@ export default function FootballerManagementPage() {
       // Update the core footballer record. Stints/positions/nations/
       // pictures are now managed by their dedicated sub-editors below
       // the form, so the legacy ``teamChanges`` payload is gone.
-      await FootballerAPI.updateFootballer(footballerToUpdate.id, updateForm);
+      await FootballerAPI.updateFootballer(footballerToUpdate.id, values);
 
       // After the update is complete, fetch the complete footballer data.
       const completeUpdatedFootballer = await FootballerAPI.getFootballer(footballerToUpdate.id);
@@ -941,7 +934,6 @@ export default function FootballerManagementPage() {
                       footballerToUpdate={footballerToUpdate}
                       fetchLoading={fetchForUpdateLoading}
                       footballerId={updateFootballerId}
-                      onFormChange={setUpdateForm}
                       onUpdateFootballer={handleUpdateFootballer}
                       onFootballerIdChange={setUpdateFootballerId}
                       onFetchFootballerForUpdate={handleFetchFootballerForUpdate}
