@@ -1,10 +1,12 @@
 'use client';
 
 import type { CreateFootballerRequest, Footballer, FootballerNation, FootballersResponse } from '@/types/player';
+import type { CareerPathFootballerDetail } from '@/types/reports';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import { BulkUpdateToolbar } from '@/components/footballer-management/BulkUpdateToolbar';
+import { CareerPathRecord } from '@/components/footballer-management/CareerPathRecord';
 import { CreateFootballer } from '@/components/footballer-management/create-footballer';
 import { FootballerCard } from '@/components/footballer-management/footballer-card';
 import { GetAllFootballers } from '@/components/footballer-management/get-all-footballers';
@@ -31,6 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/lib/auth';
 import { FootballerAPI } from '@/lib/footballer-api';
 import { parseNationId } from '@/lib/nation-param';
+import { ReportsAPI } from '@/lib/reports-api';
+import { parsePositiveIntParam } from '@/lib/url-params';
 
 export default function FootballerManagementPage() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -41,6 +45,9 @@ export default function FootballerManagementPage() {
   const consumedEditParam = useRef(false);
   // Same idea for `?nation=<code>`, which arrives from the nations page.
   const consumedNationParam = useRef(false);
+  // And for `?footballer=<id>&tab=career-path`, which arrives from the Career
+  // Path analytics table when an editor clicks a name.
+  const consumedFootballerParam = useRef(false);
   const [footballers, setFootballers] = useState<Footballer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +79,12 @@ export default function FootballerManagementPage() {
 
   // Tab state — Read is the default landing tab now that Overview is gone.
   const [activeTab, setActiveTab] = useState('read');
+
+  // ---- career path record ------------------------------------------------
+  const [careerPathId, setCareerPathId] = useState<number | null>(null);
+  const [careerPath, setCareerPath] = useState<CareerPathFootballerDetail | null>(null);
+  const [careerPathLoading, setCareerPathLoading] = useState(false);
+  const [careerPathError, setCareerPathError] = useState<string | null>(null);
 
   // Bulk-update selection — Set of footballer ids selected in the
   // List Results view. Reset to empty after a successful bulk apply.
@@ -173,6 +186,52 @@ export default function FootballerManagementPage() {
     // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleGetFootballers is defined below.
     handleGetFootballers(1, true, fromUrl);
   }, [isAuthenticated, searchParams]);
+
+  // Deep-link entry point for `/footballer-management?footballer=<id>&tab=career-path`.
+  useEffect(() => {
+    if (consumedFootballerParam.current || !isAuthenticated) {
+      return;
+    }
+    const fromUrl = parsePositiveIntParam(searchParams?.get('footballer'));
+    if (fromUrl === null) {
+      return;
+    }
+    consumedFootballerParam.current = true;
+    setCareerPathId(fromUrl);
+    if (searchParams?.get('tab') === 'career-path') {
+      setActiveTab('career-path');
+    }
+  }, [isAuthenticated, searchParams]);
+
+  useEffect(() => {
+    if (careerPathId === null) {
+      return;
+    }
+    let cancelled = false;
+    setCareerPathLoading(true);
+    setCareerPathError(null);
+    ReportsAPI.getCareerPathFootballer(careerPathId, { window: 90 })
+      .then((detail) => {
+        if (!cancelled) {
+          setCareerPath(detail);
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setCareerPathError(err instanceof Error ? err.message : 'Failed to load the Career Path record');
+        setCareerPath(null);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setCareerPathLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [careerPathId]);
 
   const handleGetFootballers = async (
     page: number = 1,
@@ -824,6 +883,51 @@ export default function FootballerManagementPage() {
                       onFormChange={setCreateForm}
                       onCreateFootballer={handleCreateFootballer}
                     />
+                  </div>
+                )}
+
+                {activeTab === 'career-path' && (
+                  <div className="mt-4 space-y-4">
+                    {/* The Career Path analytics table links here by name. It
+                        answers "which footballers should I look at"; this
+                        answers "and what is wrong with this one", next to the
+                        form where it gets fixed. */}
+                    <Card>
+                      <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-end">
+                        <div className="flex-1">
+                          <Label htmlFor="career-path-id" className="mb-1 block text-xs font-medium text-muted-foreground">
+                            Footballer ID
+                          </Label>
+                          <Input
+                            id="career-path-id"
+                            placeholder="Enter a footballer ID"
+                            value={careerPathId === null ? '' : String(careerPathId)}
+                            onChange={e => setCareerPathId(parsePositiveIntParam(e.target.value))}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground sm:pb-2">
+                          Last 90 days. Bots excluded.
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    {careerPathError && (
+                      <div
+                        role="alert"
+                        className="whitespace-pre-line rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+                      >
+                        {careerPathError}
+                      </div>
+                    )}
+                    {careerPathLoading && (
+                      <p className="text-center text-sm text-muted-foreground">Loading the record…</p>
+                    )}
+                    {careerPath && !careerPathLoading && <CareerPathRecord detail={careerPath} />}
+                    {careerPathId === null && !careerPathLoading && (
+                      <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                        Pick a footballer, or arrive here from the Career Path analytics table.
+                      </p>
+                    )}
                   </div>
                 )}
 

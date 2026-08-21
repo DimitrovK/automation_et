@@ -11,6 +11,7 @@ import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
+import { useCareerPathTable } from '@/hooks/use-career-path-table';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -47,6 +48,7 @@ export default function CareerPathAnalyticsPage() {
     metric: 'games_started',
   });
   const { range, includeBots } = filters;
+  const table = useCareerPathTable();
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
   const params = useMemo(
@@ -55,10 +57,19 @@ export default function CareerPathAnalyticsPage() {
   );
 
   const state = useReport(
-    ReportsAPI.getCareerPathAnalytics,
+    reportParams => ReportsAPI.getCareerPathAnalytics(reportParams, {
+      search: table.search || undefined,
+      page: table.page,
+      pageSize: table.pageSize,
+      ordering: table.ordering,
+    }),
     params,
     enabled,
     'The Career Path analytics endpoint',
+    // The table's own state is not in `params`, so without this the search box
+    // and every column header would go dead — `use-report` refetches on this
+    // value and has no other way to know.
+    table.requestKey,
   );
 
   return (
@@ -96,7 +107,18 @@ export default function CareerPathAnalyticsPage() {
       </div>
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
-        {data => <FootballerContent data={data} />}
+        {data => (
+          <FootballerContent
+            data={data}
+            search={table.search}
+            onSearchChange={table.setSearch}
+            ordering={table.ordering}
+            onSort={table.sortBy}
+            onPageChange={table.setPage}
+            onPageSizeChange={table.setPageSize}
+            busy={state.isLoading}
+          />
+        )}
       </ReportPanel>
 
       {/* After the table, because "which footballer should I look at" is the
