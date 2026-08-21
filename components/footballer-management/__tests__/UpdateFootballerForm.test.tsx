@@ -94,6 +94,47 @@ describe('updateFootballer', () => {
     expect(screen.getByText('Career Path')).toBeInTheDocument();
   });
 
+  it('puts the related editors in the same tab row as the form', () => {
+    // They used to be a stack of cards below the form, which put a fifteen-row
+    // stint table between the reader and everything under it.
+    renderForm({
+      extraTabs: [
+        { value: 'teams', label: 'Teams', content: <p>Stints go here</p> },
+        { value: 'career-path', label: 'Career Path', content: <p>Record goes here</p> },
+      ],
+    });
+
+    expect(screen.getByRole('tab', { name: 'Teams' })).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Career Path' }));
+
+    expect(screen.getByText('Record goes here')).toBeInTheDocument();
+  });
+
+  it('hides the submit button on panels the form does not own', () => {
+    // Those editors save themselves against their own endpoints. An "Update
+    // Footballer" button sitting under one of them claims to save what is on
+    // screen, and does not.
+    renderForm({
+      extraTabs: [{ value: 'teams', label: 'Teams', content: <p>Stints go here</p> }],
+    });
+
+    expect(screen.getByRole('button', { name: /Update Footballer/ })).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Teams' }));
+
+    expect(screen.queryByRole('button', { name: /Update Footballer/ })).not.toBeInTheDocument();
+  });
+
+  it('opens straight onto the panel a deep link names', () => {
+    renderForm({
+      tab: 'career-path',
+      extraTabs: [{ value: 'career-path', label: 'Career Path', content: <p>Record goes here</p> }],
+    });
+
+    expect(screen.getByText('Record goes here')).toBeInTheDocument();
+  });
+
   it('shows nothing to edit until a footballer is loaded', () => {
     renderForm({ footballerToUpdate: null });
 

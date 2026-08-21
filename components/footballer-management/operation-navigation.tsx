@@ -15,7 +15,7 @@ export function OperationNavigation({ activeTab, onTabChange }: OperationNavigat
       {/* Desktop tabs - hidden on mobile */}
       <div className="hidden md:block">
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 border border-border bg-gradient-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
+          <TabsList className="grid w-full grid-cols-3 border border-border bg-gradient-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
             <TabsTrigger value="read" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
               Read
             </TabsTrigger>
@@ -24,9 +24,6 @@ export function OperationNavigation({ activeTab, onTabChange }: OperationNavigat
             </TabsTrigger>
             <TabsTrigger value="update" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
               Update
-            </TabsTrigger>
-            <TabsTrigger value="career-path" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-              Career Path
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -42,7 +39,6 @@ export function OperationNavigation({ activeTab, onTabChange }: OperationNavigat
             <SelectItem value="read">📖 Read Operations</SelectItem>
             <SelectItem value="create">➕ Create Operations</SelectItem>
             <SelectItem value="update">✏️ Update Operations</SelectItem>
-            <SelectItem value="career-path">📈 Career Path Record</SelectItem>
           </SelectContent>
         </Select>
       </div>

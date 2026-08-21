@@ -1,6 +1,6 @@
 'use client';
 
-import type { CareerPathAnalyticsResponse, CareerPathFootballerRow, CareerPathOrdering } from '@/types/reports';
+import type { CareerPathAnalyticsResponse, CareerPathFootballerRow, CareerPathOrdering, PlayOutcome } from '@/types/reports';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -40,6 +40,14 @@ import { cn } from '@/lib/utils';
 
 /** Above this share needing help, a footballer is worth an editor's attention. */
 const NOTABLE_HELP_PCT = 10;
+
+/** The share of plays that ended with the footballer guessed, however. */
+function solvedPct(outcome: PlayOutcome, plays: number) {
+  if (!plays) {
+    return 0;
+  }
+  return Math.round(((outcome.solved_unaided + outcome.solved_helped) * 100) / plays);
+}
 
 function Rate({ value, suffix = '%' }: { value: number | null | undefined; suffix?: string }) {
   if (value === null || value === undefined) {
@@ -108,9 +116,21 @@ function FootballerRow({ row, minAppearances }: {
             </span>
           )}
         </Td>
-        <Td>
+        <Td className="w-44">
           {row.outcome
-            ? <OutcomeBar outcome={row.outcome} plays={plays} className="min-w-24" />
+            ? (
+                // Fixed width and a number under it. Left to size itself the
+                // bars came out a different length on every row, which made a
+                // column meant to be compared down the page impossible to
+                // compare down the page — and a bar with no figure beside it
+                // gives the eye nothing to anchor on.
+                <span className="flex flex-col gap-1">
+                  <OutcomeBar outcome={row.outcome} plays={plays} className="h-2.5" />
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {`${solvedPct(row.outcome, plays)}% solved`}
+                  </span>
+                </span>
+              )
             : <span className="text-muted-foreground/70">—</span>}
         </Td>
         <Td align="right">
@@ -208,7 +228,7 @@ export function FootballerContent({ data, search, onSearchChange, ordering, onSo
                       <tr className="border-b">
                         <SortableHeader label="Footballer" column="name" ordering={ordering} onSort={onSort} className="text-left" />
                         <SortableHeader label="Played" column="plays" ordering={ordering} onSort={onSort} className="text-right [&>button]:justify-end" />
-                        <Th>What happened</Th>
+                        <Th className="w-44">What happened</Th>
                         <SortableHeader label="Needed help" column="help" ordering={ordering} onSort={onSort} className="text-right [&>button]:justify-end" />
                         <SortableHeader label="Unfinished" column="unfinished" ordering={ordering} onSort={onSort} className="text-right [&>button]:justify-end" />
                         <SortableHeader label="Guesses" column="guesses" ordering={ordering} onSort={onSort} className="text-right [&>button]:justify-end" />

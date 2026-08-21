@@ -2,7 +2,7 @@
 
 import type { CreateFootballerRequest, Footballer, FootballerNation } from '@/types/player';
 import { Edit, Loader2, Search } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { NationCombobox } from '@/components/footballer-management/NationCombobox';
 import { NationsMultiSelect } from '@/components/footballer-management/NationsMultiSelect';
@@ -46,6 +46,13 @@ import { Textarea } from '@/components/ui/textarea';
  * One long scroll made the second job hunt through the first.
  */
 
+/** A panel that lives beside the form's own two, in the same tab row. */
+export type EditorTab = {
+  value: string;
+  label: string;
+  content: React.ReactNode;
+};
+
 type UpdateFootballerProps = {
   updateForm: CreateFootballerRequest;
   updateLoading: boolean;
@@ -58,7 +65,22 @@ type UpdateFootballerProps = {
   onUpdateFootballer: (values: CreateFootballerRequest) => void;
   onFootballerIdChange: (id: string) => void;
   onFetchFootballerForUpdate: () => void;
+  /**
+   * The related-model editors and the Career Path record, as peers of the
+   * form's own tabs rather than a stack of cards below it.
+   *
+   * They sit OUTSIDE the `<form>` element deliberately: each one saves itself
+   * against its own endpoint, and a save button inside a form submits that form
+   * whether or not anyone meant it to.
+   */
+  extraTabs?: EditorTab[];
+  /** Controlled so a deep link can open straight onto one of them. */
+  tab?: string;
+  onTabChange?: (tab: string) => void;
 };
+
+/** Stable identity: a fresh `[]` default would be a new prop on every render. */
+const NO_EXTRA_TABS: EditorTab[] = [];
 
 /** A labelled switch, which is most of the second tab. */
 function SwitchField({ form, name, label, description }: {
@@ -96,12 +118,26 @@ export function UpdateFootballer({
   onUpdateFootballer,
   onFootballerIdChange,
   onFetchFootballerForUpdate,
+  extraTabs = NO_EXTRA_TABS,
+  tab,
+  onTabChange,
 }: UpdateFootballerProps) {
   // `values` rather than `defaultValues`: the page fills `updateForm` when a
   // footballer is fetched, which happens after this component has mounted, and
   // `defaultValues` is read once. Loading a second footballer without this
   // leaves the first one's data in the fields.
   const form = useForm<CreateFootballerRequest>({ values: updateForm, mode: 'onBlur' });
+
+  // Controlled when the page supplies it — a deep link opens straight onto the
+  // Career Path panel — and self-owned otherwise.
+  const [internalTab, setInternalTab] = useState('profile');
+  const current = tab ?? internalTab;
+  const change = (next: string) => {
+    setInternalTab(next);
+    onTabChange?.(next);
+  };
+  // The submit button belongs to the form's two panels, not to the editors.
+  const onForm = current === 'profile' || current === 'availability';
 
   // Resolve other_nation_ids → Nation objects for the multi-select chip
   // renderer. Falls back gracefully when ``nations`` is still loading.
@@ -170,14 +206,24 @@ export function UpdateFootballer({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onUpdateFootballer)} className="space-y-6" noValidate>
-                <Tabs defaultValue="profile">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="profile">Profile</TabsTrigger>
-                    <TabsTrigger value="availability">Game availability</TabsTrigger>
-                  </TabsList>
+            <Tabs value={current} onValueChange={change}>
+              {/* Wrapping rather than an N-column grid: the tab count grows
+                  with the related-model editors, and a grid would shrink every
+                  label until none of them read. */}
+              <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
+                <TabsTrigger value="profile">Profile</TabsTrigger>
+                <TabsTrigger value="availability">Game availability</TabsTrigger>
+                {extraTabs.map(extra => (
+                  <TabsTrigger key={extra.value} value={extra.value}>{extra.label}</TabsTrigger>
+                ))}
+              </TabsList>
 
+              {/* Only the two form panels are inside the <form>. The editors
+                  below save themselves against their own endpoints, and a save
+                  button inside a form submits that form whether or not anyone
+                  meant it to. */}
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onUpdateFootballer)} noValidate>
                   <TabsContent value="profile" className="mt-4 space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                       <FormField
@@ -402,15 +448,23 @@ export function UpdateFootballer({
                       <SwitchField form={form} name="available_for_scout" label="Scout" />
                     </div>
                   </TabsContent>
-                </Tabs>
 
-                <div className="flex justify-end">
-                  <ApiButton type="submit" loading={updateLoading} loadingText="Updating..." icon={Edit}>
-                    Update Footballer
-                  </ApiButton>
-                </div>
-              </form>
-            </Form>
+                  {onForm && (
+                    <div className="mt-5 flex justify-end">
+                      <ApiButton type="submit" loading={updateLoading} loadingText="Updating..." icon={Edit}>
+                        Update Footballer
+                      </ApiButton>
+                    </div>
+                  )}
+                </form>
+              </Form>
+
+              {extraTabs.map(extra => (
+                <TabsContent key={extra.value} value={extra.value} className="mt-4">
+                  {extra.content}
+                </TabsContent>
+              ))}
+            </Tabs>
           </CardContent>
         </Card>
       )}

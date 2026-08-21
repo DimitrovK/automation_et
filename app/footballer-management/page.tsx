@@ -36,6 +36,15 @@ import { parseNationId } from '@/lib/nation-param';
 import { ReportsAPI } from '@/lib/reports-api';
 import { parsePositiveIntParam } from '@/lib/url-params';
 
+/** A stamp an editor can read, falling back to the raw value. */
+function formatStamp(value: string | null | undefined) {
+  if (!value) {
+    return '—';
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
 export default function FootballerManagementPage() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
@@ -79,6 +88,10 @@ export default function FootballerManagementPage() {
 
   // Tab state — Read is the default landing tab now that Overview is gone.
   const [activeTab, setActiveTab] = useState('read');
+
+  // Which panel of the loaded-footballer editor is open. Lifted here so the
+  // `?tab=` deep link can open straight onto one.
+  const [editorTab, setEditorTab] = useState('profile');
 
   // ---- career path record ------------------------------------------------
   const [careerPathId, setCareerPathId] = useState<number | null>(null);
@@ -198,9 +211,17 @@ export default function FootballerManagementPage() {
     }
     consumedFootballerParam.current = true;
     setCareerPathId(fromUrl);
-    if (searchParams?.get('tab') === 'career-path') {
-      setActiveTab('career-path');
+    // Into the UPDATE flow with the footballer loaded, not a read-only tab of
+    // its own. Arriving from the analytics table means intending to do
+    // something about what the table said, and the form is where that happens.
+    setActiveTab('update');
+    setUpdateFootballerId(String(fromUrl));
+    const wanted = searchParams?.get('tab');
+    if (wanted) {
+      setEditorTab(wanted);
     }
+    // eslint-disable-next-line ts/no-use-before-define -- pre-existing hoisting; handleFetchFootballerForUpdate is defined below.
+    handleFetchFootballerForUpdate(fromUrl);
   }, [isAuthenticated, searchParams]);
 
   useEffect(() => {
@@ -559,13 +580,15 @@ export default function FootballerManagementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, searchParams]);
 
-  const handleFetchFootballerForUpdate = async () => {
-    if (!updateFootballerId.trim()) {
+  const handleFetchFootballerForUpdate = async (deepLinkId?: number) => {
+    // The deep-link effect passes the id directly: it sets the input in the
+    // same tick, and state set in that tick is not readable here yet.
+    if (deepLinkId === undefined && !updateFootballerId.trim()) {
       setError('Please enter a footballer ID to update');
       return;
     }
 
-    const id = Number.parseInt(updateFootballerId.trim());
+    const id = deepLinkId ?? Number.parseInt(updateFootballerId.trim());
     if (Number.isNaN(id)) {
       setError('Please enter a valid footballer ID (number)');
       return;
@@ -879,51 +902,6 @@ export default function FootballerManagementPage() {
                   </div>
                 )}
 
-                {activeTab === 'career-path' && (
-                  <div className="mt-4 space-y-4">
-                    {/* The Career Path analytics table links here by name. It
-                        answers "which footballers should I look at"; this
-                        answers "and what is wrong with this one", next to the
-                        form where it gets fixed. */}
-                    <Card>
-                      <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-end">
-                        <div className="flex-1">
-                          <Label htmlFor="career-path-id" className="mb-1 block text-xs font-medium text-muted-foreground">
-                            Footballer ID
-                          </Label>
-                          <Input
-                            id="career-path-id"
-                            placeholder="Enter a footballer ID"
-                            value={careerPathId === null ? '' : String(careerPathId)}
-                            onChange={e => setCareerPathId(parsePositiveIntParam(e.target.value))}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground sm:pb-2">
-                          Last 90 days. Bots excluded.
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    {careerPathError && (
-                      <div
-                        role="alert"
-                        className="whitespace-pre-line rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
-                      >
-                        {careerPathError}
-                      </div>
-                    )}
-                    {careerPathLoading && (
-                      <p className="text-center text-sm text-muted-foreground">Loading the record…</p>
-                    )}
-                    {careerPath && !careerPathLoading && <CareerPathRecord detail={careerPath} />}
-                    {careerPathId === null && !careerPathLoading && (
-                      <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-                        Pick a footballer, or arrive here from the Career Path analytics table.
-                      </p>
-                    )}
-                  </div>
-                )}
-
                 {activeTab === 'update' && (
                   <div className="mt-4 space-y-4">
                     <UpdateFootballer
@@ -937,26 +915,74 @@ export default function FootballerManagementPage() {
                       onUpdateFootballer={handleUpdateFootballer}
                       onFootballerIdChange={setUpdateFootballerId}
                       onFetchFootballerForUpdate={handleFetchFootballerForUpdate}
+                      tab={editorTab}
+                      onTabChange={setEditorTab}
+                      // The related-model editors and the Career Path record as
+                      // peers of the form's own panels. They used to be a stack
+                      // of cards below it, which put a fifteen-row stint table
+                      // between the reader and everything under it.
+                      extraTabs={footballerToUpdate
+                        ? [
+                            {
+                              value: 'positions',
+                              label: 'Positions',
+                              content: <PositionsEditor footballerId={footballerToUpdate.id} />,
+                            },
+                            {
+                              value: 'teams',
+                              label: 'Teams',
+                              content: <TeamsEditor footballerId={footballerToUpdate.id} />,
+                            },
+                            {
+                              value: 'national-team',
+                              label: 'National team',
+                              content: (
+                                <NationsEditor
+                                  footballerId={footballerToUpdate.id}
+                                  eligibleNations={[
+                                    footballerToUpdate.nation,
+                                    ...(footballerToUpdate.other_nations ?? []),
+                                  ]}
+                                />
+                              ),
+                            },
+                            {
+                              value: 'pictures',
+                              label: 'Pictures',
+                              content: <PicturesEditor footballerId={footballerToUpdate.id} />,
+                            },
+                            {
+                              value: 'career-path',
+                              label: 'Career Path',
+                              content: careerPathError
+                                ? (
+                                    <div role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+                                      {careerPathError}
+                                    </div>
+                                  )
+                                : careerPathLoading || !careerPath
+                                  ? <p className="text-sm text-muted-foreground">Loading the record…</p>
+                                  : <CareerPathRecord detail={careerPath} />,
+                            },
+                            {
+                              value: 'dates',
+                              label: 'Dates',
+                              content: (
+                                <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                                  <div className="rounded-lg border p-3">
+                                    <dt className="text-xs text-muted-foreground">Created</dt>
+                                    <dd className="mt-0.5 font-medium">{formatStamp(footballerToUpdate.created_at)}</dd>
+                                  </div>
+                                  <div className="rounded-lg border p-3">
+                                    <dt className="text-xs text-muted-foreground">Last updated</dt>
+                                    <dd className="mt-0.5 font-medium">{formatStamp(footballerToUpdate.updated_at)}</dd>
+                                  </div>
+                                </dl>
+                              ),
+                            },
+                          ]
+                        : []}
                     />
-
-                    {/* Modernised sub-editors — visible once a footballer is
-                        loaded for editing. They each manage their own
-                        FK-attached models against the BE without
-                        round-tripping through the page. */}
-                    {footballerToUpdate && (
-                      <>
-                        <PositionsEditor footballerId={footballerToUpdate.id} />
-                        <TeamsEditor footballerId={footballerToUpdate.id} />
-                        <NationsEditor
-                          footballerId={footballerToUpdate.id}
-                          eligibleNations={[
-                            footballerToUpdate.nation,
-                            ...(footballerToUpdate.other_nations ?? []),
-                          ]}
-                        />
-                        <PicturesEditor footballerId={footballerToUpdate.id} />
-                      </>
-                    )}
                   </div>
                 )}
 

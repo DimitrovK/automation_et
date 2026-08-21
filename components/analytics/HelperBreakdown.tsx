@@ -38,7 +38,7 @@ const HELPERS: Helper[] = [
   { key: 'hint', label: 'Hints', icon: Lightbulb, verb: 'hinted', tone: 'bg-chart-3/10 text-chart-3', bar: 'bg-chart-3' },
   { key: 'reveal', label: 'Reveals', icon: Eye, verb: 'revealed', tone: 'bg-chart-4/10 text-chart-4', bar: 'bg-chart-4' },
   { key: 'skip', label: 'Skips', icon: SkipForward, verb: 'skipped', tone: 'bg-chart-2/10 text-chart-2', bar: 'bg-chart-2' },
-  { key: 'similar', label: 'Similar grid', icon: LayoutGrid, verb: 'reached', tone: 'bg-chart-1/10 text-chart-1', bar: 'bg-chart-1' },
+  { key: 'similar', label: 'Similar footballers', icon: LayoutGrid, verb: 'reached', tone: 'bg-chart-1/10 text-chart-1', bar: 'bg-chart-1' },
 ];
 
 /** What the tile leads with, which depends on what is knowable. */

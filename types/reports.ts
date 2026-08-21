@@ -979,8 +979,15 @@ export type CareerPathFootballerRow = {
     skip: HelperUse;
     similar: HelperUse;
   };
-  /** Share of APPEARANCES that took a hint, reveal or skip — not help events. */
+  /** Share of PLAYS that took a hint, reveal or skip — not help events. */
   help_rate_pct: number | null;
+  /**
+   * The Wilson lower bound on that rate, which is what the default order ranks
+   * by. Displayed nowhere: the raw rate describes the footballer, this only
+   * decides who goes first. Sent so the ordering is reproducible from the
+   * payload rather than being a server-side secret.
+   */
+  help_confidence_pct?: number | null;
   solve_rate_pct: number | null;
   below_threshold: boolean;
 };
