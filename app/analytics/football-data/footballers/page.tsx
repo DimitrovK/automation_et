@@ -130,6 +130,9 @@ export default function FootballersAnalyticsPage() {
         {matrixData => (
           <FootballerMatrix
             data={matrixData}
+            // Nationality rows lead to the footballer list filtered by it;
+            // the by-country table below leads to the roster instead.
+            rowHref={dimension === 'nation' ? row => `/footballer-management?nation=${row.key}` : undefined}
             dimension={dimension}
             onDimensionChange={(next) => {
               // Reset the row filters: a search for an Italian club means
@@ -156,6 +159,8 @@ export default function FootballersAnalyticsPage() {
             title="Footballers by the country they played in"
             description="Distinct footballers with at least one club in each country, by difficulty. A different question from the table above: the catalogue is thick with Brazilians and thin on anyone who played in Brazil, and a club-based game only cares about the second. Someone who played in England and Italy is in both rows, so these sum to more than the catalogue holds. Approved footballers only."
             palette="deep"
+            // Every row opens the roster behind the number.
+            rowHref={row => `/nation-players?nationId=${row.key}`}
             dimension="club_nation"
             onDimensionChange={() => {}}
             dimensions={CLUB_DIMENSION}

@@ -61,7 +61,32 @@ export type TeamPlayersOrdering
     | 'apps' | '-apps'
     | 'goals' | '-goals';
 
-export type TeamPlayersParams = {
+/** A country's roster header — both counts, because they differ. */
+export type NationHeaderInfo = {
+  id: number;
+  name: string;
+  short: string;
+  flag: string | null;
+  /** Distinct people. What the analytics tile counts. */
+  total_footballers: number;
+  /** Rows in the list, which is the larger number and not a contradiction. */
+  total_spells: number;
+  total_clubs: number;
+};
+
+export type NationPlayersResponse = {
+  nation: NationHeaderInfo;
+  players: PaginatedPlayers;
+};
+
+/**
+ * Query params for a stint roster, whichever subject scopes it.
+ *
+ * `nation_id` is the FOOTBALLER's nationality — on the nation roster that is a
+ * different thing from the country the stint was in, which is what makes
+ * "Brazilians who played in England" expressible.
+ */
+export type RosterParams = {
   role?: RoleFilter;
   transfer_type?: TransferFilter;
   status?: StatusFilter;
@@ -73,3 +98,6 @@ export type TeamPlayersParams = {
   page?: number;
   page_size?: number;
 };
+
+/** The team roster's params. One shape, kept under its old name for callers. */
+export type TeamPlayersParams = RosterParams;
