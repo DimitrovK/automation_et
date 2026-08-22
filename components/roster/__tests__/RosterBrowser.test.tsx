@@ -6,8 +6,19 @@ import { RosterBrowser } from '@/components/roster/RosterBrowser';
 // Stood in for, because this test is about what the browser DOES with a chosen
 // nationality, not about the combobox's own fetching.
 vi.mock('@/components/footballer-management/NationCombobox', () => ({
-  NationCombobox: ({ onChange }: { onChange: (id: number | null) => void }) => (
-    <button type="button" onClick={() => onChange(76)}>Pick Brazil</button>
+  NationCombobox: ({ onChange, onClear }: {
+    onChange: (id: number, nation: { id: number; name: string; nationality: string; short: string }) => void;
+    onClear?: () => void;
+  }) => (
+    <>
+      <button
+        type="button"
+        onClick={() => onChange(76, { id: 76, name: 'Brazil', nationality: 'Brazilian', short: 'BRA' })}
+      >
+        Pick Brazil
+      </button>
+      {onClear && <button type="button" onClick={onClear}>Clear nation</button>}
+    </>
   ),
 }));
 
@@ -122,5 +133,34 @@ describe('rosterBrowser', () => {
     renderBrowser({ header: <p>Everyone who played in England</p> });
 
     expect(screen.getByText('Everyone who played in England')).toBeInTheDocument();
+  });
+});
+
+describe('rosterBrowser nationality filter', () => {
+  it('tells the page which nationality is filtering, so the heading can say it', async () => {
+    const onNationFilterChange = vi.fn();
+    const { fetchPage } = renderBrowser({ onNationFilterChange });
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole('button', { name: 'Pick Brazil' }));
+
+    expect(onNationFilterChange).toHaveBeenCalledWith(
+      expect.objectContaining({ nationality: 'Brazilian' }),
+    );
+  });
+
+  it('can be cleared, and says so upward too', async () => {
+    const onNationFilterChange = vi.fn();
+    const { fetchPage } = renderBrowser({ onNationFilterChange });
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole('button', { name: 'Pick Brazil' }));
+    await waitFor(() => expect(fetchPage.mock.calls.at(-1)![1].nation_id).toBe(76));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear nation' }));
+
+    await waitFor(() => expect(fetchPage.mock.calls.at(-1)![1].nation_id).toBeUndefined());
+
+    expect(onNationFilterChange).toHaveBeenLastCalledWith(null);
   });
 });

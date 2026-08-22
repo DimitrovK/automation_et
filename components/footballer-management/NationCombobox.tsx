@@ -1,7 +1,7 @@
 'use client';
 
 import type { FootballerNation } from '@/types/player';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,12 @@ import { cn } from '@/lib/utils';
 type Props = {
   value: number | null;
   onChange: (nationId: number, nation: FootballerNation) => void;
+  /**
+   * Clears the selection. Renders an × in the trigger when supplied — omit it
+   * where the field is required, so the control cannot offer to empty
+   * something that has to have a value.
+   */
+  onClear?: () => void;
   placeholder?: string;
   /** Render a smaller trigger — used inside dense table rows. */
   compact?: boolean;
@@ -41,6 +47,7 @@ type Props = {
 export function NationCombobox({
   value,
   onChange,
+  onClear,
   placeholder = 'Pick a nation…',
   compact = false,
   disabled = false,
@@ -124,7 +131,35 @@ export function NationCombobox({
             : (
                 <span className="truncate">{placeholder}</span>
               )}
-          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+          <span className="ml-2 flex shrink-0 items-center gap-1">
+            {onClear && selected && (
+              // A span, not a button: a button inside the PopoverTrigger's
+              // button is invalid HTML and React will not render it reliably.
+              // The trigger's own click is stopped so clearing does not open
+              // the list on its way out.
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label="Clear nation"
+                className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onClear();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onClear();
+                  }
+                }}
+              >
+                <X className="size-3.5" />
+              </span>
+            )}
+            <ChevronsUpDown className="size-4 opacity-50" />
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">

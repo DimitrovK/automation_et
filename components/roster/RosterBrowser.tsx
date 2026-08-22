@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { FootballerNation } from '@/types/player';
 import type {
   PaginatedPlayers,
   RoleFilter,
@@ -46,7 +47,7 @@ const PAGE_SIZE = 50;
  * exposed nowhere, so "Brazilians at Chelsea" and "Brazilians who played in
  * England" both become reachable by putting it here once.
  */
-export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nationFilterLabel, onEditFootballer }: {
+export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nationFilterLabel, onEditFootballer, onNationFilterChange }: {
   /** Null before a subject is chosen — the browser renders nothing. */
   subjectId: number | null;
   fetchPage: (subjectId: number, params: RosterParams) => Promise<PaginatedPlayers>;
@@ -57,6 +58,12 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
   nationFilterLabel?: string;
   /** Opens a footballer in the edit form. Both pages want it. */
   onEditFootballer?: (footballerId: number) => void;
+  /**
+   * The nationality now filtering the list, so the page above can say what it
+   * is showing — "Brazilian footballers who played in England" rather than a
+   * heading that goes on claiming to show everyone.
+   */
+  onNationFilterChange?: (nation: FootballerNation | null) => void;
 }) {
   const [players, setPlayers] = useState<PaginatedPlayers | null>(null);
   const [loading, setLoading] = useState(false);
@@ -154,7 +161,17 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
             <span className="mb-1 block text-xs font-medium text-muted-foreground">
               {nationFilterLabel ?? 'Nationality'}
             </span>
-            <NationCombobox value={nationId} onChange={setNationId} />
+            <NationCombobox
+              value={nationId}
+              onChange={(id, nation) => {
+                setNationId(id);
+                onNationFilterChange?.(nation);
+              }}
+              onClear={() => {
+                setNationId(null);
+                onNationFilterChange?.(null);
+              }}
+            />
           </div>
 
           <div>

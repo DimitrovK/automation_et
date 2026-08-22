@@ -1,5 +1,6 @@
 'use client';
 
+import type { FootballerNation } from '@/types/player';
 import type { NationHeaderInfo } from '@/types/team';
 import { Globe2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -35,6 +36,7 @@ function NationPlayers() {
 
   const [nationId, setNationId] = useState<number | null>(null);
   const [nation, setNation] = useState<NationHeaderInfo | null>(null);
+  const [nationality, setNationality] = useState<FootballerNation | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,6 +58,23 @@ function NationPlayers() {
     return response.players;
   }, []);
 
+  // What the page is currently showing, in words.
+  //
+  // The nationality is used attributively — "Brazilian footballers" — rather
+  // than pluralised into "Brazilians", because a great many of these do not
+  // pluralise: English, Dutch, French, Swiss, Portuguese and Japanese would all
+  // come out wrong, and there is no short rule that gets them right.
+  const summary = (() => {
+    if (!nation) {
+      return 'Everyone who played for a club in a country — not everyone from it. '
+        + 'Cross it with a nationality for "Brazilian footballers who played in England".';
+    }
+    if (nationality) {
+      return `${nationality.nationality} footballers who played for a club in ${nation.name}.`;
+    }
+    return `Everyone who played for a club in ${nation.name} — not everyone from it.`;
+  })();
+
   if (isLoading) {
     return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
   }
@@ -66,6 +85,7 @@ function NationPlayers() {
   function handleNationSelect(id: number | null) {
     setNationId(id);
     setNation(null);
+    setNationality(null);
     setError(null);
     if (id !== null) {
       consumedNationParam.current = true;
@@ -84,10 +104,7 @@ function NationPlayers() {
             {' '}
             Nation Players
           </h1>
-          <p className="text-muted-foreground">
-            Everyone who played for a club in a country — not everyone from it. Cross it
-            with a nationality below for "Brazilians who played in England".
-          </p>
+          <p className="text-muted-foreground">{summary}</p>
         </div>
 
         <Card>
@@ -95,7 +112,11 @@ function NationPlayers() {
             <span className="mb-1 block text-xs font-medium text-muted-foreground">
               Country played in
             </span>
-            <NationCombobox value={nationId} onChange={handleNationSelect} />
+            <NationCombobox
+              value={nationId}
+              onChange={handleNationSelect}
+              onClear={() => handleNationSelect(null)}
+            />
           </CardContent>
         </Card>
 
@@ -121,6 +142,7 @@ function NationPlayers() {
           nationFilterLabel="Nationality (of the footballer)"
           emptyLabel="No spell in this country matches the current filters."
           onEditFootballer={id => router.push(`/footballer-management?edit=${id}`)}
+          onNationFilterChange={setNationality}
         />
       </div>
     </div>
