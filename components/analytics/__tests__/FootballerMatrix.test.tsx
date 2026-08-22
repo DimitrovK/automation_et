@@ -74,3 +74,51 @@ describe('footballerMatrix', () => {
     }
   });
 });
+
+describe('footballerMatrix as a second cut', () => {
+  it('drops the group-by toggle when there is only one cut', () => {
+    // A group of one is a control that cannot do anything.
+    render(
+      <FootballerMatrix
+        {...props}
+        data={data()}
+        dimension="club_nation"
+        dimensions={[{ key: 'club_nation', label: 'By country played in' }]}
+      />,
+    );
+
+    expect(screen.queryByRole('group', { name: 'Group footballers by' })).not.toBeInTheDocument();
+  });
+
+  it('takes its own heading, for a cut that is not "by <dimension>"', () => {
+    render(
+      <FootballerMatrix
+        {...props}
+        data={data()}
+        title="Footballers by the country they played in"
+        description="Distinct footballers with at least one club in each country."
+      />,
+    );
+
+    expect(screen.getByText('Footballers by the country they played in')).toBeInTheDocument();
+  });
+
+  it('paints the tiles in the deeper set, so two matrices are told apart', () => {
+    // Two tables of identical pale tiles read as the same table twice.
+    const { container } = render(
+      <FootballerMatrix {...props} data={data()} palette="deep" />,
+    );
+    const tile = container.querySelector('[data-difficulty="EASY"]');
+
+    expect(tile?.className).toContain('emerald');
+    expect(tile?.className).not.toContain('bg-green-100');
+  });
+
+  it('keeps the original set by default', () => {
+    const { container } = render(<FootballerMatrix {...props} data={data()} />);
+    const tile = container.querySelector('[data-difficulty="EASY"]');
+
+    expect(tile?.className).toContain('green');
+    expect(tile?.className).not.toContain('emerald');
+  });
+});

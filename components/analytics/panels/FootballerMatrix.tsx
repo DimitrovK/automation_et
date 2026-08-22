@@ -4,7 +4,7 @@ import type { DifficultyMatrixResponse } from '@/types/reports';
 import { TileMatrix } from '@/components/analytics/panels/TileMatrix';
 import { SearchBox } from '@/components/reports/filters/SearchBox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { difficultyTier as tier } from '@/lib/data-colours';
+import { difficultyTier as tier, difficultyTierDeep as tierDeep } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
 
 /**
@@ -20,7 +20,7 @@ const DIMENSIONS = [
   { key: 'team', label: 'By team' },
 ];
 
-export function FootballerMatrix({ data, dimension, onDimensionChange, search, onSearchChange, difficulty, onDifficultyChange, onExpand, expanded }: {
+export function FootballerMatrix({ data, dimension, onDimensionChange, search, onSearchChange, difficulty, onDifficultyChange, onExpand, expanded, title, description, dimensions, palette }: {
   data: DifficultyMatrixResponse;
   dimension: string;
   onDimensionChange: (next: string) => void;
@@ -30,44 +30,58 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
   onDifficultyChange: (next: string | null) => void;
   onExpand?: () => void;
   expanded?: boolean;
+  /** Overrides the heading, for a cut whose name is not "by <dimension>". */
+  title?: string;
+  description?: string;
+  /**
+   * Which cuts to offer. A single-dimension panel passes one and the toggle
+   * disappears — a group of one is a control that cannot do anything.
+   */
+  dimensions?: { key: string; label: string }[];
+  /** `deep` for a second matrix on the same page — see `TileMatrix`. */
+  palette?: 'default' | 'deep';
 }) {
   const { matrix, difficulty_order: order } = data;
+  const options = dimensions ?? DIMENSIONS;
+  const tierFor = palette === 'deep' ? tierDeep : tier;
 
   return (
     <Card>
       <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1.5">
-          <CardTitle>{`Footballers by ${data.dimension} and difficulty`}</CardTitle>
+          <CardTitle>{title ?? `Footballers by ${data.dimension} and difficulty`}</CardTitle>
           <CardDescription>
-            {data.rows_double_count
+            {description ?? (data.rows_double_count
               // Said outright, because the same footballer legitimately appears
               // in several rows here and the column will not add up.
               ? 'A footballer belongs to every club they played for, so these rows deliberately sum to more than the catalogue holds. Approved footballers only, which is why a squad here is smaller than on the teams page.'
-              : 'A footballer has one nation, so these rows add up. Approved footballers only.'}
+              : 'A footballer has one nation, so these rows add up. Approved footballers only.')}
             {difficulty
-              ? ` Ranked by ${tier(difficulty).label} — every tier is still shown beside it.`
+              ? ` Ranked by ${tierFor(difficulty).label} — every tier is still shown beside it.`
               : ' Ranked by total.'}
           </CardDescription>
         </div>
         <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-          <div className="flex gap-1" role="group" aria-label="Group footballers by">
-            {DIMENSIONS.map(option => (
-              <button
-                key={option.key}
-                type="button"
-                aria-pressed={dimension === option.key}
-                onClick={() => onDimensionChange(option.key)}
-                className={cn(
-                  'rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
-                  dimension === option.key
-                    ? 'bg-primary text-primary-foreground ring-transparent'
-                    : 'text-muted-foreground ring-border hover:bg-muted',
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          {options.length > 1 && (
+            <div className="flex gap-1" role="group" aria-label="Group footballers by">
+              {options.map(option => (
+                <button
+                  key={option.key}
+                  type="button"
+                  aria-pressed={dimension === option.key}
+                  onClick={() => onDimensionChange(option.key)}
+                  className={cn(
+                    'rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+                    dimension === option.key
+                      ? 'bg-primary text-primary-foreground ring-transparent'
+                      : 'text-muted-foreground ring-border hover:bg-muted',
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
           <SearchBox
             value={search}
             onChange={onSearchChange}
@@ -100,6 +114,7 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
       </CardHeader>
       <CardContent>
         <TileMatrix
+          palette={palette}
           rows={matrix.items}
           order={order}
           rankedBy={difficulty}

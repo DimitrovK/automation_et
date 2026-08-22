@@ -136,6 +136,64 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   },
 };
 
+/**
+ * The same four tiers, deeper and in a shifted hue set.
+ *
+ * For the second matrix on a page that already has one. Two tables of identical
+ * pale tiles read as the same table twice, and the reader has to go back to the
+ * heading to work out which is which — so the second one differs in weight AND
+ * in hue: emerald, indigo, amber, rose against green, blue, orange, red.
+ *
+ * Deeper in both themes, not just one. The 100/900 pair the first matrix uses
+ * sits close to the card behind it, which is right for a table read alongside
+ * others and too quiet for one meant to be told apart at a glance.
+ *
+ * Text flips with the surface — near-black on the light tiles, near-white on
+ * the dark ones — because a fixed foreground fails at one end or the other.
+ */
+export const DIFFICULTY_TIERS_DEEP: Record<string, DataTier> = {
+  EASY: {
+    label: 'Easy',
+    bar: 'bg-gradient-to-r from-emerald-400 to-emerald-500',
+    track: 'bg-emerald-400/20',
+    chip: 'bg-emerald-300 text-emerald-950 ring-1 ring-inset ring-emerald-500/40 dark:bg-emerald-700 dark:text-emerald-50 dark:ring-emerald-400/30',
+    chipAlt: 'bg-emerald-400 text-emerald-950 ring-1 ring-inset ring-emerald-500/40 dark:bg-emerald-600 dark:text-emerald-50 dark:ring-emerald-400/30',
+    head: 'text-emerald-700 dark:text-emerald-300',
+    dot: 'bg-emerald-500',
+    hex: '#10b981',
+  },
+  NORMAL: {
+    label: 'Normal',
+    bar: 'bg-gradient-to-r from-indigo-400 to-indigo-500',
+    track: 'bg-indigo-400/20',
+    chip: 'bg-indigo-300 text-indigo-950 ring-1 ring-inset ring-indigo-500/40 dark:bg-indigo-700 dark:text-indigo-50 dark:ring-indigo-400/30',
+    chipAlt: 'bg-indigo-400 text-indigo-950 ring-1 ring-inset ring-indigo-500/40 dark:bg-indigo-600 dark:text-indigo-50 dark:ring-indigo-400/30',
+    head: 'text-indigo-700 dark:text-indigo-300',
+    dot: 'bg-indigo-500',
+    hex: '#6366f1',
+  },
+  HARD: {
+    label: 'Hard',
+    bar: 'bg-gradient-to-r from-amber-400 to-amber-500',
+    track: 'bg-amber-400/20',
+    chip: 'bg-amber-300 text-amber-950 ring-1 ring-inset ring-amber-500/40 dark:bg-amber-600 dark:text-amber-50 dark:ring-amber-400/30',
+    chipAlt: 'bg-amber-400 text-amber-950 ring-1 ring-inset ring-amber-500/40 dark:bg-amber-500 dark:text-amber-950 dark:ring-amber-400/30',
+    head: 'text-amber-700 dark:text-amber-300',
+    dot: 'bg-amber-500',
+    hex: '#f59e0b',
+  },
+  EXTREME: {
+    label: 'Extreme',
+    bar: 'bg-gradient-to-r from-rose-400 to-rose-500',
+    track: 'bg-rose-400/20',
+    chip: 'bg-rose-300 text-rose-950 ring-1 ring-inset ring-rose-500/40 dark:bg-rose-700 dark:text-rose-50 dark:ring-rose-400/30',
+    chipAlt: 'bg-rose-400 text-rose-950 ring-1 ring-inset ring-rose-500/40 dark:bg-rose-600 dark:text-rose-50 dark:ring-rose-400/30',
+    head: 'text-rose-700 dark:text-rose-300',
+    dot: 'bg-rose-500',
+    hex: '#f43f5e',
+  },
+};
+
 /** An unknown tier still renders, in a colour that claims nothing. */
 const UNKNOWN_TIER: DataTier = {
   label: '',
@@ -150,6 +208,11 @@ const UNKNOWN_TIER: DataTier = {
 
 export function difficultyTier(difficulty: string): DataTier {
   return DIFFICULTY_TIERS[difficulty] ?? { ...UNKNOWN_TIER, label: difficulty };
+}
+
+/** The deeper set, for a second matrix that has to be told from the first. */
+export function difficultyTierDeep(difficulty: string): DataTier {
+  return DIFFICULTY_TIERS_DEEP[difficulty] ?? { ...UNKNOWN_TIER, label: difficulty };
 }
 
 /** Still playing against retired: two states of a whole, not a scale. */
