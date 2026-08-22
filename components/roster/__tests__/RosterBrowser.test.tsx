@@ -164,3 +164,53 @@ describe('rosterBrowser nationality filter', () => {
     expect(onNationFilterChange).toHaveBeenLastCalledWith(null);
   });
 });
+
+describe('rosterBrowser grouping', () => {
+  const grouped = {
+    count: 1,
+    next: null,
+    previous: null,
+    results: [{
+      footballer_id: 5,
+      full_name: 'Peter Shilton',
+      nation_id: 1,
+      nation_name: 'England',
+      nation_short: 'ENG',
+      retired: true,
+      career_path_difficulty: 'NORMAL',
+      spell_count: 2,
+      total_apps: 1005,
+      total_goals: 0,
+      first_year: 1966,
+      last_year: 1996,
+      spells: [],
+    }],
+  } as unknown as PaginatedPlayers;
+
+  it('asks the server to group, because paging cannot be grouped afterwards', async () => {
+    // Grouping a fetched page would split a footballer across pages — the same
+    // person at the bottom of one and the top of the next.
+    const { fetchPage } = renderBrowser({ groupByFootballer: true }, grouped);
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+
+    expect(fetchPage.mock.calls[0][1].group_by).toBe('footballer');
+  });
+
+  it('does not ask for grouping when it was not wanted', async () => {
+    const { fetchPage } = renderBrowser();
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+
+    expect(fetchPage.mock.calls[0][1].group_by).toBeUndefined();
+  });
+
+  it('drops the card/table toggle, which grouped rows have no use for', async () => {
+    const { fetchPage } = renderBrowser({ groupByFootballer: true }, grouped);
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+
+    expect(screen.getByText('Peter Shilton')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Card view')).not.toBeInTheDocument();
+  });
+});

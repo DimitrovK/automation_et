@@ -68,6 +68,8 @@ export class TeamAPI {
     nationId: number,
     params?: RosterParams,
   ): Promise<NationPlayersResponse> {
+    // `players` is grouped or not depending on `group_by`; the caller knows
+    // which it asked for.
     const qs = buildQuery(params as Record<string, unknown> | undefined);
     return apiFetcher<NationPlayersResponse>(`data/nation/${nationId}/players/${qs}`);
   }

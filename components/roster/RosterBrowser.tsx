@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import type { FootballerNation } from '@/types/player';
 import type {
+  PaginatedGroupedPlayers,
   PaginatedPlayers,
   RoleFilter,
   RosterParams,
@@ -13,6 +14,7 @@ import type {
 import { LayoutGrid, List } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { NationCombobox } from '@/components/footballer-management/NationCombobox';
+import { GroupedPlayerTable } from '@/components/roster/GroupedPlayerTable';
 import { PlayerCard } from '@/components/team-players/PlayerCard';
 import { PlayerTable } from '@/components/team-players/PlayerTable';
 import { Button } from '@/components/ui/button';
@@ -47,10 +49,10 @@ const PAGE_SIZE = 50;
  * exposed nowhere, so "Brazilians at Chelsea" and "Brazilians who played in
  * England" both become reachable by putting it here once.
  */
-export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nationFilterLabel, onEditFootballer, onNationFilterChange }: {
+export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nationFilterLabel, onEditFootballer, onNationFilterChange, groupByFootballer }: {
   /** Null before a subject is chosen — the browser renders nothing. */
   subjectId: number | null;
-  fetchPage: (subjectId: number, params: RosterParams) => Promise<PaginatedPlayers>;
+  fetchPage: (subjectId: number, params: RosterParams) => Promise<PaginatedPlayers | PaginatedGroupedPlayers>;
   /** Rendered above the filters once a subject is loaded. */
   header?: ReactNode;
   emptyLabel?: string;
@@ -64,8 +66,15 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
    * heading that goes on claiming to show everyone.
    */
   onNationFilterChange?: (nation: FootballerNation | null) => void;
+  /**
+   * One row per person, each opening onto their clubs, rather than one row per
+   * spell. A country's roster wants it — someone can have played for eleven
+   * clubs there — and it makes the row count match what the analytics tile
+   * counts. A squad does not: the spells at ONE club are the answer there.
+   */
+  groupByFootballer?: boolean;
 }) {
-  const [players, setPlayers] = useState<PaginatedPlayers | null>(null);
+  const [players, setPlayers] = useState<PaginatedPlayers | PaginatedGroupedPlayers | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,6 +100,7 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
       transfer_type: transferType,
       status: statusFilter,
       nation_id: nationId ?? undefined,
+      group_by: groupByFootballer ? 'footballer' : undefined,
       q: debouncedQ.trim() || undefined,
       ordering,
       page,
@@ -119,7 +129,7 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
     // `fetchPage` is rebuilt by the page on every render, so it is deliberately
     // not a dependency — depending on it would refetch forever.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjectId, role, transferType, statusFilter, nationId, debouncedQ, ordering, page]);
+  }, [subjectId, role, transferType, statusFilter, nationId, debouncedQ, ordering, page, groupByFootballer]);
 
   // Anything that changes WHICH rows exist sends you back to page one. Page 12
   // of a four-row filter does not exist, and the backend would answer with an
@@ -239,16 +249,21 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end">
-        <div className="flex gap-1">
-          <Button size="sm" variant={view === 'cards' ? 'default' : 'outline'} onClick={() => setView('cards')} aria-label="Card view">
-            <LayoutGrid className="size-4" />
-          </Button>
-          <Button size="sm" variant={view === 'table' ? 'default' : 'outline'} onClick={() => setView('table')} aria-label="Table view">
-            <List className="size-4" />
-          </Button>
+      {/* Not rendered rather than hidden: grouped rows have no card view, and
+          a control that does nothing should not be in the page at all — for a
+          screen reader least of all. */}
+      {!groupByFootballer && (
+        <div className="flex items-center justify-end">
+          <div className="flex gap-1">
+            <Button size="sm" variant={view === 'cards' ? 'default' : 'outline'} onClick={() => setView('cards')} aria-label="Card view">
+              <LayoutGrid className="size-4" />
+            </Button>
+            <Button size="sm" variant={view === 'table' ? 'default' : 'outline'} onClick={() => setView('table')} aria-label="Table view">
+              <List className="size-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {loading && !players && (
         <p className="text-center text-sm text-muted-foreground">Loading…</p>
@@ -256,23 +271,30 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
 
       {players && (
         <>
-          {view === 'cards'
+          {groupByFootballer
             ? (
-                players.results.length === 0
-                  ? (
-                      <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
-                        {emptyLabel ?? 'No players match the current filters.'}
-                      </div>
-                    )
-                  : (
-                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                        {players.results.map(player => (
-                          <PlayerCard key={player.id} player={player} onEdit={onEditFootballer} />
-                        ))}
-                      </div>
-                    )
+                <GroupedPlayerTable
+                  players={(players as PaginatedGroupedPlayers).results}
+                  emptyLabel={emptyLabel}
+                />
               )
-            : <PlayerTable players={players.results} onEdit={onEditFootballer} />}
+            : view === 'cards'
+              ? (
+                  (players as PaginatedPlayers).results.length === 0
+                    ? (
+                        <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
+                          {emptyLabel ?? 'No players match the current filters.'}
+                        </div>
+                      )
+                    : (
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                          {(players as PaginatedPlayers).results.map(player => (
+                            <PlayerCard key={player.id} player={player} onEdit={onEditFootballer} />
+                          ))}
+                        </div>
+                      )
+                )
+              : <PlayerTable players={(players as PaginatedPlayers).results} onEdit={onEditFootballer} />}
 
           <DataPagination
             currentPage={page}

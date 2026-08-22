@@ -143,6 +143,10 @@ function NationPlayers() {
           emptyLabel="No spell in this country matches the current filters."
           onEditFootballer={id => router.push(`/footballer-management?edit=${id}`)}
           onNationFilterChange={setNationality}
+          // One row per person here. Someone can have played for eleven clubs
+          // in one country, and eleven rows of the same name is a list of
+          // contracts rather than a list of players.
+          groupByFootballer
         />
       </div>
     </div>

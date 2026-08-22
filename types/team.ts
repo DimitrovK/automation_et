@@ -74,9 +74,40 @@ export type NationHeaderInfo = {
   total_clubs: number;
 };
 
+/**
+ * One footballer and every spell they had inside the current scope.
+ *
+ * Grouped server-side: paging the spells and grouping what came back would
+ * split a person across pages.
+ */
+export type GroupedPlayer = {
+  footballer_id: number;
+  full_name: string;
+  nation_id: number | null;
+  nation_name: string | null;
+  nation_short: string | null;
+  retired: boolean;
+  career_path_difficulty: string | null;
+  spell_count: number;
+  /** Summed across the spells in scope — not the best single one. */
+  total_apps: number;
+  total_goals: number;
+  first_year: number | null;
+  last_year: number | null;
+  spells: TeamPlayerRow[];
+};
+
+export type PaginatedGroupedPlayers = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GroupedPlayer[];
+};
+
 export type NationPlayersResponse = {
   nation: NationHeaderInfo;
-  players: PaginatedPlayers;
+  /** Grouped when `group_by=footballer` was asked for, spells otherwise. */
+  players: PaginatedPlayers | PaginatedGroupedPlayers;
 };
 
 /**
@@ -87,6 +118,8 @@ export type NationPlayersResponse = {
  * "Brazilians who played in England" expressible.
  */
 export type RosterParams = {
+  /** `footballer` returns one row per person, each carrying its spells. */
+  group_by?: 'footballer';
   role?: RoleFilter;
   transfer_type?: TransferFilter;
   status?: StatusFilter;
