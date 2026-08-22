@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { CappedList } from '@/components/reports/primitives/CappedList';
-import { difficultyTier as tier } from '@/lib/data-colours';
+import { difficultyTier, difficultyTierDeep } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
 
 /**
@@ -26,7 +26,7 @@ export type TileRow = {
   extra?: number | null;
 };
 
-export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, expanded, emptyLabel, extraHeading, extraLabel, rankedBy, onRankBy }: {
+export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, expanded, emptyLabel, extraHeading, extraLabel, rankedBy, onRankBy, palette = 'default' }: {
   rows: TileRow[];
   order: string[];
   /**
@@ -59,7 +59,13 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
    * Called with null when the active column is clicked again, matching the chips.
    */
   onRankBy?: (difficulty: string | null) => void;
+  /**
+   * Which tier colours to use. `deep` is for a second matrix on the same page:
+   * two tables of identical pale tiles read as the same table twice.
+   */
+  palette?: 'default' | 'deep';
 }): ReactNode {
+  const tier = palette === 'deep' ? difficultyTierDeep : difficultyTier;
   return (
     <CappedList
       total={total}
@@ -147,6 +153,7 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
                     count={count}
                     index={index}
                     ranked={rankedBy === order[index]}
+                    palette={palette}
                   />
                 ))}
                 <td className="p-0 pl-2">
@@ -182,13 +189,14 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
   );
 }
 
-function Tile({ difficulty, count, index, ranked }: {
+function Tile({ difficulty, count, index, ranked, palette = 'default' }: {
   difficulty: string;
   count: number;
   index: number;
   ranked?: boolean;
+  palette?: 'default' | 'deep';
 }) {
-  const style = tier(difficulty);
+  const style = palette === 'deep' ? difficultyTierDeep(difficulty) : difficultyTier(difficulty);
 
   // A dash, not a zero. An empty tier is the thing you are looking for, and the
   // gaps are the reason to read this table — so it keeps the tile's shape while

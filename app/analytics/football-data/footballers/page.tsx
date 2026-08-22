@@ -18,6 +18,9 @@ import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
+/** One cut, so the panel drops its group-by toggle. */
+const CLUB_DIMENSION = [{ key: 'club_nation', label: 'By country played in' }];
+
 const PAGE = 10;
 const EXPANDED = 100;
 
@@ -37,6 +40,14 @@ export default function FootballersAnalyticsPage() {
   const [matrixDifficulty, setMatrixDifficulty] = useState<string | null>(null);
   const [matrixLimit, setMatrixLimit] = useState(PAGE);
 
+  // The club-nation cut has its own state rather than sharing the matrix
+  // toggle's. It answers a different question and is read alongside the first
+  // table, not instead of it — a shared filter would clear one while reading
+  // the other.
+  const [clubSearch, setClubSearch] = useState('');
+  const [clubDifficulty, setClubDifficulty] = useState<string | null>(null);
+  const [clubLimit, setClubLimit] = useState(PAGE);
+
   const { filters, update } = useReportFilters({
     range: { window: 90 },
     includeBots: false,
@@ -49,6 +60,19 @@ export default function FootballersAnalyticsPage() {
   const params = useMemo(
     () => ({ ...rangeToParams(range), include_bots: includeBots }),
     [range, includeBots],
+  );
+
+  const clubMatrix = useReport(
+    () => ReportsAPI.getDifficultyMatrix(
+      'club_nation',
+      clubLimit,
+      clubSearch || undefined,
+      clubDifficulty ?? undefined,
+    ),
+    {},
+    enabled,
+    'The difficulty matrix endpoint',
+    `club_nation:${clubLimit}:${clubSearch}:${clubDifficulty ?? ''}`,
   );
 
   const matrix = useReport(
@@ -121,6 +145,26 @@ export default function FootballersAnalyticsPage() {
             onDifficultyChange={setMatrixDifficulty}
             expanded={matrixLimit > PAGE}
             onExpand={() => setMatrixLimit(EXPANDED)}
+          />
+        )}
+      </ReportPanel>
+
+      <ReportPanel state={clubMatrix} skeletonClassName="h-[30rem] w-full">
+        {clubData => (
+          <FootballerMatrix
+            data={clubData}
+            title="Footballers by the country they played in"
+            description="Distinct footballers with at least one club in each country, by difficulty. A different question from the table above: the catalogue is thick with Brazilians and thin on anyone who played in Brazil, and a club-based game only cares about the second. Someone who played in England and Italy is in both rows, so these sum to more than the catalogue holds. Approved footballers only."
+            palette="deep"
+            dimension="club_nation"
+            onDimensionChange={() => {}}
+            dimensions={CLUB_DIMENSION}
+            search={clubSearch}
+            onSearchChange={setClubSearch}
+            difficulty={clubDifficulty}
+            onDifficultyChange={setClubDifficulty}
+            expanded={clubLimit > PAGE}
+            onExpand={() => setClubLimit(EXPANDED)}
           />
         )}
       </ReportPanel>
