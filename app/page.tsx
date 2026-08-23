@@ -5,6 +5,7 @@ import {
   Database,
   FileQuestion,
   FileText,
+  Globe2,
   MessageCircle,
   Microscope,
   Search,
@@ -56,6 +57,9 @@ export default function DashboardPage() {
   };
   const navigateToTeamPlayers = () => {
     router.push('/team-players');
+  };
+  const navigateToNationPlayers = () => {
+    router.push('/nation-players');
   };
   const navigateToUserHub = () => {
     router.push('/user-hub');
@@ -157,6 +161,31 @@ export default function DashboardPage() {
               >
                 <Users2 className="mr-2 size-4" />
                 Browse Squad
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Beside the squad card, because it is the same list asked the other
+              way round: everyone who played IN a country rather than everyone
+              at one club. */}
+          <Card className="transition-shadow duration-200 hover:shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe2 className="size-5 text-teal-600" />
+                Nation Players
+              </CardTitle>
+              <CardDescription>
+                Everyone who played for a club in a country — not everyone from it. Cross it
+                with a nationality for "Brazilians who played in England".
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={navigateToNationPlayers}
+                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+              >
+                <Globe2 className="mr-2 size-4" />
+                Browse Country
               </Button>
             </CardContent>
           </Card>

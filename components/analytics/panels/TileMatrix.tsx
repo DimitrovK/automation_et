@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { CappedList } from '@/components/reports/primitives/CappedList';
 import { difficultyTier, difficultyTierDeep } from '@/lib/data-colours';
 import { cn } from '@/lib/utils';
@@ -26,7 +27,7 @@ export type TileRow = {
   extra?: number | null;
 };
 
-export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, expanded, emptyLabel, extraHeading, extraLabel, rankedBy, onRankBy, palette = 'default' }: {
+export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, expanded, emptyLabel, extraHeading, extraLabel, rankedBy, onRankBy, palette = 'default', rowHref }: {
   rows: TileRow[];
   order: string[];
   /**
@@ -64,6 +65,12 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
    * two tables of identical pale tiles read as the same table twice.
    */
   palette?: 'default' | 'deep';
+  /**
+   * Turns each row label into a link. Optional and inert when absent, like
+   * `onRankBy` — a matrix whose rows lead nowhere should not render a control
+   * that looks as though they do.
+   */
+  rowHref?: (row: TileRow) => string;
 }): ReactNode {
   const tier = palette === 'deep' ? difficultyTierDeep : difficultyTier;
   return (
@@ -144,7 +151,13 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
                   className="sticky left-0 z-10 max-w-52 truncate bg-card py-1 pr-3 text-left font-medium text-foreground transition-colors group-hover:bg-muted/40"
                   title={row.name}
                 >
-                  {row.name}
+                  {rowHref
+                    ? (
+                        <Link href={rowHref(row)} className="hover:text-primary hover:underline">
+                          {row.name}
+                        </Link>
+                      )
+                    : row.name}
                 </th>
                 {row.by_difficulty.map((count, index) => (
                   <Tile

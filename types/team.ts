@@ -26,6 +26,12 @@ export type TeamPlayerRow = {
   id: number; // FootballerTeam (stint) id
   footballer_id: number;
   full_name: string;
+  /**
+   * The club. Optional because a backend predating it sends neither — the
+   * squad page never needed it, since every row there is the same club.
+   */
+  team_id?: number;
+  team_name?: string;
   nation_id: number | null;
   nation_name: string | null;
   nation_short: string | null;
@@ -61,7 +67,67 @@ export type TeamPlayersOrdering
     | 'apps' | '-apps'
     | 'goals' | '-goals';
 
-export type TeamPlayersParams = {
+/** A country's roster header — both counts, because they differ. */
+export type NationHeaderInfo = {
+  id: number;
+  name: string;
+  short: string;
+  flag: string | null;
+  /** Distinct people. What the analytics tile counts. */
+  total_footballers: number;
+  /** Rows in the list, which is the larger number and not a contradiction. */
+  total_spells: number;
+  total_clubs: number;
+};
+
+/**
+ * One footballer and every spell they had inside the current scope.
+ *
+ * Grouped server-side: paging the spells and grouping what came back would
+ * split a person across pages.
+ */
+export type GroupedPlayer = {
+  footballer_id: number;
+  full_name: string;
+  nation_id: number | null;
+  nation_name: string | null;
+  nation_short: string | null;
+  retired: boolean;
+  career_path_difficulty: string | null;
+  spell_count: number;
+  /** Spells with no end year — they are at a club here now. */
+  open_spells?: number;
+  /** Summed across the spells in scope — not the best single one. */
+  total_apps: number;
+  total_goals: number;
+  first_year: number | null;
+  last_year: number | null;
+  spells: TeamPlayerRow[];
+};
+
+export type PaginatedGroupedPlayers = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GroupedPlayer[];
+};
+
+export type NationPlayersResponse = {
+  nation: NationHeaderInfo;
+  /** Grouped when `group_by=footballer` was asked for, spells otherwise. */
+  players: PaginatedPlayers | PaginatedGroupedPlayers;
+};
+
+/**
+ * Query params for a stint roster, whichever subject scopes it.
+ *
+ * `nation_id` is the FOOTBALLER's nationality — on the nation roster that is a
+ * different thing from the country the stint was in, which is what makes
+ * "Brazilians who played in England" expressible.
+ */
+export type RosterParams = {
+  /** `footballer` returns one row per person, each carrying its spells. */
+  group_by?: 'footballer';
   role?: RoleFilter;
   transfer_type?: TransferFilter;
   status?: StatusFilter;
@@ -73,3 +139,6 @@ export type TeamPlayersParams = {
   page?: number;
   page_size?: number;
 };
+
+/** The team roster's params. One shape, kept under its old name for callers. */
+export type TeamPlayersParams = RosterParams;

@@ -1,41 +1,29 @@
 'use client';
 
-import type {
-  RoleFilter,
-  StatusFilter,
-  TeamPlayersOrdering,
-  TeamPlayersResponse,
-  TransferFilter,
-} from '@/types/team';
-import { LayoutGrid, List, Users2 } from 'lucide-react';
+import type { TeamHeaderInfo } from '@/types/team';
+import { Users2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
-import { PlayerCard } from '@/components/team-players/PlayerCard';
-import { PlayerTable } from '@/components/team-players/PlayerTable';
+import { RosterBrowser } from '@/components/roster/RosterBrowser';
 import { TeamHeader } from '@/components/team-players/TeamHeader';
 import { TeamSearch } from '@/components/team-players/TeamSearch';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { DataPagination } from '@/components/ui/data-pagination';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useAuth } from '@/lib/auth';
 import config from '@/lib/config';
 import { TeamAPI } from '@/lib/team-api';
 import { parseTeamId } from '@/lib/team-id-param';
 
-const PAGE_SIZE = 50;
-
+/**
+ * One club's squad, as the catalogue holds it.
+ *
+ * The list, its filters and its paging live in `RosterBrowser`, which the
+ * nation roster uses too — a squad and a country's roster are the same stints
+ * scoped differently, and the backend serves both from one view for the same
+ * reason. What is left here is the part that is actually about a team: picking
+ * one, and saying what it is.
+ */
 function TeamPlayers() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
@@ -45,27 +33,10 @@ function TeamPlayers() {
   // reading the original id back out of the query string.
   const consumedTeamIdParam = useRef(false);
 
-  // ---- selected team + payload ------------------------------------------
   const [teamId, setTeamId] = useState<number | null>(null);
-  const [data, setData] = useState<TeamPlayersResponse | null>(null);
-  const [dataLoading, setDataLoading] = useState(false);
+  const [team, setTeam] = useState<TeamHeaderInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ---- filters / view ----------------------------------------------------
-  const [role, setRole] = useState<RoleFilter>('player');
-  const [transferType, setTransferType] = useState<TransferFilter>('all');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [q, setQ] = useState('');
-  const debouncedQ = useDebouncedValue(q, 300);
-  const [ordering, setOrdering] = useState<TeamPlayersOrdering>('-start_year');
-  const [page, setPage] = useState(1);
-  const [view, setView] = useState<'cards' | 'table'>('table');
-
-  // ---- effects -----------------------------------------------------------
-  // Deep-link entry point for `/team-players?teamId=<id>`. The teams analytics
-  // page links every row and every empty-team chip here, which is the point of
-  // that page: a club with a thin or missing squad is one click from the screen
-  // where you fix it.
   useEffect(() => {
     if (consumedTeamIdParam.current || !isAuthenticated) {
       return;
@@ -78,67 +49,25 @@ function TeamPlayers() {
     setTeamId(fromUrl);
   }, [isAuthenticated, searchParams]);
 
-  useEffect(() => {
-    if (teamId === null) {
-      return;
-    }
-    let cancelled = false;
-    setDataLoading(true);
-    setError(null);
-    TeamAPI.getTeamPlayers(teamId, {
-      role,
-      transfer_type: transferType,
-      status: statusFilter,
-      q: debouncedQ.trim() || undefined,
-      ordering,
-      page,
-      page_size: PAGE_SIZE,
-    })
-      .then((res) => {
-        if (!cancelled) {
-          setData(res);
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) {
-          return;
-        }
-        const raw = err instanceof Error ? err.message : 'Failed to load team players';
-        // 404 from this endpoint means one of two things:
-        //  1. The team id genuinely doesn't exist in the DB.
-        //  2. The backend hasn't deployed the new
-        //     /data/team/<id>/players/ route yet — common during the
-        //     period between PR review and the prod deploy.
-        const friendly = /404|Not Found|Team not found/i.test(raw)
+  // The browser asks for a page; this keeps the header that came back with it.
+  const fetchPage = useCallback(async (id: number, params: Parameters<typeof TeamAPI.getTeamPlayers>[1]) => {
+    try {
+      const response = await TeamAPI.getTeamPlayers(id, params);
+      setTeam(response.team);
+      setError(null);
+      return response.players;
+    } catch (err: unknown) {
+      const raw = err instanceof Error ? err.message : 'Failed to load team players';
+      // A 404 here means the team id does not exist, or the backend has not
+      // deployed this route yet — common between review and the prod deploy.
+      throw new Error(
+        /404|Not Found|Team not found/i.test(raw)
           ? `${raw}\n\nThis can mean the team id doesn't exist, or the backend at ${config.API_BASE_URL} doesn't have the team-players endpoint deployed yet (GET /data/team/<id>/players/).`
-          : raw;
-        setError(friendly);
-        setData(null);
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setDataLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [teamId, role, transferType, statusFilter, debouncedQ, ordering, page]);
-
-  // Reset to page 1 whenever any filter that narrows the result set changes.
-  useEffect(() => {
-    setPage(1);
-  }, [role, transferType, statusFilter, debouncedQ, ordering, teamId]);
-
-  // ---- derived -----------------------------------------------------------
-  const totalPages = useMemo(() => {
-    if (!data) {
-      return 1;
+          : raw,
+      );
     }
-    return Math.max(1, Math.ceil(data.players.count / PAGE_SIZE));
-  }, [data]);
+  }, []);
 
-  // ---- guards ------------------------------------------------------------
   if (isLoading) {
     return <LoadingSpinner message="Authenticating" subtitle="Verifying staff access..." />;
   }
@@ -146,24 +75,15 @@ function TeamPlayers() {
     return <LoginForm />;
   }
 
-  // ---- handlers ----------------------------------------------------------
   function handleTeamSelect(id: number) {
     setTeamId(id);
     setError(null);
     // Keep the address bar honest. Arriving by deep link and then picking a
-    // different team would otherwise leave the URL naming the previous club,
-    // so a refresh or a shared link would land somewhere else than the screen.
-    // Marked consumed first, so the resulting `searchParams` change cannot
-    // re-enter the deep-link effect.
+    // different team would otherwise leave the URL naming the previous club.
     consumedTeamIdParam.current = true;
     router.replace(`/team-players?teamId=${id}`);
   }
 
-  function handleEditFootballer(footballerId: number) {
-    router.push(`/footballer-management?edit=${footballerId}`);
-  }
-
-  // ---- render ------------------------------------------------------------
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -182,7 +102,6 @@ function TeamPlayers() {
 
         <TeamSearch onSelect={handleTeamSelect} onValidationError={setError} />
 
-        {/* Error / loading / result */}
         {error && (
           <div
             role="alert"
@@ -192,142 +111,13 @@ function TeamPlayers() {
           </div>
         )}
 
-        {dataLoading && <p className="text-center text-sm text-muted-foreground">Loading team…</p>}
-
-        {data && (
-          <>
-            <TeamHeader team={data.team} />
-
-            {/* Filters */}
-            <Card>
-              <CardContent className="grid grid-cols-1 gap-3 pt-6 md:grid-cols-2 lg:grid-cols-6">
-                <div>
-                  <label htmlFor="filter-role" className="mb-1 block text-xs font-medium text-muted-foreground">Role</label>
-                  <Select value={role} onValueChange={v => setRole(v as RoleFilter)}>
-                    <SelectTrigger id="filter-role"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="player">Players</SelectItem>
-                      <SelectItem value="manager">Managers</SelectItem>
-                      <SelectItem value="all">All</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label htmlFor="filter-transfer" className="mb-1 block text-xs font-medium text-muted-foreground">Transfer</label>
-                  <Select
-                    value={transferType}
-                    onValueChange={v => setTransferType(v as TransferFilter)}
-                  >
-                    <SelectTrigger id="filter-transfer"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="permanent">Permanent</SelectItem>
-                      <SelectItem value="loan">Loan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label htmlFor="filter-status" className="mb-1 block text-xs font-medium text-muted-foreground">Status</label>
-                  <Select
-                    value={statusFilter}
-                    onValueChange={v => setStatusFilter(v as StatusFilter)}
-                  >
-                    <SelectTrigger id="filter-status"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="retired">Retired</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="md:col-span-1 lg:col-span-2">
-                  <label htmlFor="filter-player-name" className="mb-1 block text-xs font-medium text-muted-foreground">
-                    Player name
-                  </label>
-                  <Input
-                    id="filter-player-name"
-                    placeholder="Filter by name…"
-                    value={q}
-                    onChange={e => setQ(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="filter-sort" className="mb-1 block text-xs font-medium text-muted-foreground">Sort</label>
-                  <Select
-                    value={ordering}
-                    onValueChange={v => setOrdering(v as TeamPlayersOrdering)}
-                  >
-                    <SelectTrigger id="filter-sort"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="-start_year">Start year (newest)</SelectItem>
-                      <SelectItem value="start_year">Start year (oldest)</SelectItem>
-                      <SelectItem value="full_name">Name (A–Z)</SelectItem>
-                      <SelectItem value="-full_name">Name (Z–A)</SelectItem>
-                      <SelectItem value="-apps">Most apps</SelectItem>
-                      <SelectItem value="-goals">Most goals</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* View toggle (count is rendered with the paginator below) */}
-            <div className="flex items-center justify-end">
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant={view === 'cards' ? 'default' : 'outline'}
-                  onClick={() => setView('cards')}
-                  aria-label="Card view"
-                >
-                  <LayoutGrid className="size-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant={view === 'table' ? 'default' : 'outline'}
-                  onClick={() => setView('table')}
-                  aria-label="Table view"
-                >
-                  <List className="size-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Results */}
-            {view === 'cards'
-              ? (
-                  data.players.results.length === 0
-                    ? (
-                        <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
-                          No players match the current filters.
-                        </div>
-                      )
-                    : (
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                          {data.players.results.map(p => (
-                            <PlayerCard key={p.id} player={p} onEdit={handleEditFootballer} />
-                          ))}
-                        </div>
-                      )
-                )
-              : (
-                  <PlayerTable players={data.players.results} onEdit={handleEditFootballer} />
-                )}
-
-            <DataPagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalCount={data.players.count}
-              visibleCount={data.players.results.length}
-              onPageChange={setPage}
-              disabled={dataLoading}
-            />
-          </>
-        )}
+        <RosterBrowser
+          subjectId={teamId}
+          fetchPage={fetchPage}
+          header={team ? <TeamHeader team={team} /> : null}
+          nationFilterLabel="Nationality"
+          onEditFootballer={id => router.push(`/footballer-management?edit=${id}`)}
+        />
       </div>
     </div>
   );
@@ -336,8 +126,7 @@ function TeamPlayers() {
 /**
  * `useSearchParams` suspends, and a client page that reads it without a
  * boundary makes the whole route bail out of prerendering — a build error in
- * Next 16, not a runtime one. The fallback is what the page already shows while
- * it works out who you are.
+ * Next 16, not a runtime one.
  */
 export default function TeamPlayersPage() {
   return (

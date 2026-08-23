@@ -1,5 +1,6 @@
 import type {
-  TeamPlayersParams,
+  NationPlayersResponse,
+  RosterParams,
   TeamPlayersResponse,
   TeamSearchResult,
 } from '@/types/team';
@@ -49,9 +50,27 @@ export class TeamAPI {
   /** GET /data/team/<id>/players/ — admin only. */
   static async getTeamPlayers(
     teamId: number,
-    params?: TeamPlayersParams,
+    params?: RosterParams,
   ): Promise<TeamPlayersResponse> {
     const qs = buildQuery(params as Record<string, unknown> | undefined);
     return apiFetcher<TeamPlayersResponse>(`data/team/${teamId}/players/${qs}`);
+  }
+
+  /**
+   * GET /data/nation/<id>/players/ — admin only.
+   *
+   * Everyone who played for a club in this country, which is a different
+   * question from everyone from it. Same rows and the same params as the squad
+   * lookup — the backend serves both from one view — so the only difference
+   * here is the path.
+   */
+  static async getNationPlayers(
+    nationId: number,
+    params?: RosterParams,
+  ): Promise<NationPlayersResponse> {
+    // `players` is grouped or not depending on `group_by`; the caller knows
+    // which it asked for.
+    const qs = buildQuery(params as Record<string, unknown> | undefined);
+    return apiFetcher<NationPlayersResponse>(`data/nation/${nationId}/players/${qs}`);
   }
 }

@@ -20,7 +20,7 @@ const DIMENSIONS = [
   { key: 'team', label: 'By team' },
 ];
 
-export function FootballerMatrix({ data, dimension, onDimensionChange, search, onSearchChange, difficulty, onDifficultyChange, onExpand, expanded, title, description, dimensions, palette }: {
+export function FootballerMatrix({ data, dimension, onDimensionChange, search, onSearchChange, difficulty, onDifficultyChange, onExpand, expanded, title, description, dimensions, palette, rowHref }: {
   data: DifficultyMatrixResponse;
   dimension: string;
   onDimensionChange: (next: string) => void;
@@ -40,6 +40,8 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
   dimensions?: { key: string; label: string }[];
   /** `deep` for a second matrix on the same page — see `TileMatrix`. */
   palette?: 'default' | 'deep';
+  /** Where a row leads. Inert when absent. */
+  rowHref?: (row: { key: string; name: string }) => string;
 }) {
   const { matrix, difficulty_order: order } = data;
   const options = dimensions ?? DIMENSIONS;
@@ -115,6 +117,7 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
       <CardContent>
         <TileMatrix
           palette={palette}
+          rowHref={rowHref}
           rows={matrix.items}
           order={order}
           rankedBy={difficulty}
