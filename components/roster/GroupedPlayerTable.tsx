@@ -29,9 +29,10 @@ function span(first: number | null, last: number | null) {
 function GroupedRow({ player }: { player: GroupedPlayer }) {
   const [open, setOpen] = useState(false);
   const detailId = `spells-${player.footballer_id}`;
+  const spellCount = player.spell_count ?? player.spells?.length ?? 0;
   // One club is its own answer — an expander that reveals a single row the
   // summary already described is a control that wastes a click.
-  const expandable = player.spell_count > 1;
+  const expandable = spellCount > 1 && (player.spells?.length ?? 0) > 0;
 
   return (
     <>
@@ -65,12 +66,15 @@ function GroupedRow({ player }: { player: GroupedPlayer }) {
         <TableCell>
           {/* The number the expander opens, said before it is opened. */}
           <Badge variant="secondary" className="font-normal">
-            {`${player.spell_count} ${player.spell_count === 1 ? 'club' : 'clubs'}`}
+            {`${spellCount} ${spellCount === 1 ? 'club' : 'clubs'}`}
           </Badge>
         </TableCell>
         <TableCell className="tabular-nums">{span(player.first_year, player.last_year)}</TableCell>
-        <TableCell className="text-right tabular-nums">{player.total_apps.toLocaleString()}</TableCell>
-        <TableCell className="text-right tabular-nums">{player.total_goals.toLocaleString()}</TableCell>
+        {/* Coalesced rather than trusted. This component is exported, and a
+            row arriving without its aggregates should degrade to a dash, never
+            take the page down with a TypeError mid-render. */}
+        <TableCell className="text-right tabular-nums">{(player.total_apps ?? 0).toLocaleString()}</TableCell>
+        <TableCell className="text-right tabular-nums">{(player.total_goals ?? 0).toLocaleString()}</TableCell>
         <TableCell>
           {player.retired
             ? <Badge variant="outline" className="font-normal">Retired</Badge>
@@ -84,7 +88,7 @@ function GroupedRow({ player }: { player: GroupedPlayer }) {
       {open && (
         <TableRow className="bg-muted/20 hover:bg-muted/20">
           <TableCell id={detailId} colSpan={6} className="p-3">
-            <PlayerTable players={player.spells} />
+            <PlayerTable players={player.spells ?? []} />
           </TableCell>
         </TableRow>
       )}

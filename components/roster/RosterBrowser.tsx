@@ -138,6 +138,22 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
     setPage(1);
   }, [role, transferType, statusFilter, nationId, debouncedQ, ordering, subjectId]);
 
+  // Whether what came BACK is grouped, not whether grouping was asked for.
+  //
+  // A backend that predates `group_by` ignores it — DRF does not reject unknown
+  // query params — and answers with the ungrouped stint rows. Rendering those
+  // through the grouped table read `total_apps` off a row that has none and
+  // threw during render, which with no error boundary above it is a blank page
+  // saying "This page couldn't load". The two repositories deploy
+  // independently, so this is a state that happens, not a hypothetical.
+  const grouped = useMemo(() => {
+    if (!groupByFootballer || players === null) {
+      return false;
+    }
+    const [first] = players.results;
+    return first === undefined || 'spell_count' in first;
+  }, [groupByFootballer, players]);
+
   const totalPages = useMemo(() => {
     if (!players) {
       return 1;
@@ -252,7 +268,7 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
       {/* Not rendered rather than hidden: grouped rows have no card view, and
           a control that does nothing should not be in the page at all — for a
           screen reader least of all. */}
-      {!groupByFootballer && (
+      {!grouped && (
         <div className="flex items-center justify-end">
           <div className="flex gap-1">
             <Button size="sm" variant={view === 'cards' ? 'default' : 'outline'} onClick={() => setView('cards')} aria-label="Card view">
@@ -271,7 +287,7 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
 
       {players && (
         <>
-          {groupByFootballer
+          {grouped
             ? (
                 <GroupedPlayerTable
                   players={(players as PaginatedGroupedPlayers).results}

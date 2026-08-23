@@ -214,3 +214,48 @@ describe('rosterBrowser grouping', () => {
     expect(screen.queryByLabelText('Card view')).not.toBeInTheDocument();
   });
 });
+
+describe('rosterBrowser against a backend without grouping', () => {
+  it('renders the spell rows it was actually given, rather than crashing', async () => {
+    // The two repositories deploy independently and DRF ignores unknown query
+    // params, so a backend that predates `group_by` answers with stint rows.
+    // Rendering those through the grouped table read `total_apps` off a row
+    // that has none and threw during render — a blank page reading "This page
+    // couldn't load", because there is no error boundary above it.
+    const { fetchPage } = renderBrowser({ groupByFootballer: true }, page());
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+
+    // The ungrouped table, and no crash.
+    expect(screen.getByText('Willian Borges')).toBeInTheDocument();
+    expect(screen.queryByText(/clubs$/)).not.toBeInTheDocument();
+  });
+
+  it('still groups once the backend answers with grouped rows', async () => {
+    const grouped = {
+      count: 1,
+      next: null,
+      previous: null,
+      results: [{
+        footballer_id: 5,
+        full_name: 'Peter Shilton',
+        nation_id: 1,
+        nation_name: 'England',
+        nation_short: 'ENG',
+        retired: true,
+        career_path_difficulty: 'NORMAL',
+        spell_count: 2,
+        total_apps: 1005,
+        total_goals: 0,
+        first_year: 1966,
+        last_year: 1996,
+        spells: [],
+      }],
+    } as unknown as PaginatedPlayers;
+    const { fetchPage } = renderBrowser({ groupByFootballer: true }, grouped);
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
+
+    expect(screen.getByText('2 clubs')).toBeInTheDocument();
+  });
+});
