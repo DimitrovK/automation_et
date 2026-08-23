@@ -31,9 +31,20 @@ type Props = {
    *  clicks the row's edit icon.
    */
   onEdit?: (footballerId: number) => void;
+  /**
+   * Which columns carry information HERE.
+   *
+   * On a squad every row is the same club, so a club column would repeat one
+   * value all the way down — and nested under a footballer's spells every row
+   * is the same person, so the player and nation columns do that instead. The
+   * table is the same; what is worth a column is not, and it depends on what
+   * the caller has already said above it.
+   */
+  showTeam?: boolean;
+  showPlayer?: boolean;
 };
 
-export function PlayerTable({ players, onEdit }: Props) {
+export function PlayerTable({ players, onEdit, showTeam = false, showPlayer = true }: Props) {
   if (players.length === 0) {
     return (
       <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
@@ -48,8 +59,9 @@ export function PlayerTable({ players, onEdit }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-20 text-right font-mono text-xs">ID</TableHead>
-            <TableHead>Player</TableHead>
-            <TableHead>Nation</TableHead>
+            {showTeam && <TableHead>Club</TableHead>}
+            {showPlayer && <TableHead>Player</TableHead>}
+            {showPlayer && <TableHead>Nation</TableHead>}
             <TableHead>Role</TableHead>
             <TableHead>Years</TableHead>
             <TableHead className="text-right">Apps</TableHead>
@@ -65,15 +77,24 @@ export function PlayerTable({ players, onEdit }: Props) {
                 #
                 {p.footballer_id}
               </TableCell>
-              <TableCell className="font-medium">
-                {p.full_name}
-                {p.retired && (
-                  <Badge variant="outline" className="ml-2 text-xs">retired</Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                {p.nation_short ?? p.nation_name ?? '—'}
-              </TableCell>
+              {showTeam && (
+                <TableCell className="font-medium">
+                  {p.team_name ?? '—'}
+                </TableCell>
+              )}
+              {showPlayer && (
+                <TableCell className="font-medium">
+                  {p.full_name}
+                  {p.retired && (
+                    <Badge variant="outline" className="ml-2 text-xs">retired</Badge>
+                  )}
+                </TableCell>
+              )}
+              {showPlayer && (
+                <TableCell>
+                  {p.nation_short ?? p.nation_name ?? '—'}
+                </TableCell>
+              )}
               <TableCell>
                 <Badge variant={p.role === 'manager' ? 'default' : 'secondary'}>
                   {p.role}

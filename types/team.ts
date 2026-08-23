@@ -26,6 +26,12 @@ export type TeamPlayerRow = {
   id: number; // FootballerTeam (stint) id
   footballer_id: number;
   full_name: string;
+  /**
+   * The club. Optional because a backend predating it sends neither — the
+   * squad page never needed it, since every row there is the same club.
+   */
+  team_id?: number;
+  team_name?: string;
   nation_id: number | null;
   nation_name: string | null;
   nation_short: string | null;
@@ -89,6 +95,8 @@ export type GroupedPlayer = {
   retired: boolean;
   career_path_difficulty: string | null;
   spell_count: number;
+  /** Spells with no end year — they are at a club here now. */
+  open_spells?: number;
   /** Summed across the spells in scope — not the best single one. */
   total_apps: number;
   total_goals: number;

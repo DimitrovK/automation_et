@@ -49,7 +49,7 @@ const PAGE_SIZE = 50;
  * exposed nowhere, so "Brazilians at Chelsea" and "Brazilians who played in
  * England" both become reachable by putting it here once.
  */
-export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nationFilterLabel, onEditFootballer, onNationFilterChange, groupByFootballer }: {
+export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nationFilterLabel, onEditFootballer, onNationFilterChange, groupByFootballer, nationFilterId }: {
   /** Null before a subject is chosen — the browser renders nothing. */
   subjectId: number | null;
   fetchPage: (subjectId: number, params: RosterParams) => Promise<PaginatedPlayers | PaginatedGroupedPlayers>;
@@ -73,6 +73,12 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
    * counts. A squad does not: the spells at ONE club are the answer there.
    */
   groupByFootballer?: boolean;
+  /**
+   * The nationality filter, when the page wants to own it — it also renders a
+   * clear control of its own, and two copies of one filter drift apart the
+   * moment either side changes it alone. Uncontrolled when omitted.
+   */
+  nationFilterId?: number | null;
 }) {
   const [players, setPlayers] = useState<PaginatedPlayers | PaginatedGroupedPlayers | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,7 +87,8 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
   const [role, setRole] = useState<RoleFilter>('player');
   const [transferType, setTransferType] = useState<TransferFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [nationId, setNationId] = useState<number | null>(null);
+  const [internalNationId, setInternalNationId] = useState<number | null>(null);
+  const nationId = nationFilterId === undefined ? internalNationId : nationFilterId;
   const [q, setQ] = useState('');
   const debouncedQ = useDebouncedValue(q, 300);
   const [ordering, setOrdering] = useState<TeamPlayersOrdering>('-start_year');
@@ -190,11 +197,11 @@ export function RosterBrowser({ subjectId, fetchPage, header, emptyLabel, nation
             <NationCombobox
               value={nationId}
               onChange={(id, nation) => {
-                setNationId(id);
+                setInternalNationId(id);
                 onNationFilterChange?.(nation);
               }}
               onClear={() => {
-                setNationId(null);
+                setInternalNationId(null);
                 onNationFilterChange?.(null);
               }}
             />

@@ -37,6 +37,9 @@ function NationPlayers() {
   const [nationId, setNationId] = useState<number | null>(null);
   const [nation, setNation] = useState<NationHeaderInfo | null>(null);
   const [nationality, setNationality] = useState<FootballerNation | null>(null);
+  // How many rows the current filters actually matched. Grouped, that is a
+  // count of people — the same thing the header's headline figure counts.
+  const [matchCount, setMatchCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,6 +57,7 @@ function NationPlayers() {
   const fetchPage = useCallback(async (id: number, params: Parameters<typeof TeamAPI.getNationPlayers>[1]) => {
     const response = await TeamAPI.getNationPlayers(id, params);
     setNation(response.nation);
+    setMatchCount(response.players.count);
     setError(null);
     return response.players;
   }, []);
@@ -138,11 +142,21 @@ function NationPlayers() {
         <RosterBrowser
           subjectId={nationId}
           fetchPage={fetchPage}
-          header={nation ? <NationHeader nation={nation} /> : null}
+          header={nation
+            ? (
+                <NationHeader
+                  nation={nation}
+                  nationality={nationality}
+                  matchCount={matchCount}
+                  onClearNationality={() => setNationality(null)}
+                />
+              )
+            : null}
           nationFilterLabel="Nationality (of the footballer)"
           emptyLabel="No spell in this country matches the current filters."
           onEditFootballer={id => router.push(`/footballer-management?edit=${id}`)}
           onNationFilterChange={setNationality}
+          nationFilterId={nationality?.id ?? null}
           // One row per person here. Someone can have played for eleven clubs
           // in one country, and eleven rows of the same name is a list of
           // contracts rather than a list of players.

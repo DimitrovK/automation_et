@@ -76,9 +76,18 @@ function GroupedRow({ player }: { player: GroupedPlayer }) {
         <TableCell className="text-right tabular-nums">{(player.total_apps ?? 0).toLocaleString()}</TableCell>
         <TableCell className="text-right tabular-nums">{(player.total_goals ?? 0).toLocaleString()}</TableCell>
         <TableCell>
-          {player.retired
-            ? <Badge variant="outline" className="font-normal">Retired</Badge>
-            : <span className="text-xs text-muted-foreground">Active</span>}
+          <span className="flex flex-wrap items-center gap-1">
+            {/* An open spell — no end year — means they are at a club here now,
+                which is a different fact from not having retired. */}
+            {(player.open_spells ?? 0) > 0 && (
+              <Badge className="bg-emerald-100 font-normal text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-100">
+                Still there
+              </Badge>
+            )}
+            {player.retired
+              ? <Badge variant="outline" className="font-normal">Retired</Badge>
+              : <span className="text-xs text-muted-foreground">Active</span>}
+          </span>
         </TableCell>
       </TableRow>
 
@@ -88,7 +97,10 @@ function GroupedRow({ player }: { player: GroupedPlayer }) {
       {open && (
         <TableRow className="bg-muted/20 hover:bg-muted/20">
           <TableCell id={detailId} colSpan={6} className="p-3">
-            <PlayerTable players={player.spells ?? []} />
+            {/* The club is the whole point of this table, and the player and
+                nation are the same on every row of it — the row above already
+                said who. */}
+            <PlayerTable players={player.spells ?? []} showTeam showPlayer={false} />
           </TableCell>
         </TableRow>
       )}

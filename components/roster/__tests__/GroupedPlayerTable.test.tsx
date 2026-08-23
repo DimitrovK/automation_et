@@ -17,9 +17,10 @@ function player(over: Partial<GroupedPlayer> = {}): GroupedPlayer {
     total_goals: 0,
     first_year: 1966,
     last_year: 1996,
+    open_spells: 0,
     spells: [
-      { id: 1, footballer_id: 5, full_name: 'Peter Shilton', role: 'player', start_year: 1966, end_year: 1974, apps: 286, goals: 0, transfer_type: 'permanent' },
-      { id: 2, footballer_id: 5, full_name: 'Peter Shilton', role: 'player', start_year: 1974, end_year: 1977, apps: 719, goals: 0, transfer_type: 'permanent' },
+      { id: 1, footballer_id: 5, full_name: 'Peter Shilton', team_id: 9, team_name: 'Leicester City', role: 'player', start_year: 1966, end_year: 1974, apps: 286, goals: 0, transfer_type: 'permanent' },
+      { id: 2, footballer_id: 5, full_name: 'Peter Shilton', team_id: 10, team_name: 'Stoke City', role: 'player', start_year: 1974, end_year: 1977, apps: 719, goals: 0, transfer_type: 'permanent' },
     ],
     ...over,
   } as unknown as GroupedPlayer;
@@ -64,5 +65,42 @@ describe('groupedPlayerTable', () => {
     render(<GroupedPlayerTable players={[]} emptyLabel="No spell in this country matches." />);
 
     expect(screen.getByText('No spell in this country matches.')).toBeInTheDocument();
+  });
+});
+
+describe('groupedPlayerTable expansion', () => {
+  it('names the clubs, which is the only reason to open the row', () => {
+    // It used to render five rows of "Armando Broja ALB player" with nothing
+    // to tell them apart: the serializer never sent the team, and the table it
+    // reuses was built for a page where every row is the same club.
+    render(<GroupedPlayerTable players={[player()]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Show the clubs/ }));
+
+    expect(screen.getByText('Leicester City')).toBeInTheDocument();
+    expect(screen.getByText('Stoke City')).toBeInTheDocument();
+  });
+
+  it('drops the player and nation columns inside the group', () => {
+    // Every row is the same person — the row above already said who.
+    render(<GroupedPlayerTable players={[player()]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Show the clubs/ }));
+
+    expect(screen.getByRole('columnheader', { name: 'Club' })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Player' })).not.toBeInTheDocument();
+  });
+
+  it('marks a footballer who is at a club here now', () => {
+    // An open spell — no end year — is a different fact from not having retired.
+    render(<GroupedPlayerTable players={[player({ open_spells: 1, retired: false })]} />);
+
+    expect(screen.getByText('Still there')).toBeInTheDocument();
+  });
+
+  it('says nothing about being there when every spell has ended', () => {
+    render(<GroupedPlayerTable players={[player({ open_spells: 0 })]} />);
+
+    expect(screen.queryByText('Still there')).not.toBeInTheDocument();
   });
 });
