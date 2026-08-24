@@ -29,18 +29,18 @@ export function LoadingSpinner({
       <div className="relative">
         <div className={`${sizeClasses[size]} relative animate-spin`} style={{ animationDuration: '2s' }}>
           {/* Outer circle - the ball */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg dark:from-emerald-600 dark:to-emerald-700"></div>
+          <div className="absolute inset-0 rounded-full bg-linear-to-br from-emerald-500 to-emerald-600 shadow-lg dark:from-emerald-600 dark:to-emerald-700"></div>
 
           {/* Pentagon patterns to mimic soccer ball */}
           <div className="absolute inset-0 overflow-hidden rounded-full">
             {/* Center pentagon */}
-            <div className="absolute left-1/2 top-1/2 size-1/3 -translate-x-1/2 -translate-y-1/2 rotate-12 rounded-sm bg-muted opacity-80"></div>
+            <div className="absolute top-1/2 left-1/2 size-1/3 -translate-1/2 rotate-12 rounded-sm bg-muted opacity-80"></div>
 
             {/* Top left pattern */}
-            <div className="absolute left-1/4 top-1/4 size-1/4 -rotate-45 rounded-sm bg-muted opacity-70"></div>
+            <div className="absolute top-1/4 left-1/4 size-1/4 -rotate-45 rounded-sm bg-muted opacity-70"></div>
 
             {/* Top right pattern */}
-            <div className="absolute right-1/4 top-1/4 size-1/4 rotate-45 rounded-sm bg-muted opacity-70"></div>
+            <div className="absolute top-1/4 right-1/4 size-1/4 rotate-45 rounded-sm bg-muted opacity-70"></div>
 
             {/* Bottom pattern */}
             <div className="absolute bottom-1/4 left-1/2 size-1/4 -translate-x-1/2 rounded-sm bg-muted opacity-70"></div>
@@ -63,15 +63,15 @@ export function LoadingSpinner({
 
       {/* Progress bar - clean without shimmer */}
       <div className={`${size === 'sm' ? 'w-48' : size === 'md' ? 'w-64' : 'w-80'} relative h-1.5 overflow-hidden rounded-full bg-muted`}>
-        <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-emerald-500 to-green-600"></div>
+        <div className="absolute inset-0 animate-pulse rounded-full bg-linear-to-r from-emerald-500 to-green-600"></div>
       </div>
     </div>
   );
 
   if (overlay) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
-        <div className="rounded-xl border bg-card/90 p-8 shadow-2xl backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-xs">
+        <div className="rounded-xl border bg-card/90 p-8 shadow-2xl backdrop-blur-xs">
           {content}
         </div>
       </div>

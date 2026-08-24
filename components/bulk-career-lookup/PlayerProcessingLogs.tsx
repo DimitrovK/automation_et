@@ -61,7 +61,7 @@ export function PlayerProcessingLogs({ logs }: { logs: DeploymentLogEntry[] }) {
                     {getLogIcon(log.type)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className={`${getLogStyle(log.type)} break-words`}>
+                    <div className={`${getLogStyle(log.type)} wrap-break-word`}>
                       {log.message}
                     </div>
                     {log.data && (

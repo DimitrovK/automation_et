@@ -46,7 +46,7 @@ export function FMTableHeader({ children, className }: FMTableHeaderProps) {
 
 export function FMTableBody({ children, className }: FMTableBodyProps) {
   return (
-    <div className={cn('bg-[var(--fm-bg-secondary)]', className)}>
+    <div className={cn('bg-(--fm-bg-secondary)', className)}>
       {children}
     </div>
   );
@@ -96,7 +96,7 @@ type FMStatProps = {
 
 export function FMStat({ label, value, color = 'blue', className }: FMStatProps) {
   return (
-    <div className={cn('flex justify-between items-center py-1', className)}>
+    <div className={cn('flex items-center justify-between py-1', className)}>
       <span className="fm-text-secondary">
         {label}
         :

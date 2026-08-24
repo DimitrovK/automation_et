@@ -76,7 +76,7 @@ export function UnfinishedTable({ rows, meta, asOf, totalStale }: {
                                 game that never sweeps. Rank without knowing that
                                 and the swept game reads as the healthiest here. */}
                             {row.sweeper_hours !== null && (
-                              <span className="whitespace-nowrap text-xs font-normal text-muted-foreground">
+                              <span className="text-xs font-normal whitespace-nowrap text-muted-foreground">
                                 {`swept after ${row.sweeper_hours}h`}
                               </span>
                             )}

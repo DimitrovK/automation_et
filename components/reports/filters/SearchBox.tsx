@@ -55,7 +55,7 @@ export function SearchBox({ value, onChange, placeholder, className, delay = 300
 
   return (
     <div className={cn('relative', className)}>
-      <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
       <Input
         value={draft}
         onChange={event => setDraft(event.target.value)}
@@ -72,7 +72,7 @@ export function SearchBox({ value, onChange, placeholder, className, delay = 300
       {pending && (
         <span
           aria-hidden
-          className="absolute right-8 top-1/2 size-3 -translate-y-1/2 animate-spin rounded-full border border-muted-foreground/30 border-t-muted-foreground"
+          className="absolute top-1/2 right-8 size-3 -translate-y-1/2 animate-spin rounded-full border border-muted-foreground/30 border-t-muted-foreground"
         />
       )}
       {draft && (
@@ -80,7 +80,7 @@ export function SearchBox({ value, onChange, placeholder, className, delay = 300
           type="button"
           onClick={() => setDraft('')}
           aria-label="Clear search"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+          className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <X className="size-3.5" />
         </button>

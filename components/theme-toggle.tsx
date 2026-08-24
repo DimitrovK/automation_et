@@ -28,8 +28,8 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="size-8 bg-transparent p-0">
-          <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+          <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -44,7 +44,7 @@ export function ThemeToggle() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('system')}>
           <div className="mr-2 flex size-4 items-center justify-center">
-            <div className="size-3 rounded-full bg-gradient-to-r from-gray-300 to-gray-700 dark:from-gray-600 dark:to-gray-300"></div>
+            <div className="size-3 rounded-full bg-linear-to-r from-gray-300 to-gray-700 dark:from-gray-600 dark:to-gray-300"></div>
           </div>
           <span>System</span>
         </DropdownMenuItem>

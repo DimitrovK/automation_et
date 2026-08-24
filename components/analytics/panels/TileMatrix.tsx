@@ -84,7 +84,7 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
       {/* Its own scroller: the matrix is wider than a phone and the page body
           must never scroll sideways. */}
       <div className="-mx-2 overflow-x-auto px-2">
-        <table className="w-full min-w-[42rem] table-fixed border-separate border-spacing-x-1 border-spacing-y-1.5 text-sm">
+        <table className="w-full min-w-2xl table-fixed border-separate border-spacing-x-1 border-spacing-y-1.5 text-sm">
           <thead>
             <tr>
               <th className="sticky left-0 z-10 w-52 bg-card py-1 pr-3 text-left text-xs font-medium text-muted-foreground">
@@ -106,7 +106,7 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
                             className={cn(
                               'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-semibold transition-colors',
                               tier(difficulty).head,
-                              ranked ? 'bg-primary/10 ring-1 ring-inset ring-primary/40' : 'hover:bg-muted',
+                              ranked ? 'bg-primary/10 ring-1 ring-primary/40 ring-inset' : 'hover:bg-muted',
                             )}
                           >
                             <span aria-hidden className={cn('size-1.5 rounded-full', tier(difficulty).dot)} />
@@ -122,7 +122,7 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
                             className={cn(
                               'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-semibold',
                               tier(difficulty).head,
-                              ranked && 'bg-primary/10 ring-1 ring-inset ring-primary/40',
+                              ranked && 'bg-primary/10 ring-1 ring-primary/40 ring-inset',
                             )}
                           >
                             {/* The dot stays saturated even though the tiles are
@@ -172,7 +172,7 @@ export function TileMatrix({ rows, order, rowHeading, total, shown, onExpand, ex
                 <td className="p-0 pl-2">
                   {/* Same height and shape as a tile so the row reads as one
                       set, and centred with them. */}
-                  <span className="flex h-14 items-center justify-center rounded-lg bg-muted/70 text-sm font-bold tabular-nums text-foreground ring-1 ring-inset ring-border">
+                  <span className="flex h-14 items-center justify-center rounded-lg bg-muted/70 text-sm font-bold text-foreground tabular-nums ring-1 ring-border ring-inset">
                     {row.total.toLocaleString()}
                   </span>
                 </td>
@@ -222,7 +222,7 @@ function Tile({ difficulty, count, index, ranked, palette = 'default' }: {
           data-empty="true"
           className={cn(
             'flex h-14 items-center justify-center rounded-lg border border-dashed border-border/70 text-sm text-muted-foreground/40',
-            ranked && 'ring-2 ring-inset ring-primary/40',
+            ranked && 'ring-2 ring-primary/40 ring-inset',
           )}
         >
           —
@@ -241,7 +241,7 @@ function Tile({ difficulty, count, index, ranked, palette = 'default' }: {
           'flex h-14 items-center justify-center rounded-lg text-sm font-bold tabular-nums',
           // Hover lifts the colour as well as the size. Scale alone reads as a
           // rendering quirk; a brightness change reads as a response.
-          'animate-data-rise transition-all duration-150 hover:scale-[1.03] hover:brightness-125',
+          'hover:scale-1.03 animate-data-rise transition-all duration-150 hover:brightness-125',
           // Alternating direction: slate-to-hue, then hue-to-slate. Two
           // neighbours meet light against dark instead of repeating, so the
           // seam is legible without a border between them.
@@ -250,7 +250,7 @@ function Tile({ difficulty, count, index, ranked, palette = 'default' }: {
           // utilities and keeps the LAST one, so a ranked ring declared before
           // the chip is silently removed by the chip's own `ring-white/10` —
           // the marker renders nothing and no type or lint check notices.
-          ranked && 'ring-2 ring-inset ring-primary/40',
+          ranked && 'ring-2 ring-primary/40 ring-inset',
         )}
         style={{ animationDelay: `${Math.min(index, 5) * 45}ms` }}
       >

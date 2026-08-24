@@ -76,7 +76,7 @@ export function NationDepth({ data, search, onSearchChange, ordering, onSort, on
               <>
                 {/* Its own scroller: the page body must never scroll sideways. */}
                 <div className="-mx-2 overflow-x-auto px-2">
-                  <table className="w-full min-w-[26rem] text-sm">
+                  <table className="w-full min-w-104 text-sm">
                     <thead>
                       <tr className="border-b">
                         <th scope="col" className="w-10 px-2 pb-2 text-right text-xs font-medium text-muted-foreground">
@@ -102,7 +102,7 @@ export function NationDepth({ data, search, onSearchChange, ordering, onSort, on
                       {ranked.items.map((row, index) => (
                         <tr key={row.id} className="group border-b border-border/50 last:border-0">
                           {/* Where you are in the table, not in the page. */}
-                          <td className="px-2 py-1.5 text-right text-xs tabular-nums text-muted-foreground">
+                          <td className="px-2 py-1.5 text-right text-xs text-muted-foreground tabular-nums">
                             {offset + index + 1}
                           </td>
                           <td className="px-2 py-1.5">
@@ -121,7 +121,7 @@ export function NationDepth({ data, search, onSearchChange, ordering, onSort, on
                               </span>
                             </Link>
                           </td>
-                          <td className="px-2 py-1.5 text-right text-sm font-semibold tabular-nums text-foreground">
+                          <td className="px-2 py-1.5 text-right text-sm font-semibold text-foreground tabular-nums">
                             {row.footballers.toLocaleString()}
                           </td>
                         </tr>

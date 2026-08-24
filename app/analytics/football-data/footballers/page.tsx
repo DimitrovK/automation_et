@@ -126,7 +126,7 @@ export default function FootballersAnalyticsPage() {
         )}
       </ReportPanel>
 
-      <ReportPanel state={matrix} skeletonClassName="h-[30rem] w-full">
+      <ReportPanel state={matrix} skeletonClassName="h-120 w-full">
         {matrixData => (
           <FootballerMatrix
             data={matrixData}
@@ -152,7 +152,7 @@ export default function FootballersAnalyticsPage() {
         )}
       </ReportPanel>
 
-      <ReportPanel state={clubMatrix} skeletonClassName="h-[30rem] w-full">
+      <ReportPanel state={clubMatrix} skeletonClassName="h-120 w-full">
         {clubData => (
           <FootballerMatrix
             data={clubData}

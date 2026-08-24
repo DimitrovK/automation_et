@@ -45,33 +45,33 @@
 
 /* Utility classes using the custom properties */
 .fm-card {
-  @apply bg-[var(--fm-bg-primary)] border-[var(--fm-border-primary)] rounded-lg shadow-xl overflow-hidden;
+  @apply bg-(--fm-bg-primary) border-(--fm-border-primary) rounded-lg shadow-xl overflow-hidden;
 }
 
 .fm-card-header {
   background: var(--fm-bg-header);
-  @apply px-4 py-3 border-b-[var(--fm-border-primary)];
+  @apply px-4 py-3 border-b-(--fm-border-primary);
 }
 
 .fm-card-body {
-  @apply bg-[var(--fm-bg-secondary)] p-4;
+  @apply bg-(--fm-bg-secondary) p-4;
 }
 
 .fm-table-header {
   background: var(--fm-bg-header);
-  @apply px-4 py-3 border-b-[var(--fm-border-primary)];
+  @apply px-4 py-3 border-b-(--fm-border-primary);
 }
 
 .fm-table-row-even {
-  @apply bg-[var(--fm-bg-tertiary)];
+  @apply bg-(--fm-bg-tertiary);
 }
 
 .fm-table-row-odd {
-  @apply bg-[var(--fm-bg-secondary)];
+  @apply bg-(--fm-bg-secondary);
 }
 
 .fm-table-footer {
-  @apply bg-[var(--fm-bg-footer)] px-4 py-3 border-t-2 border-[var(--fm-border-primary)];
+  @apply bg-(--fm-bg-footer) px-4 py-3 border-t-2 border-(--fm-border-primary);
 }
 
 .fm-text-primary {
@@ -108,7 +108,7 @@
 
 /* Hover states */
 .fm-table-row {
-  @apply transition-colors cursor-pointer border-b border-[var(--fm-border-secondary)];
+  @apply transition-colors cursor-pointer border-b border-(--fm-border-secondary);
 }
 
 .fm-table-row:hover {

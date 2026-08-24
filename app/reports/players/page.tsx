@@ -125,7 +125,7 @@ export default function PlayersReportPage() {
             filter rather than a page size. 100 is the API's own cap. */}
         <FilterGroup label="Rows">
           <Select value={String(limit)} onValueChange={next => update({ limit: Number(next) })}>
-            <SelectTrigger id="row-limit" className="h-8 w-[88px]">
+            <SelectTrigger id="row-limit" className="h-8 w-22">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -147,7 +147,7 @@ export default function PlayersReportPage() {
                 className={cn(
                   'rounded px-2.5 py-1 text-sm font-medium transition-colors',
                   sortBy === key
-                    ? 'bg-primary/10 text-primary shadow-sm'
+                    ? 'bg-primary/10 text-primary shadow-xs'
                     : 'text-muted-foreground hover:bg-muted',
                 )}
               >

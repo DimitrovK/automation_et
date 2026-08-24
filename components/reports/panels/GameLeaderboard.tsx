@@ -131,7 +131,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                   <VolumeBar value={row[metric]} max={max} color={color} />
                 </div>
 
-                <span className="w-20 text-right text-sm font-medium tabular-nums text-foreground">
+                <span className="w-20 text-right text-sm font-medium text-foreground tabular-nums">
                   {row[metric].toLocaleString()}
                 </span>
                 <span className="w-24 text-right text-sm tabular-nums">{rate(row.completion_pct)}</span>

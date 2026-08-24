@@ -31,7 +31,7 @@ export function AmberButton({
   ...props
 }: AmberButtonProps) {
   const baseClasses = variant === 'default'
-    ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-amber-500 hover:border-amber-600 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+    ? 'bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-amber-500 hover:border-amber-600 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
     : '';
 
   return (

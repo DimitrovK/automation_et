@@ -6,7 +6,7 @@ const Card = ({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement>
   <div
     ref={ref}
     className={cn(
-      'rounded-lg border bg-card text-card-foreground shadow-sm',
+      'rounded-lg border bg-card text-card-foreground shadow-xs',
       className,
     )}
     {...props}
@@ -43,7 +43,7 @@ const CardTitle = ({ ref, className, ...props }: React.HTMLAttributes<HTMLDivEle
     // the first time this component is restyled.
     data-card-title=""
     className={cn(
-      'text-base font-semibold leading-none tracking-tight',
+      'text-base leading-none font-semibold tracking-tight',
       className,
     )}
     {...props}

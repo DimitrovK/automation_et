@@ -556,7 +556,7 @@ export function CareerLookupDataValidation({
             </Button>
             <Button
               onClick={handleUseDatabaseData}
-              className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
+              className="flex items-center gap-2 bg-linear-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
             >
               <Shield className="size-4" />
               Use Database Data

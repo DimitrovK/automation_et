@@ -43,7 +43,7 @@ export function DurationTable({ data, meta }: { data: DurationResponse; meta: Ga
       </Td>
       <Td>
         <div className="flex items-center gap-2">
-          <span className="w-14 text-right font-medium tabular-nums text-foreground">
+          <span className="w-14 text-right font-medium text-foreground tabular-nums">
             {formatDuration(row.median_seconds)}
           </span>
           <div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-muted">

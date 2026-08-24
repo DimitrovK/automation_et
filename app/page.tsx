@@ -93,7 +93,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToCareerLookup}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <Search className="mr-2 size-4" />
                 Search Players
@@ -114,7 +114,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToBulkCareerLookup}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <BarChart3 className="mr-2 size-4" />
                 Bulk Check Players
@@ -136,7 +136,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToFootballerManagement}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <Database className="mr-2 size-4" />
                 Check Footballers
@@ -157,7 +157,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToTeamPlayers}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <Users2 className="mr-2 size-4" />
                 Browse Squad
@@ -182,7 +182,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToNationPlayers}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <Globe2 className="mr-2 size-4" />
                 Browse Country
@@ -203,7 +203,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToDiscordControl}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <MessageCircle className="mr-2 size-4" />
                 Send Discord Messages
@@ -224,7 +224,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToQuestionsHub}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <FileQuestion className="mr-2 size-4" />
                 Upload Questions
@@ -246,7 +246,7 @@ export default function DashboardPage() {
             <CardContent>
               <Button
                 onClick={navigateToUserHub}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <BarChart3 className="mr-2 size-4" />
                 Open User Hub
@@ -273,7 +273,7 @@ export default function DashboardPage() {
             <CardContent className="space-y-3">
               <Button
                 onClick={() => router.push('/reports')}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <FileText className="mr-2 size-4" />
                 Open Reports
@@ -312,7 +312,7 @@ export default function DashboardPage() {
             <CardContent className="space-y-3">
               <Button
                 onClick={() => router.push('/analytics/football-data')}
-                className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <Microscope className="mr-2 size-4" />
                 Open Analytics

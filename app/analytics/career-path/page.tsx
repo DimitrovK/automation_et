@@ -97,11 +97,11 @@ export default function CareerPathAnalyticsPage() {
           otherwise, so adding one here would collapse four card-level jump
           links into two section-level ones. */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <ReportPanel state={state} skeletonClassName="h-[26rem] w-full">
+        <ReportPanel state={state} skeletonClassName="h-104 w-full">
           {data => <ModeVolume data={data} />}
         </ReportPanel>
 
-        <ReportPanel state={state} skeletonClassName="h-[26rem] w-full">
+        <ReportPanel state={state} skeletonClassName="h-104 w-full">
           {data => <ModeRates data={data} />}
         </ReportPanel>
       </div>

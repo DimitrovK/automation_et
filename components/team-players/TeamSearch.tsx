@@ -176,7 +176,7 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
           {/* ---- By name ------------------------------------------------ */}
           <TabsContent value="name" className="space-y-3">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70" />
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/70" />
               <Input
                 ref={inputRef}
                 role="combobox"
@@ -199,10 +199,10 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
                   setTimeout(() => setOpen(false), 120);
                 }}
                 onKeyDown={handleSearchKeyDown}
-                className="h-11 px-10 text-base shadow-sm focus-visible:ring-emerald-500"
+                className="h-11 px-10 text-base shadow-xs focus-visible:ring-emerald-500"
               />
               {loading && (
-                <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-emerald-500" />
+                <Loader2 className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-emerald-500" />
               )}
 
               {showDropdown && (
@@ -260,7 +260,7 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
           <TabsContent value="id" className="space-y-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
-                <Hash className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70" />
+                <Hash className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/70" />
                 <Input
                   aria-label="Team ID"
                   type="number"
@@ -270,13 +270,13 @@ export function TeamSearch({ onSelect, onValidationError }: Props) {
                   value={idInput}
                   onChange={e => setIdInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && submitId()}
-                  className="h-11 pl-10 text-base shadow-sm focus-visible:ring-emerald-500"
+                  className="h-11 pl-10 text-base shadow-xs focus-visible:ring-emerald-500"
                 />
               </div>
               <Button
                 onClick={submitId}
                 disabled={!idInput.trim()}
-                className="h-11 border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl sm:w-32"
+                className="h-11 border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl sm:w-32"
               >
                 <Search className="mr-2 size-4" />
                 Load

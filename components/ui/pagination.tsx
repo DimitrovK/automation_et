@@ -49,8 +49,8 @@ const PaginationLink = ({
         size,
       }),
       isActive
-        ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white border-emerald-500 shadow-lg hover:from-emerald-600 hover:to-green-700'
-        : 'hover:bg-gradient-to-r hover:from-emerald-100 hover:to-green-100 dark:hover:from-emerald-800 dark:hover:to-green-800 hover:border-emerald-300 dark:hover:border-emerald-600 hover:text-emerald-700 dark:hover:text-emerald-200 transition-all duration-200',
+        ? 'border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg hover:from-emerald-600 hover:to-green-700'
+        : 'transition-all duration-200 hover:border-emerald-300 hover:bg-linear-to-r hover:from-emerald-100 hover:to-green-100 hover:text-emerald-700 dark:hover:border-emerald-600 dark:hover:from-emerald-800 dark:hover:to-green-800 dark:hover:text-emerald-200',
       className,
     )}
     {...props}
@@ -68,7 +68,7 @@ const PaginationPrevious = ({
     aria-label="Go to previous page"
     size="default"
     className={cn(
-      'gap-1 pl-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200',
+      'gap-1 border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 pl-2.5 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl',
       className,
     )}
     {...props}
@@ -87,7 +87,7 @@ const PaginationNext = ({
     aria-label="Go to next page"
     size="default"
     className={cn(
-      'gap-1 pr-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-emerald-500 hover:border-emerald-600 shadow-lg hover:shadow-xl transition-all duration-200',
+      'gap-1 border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 pr-2.5 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl',
       className,
     )}
     {...props}
@@ -104,7 +104,7 @@ const PaginationEllipsis = ({
 }: React.ComponentProps<'span'>) => (
   <span
     aria-hidden
-    className={cn('flex h-9 w-9 items-center justify-center', className)}
+    className={cn('flex size-9 items-center justify-center', className)}
     {...props}
   >
     <MoreHorizontal className="size-4" />

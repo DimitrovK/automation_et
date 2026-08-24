@@ -33,7 +33,7 @@ export function PlayStyleBadge({ played, mp }: { played: number; mp?: number }) 
       title={breakdown}
       aria-label={breakdown}
       className={cn(
-        'inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
         emphasised
           ? 'bg-primary/10 text-primary'
           : 'bg-muted text-muted-foreground',

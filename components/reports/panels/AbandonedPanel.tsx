@@ -77,16 +77,16 @@ export function AbandonedPanel({ rows, meta }: { rows: GameTotals[]; meta: GameM
                   }}
                 />
               </span>
-              <span className="w-20 text-right font-medium tabular-nums text-foreground">
+              <span className="w-20 text-right font-medium text-foreground tabular-nums">
                 {row.abandoned.toLocaleString()}
               </span>
-              <span className="w-14 text-right tabular-nums text-muted-foreground">
+              <span className="w-14 text-right text-muted-foreground tabular-nums">
                 {row.share_of_abandoned_pct}
                 %
               </span>
               {/* Context, not ranking: the rate says how hard the pool would be
                   to shrink, the pool says how much there is to win. */}
-              <span className="w-24 text-right tabular-nums text-muted-foreground">
+              <span className="w-24 text-right text-muted-foreground tabular-nums">
                 {row.completion_pct === null ? '—' : `${row.completion_pct}% done`}
               </span>
             </li>

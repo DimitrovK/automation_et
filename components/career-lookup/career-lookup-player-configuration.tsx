@@ -1107,7 +1107,7 @@ export function CareerLookupPlayerConfiguration({
             <Button
               onClick={playerData?.playerFoundInDB ? handleUpdatePlayer : handleDeployment}
               size="lg"
-              className="border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 px-8 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+              className="border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 px-8 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
               disabled={
                 deploying
                 || (!playerData?.playerFoundInDB && playerData.summary.notFoundTeams > 0)
@@ -1176,7 +1176,7 @@ export function CareerLookupPlayerConfiguration({
                   onReloadPlayer();
                 }}
                 size="lg"
-                className="border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 px-8 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
+                className="border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 px-8 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <RefreshCcw className="mr-2 size-5" />
                 Load Player with New Info

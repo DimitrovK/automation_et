@@ -96,7 +96,7 @@ export type DataTier = {
 export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   EASY: {
     label: 'Easy',
-    bar: 'bg-gradient-to-r from-green-400 to-green-500',
+    bar: 'bg-linear-to-r from-green-400 to-green-500',
     track: 'bg-green-400/20',
     chip: 'bg-green-100 text-green-900 ring-1 ring-inset ring-green-300 dark:bg-green-900 dark:text-green-100 dark:ring-green-700',
     chipAlt: 'bg-green-200 text-green-900 ring-1 ring-inset ring-green-300 dark:bg-green-800 dark:text-green-100 dark:ring-green-700',
@@ -106,7 +106,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   },
   NORMAL: {
     label: 'Normal',
-    bar: 'bg-gradient-to-r from-blue-400 to-blue-500',
+    bar: 'bg-linear-to-r from-blue-400 to-blue-500',
     track: 'bg-blue-400/20',
     chip: 'bg-blue-100 text-blue-900 ring-1 ring-inset ring-blue-300 dark:bg-blue-900 dark:text-blue-100 dark:ring-blue-700',
     chipAlt: 'bg-blue-200 text-blue-900 ring-1 ring-inset ring-blue-300 dark:bg-blue-800 dark:text-blue-100 dark:ring-blue-700',
@@ -116,7 +116,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   },
   HARD: {
     label: 'Hard',
-    bar: 'bg-gradient-to-r from-orange-400 to-orange-500',
+    bar: 'bg-linear-to-r from-orange-400 to-orange-500',
     track: 'bg-orange-400/20',
     chip: 'bg-orange-100 text-orange-900 ring-1 ring-inset ring-orange-300 dark:bg-orange-900 dark:text-orange-100 dark:ring-orange-700',
     chipAlt: 'bg-orange-200 text-orange-900 ring-1 ring-inset ring-orange-300 dark:bg-orange-800 dark:text-orange-100 dark:ring-orange-700',
@@ -126,7 +126,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
   },
   EXTREME: {
     label: 'Extreme',
-    bar: 'bg-gradient-to-r from-red-400 to-red-500',
+    bar: 'bg-linear-to-r from-red-400 to-red-500',
     track: 'bg-red-400/20',
     chip: 'bg-red-100 text-red-900 ring-1 ring-inset ring-red-300 dark:bg-red-900 dark:text-red-100 dark:ring-red-700',
     chipAlt: 'bg-red-200 text-red-900 ring-1 ring-inset ring-red-300 dark:bg-red-800 dark:text-red-100 dark:ring-red-700',
@@ -154,7 +154,7 @@ export const DIFFICULTY_TIERS: Record<string, DataTier> = {
 export const DIFFICULTY_TIERS_DEEP: Record<string, DataTier> = {
   EASY: {
     label: 'Easy',
-    bar: 'bg-gradient-to-r from-emerald-400 to-emerald-500',
+    bar: 'bg-linear-to-r from-emerald-400 to-emerald-500',
     track: 'bg-emerald-400/20',
     chip: 'bg-emerald-300 text-emerald-950 ring-1 ring-inset ring-emerald-500/40 dark:bg-emerald-700 dark:text-emerald-50 dark:ring-emerald-400/30',
     chipAlt: 'bg-emerald-400 text-emerald-950 ring-1 ring-inset ring-emerald-500/40 dark:bg-emerald-600 dark:text-emerald-50 dark:ring-emerald-400/30',
@@ -164,7 +164,7 @@ export const DIFFICULTY_TIERS_DEEP: Record<string, DataTier> = {
   },
   NORMAL: {
     label: 'Normal',
-    bar: 'bg-gradient-to-r from-indigo-400 to-indigo-500',
+    bar: 'bg-linear-to-r from-indigo-400 to-indigo-500',
     track: 'bg-indigo-400/20',
     chip: 'bg-indigo-300 text-indigo-950 ring-1 ring-inset ring-indigo-500/40 dark:bg-indigo-700 dark:text-indigo-50 dark:ring-indigo-400/30',
     chipAlt: 'bg-indigo-400 text-indigo-950 ring-1 ring-inset ring-indigo-500/40 dark:bg-indigo-600 dark:text-indigo-50 dark:ring-indigo-400/30',
@@ -174,7 +174,7 @@ export const DIFFICULTY_TIERS_DEEP: Record<string, DataTier> = {
   },
   HARD: {
     label: 'Hard',
-    bar: 'bg-gradient-to-r from-amber-400 to-amber-500',
+    bar: 'bg-linear-to-r from-amber-400 to-amber-500',
     track: 'bg-amber-400/20',
     chip: 'bg-amber-300 text-amber-950 ring-1 ring-inset ring-amber-500/40 dark:bg-amber-600 dark:text-amber-50 dark:ring-amber-400/30',
     chipAlt: 'bg-amber-400 text-amber-950 ring-1 ring-inset ring-amber-500/40 dark:bg-amber-500 dark:text-amber-950 dark:ring-amber-400/30',
@@ -184,7 +184,7 @@ export const DIFFICULTY_TIERS_DEEP: Record<string, DataTier> = {
   },
   EXTREME: {
     label: 'Extreme',
-    bar: 'bg-gradient-to-r from-rose-400 to-rose-500',
+    bar: 'bg-linear-to-r from-rose-400 to-rose-500',
     track: 'bg-rose-400/20',
     chip: 'bg-rose-300 text-rose-950 ring-1 ring-inset ring-rose-500/40 dark:bg-rose-700 dark:text-rose-50 dark:ring-rose-400/30',
     chipAlt: 'bg-rose-400 text-rose-950 ring-1 ring-inset ring-rose-500/40 dark:bg-rose-600 dark:text-rose-50 dark:ring-rose-400/30',
@@ -217,10 +217,10 @@ export function difficultyTierDeep(difficulty: string): DataTier {
 
 /** Still playing against retired: two states of a whole, not a scale. */
 export const CAREER_STATE = {
-  active: { label: 'Still playing', bar: 'bg-gradient-to-r from-teal-400 to-teal-500', track: 'bg-teal-400/20', hex: '#2dd4bf' },
+  active: { label: 'Still playing', bar: 'bg-linear-to-r from-teal-400 to-teal-500', track: 'bg-teal-400/20', hex: '#2dd4bf' },
   // Deliberately not grey: at bar heights a neutral reads as "no data" rather
   // than as a value, and this is half the catalogue.
-  retired: { label: 'Retired', bar: 'bg-gradient-to-r from-violet-400 to-violet-500', track: 'bg-violet-400/20', hex: '#a78bfa' },
+  retired: { label: 'Retired', bar: 'bg-linear-to-r from-violet-400 to-violet-500', track: 'bg-violet-400/20', hex: '#a78bfa' },
 } as const;
 
 /**
@@ -229,5 +229,5 @@ export const CAREER_STATE = {
  * One colour, deliberately: shading these by value would imply a threshold
  * ("amber means concerning") that a squad size does not have.
  */
-export const MAGNITUDE_BAR = 'bg-gradient-to-r from-primary/55 to-primary/80';
+export const MAGNITUDE_BAR = 'bg-linear-to-r from-primary/55 to-primary/80';
 export const MAGNITUDE_TRACK = 'bg-primary/10';

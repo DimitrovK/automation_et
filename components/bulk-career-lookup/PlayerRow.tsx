@@ -61,8 +61,8 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
     >
       {/* Processing Indicator */}
       {isCurrentlyProcessing && (
-        <div className="absolute inset-x-0 top-0 h-1 rounded-t-lg bg-gradient-to-r from-blue-500 to-blue-600">
-          <div className="absolute inset-0 animate-pulse rounded-t-lg bg-gradient-to-r from-blue-400 to-blue-500"></div>
+        <div className="absolute inset-x-0 top-0 h-1 rounded-t-lg bg-linear-to-r from-blue-500 to-blue-600">
+          <div className="absolute inset-0 animate-pulse rounded-t-lg bg-linear-to-r from-blue-400 to-blue-500"></div>
         </div>
       )}
 
@@ -112,7 +112,7 @@ export function PlayerRow({ footballer }: { footballer: Footballer }) {
           {result && (
             <Badge
               variant={getStatusBadgeVariant(result.status)}
-              className={`shadow-sm ${getStatusBadgeClassName(result.status)}`}
+              className={`shadow-xs ${getStatusBadgeClassName(result.status)}`}
             >
               {getStatusText(result.status)}
             </Badge>
@@ -202,17 +202,17 @@ function DiscrepancyDetails({ discrepancies, footballerId }: { discrepancies: st
             {discrepancies.slice(0, 3).map(discrepancy => (
               <div
                 key={discrepancy}
-                className="flex items-start gap-3 rounded-lg border border-orange-300/60 bg-card/80 p-3 shadow-sm dark:border-orange-600/40"
+                className="flex items-start gap-3 rounded-lg border border-orange-300/60 bg-card/80 p-3 shadow-xs dark:border-orange-600/40"
               >
                 <div className="mt-2.5 size-2 shrink-0 rounded-full bg-orange-600"></div>
-                <span className="text-sm font-medium leading-relaxed text-orange-900 dark:text-orange-100">
+                <span className="text-sm leading-relaxed font-medium text-orange-900 dark:text-orange-100">
                   {discrepancy}
                 </span>
               </div>
             ))}
             {discrepancies.length > 3 && (
               <div className="mt-4 space-y-3">
-                <div className="rounded-lg border border-orange-300 bg-orange-200/60 p-3 shadow-sm dark:border-orange-600 dark:bg-orange-700/30">
+                <div className="rounded-lg border border-orange-300 bg-orange-200/60 p-3 shadow-xs dark:border-orange-600 dark:bg-orange-700/30">
                   <div className="text-center text-sm font-semibold text-orange-900 dark:text-orange-200">
                     +
                     {discrepancies.length - 3}

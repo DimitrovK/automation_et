@@ -39,7 +39,7 @@ export function MetricRow({ metrics, columns = 6, className }: {
           </dt>
           {/* Tabular figures so a column of numbers lines up on the decimal —
               these are read down as much as across. */}
-          <dd className="font-medium tabular-nums text-foreground">{value}</dd>
+          <dd className="font-medium text-foreground tabular-nums">{value}</dd>
         </div>
       ))}
     </dl>

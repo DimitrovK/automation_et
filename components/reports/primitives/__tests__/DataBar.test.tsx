@@ -49,7 +49,9 @@ describe('dataBar', () => {
     const { container } = render(<DataBar value={5} max={10} colour="bg-primary" label="half" />);
     const track = container.querySelector('[role="img"]') as HTMLElement;
 
-    const opacity = Number(/bg-foreground\/\[([\d.]+)\]/.exec(track.className)?.[1] ?? 0);
+    // v4 spells fractional alpha as a bare percentage modifier (bg-foreground/9).
+    const modifier = /bg-foreground\/(?:\[([\d.]+)\]|(\d+))/.exec(track.className);
+    const opacity = modifier?.[1] ? Number(modifier[1]) : Number(modifier?.[2] ?? 0) / 100;
 
     expect(opacity).toBeGreaterThanOrEqual(0.08);
     // And tall enough to be a bar rather than a rule.
@@ -61,7 +63,7 @@ describe('dataBar', () => {
     // the bottom for no reason. Along the length is a direction the eye already
     // reads, and it is what was asked for.
     for (const tier of Object.values(DIFFICULTY_TIERS)) {
-      expect(tier.bar).toContain('bg-gradient-to-r');
+      expect(tier.bar).toContain('bg-linear-to-r');
     }
   });
 

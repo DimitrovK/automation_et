@@ -146,7 +146,7 @@ export function PicturesEditor({ footballerId }: Props) {
             <Button
               onClick={upload}
               disabled={!uploadFile || uploading}
-              className="h-10 border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
+              className="h-10 border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
             >
               {uploading ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : <ImagePlus className="mr-1.5 size-4" />}
               Upload
@@ -198,7 +198,7 @@ export function PicturesEditor({ footballerId }: Props) {
                         <Badge
                           variant={pic.is_active ? 'default' : 'secondary'}
                           className={
-                            `absolute left-2 top-2 ${
+                            `absolute top-2 left-2 ${
                               pic.is_active
                                 ? 'bg-emerald-600 text-white hover:bg-emerald-600'
                                 : 'bg-muted-foreground/40 text-foreground/80 hover:bg-muted-foreground/40'}`

@@ -207,7 +207,7 @@ export function InternationalCareerCard({
               size="sm"
               onClick={handleSyncAll}
               disabled={sync.syncingAll}
-              className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
+              className="bg-linear-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
             >
               {sync.syncingAll
                 ? (
@@ -250,19 +250,19 @@ export function InternationalCareerCard({
                 ? (
                     <>
                       <tr className="border-b border-border">
-                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                           Nation
                         </th>
-                        <th colSpan={2} className="border-b border-border p-2 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+                        <th colSpan={2} className="border-b border-border p-2 text-center text-xs font-semibold tracking-wide text-blue-700 uppercase dark:text-blue-400">
                           Wikipedia
                         </th>
-                        <th colSpan={2} className="border-b border-l-2 border-border border-l-gray-300 p-2 text-center text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-l-slate-500 dark:text-emerald-400">
+                        <th colSpan={2} className="border-b border-l-2 border-border border-l-gray-300 p-2 text-center text-xs font-semibold tracking-wide text-emerald-700 uppercase dark:border-l-slate-500 dark:text-emerald-400">
                           Database
                         </th>
-                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                           Season
                         </th>
-                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                        <th rowSpan={2} className="p-2 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                           Action
                         </th>
                       </tr>
@@ -276,19 +276,19 @@ export function InternationalCareerCard({
                   )
                 : (
                     <tr className="border-b border-border">
-                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                      <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                         Nation
                       </th>
-                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                      <th className="px-2 py-3 text-center text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                         Apps
                       </th>
-                      <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                      <th className="px-2 py-3 text-center text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                         Goals
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                      <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                         Season
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                      <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                         Status
                       </th>
                     </tr>

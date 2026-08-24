@@ -74,10 +74,10 @@ export function DurationHistogram({ data, meta }: { data: DurationResponse; meta
                   }}
                 />
               </span>
-              <span className="w-16 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+              <span className="w-16 shrink-0 text-right text-xs text-muted-foreground tabular-nums">
                 {band.count.toLocaleString()}
               </span>
-              <span className="w-12 shrink-0 text-right text-xs tabular-nums text-muted-foreground/70">
+              <span className="w-12 shrink-0 text-right text-xs text-muted-foreground/70 tabular-nums">
                 {band.pct}
                 %
               </span>

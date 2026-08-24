@@ -60,7 +60,7 @@ export default function UserHubLandingPage() {
                 onClick={() => o.href && router.push(o.href)}
                 className={o.disabled
                   ? 'w-full'
-                  : 'w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700'}
+                  : 'w-full bg-linear-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700'}
               >
                 {o.cta}
                 {!o.disabled && <ArrowRight className="ml-2 size-4" />}
