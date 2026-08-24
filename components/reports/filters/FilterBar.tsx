@@ -48,7 +48,7 @@ export function FilterGroup({ label, children, hint }: {
     <div className="space-y-1.5" title={hint}>
       {label
         ? (
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <p className="text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
               {label}
             </p>
           )

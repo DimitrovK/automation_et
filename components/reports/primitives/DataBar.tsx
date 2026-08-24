@@ -65,12 +65,12 @@ export function DataBar({ value, max, colour, track, label, minPct = 0, classNam
     <div
       role="img"
       aria-label={label}
-      className={cn('h-3 w-full overflow-hidden rounded-full', track ?? 'bg-foreground/[0.09]', className)}
+      className={cn('h-3 w-full overflow-hidden rounded-full', track ?? 'bg-foreground/9', className)}
     >
       <div
         // Rounded on the data end only. `rounded-r-[3px]` with a square left
         // edge is what anchors it to the baseline.
-        className={cn('h-full rounded-full animate-data-grow shadow-sm transition-[width] duration-500 ease-out', colour)}
+        className={cn('h-full animate-data-grow rounded-full shadow-xs transition-[width] duration-500 ease-out', colour)}
         style={{ width: `${pct}%` }}
       />
     </div>

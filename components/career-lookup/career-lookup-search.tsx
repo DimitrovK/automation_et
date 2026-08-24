@@ -63,7 +63,7 @@ export function CareerLookupSearch({
                 checked={searchMode === 'wikipedia_url'}
                 onCheckedChange={checked => onSearchModeChange(checked ? 'wikipedia_url' : 'name')}
                 aria-label="Toggle search mode"
-                className="data-[state=unchecked]:bg-muted data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600"
+                className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600 data-[state=unchecked]:bg-muted"
               />
               <span className={`text-sm font-medium ${searchMode === 'wikipedia_url' ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'}`}>
                 Wikipedia URL
@@ -74,7 +74,7 @@ export function CareerLookupSearch({
             <Button
               onClick={onSearch}
               disabled={loading || !searchValue.trim()}
-              className="w-full border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl sm:ml-auto sm:w-auto"
+              className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl sm:ml-auto sm:w-auto"
             >
               {loading
                 ? (

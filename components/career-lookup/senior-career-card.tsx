@@ -243,7 +243,7 @@ export function SeniorCareerCard({
                 size="sm"
                 onClick={handleSyncAll}
                 disabled={sync.syncingAll}
-                className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
+                className="bg-linear-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700"
               >
                 {sync.syncingAll
                   ? (
@@ -386,24 +386,24 @@ export function SeniorCareerCard({
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Club
                 </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-center text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Apps
                 </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-center text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Goals
                 </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-center text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Transfer
                 </th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Season
                 </th>
                 {/* Only show Data Source column if there are any conflicts */}
                 {hasAnyTeamConflicts() && (
-                  <th className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                  <th className="px-2 py-3 text-center text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                     <div className="flex items-center justify-center gap-1">
                       Data Source
                       <Tooltip>
@@ -421,10 +421,10 @@ export function SeniorCareerCard({
                     </div>
                   </th>
                 )}
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Status
                 </th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground/80">
+                <th className="px-2 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 uppercase">
                   Actions
                 </th>
               </tr>

@@ -15,14 +15,14 @@ export function OperationNavigation({ activeTab, onTabChange }: OperationNavigat
       {/* Desktop tabs - hidden on mobile */}
       <div className="hidden md:block">
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 border border-border bg-gradient-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
-            <TabsTrigger value="read" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
+          <TabsList className="grid w-full grid-cols-3 border border-border bg-linear-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
+            <TabsTrigger value="read" className="text-sm transition-all duration-400 hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-xs">
               Read
             </TabsTrigger>
-            <TabsTrigger value="create" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
+            <TabsTrigger value="create" className="text-sm transition-all duration-400 hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-xs">
               Create
             </TabsTrigger>
-            <TabsTrigger value="update" className="duration-400 text-sm transition-all hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
+            <TabsTrigger value="update" className="text-sm transition-all duration-400 hover:bg-muted data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-xs">
               Update
             </TabsTrigger>
           </TabsList>
@@ -32,7 +32,7 @@ export function OperationNavigation({ activeTab, onTabChange }: OperationNavigat
       {/* Mobile dropdown menu */}
       <div className="block md:hidden">
         <Select value={activeTab} onValueChange={onTabChange}>
-          <SelectTrigger className="w-full border-border bg-gradient-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
+          <SelectTrigger className="w-full border-border bg-linear-to-r from-slate-100 to-emerald-50 dark:from-slate-800 dark:to-emerald-900/30">
             <SelectValue placeholder="Select operation type" />
           </SelectTrigger>
           <SelectContent>

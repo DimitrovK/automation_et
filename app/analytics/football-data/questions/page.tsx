@@ -87,7 +87,7 @@ export default function QuestionsAnalyticsPage() {
         />
       </FilterBar>
 
-      <ReportPanel state={bank} skeletonClassName="h-[26rem] w-full">
+      <ReportPanel state={bank} skeletonClassName="h-104 w-full">
         {data => <QuestionCatalogue data={data} />}
       </ReportPanel>
 

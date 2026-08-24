@@ -116,7 +116,7 @@ export function MultiplayerFunnel({ rows, meta }: { rows: MultiplayerGameRow[]; 
                         aria-label={`${stage.label}: ${stage.value} rooms`}
                       />
                     </div>
-                    <span className="w-14 shrink-0 text-xs tabular-nums text-foreground/80">
+                    <span className="w-14 shrink-0 text-xs text-foreground/80 tabular-nums">
                       {stage.value.toLocaleString()}
                     </span>
                   </div>

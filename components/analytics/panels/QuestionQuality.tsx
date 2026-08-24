@@ -45,7 +45,7 @@ function OptionBar({ option, suspect }: { option: QuestionRow['options'][number]
           without reading it. */}
       <span
         className={cn(
-          'w-0 min-w-32 flex-[2] truncate text-xs',
+          'w-0 min-w-32 flex-2 truncate text-xs',
           option.is_correct ? 'font-medium text-foreground' : 'text-muted-foreground',
         )}
         title={option.text}
@@ -68,7 +68,7 @@ function OptionBar({ option, suspect }: { option: QuestionRow['options'][number]
           style={{ width: `${pct}%` }}
         />
       </span>
-      <span className="w-11 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+      <span className="w-11 shrink-0 text-right text-xs text-muted-foreground tabular-nums">
         {option.pct === null ? '—' : `${option.pct}%`}
       </span>
     </div>

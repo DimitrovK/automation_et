@@ -64,7 +64,7 @@ export default function FootballDataAnalyticsPage() {
         />
       </FilterBar>
 
-      <ReportPanel state={state} skeletonClassName="h-[28rem] w-full">
+      <ReportPanel state={state} skeletonClassName="h-112 w-full">
         {data => <CatalogueGrowth data={data} />}
       </ReportPanel>
     </AnalyticsShell>

@@ -94,7 +94,7 @@ export function ChartTooltip({
             aria-hidden
           />
           {entry.name}
-          <span className="ml-auto pl-3 font-medium tabular-nums text-popover-foreground">
+          <span className="ml-auto pl-3 font-medium text-popover-foreground tabular-nums">
             {entry.value === null || entry.value === undefined
               ? '—'
               : valueFormatter

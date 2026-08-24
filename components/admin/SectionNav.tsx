@@ -39,7 +39,7 @@ export function SectionNav({ groups, trailing }: {
         {groups.map(group => (
           <div key={group.heading || 'ungrouped'} className="min-w-40 flex-1">
             {group.heading && (
-              <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <p className="mb-1 px-2 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
                 {group.heading}
               </p>
             )}

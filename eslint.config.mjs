@@ -43,7 +43,7 @@ export default antfu({
     '*.config.ts',
     '.github/**',
   ],
-}, ...tailwind.configs['flat/recommended'], jsxA11y.flatConfigs.recommended, {
+}, tailwind.configs.recommended, jsxA11y.flatConfigs.recommended, {
   plugins: {
     '@next/next': nextPlugin,
   },
@@ -79,7 +79,7 @@ export default antfu({
   },
   settings: {
     tailwindcss: {
-      config: path.join(__dirname, './tailwind.config.ts'),
+      cssConfigPath: path.join(__dirname, './app/globals.css'),
     },
   },
 });

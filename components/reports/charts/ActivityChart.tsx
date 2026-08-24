@@ -181,7 +181,7 @@ export function ActivityChart({ series, title, description, metric, color, granu
           <div key={option.key} className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">
               {option.label}
-              <span className="ml-1 font-normal tabular-nums text-muted-foreground/70">
+              <span className="ml-1 font-normal text-muted-foreground/70 tabular-nums">
                 {total(data, option.key).toLocaleString()}
               </span>
             </p>

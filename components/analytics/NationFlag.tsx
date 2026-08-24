@@ -34,7 +34,7 @@ export function NationFlag({ flag, className }: {
       // Decorative: the nation's name is rendered next to it by every caller.
       alt=""
       loading="lazy"
-      className={cn('h-3 w-[1.125rem] shrink-0 rounded-[2px] object-cover ring-1 ring-inset ring-border/60', className)}
+      className={cn('h-3 w-4.5 shrink-0 rounded-[2px] object-cover ring-1 ring-border/60 ring-inset', className)}
     />
   );
 }

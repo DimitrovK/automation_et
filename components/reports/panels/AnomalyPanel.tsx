@@ -107,7 +107,7 @@ export function AnomalyPanel({ data, meta }: { data: AnomaliesResponse; meta: Ga
                   <GameBadge gameKey={finding.game_type} meta={meta} href={`/reports/games/${finding.game_type}`} />
                   <Link
                     href={`/reports/games/${finding.game_type}`}
-                    className="whitespace-nowrap text-sm font-medium text-primary hover:underline"
+                    className="text-sm font-medium whitespace-nowrap text-primary hover:underline"
                   >
                     Investigate →
                   </Link>

@@ -82,7 +82,7 @@ function HelperTile({ helper, use }: { helper: Helper; use: HelperUse }) {
           </span>
           <span className="truncate text-xs font-medium text-foreground">{helper.label}</span>
         </span>
-        <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+        <span className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
           {headline(use)}
         </span>
       </div>
@@ -91,7 +91,7 @@ function HelperTile({ helper, use }: { helper: Helper; use: HelperUse }) {
           still reads as a measurement rather than as a missing tile. Omitted
           only when there is no denominator to draw against. */}
       {pct !== null && (
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-foreground/[0.09]">
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-foreground/9">
           <div className={cn('h-full rounded-full', helper.bar)} style={{ width: `${pct}%` }} />
         </div>
       )}

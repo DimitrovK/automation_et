@@ -24,7 +24,7 @@ export function UserCard({ user, onSelect }: Props) {
           onSelect(user);
         }
       }}
-      className="cursor-pointer transition-shadow duration-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+      className="cursor-pointer transition-shadow duration-200 hover:shadow-md focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-hidden"
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between gap-2">

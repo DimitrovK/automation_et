@@ -305,7 +305,7 @@ export function ResultsSummary() {
                     type="button"
                     onClick={handleSyncAllNations}
                     disabled={syncingAllNations}
-                    className="inline-flex items-center rounded-md bg-gradient-to-r from-emerald-500 to-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-green-700 disabled:opacity-50"
+                    className="inline-flex items-center rounded-md bg-linear-to-r from-emerald-500 to-green-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition-all hover:from-emerald-600 hover:to-green-700 disabled:opacity-50"
                   >
                     {syncingAllNations
                       ? (

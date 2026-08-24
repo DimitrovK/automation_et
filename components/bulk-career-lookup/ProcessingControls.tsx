@@ -108,7 +108,7 @@ export function ProcessingControls() {
             id="use-wikipedia-url"
             checked={useWikipediaUrl}
             onCheckedChange={setUseWikipediaUrl}
-            className="data-[state=unchecked]:bg-muted data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600"
+            className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-emerald-500 data-[state=checked]:to-emerald-600 data-[state=unchecked]:bg-muted"
           />
         </div>
 
@@ -126,7 +126,7 @@ export function ProcessingControls() {
               id="auto-sync-nations"
               checked={autoSyncNations}
               onCheckedChange={setAutoSyncNations}
-              className="data-[state=unchecked]:bg-muted data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-blue-600"
+              className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-blue-500 data-[state=checked]:to-blue-600 data-[state=unchecked]:bg-muted"
             />
           </div>
         )}

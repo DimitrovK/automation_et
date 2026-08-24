@@ -30,7 +30,7 @@ export function SortableHeader({ label, column, ordering, onSort, className }: {
         className={cn(
           'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors',
           state
-            ? 'bg-primary/10 text-foreground ring-1 ring-inset ring-primary/40'
+            ? 'bg-primary/10 text-foreground ring-1 ring-primary/40 ring-inset'
             : 'text-muted-foreground hover:bg-muted',
         )}
       >
@@ -70,7 +70,7 @@ export function TableControls({ page, pages, total, pageSize, shown, onPageChang
           onValueChange={value => onPageSizeChange(Number(value))}
           disabled={busy}
         >
-          <SelectTrigger aria-label="Rows per page" className="h-8 w-[4.5rem]">
+          <SelectTrigger aria-label="Rows per page" className="h-8 w-18">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

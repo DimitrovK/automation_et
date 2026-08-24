@@ -23,7 +23,7 @@ export function ReportError({ error, notDeployed, onRetry }: {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="whitespace-pre-line text-sm text-muted-foreground">{error}</p>
+        <p className="text-sm whitespace-pre-line text-muted-foreground">{error}</p>
         <Button size="sm" variant="outline" onClick={onRetry}>
           <RefreshCw className="mr-2 size-4" />
           Retry

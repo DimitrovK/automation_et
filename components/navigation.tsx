@@ -203,7 +203,7 @@ export function Navigation({ className }: NavigationProps) {
             }}
             onKeyDown={onActivateKey(() => toggleCategory(page.label))}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200',
+              'flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 transition-all duration-200',
               hasActiveChild
                 ? 'bg-primary/10 text-primary'
                 : 'hover:bg-muted',
@@ -224,7 +224,7 @@ export function Navigation({ className }: NavigationProps) {
 
           {/* Children items (shown when expanded) */}
           {isExpanded && (
-            <div className="ml-3 mt-1 space-y-1 border-l-2 border-border pl-3">
+            <div className="mt-1 ml-3 space-y-1 border-l-2 border-border pl-3">
               {page.children.map((child) => {
                 const ChildIcon = child.icon;
                 const isChildActive = child.href === pathname;
@@ -245,10 +245,10 @@ export function Navigation({ className }: NavigationProps) {
                       setMobileMenuOpen(false);
                     })}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all duration-200',
+                      'flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 transition-all duration-200',
                       isChildActive
-                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
-                        : 'hover:bg-muted/50 text-foreground/80',
+                        ? 'bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                        : 'text-foreground/80 hover:bg-muted/50',
                     )}
                   >
                     <ChildIcon className="size-3.5 shrink-0" />
@@ -280,10 +280,10 @@ export function Navigation({ className }: NavigationProps) {
           setMobileMenuOpen(false);
         })}
         className={cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-200 mb-1',
+          'mb-1 flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 transition-all duration-200',
           isActive
-            ? 'bg-primary/10 text-primary font-medium'
-            : 'hover:bg-muted text-foreground/80',
+            ? 'bg-primary/10 font-medium text-primary'
+            : 'text-foreground/80 hover:bg-muted',
         )}
       >
         <Icon className="size-4 shrink-0" />
@@ -295,7 +295,7 @@ export function Navigation({ className }: NavigationProps) {
   return (
     <div className={cn('relative', className)}>
       {/* Main Navigation Bar */}
-      <div className="rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 shadow-lg backdrop-blur-sm">
+      <div className="rounded-xl border border-emerald-500/30 bg-linear-to-r from-emerald-600 via-green-600 to-emerald-700 shadow-lg backdrop-blur-xs">
         <div className="px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between">
             {/* Left side - Navigation Menu */}
@@ -349,7 +349,7 @@ export function Navigation({ className }: NavigationProps) {
             <div className="flex items-center gap-2">
               {/* Theme Toggle - Hidden on mobile */}
               <div className="ml-2 hidden sm:block">
-                <div className="[&>*]:border-white/20 [&>*]:bg-transparent [&>*]:text-white/90 [&>*]:transition-all [&>*]:duration-200 [&>*]:hover:border-white/30 [&>*]:hover:bg-white/10 [&>*]:hover:text-white">
+                <div className="*:border-white/20 *:bg-transparent *:text-white/90 *:transition-all *:duration-200 *:hover:border-white/30 *:hover:bg-white/10 *:hover:text-white">
                   <ThemeToggle />
                 </div>
               </div>
@@ -363,7 +363,7 @@ export function Navigation({ className }: NavigationProps) {
         </div>
 
         {/* Subtle bottom border gradient */}
-        <div className="h-0.5 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+        <div className="h-0.5 bg-linear-to-r from-transparent via-white/30 to-transparent"></div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -374,7 +374,7 @@ export function Navigation({ className }: NavigationProps) {
             role="button"
             tabIndex={0}
             aria-label="Close menu"
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs sm:hidden"
             onClick={() => setMobileMenuOpen(false)}
             onKeyDown={onActivateKey(() => setMobileMenuOpen(false))}
           />
@@ -421,7 +421,7 @@ export function Navigation({ className }: NavigationProps) {
       )}
 
       {/* Decorative glow effect */}
-      <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-emerald-600/20 via-green-600/20 to-emerald-700/20 blur-xl"></div>
+      <div className="absolute inset-0 -z-10 rounded-xl bg-linear-to-r from-emerald-600/20 via-green-600/20 to-emerald-700/20 blur-xl"></div>
     </div>
   );
 }

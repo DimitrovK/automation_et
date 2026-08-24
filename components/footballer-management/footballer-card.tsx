@@ -62,7 +62,7 @@ export function FootballerCard({
               <div className="flex flex-wrap items-center gap-1">
                 <Badge
                   variant="outline"
-                  className="border-border bg-gradient-to-r from-slate-500 to-slate-600 text-xs text-white shadow-sm"
+                  className="border-border bg-linear-to-r from-slate-500 to-slate-600 text-xs text-white shadow-xs"
                 >
                   ID:
                   {' '}
@@ -72,14 +72,14 @@ export function FootballerCard({
                   variant="outline"
                   className={`${
                     footballer.status === 'APPROVED'
-                      ? 'border-emerald-500 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                      ? 'border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg'
                       : footballer.status === 'AWAITING_REVISION'
-                        ? 'border-amber-500 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg'
+                        ? 'border-amber-500 bg-linear-to-r from-amber-500 to-orange-600 text-white shadow-lg'
                         : footballer.status === 'AWAITING_CHANGE_CHECK'
-                          ? 'border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                          ? 'border-blue-500 bg-linear-to-r from-blue-500 to-blue-600 text-white shadow-lg'
                           : footballer.status === 'DENIED'
-                            ? 'border-red-500 bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
-                            : 'border-border bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg'
+                            ? 'border-red-500 bg-linear-to-r from-red-500 to-red-600 text-white shadow-lg'
+                            : 'border-border bg-linear-to-r from-gray-500 to-gray-600 text-white shadow-lg'
                   }`}
                 >
                   {footballer.status}
@@ -116,7 +116,7 @@ export function FootballerCard({
                   size="sm"
                   variant="outline"
                   onClick={handleEdit}
-                  className="h-7 border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 px-2 text-white shadow-sm hover:from-blue-600 hover:to-blue-700"
+                  className="h-7 border-blue-500 bg-linear-to-r from-blue-500 to-blue-600 px-2 text-white shadow-xs hover:from-blue-600 hover:to-blue-700"
                 >
                   <Edit className="size-3" />
                 </Button>
@@ -127,7 +127,7 @@ export function FootballerCard({
                       size="sm"
                       variant="outline"
                       onClick={e => e.stopPropagation()}
-                      className="h-7 border-red-500 bg-gradient-to-r from-red-500 to-red-600 px-2 text-white shadow-sm hover:from-red-600 hover:to-red-700"
+                      className="h-7 border-red-500 bg-linear-to-r from-red-500 to-red-600 px-2 text-white shadow-xs hover:from-red-600 hover:to-red-700"
                     >
                       <Trash2 className="size-3" />
                     </Button>
@@ -176,11 +176,11 @@ export function FootballerCard({
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Player Info - Left Side */}
             <div className="space-y-4">
-              <h4 className="fm-text-primary mb-3 text-sm font-semibold uppercase tracking-wide">Player Info</h4>
+              <h4 className="fm-text-primary mb-3 text-sm font-semibold tracking-wide uppercase">Player Info</h4>
 
               <FMCard>
                 <FMCardHeader>
-                  <h4 className="fm-text-primary text-xs font-semibold uppercase tracking-wider">General</h4>
+                  <h4 className="fm-text-primary text-xs font-semibold tracking-wider uppercase">General</h4>
                 </FMCardHeader>
                 <FMCardBody className="space-y-3 text-sm">
                   <FMStat label="Born" value={footballer.date_of_birth} color="blue" />
@@ -216,7 +216,7 @@ export function FootballerCard({
               {footballer.available_for_career_path && (
                 <FMCard>
                   <FMCardHeader>
-                    <h4 className="fm-text-primary text-xs font-semibold uppercase tracking-wider">Career Mode</h4>
+                    <h4 className="fm-text-primary text-xs font-semibold tracking-wider uppercase">Career Mode</h4>
                   </FMCardHeader>
                   <FMCardBody>
                     <div className="flex items-center justify-between text-sm">
@@ -243,11 +243,11 @@ export function FootballerCard({
             <div className="lg:col-span-2">
               {footballer.teams_played_for.length > 0 && (
                 <div>
-                  <h4 className="fm-text-primary mb-3 text-sm font-semibold uppercase tracking-wide">Career History</h4>
+                  <h4 className="fm-text-primary mb-3 text-sm font-semibold tracking-wide uppercase">Career History</h4>
                   <FMTable>
                     {/* Desktop header - hidden on mobile */}
                     <FMTableHeader className="hidden md:block">
-                      <div className="fm-text-primary grid grid-cols-12 gap-3 text-xs font-semibold uppercase tracking-wider">
+                      <div className="fm-text-primary grid grid-cols-12 gap-3 text-xs font-semibold tracking-wider uppercase">
                         <div className="col-span-4">Club</div>
                         <div className="col-span-1 text-center">Apps</div>
                         <div className="col-span-1 text-center">Gls</div>
@@ -296,17 +296,17 @@ export function FootballerCard({
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                               <div>
-                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Apps:</span>
+                                <span className="text-xs tracking-wide text-muted-foreground uppercase">Apps:</span>
                                 <span className="fm-stat-blue ml-1 font-mono font-medium">{team.apps}</span>
                               </div>
                               <div>
-                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Goals:</span>
+                                <span className="text-xs tracking-wide text-muted-foreground uppercase">Goals:</span>
                                 <span className="fm-stat-yellow ml-1 font-mono font-medium">{team.goals}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                               <div>
-                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Period:</span>
+                                <span className="text-xs tracking-wide text-muted-foreground uppercase">Period:</span>
                                 <span className="fm-stat-green ml-1 font-mono">
                                   {team.start_year}
                                   {' '}
@@ -334,17 +334,17 @@ export function FootballerCard({
                     <FMTableFooter>
                       <div className="grid grid-cols-1 gap-4 text-center sm:grid-cols-3 sm:gap-6">
                         <div>
-                          <span className="fm-text-secondary text-xs uppercase tracking-wide">Total Clubs: </span>
+                          <span className="fm-text-secondary text-xs tracking-wide uppercase">Total Clubs: </span>
                           <span className="fm-text-primary font-bold">{footballer.teams_played_for.length}</span>
                         </div>
                         <div>
-                          <span className="fm-text-secondary text-xs uppercase tracking-wide">Apps: </span>
+                          <span className="fm-text-secondary text-xs tracking-wide uppercase">Apps: </span>
                           <span className="fm-stat-blue font-mono font-bold">
                             {footballer.teams_played_for.reduce((sum, team) => sum + (team.apps ?? 0), 0)}
                           </span>
                         </div>
                         <div>
-                          <span className="fm-text-secondary text-xs uppercase tracking-wide">Goals: </span>
+                          <span className="fm-text-secondary text-xs tracking-wide uppercase">Goals: </span>
                           <span className="fm-stat-yellow font-mono font-bold">
                             {footballer.teams_played_for.reduce((sum, team) => sum + (team.goals ?? 0), 0)}
                           </span>
@@ -360,11 +360,11 @@ export function FootballerCard({
           {/* Management History */}
           {footballer.teams_managed.length > 0 && (
             <div className="mt-6">
-              <h4 className="fm-stat-purple mb-3 text-sm font-semibold uppercase tracking-wide">Management History</h4>
+              <h4 className="fm-stat-purple mb-3 text-sm font-semibold tracking-wide uppercase">Management History</h4>
               <FMTable>
                 {/* Desktop header - hidden on mobile */}
                 <FMTableHeader className="hidden md:block">
-                  <div className="fm-text-primary grid grid-cols-6 gap-2 text-xs font-medium uppercase tracking-wide">
+                  <div className="fm-text-primary grid grid-cols-6 gap-2 text-xs font-medium tracking-wide uppercase">
                     <div className="col-span-3">Club</div>
                     <div className="col-span-1 text-center">Joined</div>
                     <div className="col-span-1 text-center">Departed</div>
@@ -397,7 +397,7 @@ export function FootballerCard({
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">Period:</span>
+                            <span className="text-xs tracking-wide text-muted-foreground uppercase">Period:</span>
                             <span className="fm-stat-green ml-1 font-mono">
                               {team.start_year}
                               {' '}
@@ -407,7 +407,7 @@ export function FootballerCard({
                             </span>
                           </div>
                           <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">Duration:</span>
+                            <span className="text-xs tracking-wide text-muted-foreground uppercase">Duration:</span>
                             <span className="fm-stat-blue ml-1 font-mono">
                               {team.end_year && team.start_year ? `${team.end_year - team.start_year} years` : 'Current'}
                             </span>

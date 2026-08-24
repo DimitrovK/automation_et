@@ -49,7 +49,7 @@ export function DurationSpread({ row }: { row: DurationRow }) {
           style={{ left: `${Math.min(99, pct(median))}%` }}
         />
       </span>
-      <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+      <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
         {formatDuration(p25)}
         –
         {formatDuration(p75)}

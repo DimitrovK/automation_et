@@ -134,7 +134,7 @@ export function OnThisPage({ className }: { className?: string }) {
         aria-label="On this page"
         className={cn(
           'sticky top-0 z-30 -mx-1 flex flex-wrap items-center gap-1.5 rounded-lg border border-border/60',
-          'bg-background/85 px-2 py-1.5 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/70',
+          'bg-background/85 px-2 py-1.5 text-xs backdrop-blur supports-backdrop-filter:bg-background/70',
           className,
         )}
       >
@@ -147,7 +147,7 @@ export function OnThisPage({ className }: { className?: string }) {
               href={`#${section.id}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'rounded-md px-2 py-1 font-medium ring-1 ring-inset transition-colors',
+                'rounded-md px-2 py-1 font-medium ring-1 transition-colors ring-inset',
                 isActive
                   ? 'bg-primary/10 text-foreground ring-primary/40'
                   : 'text-muted-foreground ring-border hover:bg-muted hover:text-foreground',
@@ -168,7 +168,7 @@ export function OnThisPage({ className }: { className?: string }) {
           variant="secondary"
           aria-label="Back to top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 size-10 rounded-full shadow-lg"
+          className="fixed right-6 bottom-6 z-50 size-10 rounded-full shadow-lg"
         >
           <ArrowUp className="size-4" />
         </Button>

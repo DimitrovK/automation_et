@@ -135,7 +135,7 @@ export function getPlayerRowClassName(
   if (isSelected) {
     return 'border-2 border-gray-600 bg-gray-100 shadow-md ring-2 ring-gray-400/50 dark:bg-gray-800';
   }
-  return 'border border-gray-200 hover:shadow-sm dark:border-gray-700';
+  return 'border border-gray-200 hover:shadow-xs dark:border-gray-700';
 }
 
 export function getStatusBadgeClassName(status: BulkLookupResult['status']) {

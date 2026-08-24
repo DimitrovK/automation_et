@@ -198,7 +198,7 @@ export default function PlayerDetailPage() {
                     {data.by_game.map(row => (
                       <div key={row.game_type} className="flex flex-wrap items-center justify-between gap-2">
                         <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
-                        <span className="text-sm tabular-nums text-muted-foreground">
+                        <span className="text-sm text-muted-foreground tabular-nums">
                           {row.games_played.toLocaleString()}
                           {' played · '}
                           {row.completion_pct}
