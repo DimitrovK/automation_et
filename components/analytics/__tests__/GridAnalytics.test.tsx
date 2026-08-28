@@ -43,6 +43,7 @@ function footballer(over: Partial<GridFootballerRow> & Pick<GridFootballerRow, '
     placed: 10,
     wrong: 25,
     skipped: 5,
+    bait_guesses: 7,
     wrong_pct: 62.5,
     skip_pct: 12.5,
     ...over,
@@ -207,6 +208,7 @@ describe('GridPool', () => {
 
     expect(within(row).getByText('62.5%')).toBeInTheDocument();
     expect(within(row).getByText('12.5%')).toBeInTheDocument();
+    expect(within(row).getByText('7')).toBeInTheDocument();
   });
 
   it('shows the threshold hint when nothing qualifies', () => {

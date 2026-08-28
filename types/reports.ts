@@ -1261,7 +1261,11 @@ export type GridVariationRow = {
   avg_score: number | null;
 };
 
-/** One pool footballer's outcome split, wrong-rate ordered (worklist). */
+/**
+ * One pool footballer's outcome split over PLACEABLE appearances,
+ * wrong-rate ordered (worklist). Distractor wrong-guesses live in
+ * bait_guesses and are excluded from every rate.
+ */
 export type GridFootballerRow = {
   footballer_id: number;
   name: string;
@@ -1269,6 +1273,8 @@ export type GridFootballerRow = {
   placed: number;
   wrong: number;
   skipped: number;
+  /** Wrong guesses on appearances with NO valid cell — wrong by construction. */
+  bait_guesses: number;
   wrong_pct: number;
   skip_pct: number;
 };
