@@ -85,6 +85,14 @@ export default function GridAnalyticsPage() {
         />
       </FilterBar>
 
+      {/* Four sections so OnThisPage reads the WHOLE page: with only two
+          headings the jump list hid the top half and filed the assists
+          panel under "worklists", which it is not. */}
+      <SectionHeader
+        title="What people pick"
+        description="Popularity first — every other number on this page assumes you know which modes are big."
+      />
+
       <ReportPanel state={state} skeletonClassName="h-72 w-full">
         {data => <GridPopularity data={data} />}
       </ReportPanel>
@@ -105,6 +113,11 @@ export default function GridAnalyticsPage() {
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => <GridPool data={data} />}
       </ReportPanel>
+
+      <SectionHeader
+        title="Where the help goes"
+        description="Extra Times and skips — what players pay to get past."
+      />
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => <GridAssists data={data} />}
