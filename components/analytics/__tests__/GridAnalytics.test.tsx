@@ -377,3 +377,28 @@ describe('GridPools', () => {
     expect(screen.getByText('4 / 2')).not.toHaveClass('text-amber-600');
   });
 });
+
+describe('worklist footballer links', () => {
+  it('every footballer name links to the editor', async () => {
+    const { GridPool } = await import('@/components/analytics/panels/GridPool');
+    const { GridAssists } = await import('@/components/analytics/panels/GridAssists');
+    render(<GridPool data={response({ footballers: [footballer({ footballer_id: 7, name: 'Ray Stewart' })] })} />);
+    render(
+      <GridAssists
+        data={{
+          ...response(),
+          assists: {
+            ...response().assists,
+            summary: { ...response().assists.summary, et_used: 1 },
+            et_footballers: [{ footballer_id: 8, name: 'Luis Hernandez', et_uses: 3, wasted: 1 }],
+            skip_footballers: [{ footballer_id: 9, name: 'Carlos Ruiz', skips: 4 }],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: 'Ray Stewart' })).toHaveAttribute('href', '/footballer-management?edit=7');
+    expect(screen.getByRole('link', { name: 'Luis Hernandez' })).toHaveAttribute('href', '/footballer-management?edit=8');
+    expect(screen.getByRole('link', { name: 'Carlos Ruiz' })).toHaveAttribute('href', '/footballer-management?edit=9');
+  });
+});

@@ -1,11 +1,13 @@
 'use client';
 
 import type { GridAnalyticsResponse } from '@/types/reports';
+import Link from 'next/link';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { MetricRow } from '@/components/reports/primitives/MetricRow';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { editFootballerHref } from '@/lib/footballer-links';
 import { cn } from '@/lib/utils';
 
 /**
@@ -103,7 +105,11 @@ export function GridAssists({ data }: { data: GridAnalyticsResponse }) {
                     <tbody>
                       {et_footballers.map(row => (
                         <ReportRow key={row.footballer_id}>
-                          <Td strong>{row.name}</Td>
+                          <Td strong>
+                            <Link href={editFootballerHref(row.footballer_id)} className="hover:text-primary hover:underline">
+                              {row.name}
+                            </Link>
+                          </Td>
                           <Td align="right">{row.et_uses.toLocaleString()}</Td>
                           <Td
                             align="right"
@@ -132,7 +138,11 @@ export function GridAssists({ data }: { data: GridAnalyticsResponse }) {
                     <tbody>
                       {skip_footballers.map(row => (
                         <ReportRow key={row.footballer_id}>
-                          <Td strong>{row.name}</Td>
+                          <Td strong>
+                            <Link href={editFootballerHref(row.footballer_id)} className="hover:text-primary hover:underline">
+                              {row.name}
+                            </Link>
+                          </Td>
                           <Td align="right">{row.skips.toLocaleString()}</Td>
                         </ReportRow>
                       ))}
