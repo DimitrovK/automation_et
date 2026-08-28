@@ -1,10 +1,12 @@
 'use client';
 
 import type { GridAnalyticsResponse } from '@/types/reports';
+import Link from 'next/link';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { editFootballerHref } from '@/lib/footballer-links';
 import { cn } from '@/lib/utils';
 
 /**
@@ -58,7 +60,14 @@ export function GridPool({ data }: { data: GridAnalyticsResponse }) {
                 <tbody>
                   {data.footballers.map(row => (
                     <ReportRow key={row.footballer_id}>
-                      <Td strong>{row.name}</Td>
+                      {/* A worklist row's endpoint is the edit form: a high
+                          wrong rate is usually a career-data gap, and the fix
+                          lives there — same click Career Path names offer. */}
+                      <Td strong>
+                        <Link href={editFootballerHref(row.footballer_id)} className="hover:text-primary hover:underline">
+                          {row.name}
+                        </Link>
+                      </Td>
                       <Td align="right">{row.shown.toLocaleString()}</Td>
                       <Td align="right">{row.placed.toLocaleString()}</Td>
                       <Td align="right">{row.wrong.toLocaleString()}</Td>
