@@ -402,3 +402,39 @@ describe('worklist footballer links', () => {
     expect(screen.getByRole('link', { name: 'Carlos Ruiz' })).toHaveAttribute('href', '/footballer-management?edit=9');
   });
 });
+
+describe('GridBehaviourStrip', () => {
+  it('renders the four behaviour figures for grid and links to reports', async () => {
+    const { GridBehaviourStrip } = await import('@/components/analytics/panels/GridBehaviourStrip');
+    render(
+      <GridBehaviourStrip
+        data={{
+          by_game: [{
+            game_type: 'grid',
+            completion_pct: 84.1,
+            sessions_per_player: 3.2,
+            share_pct: 18.5,
+            repeat_players: 41,
+            repeat_rate_pct: 22.4,
+            previous_games_started: 100,
+            trend_pct: 4.2,
+            games_started: 120,
+            games_finished: 101,
+          }],
+        } as never}
+      />,
+    );
+
+    expect(screen.getByText('84.1%')).toBeInTheDocument();
+    expect(screen.getByText('22.4%')).toBeInTheDocument();
+    expect(screen.getByText('3.2')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /full behaviour view/i })).toHaveAttribute('href', '/reports/games/grid');
+  });
+
+  it('renders nothing without a grid row', async () => {
+    const { GridBehaviourStrip } = await import('@/components/analytics/panels/GridBehaviourStrip');
+    const { container } = render(<GridBehaviourStrip data={{ by_game: [] } as never} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+});
