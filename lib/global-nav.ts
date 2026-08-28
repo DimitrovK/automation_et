@@ -4,6 +4,7 @@ import {
   Database,
   Flag,
   Gamepad2,
+  Grid3x3,
   HelpCircle,
   LayoutGrid,
   Repeat,
@@ -51,7 +52,20 @@ export const ANALYTICS_CHILDREN: NavigationPage[] = [
   { label: 'Questions', href: '/analytics/football-data/questions', icon: HelpCircle, description: 'How big the question bank is, and which questions are broken' },
   { label: 'Career Path', href: '/analytics/career-path', icon: Route, description: 'Which footballers make everyone take a hint' },
   { label: 'Lineups', href: '/analytics/lineups', icon: Users2, description: 'Which slots cost the most guesses' },
+  { label: 'Grid', href: '/analytics/grid', icon: Grid3x3, description: 'Which criteria mislead, and which pool footballers are broken' },
 ];
+
+/**
+ * Reports ↔ Analytics ties for games that have a content-analytics page.
+ * Keyed by the BE registry's game_type — the reports game page uses this to
+ * offer "content analytics" beside its behavioural view, so the two surfaces
+ * point at each other instead of the reader knowing both exist.
+ */
+export const CONTENT_ANALYTICS_BY_GAME: Record<string, string> = {
+  career_path: '/analytics/career-path',
+  missing11: '/analytics/lineups',
+  grid: '/analytics/grid',
+};
 
 /**
  * Every reports/analytics destination the global nav offers. Guarded against

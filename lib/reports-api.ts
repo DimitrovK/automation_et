@@ -14,6 +14,7 @@ import type {
   FirstSessionResponse,
   GamesResponse,
   GlossaryResponse,
+  GridAnalyticsResponse,
   GrowthResponse,
   LineupsAnalyticsResponse,
   MultiplayerResponse,
@@ -182,6 +183,11 @@ export class ReportsAPI {
   /** GET /core/analytics/lineups/ — Missing11 slot and lineup difficulty. */
   static async getLineupsAnalytics(params?: ReportParams): Promise<LineupsAnalyticsResponse> {
     return apiFetcher<LineupsAnalyticsResponse>(`core/analytics/lineups/${buildQuery(params)}`);
+  }
+
+  /** GET /core/analytics/grid/ — Grid content, mode and pool health. */
+  static async getGridAnalytics(params?: ReportParams): Promise<GridAnalyticsResponse> {
+    return apiFetcher<GridAnalyticsResponse>(`core/analytics/grid/${buildQuery(params)}`);
   }
 
   /** GET /core/analytics/football-data/ — data completeness where it is used. */
