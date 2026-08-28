@@ -4,6 +4,7 @@ import type { RangeState } from '@/lib/report-range';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { GridAssists } from '@/components/analytics/panels/GridAssists';
 import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
 import { GridModes } from '@/components/analytics/panels/GridModes';
 import { GridPool } from '@/components/analytics/panels/GridPool';
@@ -103,6 +104,10 @@ export default function GridAnalyticsPage() {
 
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => <GridPool data={data} />}
+      </ReportPanel>
+
+      <ReportPanel state={state} skeletonClassName="h-96 w-full">
+        {data => <GridAssists data={data} />}
       </ReportPanel>
 
       <SectionHeader
