@@ -198,3 +198,42 @@ describe('GridPool', () => {
     expect(screen.getByText(/25 decided appearances/)).toBeInTheDocument();
   });
 });
+
+describe('GridPopularity', () => {
+  it('renders both charts with accessible summaries, largest first', async () => {
+    const { GridPopularity } = await import('@/components/analytics/panels/GridPopularity');
+    render(
+      <GridPopularity
+        data={response({
+          modes: [
+            mode({ sessions: 10, difficulty: 'EASY', grid_size: '3x3' }),
+            mode({ sessions: 3758 }),
+          ],
+          variations: [{
+            variation_id: null,
+            variation: 'Default',
+            sessions: 3768,
+            finished: 3000,
+            completion_pct: 79.6,
+            perfect: 100,
+            perfect_pct: 3.3,
+            avg_score: 12.0,
+          }],
+        })}
+      />,
+    );
+
+    expect(screen.getByText('Modes people pick')).toBeInTheDocument();
+    expect(screen.getByText('Variations people pick')).toBeInTheDocument();
+    // The sr-only summary carries the ranked values — largest mode first.
+    expect(screen.getByText(/Grid sessions by mode: Hard · 4x4 3758/)).toBeInTheDocument();
+    expect(screen.getByText(/Grid sessions by variation: Default 3768/)).toBeInTheDocument();
+  });
+
+  it('shows an empty state when nothing was played', async () => {
+    const { GridPopularity } = await import('@/components/analytics/panels/GridPopularity');
+    render(<GridPopularity data={response()} />);
+
+    expect(screen.getByText('No Grid session in this window.')).toBeInTheDocument();
+  });
+});
