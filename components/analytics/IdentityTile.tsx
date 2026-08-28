@@ -32,7 +32,7 @@ export function IdentityTile({ image, fallback, className }: {
     <span
       className={cn(
         'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md',
-        'bg-muted text-[0.65rem] font-semibold text-muted-foreground ring-1 ring-inset ring-border',
+        'bg-muted text-[0.65rem] font-semibold text-muted-foreground ring-1 ring-border ring-inset',
         className,
       )}
     >

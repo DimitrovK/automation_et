@@ -14,7 +14,7 @@
     "check-lockfile": "node scripts/check-lockfile.mjs",
     "type-check": "npm run check-types",
     "lint": "eslint .",
-    "lint:reports": "eslint app/reports components/reports components/admin lib hooks scripts --max-warnings 0",
+    "lint:reports": "eslint app/reports app/analytics components/reports components/analytics components/admin lib hooks scripts --max-warnings 0",
     "test": "vitest",
     "test:run": "vitest run",
     "prepare": "husky"

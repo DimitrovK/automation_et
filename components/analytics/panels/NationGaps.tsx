@@ -60,7 +60,7 @@ function NationChip({ row }: { row: NationRow }) {
           fallen back to the code and the chip reads "TUV Tuvalu TUV". Three of
           233 active nations, so it is rare rather than never. */}
       {row.flag && (
-        <span className="rounded bg-muted px-1 py-px font-mono text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+        <span className="rounded bg-muted px-1 py-px font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
           {row.short}
         </span>
       )}
@@ -109,7 +109,7 @@ function GapCard({ title, description, icon: Icon, accent, total, shown, emptyLa
         {/* Zero is the goal here, so it reads in the brand green rather than in
             the warning colour the other counts use. */}
         <div className="shrink-0 text-right">
-          <p className={cn('text-2xl font-semibold leading-none tabular-nums', empty ? 'text-primary' : tone.figure)}>
+          <p className={cn('text-2xl leading-none font-semibold tabular-nums', empty ? 'text-primary' : tone.figure)}>
             {total.toLocaleString()}
           </p>
           <p className="mt-1 text-[0.7rem] text-muted-foreground">
@@ -122,7 +122,7 @@ function GapCard({ title, description, icon: Icon, accent, total, shown, emptyLa
           ? (
               // Not an error and not a blank: for a gap list, zero is the goal,
               // and a flat grey sentence reads like something failed to load.
-              <p className="flex items-center gap-2 rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted-foreground ring-1 ring-inset ring-primary/15">
+              <p className="flex items-center gap-2 rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted-foreground ring-1 ring-primary/15 ring-inset">
                 <Check className="size-4 shrink-0 text-primary" aria-hidden />
                 {emptyLabel}
               </p>

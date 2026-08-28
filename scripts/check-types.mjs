@@ -35,7 +35,7 @@ const IGNORED_PREFIXES = [];
  * Where unused locals are an error today. Everywhere else still owes the
  * cleanup — see the header.
  */
-const UNUSED_SCOPE = ['app/reports/', 'components/reports/', 'components/admin/', 'hooks/', 'lib/'];
+const UNUSED_SCOPE = ['app/reports/', 'app/analytics/', 'components/reports/', 'components/analytics/', 'components/admin/', 'hooks/', 'lib/'];
 
 /**
  * True when a tsc error line belongs to a scoped path.

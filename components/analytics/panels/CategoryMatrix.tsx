@@ -78,7 +78,7 @@ export function CategoryMatrix({ data, onExpand, expanded, search, onSearchChang
                   aria-pressed={active}
                   onClick={() => onDifficultyChange(active ? null : tierKey)}
                   className={cn(
-                    'rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+                    'rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors ring-inset',
                     active
                       ? cn('ring-transparent', tier(tierKey).chip)
                       : 'text-muted-foreground ring-border hover:bg-muted',

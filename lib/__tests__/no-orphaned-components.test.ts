@@ -15,7 +15,13 @@ import { describe, expect, it } from 'vitest';
  */
 
 const ROOT = process.cwd();
-const COMPONENT_DIR = join(ROOT, 'components', 'reports');
+// Both surfaces: analytics joined the guard once its component count grew
+// past the point where an orphan could hide (the reports blind spot this
+// test closed existed there too — same primitives, same bucketing).
+const COMPONENT_DIRS = [
+  join(ROOT, 'components', 'reports'),
+  join(ROOT, 'components', 'analytics'),
+];
 
 /** Directories that can legitimately reference a component. */
 const SEARCH_DIRS = ['app', 'components', 'hooks', 'lib'];
@@ -49,7 +55,7 @@ describe('report components', () => {
     // matched, so every component's own source counted as a render of itself
     // and the guard passed for everything — including a genuinely orphaned
     // component, which is the one thing it exists to catch.
-    const components = walk(COMPONENT_DIR)
+    const components = COMPONENT_DIRS.flatMap(dir => walk(dir))
       .filter(path => path.endsWith('.tsx'))
       .map(path => ({ path, name: path.split('/').pop()!.replace(/\.tsx$/, '') }));
 
