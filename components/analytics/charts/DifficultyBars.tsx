@@ -32,7 +32,7 @@ function BucketTooltip({ active, payload, label, share }: {
           <p key={entry.name} className="flex items-center gap-1.5 text-muted-foreground">
             <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
             {entry.name}
-            <span className="font-medium tabular-nums text-foreground">
+            <span className="font-medium text-foreground tabular-nums">
               {(entry.value ?? 0).toLocaleString()}
             </span>
             {pct !== null && <span className="tabular-nums">{`(${pct}%)`}</span>}

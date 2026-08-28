@@ -62,7 +62,7 @@ function Row({ label, value, total, colour, track }: { label: string; value: num
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2">
         <dt className="text-sm text-muted-foreground">{label}</dt>
-        <dd className="text-sm tabular-nums text-foreground">
+        <dd className="text-sm text-foreground tabular-nums">
           <span className="font-medium">{value.toLocaleString()}</span>
           {pct !== null && <span className="ml-1.5 text-xs text-muted-foreground">{`${pct}%`}</span>}
         </dd>

@@ -241,7 +241,9 @@ function Tile({ difficulty, count, index, ranked, palette = 'default' }: {
           'flex h-14 items-center justify-center rounded-lg text-sm font-bold tabular-nums',
           // Hover lifts the colour as well as the size. Scale alone reads as a
           // rendering quirk; a brightness change reads as a response.
-          'hover:scale-1.03 animate-data-rise transition-all duration-150 hover:brightness-125',
+          // v4 numeric scale is a PERCENTAGE: scale-103 = grow 3%. The class this
+          // replaces ('scale-1.03') read as 1.03% — a tile shrinking to a dot.
+          'animate-data-rise transition-all duration-150 hover:scale-103 hover:brightness-125',
           // Alternating direction: slate-to-hue, then hue-to-slate. Two
           // neighbours meet light against dark instead of repeating, so the
           // seam is legible without a border between them.

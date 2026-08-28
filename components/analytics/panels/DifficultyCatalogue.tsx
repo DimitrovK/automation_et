@@ -51,7 +51,7 @@ export function DifficultyCatalogue({ data }: { data: CoverageResponse }) {
               <div key={tier.difficulty} className="space-y-1">
                 <div className="flex items-baseline justify-between gap-2">
                   <dt className="text-sm text-muted-foreground">{tierLabel(tier.difficulty)}</dt>
-                  <dd className="text-sm font-medium tabular-nums text-foreground">
+                  <dd className="text-sm font-medium text-foreground tabular-nums">
                     {tier.footballers.toLocaleString()}
                   </dd>
                 </div>
@@ -100,7 +100,7 @@ function PictureRow({ tier }: { tier: DifficultyTier }) {
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2">
         <dt className="text-sm text-muted-foreground">{tierLabel(tier.difficulty)}</dt>
-        <dd className="text-sm tabular-nums text-foreground">
+        <dd className="text-sm text-foreground tabular-nums">
           {empty
             ? <span className="text-muted-foreground">No footballers</span>
             : (

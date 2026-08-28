@@ -73,7 +73,7 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
                   aria-pressed={dimension === option.key}
                   onClick={() => onDimensionChange(option.key)}
                   className={cn(
-                    'rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+                    'rounded-md px-2.5 py-1 text-xs font-medium ring-1 transition-colors ring-inset',
                     dimension === option.key
                       ? 'bg-primary text-primary-foreground ring-transparent'
                       : 'text-muted-foreground ring-border hover:bg-muted',
@@ -101,7 +101,7 @@ export function FootballerMatrix({ data, dimension, onDimensionChange, search, o
                   aria-pressed={active}
                   onClick={() => onDifficultyChange(active ? null : tierKey)}
                   className={cn(
-                    'rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+                    'rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors ring-inset',
                     active
                       ? cn('ring-transparent', tier(tierKey).chip)
                       : 'text-muted-foreground ring-border hover:bg-muted',

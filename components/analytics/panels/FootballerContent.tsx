@@ -126,7 +126,7 @@ function FootballerRow({ row, minAppearances }: {
                 // gives the eye nothing to anchor on.
                 <span className="flex flex-col gap-1">
                   <OutcomeBar outcome={row.outcome} plays={plays} className="h-2.5" />
-                  <span className="text-xs tabular-nums text-muted-foreground">
+                  <span className="text-xs text-muted-foreground tabular-nums">
                     {`${solvedPct(row.outcome, plays)}% solved`}
                   </span>
                 </span>
