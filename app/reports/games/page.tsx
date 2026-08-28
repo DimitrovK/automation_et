@@ -4,6 +4,7 @@ import type { RangeState } from '@/lib/report-range';
 import type { GameRowWithDuration, GameSortKey } from '@/lib/report-sort';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { PopularityBars } from '@/components/analytics/charts/PopularityBars';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { FavouredVsPlayedChart } from '@/components/reports/favourites/FavouredVsPlayedChart';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
@@ -26,7 +27,7 @@ import { Sparkline } from '@/components/reports/primitives/Sparkline';
 import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
-import { useGameMeta } from '@/hooks/use-game-meta';
+import { gameName, useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -76,6 +77,7 @@ export default function GamesIndexPage() {
   );
 
   const { meta } = useGameMeta(enabled);
+  const colorFor = useGameColor();
   // Session length is a per-game property but lives on another endpoint, so the
   // comparison table had to be read beside a second page to answer "which game
   // holds attention". Merged in here instead.
@@ -175,6 +177,32 @@ export default function GamesIndexPage() {
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => (
           <>
+            {/* The glance before the tables: which games are big, as lengths
+              on one baseline. Everything else on this page assumes the
+              reader already knows the answer to this. */}
+            <Card>
+              <CardHeader>
+                <CardTitle>What people play</CardTitle>
+                <CardDescription>
+                  Games started in the window, side by side. Hover for the
+                  share of all play.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PopularityBars
+                  ariaLabel="Games started by game"
+                  rows={[...data.by_game]
+                    .sort((a, b) => b.games_started - a.games_started)
+                    .map(row => ({
+                      key: row.game_type,
+                      label: gameName(meta[row.game_type], row.game_type),
+                      value: row.games_started,
+                      colour: colorFor(meta, row.game_type),
+                    }))}
+                />
+              </CardContent>
+            </Card>
+
             {/* Reach and depth say which games are worth attention; this says
               where the recoverable sessions actually are, which is a
               different question and the one nobody could answer from a

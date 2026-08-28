@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
 import { GridModes } from '@/components/analytics/panels/GridModes';
 import { GridPool } from '@/components/analytics/panels/GridPool';
+import { GridPopularity } from '@/components/analytics/panels/GridPopularity';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
@@ -82,6 +83,10 @@ export default function GridAnalyticsPage() {
           onIncludeBotsChange={setIncludeBots}
         />
       </FilterBar>
+
+      <ReportPanel state={state} skeletonClassName="h-72 w-full">
+        {data => <GridPopularity data={data} />}
+      </ReportPanel>
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => <GridModes data={data} />}
