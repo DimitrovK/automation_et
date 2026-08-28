@@ -1,10 +1,9 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { useMemo } from 'react';
 import { GridAssists } from '@/components/analytics/panels/GridAssists';
+import { GridBehaviourStrip } from '@/components/analytics/panels/GridBehaviourStrip';
 import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
 import { GridModes } from '@/components/analytics/panels/GridModes';
 import { GridPool } from '@/components/analytics/panels/GridPool';
@@ -61,22 +60,19 @@ export default function GridAnalyticsPage() {
     enabled,
     'The Grid analytics endpoint',
   );
+  // The behaviour glance folded in from reporting — same range, Grid only.
+  const summary = useReport(
+    ReportsAPI.getSummary,
+    useMemo(() => ({ ...params, game_type: 'grid' }), [params]),
+    enabled,
+    'The reporting summary endpoint',
+  );
 
   return (
     <AnalyticsShell
       title="Grid content"
       description="Which criteria mislead, which pool footballers are broken or dead weight, and whether each mode and variation actually plays."
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href="/reports/games/grid"
-          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-        >
-          Player behaviour for Grid lives in Reports
-          <ArrowRight className="size-4" />
-        </Link>
-      </div>
-
       <FilterBar>
         <RangePicker
           value={range}
@@ -86,7 +82,11 @@ export default function GridAnalyticsPage() {
         />
       </FilterBar>
 
-      {/* Four sections so OnThisPage reads the WHOLE page: with only two
+      <ReportPanel state={summary} skeletonClassName="h-28 w-full">
+        {data => <GridBehaviourStrip data={data} />}
+      </ReportPanel>
+
+      {/* Five sections so OnThisPage reads the WHOLE page: with only two
           headings the jump list hid the top half and filed the assists
           panel under "worklists", which it is not. */}
       <SectionHeader
