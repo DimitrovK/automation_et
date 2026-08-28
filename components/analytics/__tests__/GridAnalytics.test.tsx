@@ -63,6 +63,22 @@ function response(over: Partial<GridAnalyticsResponse> = {}): GridAnalyticsRespo
     criteria: [],
     criterion_types: [],
     teams: [],
+    assists: {
+      summary: {
+        et_used: 0,
+        et_wasted: 0,
+        et_hits_earned: 0,
+        sessions_using_et: 0,
+        avg_et_position_pct: null,
+        deliberate_skips: 0,
+        distractor_skips: 0,
+        penalty_skips: 0,
+        sessions_skipping: 0,
+      },
+      et_footballers: [],
+      skip_footballers: [],
+      et_criteria: [],
+    },
     ...over,
   };
 }
@@ -235,5 +251,73 @@ describe('GridPopularity', () => {
     render(<GridPopularity data={response()} />);
 
     expect(screen.getByText('No Grid session in this window.')).toBeInTheDocument();
+  });
+});
+
+describe('GridAssists', () => {
+  const assists = {
+    summary: {
+      et_used: 4070,
+      et_wasted: 2027,
+      et_hits_earned: 5165,
+      sessions_using_et: 2771,
+      avg_et_position_pct: 28.0,
+      deliberate_skips: 59217,
+      distractor_skips: 22887,
+      penalty_skips: 31526,
+      sessions_skipping: 4966,
+    },
+    et_footballers: [{ footballer_id: 1, name: 'Luis Hernandez', et_uses: 11, wasted: 6 }],
+    skip_footballers: [{ footballer_id: 2, name: 'Carlos Ruiz', skips: 81 }],
+    et_criteria: [{ criterion_type: 'CLUB_GOALS_GTE', label: '150+ Club Goals', placements: 43 }],
+  };
+
+  it('splits the summary the way the numbers mean', async () => {
+    const { GridAssists } = await import('@/components/analytics/panels/GridAssists');
+    render(<GridAssists data={{ ...response(), assists }} />);
+
+    // Wasted rides with its share; placeable skips are the ranked number,
+    // distractors and penalties are context.
+    expect(screen.getByText('2,027 (50%)')).toBeInTheDocument();
+    expect(screen.getByText('36,330')).toBeInTheDocument();
+    expect(screen.getByText('28% into the run')).toBeInTheDocument();
+  });
+
+  it('renders the three worklists', async () => {
+    const { GridAssists } = await import('@/components/analytics/panels/GridAssists');
+    render(<GridAssists data={{ ...response(), assists }} />);
+
+    expect(screen.getByText('Luis Hernandez')).toBeInTheDocument();
+    expect(screen.getByText('Carlos Ruiz')).toBeInTheDocument();
+    expect(screen.getByText('150+ Club Goals')).toBeInTheDocument();
+  });
+
+  it('shows the empty state when nothing was spent', async () => {
+    const { GridAssists } = await import('@/components/analytics/panels/GridAssists');
+    render(
+      <GridAssists
+        data={{
+          ...response(),
+          assists: {
+            summary: {
+              et_used: 0,
+              et_wasted: 0,
+              et_hits_earned: 0,
+              sessions_using_et: 0,
+              avg_et_position_pct: null,
+              deliberate_skips: 0,
+              distractor_skips: 0,
+              penalty_skips: 0,
+              sessions_skipping: 0,
+            },
+            et_footballers: [],
+            skip_footballers: [],
+            et_criteria: [],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('No Extra Time or skip in this window.')).toBeInTheDocument();
   });
 });

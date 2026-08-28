@@ -1294,6 +1294,29 @@ export type GridCriterionTypeRow = {
   wrong_pct: number;
 };
 
+/**
+ * Where the help gets spent. A wasted ET bought nothing (no open valid
+ * cell existed); a "placeable" skip is the suffering signal — distractor
+ * skips are correct play and live only in the summary.
+ */
+export type GridAssists = {
+  summary: {
+    et_used: number;
+    et_wasted: number;
+    et_hits_earned: number;
+    sessions_using_et: number;
+    /** How deep into the run an ET is typically burned. Null when unused. */
+    avg_et_position_pct: number | null;
+    deliberate_skips: number;
+    distractor_skips: number;
+    penalty_skips: number;
+    sessions_skipping: number;
+  };
+  et_footballers: { footballer_id: number; name: string; et_uses: number; wasted: number }[];
+  skip_footballers: { footballer_id: number; name: string; skips: number }[];
+  et_criteria: { criterion_type: string; label: string; placements: number }[];
+};
+
 export type GridAnalyticsResponse = {
   modes: GridModeRow[];
   variations: GridVariationRow[];
@@ -1302,6 +1325,7 @@ export type GridAnalyticsResponse = {
   criterion_types: GridCriterionTypeRow[];
   /** The PLAYED_FOR_CLUB slice by reach — the most displayed clubs. */
   teams: GridCriterionRow[];
+  assists: GridAssists;
 } & ResolvedRange;
 
 /**
