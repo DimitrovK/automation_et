@@ -34,9 +34,11 @@ export function GridPool({ data }: { data: GridAnalyticsResponse }) {
           <MetricInfo metric="grid_shown" />
         </CardTitle>
         <CardDescription>
-          Every appearance a player decided on — placed, misplaced or
-          deliberately skipped. High wrong rate reads as a data bug; high skip
-          rate reads as dead weight. Ordered worst first.
+          Placeable appearances a player decided on — placed, misplaced or
+          deliberately skipped. High wrong rate reads as a data bug or an
+          unguessably obscure career; high skip rate reads as dead weight.
+          Bait counts wrong guesses at distractor appearances (no valid cell
+          existed) and stays out of every rate. Ordered worst first.
         </CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">
@@ -54,7 +56,8 @@ export function GridPool({ data }: { data: GridAnalyticsResponse }) {
                   <Th align="right">Placed</Th>
                   <Th align="right">Wrong</Th>
                   <Th align="right">Skipped</Th>
-                  <Th align="right" title="Wrong placements as a share of shown">Wrong rate</Th>
+                  <Th align="right" title="Wrong guesses at distractor appearances — wrong by construction, excluded from the rates">Bait</Th>
+                  <Th align="right" title="Wrong placements as a share of shown (placeable decisions)">Wrong rate</Th>
                   <Th align="right" title="Deliberate skips as a share of shown">Skip rate</Th>
                 </ReportHead>
                 <tbody>
@@ -72,6 +75,7 @@ export function GridPool({ data }: { data: GridAnalyticsResponse }) {
                       <Td align="right">{row.placed.toLocaleString()}</Td>
                       <Td align="right">{row.wrong.toLocaleString()}</Td>
                       <Td align="right">{row.skipped.toLocaleString()}</Td>
+                      <Td align="right" className="text-muted-foreground">{row.bait_guesses.toLocaleString()}</Td>
                       <Td
                         align="right"
                         strong
