@@ -8,6 +8,7 @@ import { GridAssists } from '@/components/analytics/panels/GridAssists';
 import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
 import { GridModes } from '@/components/analytics/panels/GridModes';
 import { GridPool } from '@/components/analytics/panels/GridPool';
+import { GridPools } from '@/components/analytics/panels/GridPools';
 import { GridPopularity } from '@/components/analytics/panels/GridPopularity';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
@@ -121,6 +122,15 @@ export default function GridAnalyticsPage() {
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => <GridAssists data={data} />}
+      </ReportPanel>
+
+      <SectionHeader
+        title="The engine room"
+        description="Operational, not editorial — whether the pre-generation pools behind every mode are stocked."
+      />
+
+      <ReportPanel state={state} skeletonClassName="h-80 w-full">
+        {data => <GridPools data={data} />}
       </ReportPanel>
 
       <SectionHeader

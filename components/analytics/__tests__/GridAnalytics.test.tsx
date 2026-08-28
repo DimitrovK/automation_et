@@ -79,6 +79,7 @@ function response(over: Partial<GridAnalyticsResponse> = {}): GridAnalyticsRespo
       skip_footballers: [],
       et_criteria: [],
     },
+    pools: [],
     ...over,
   };
 }
@@ -319,5 +320,60 @@ describe('GridAssists', () => {
     );
 
     expect(screen.getByText('No Extra Time or skip in this window.')).toBeInTheDocument();
+  });
+});
+
+describe('GridPools', () => {
+  const pool = {
+    grid_size: '3x3',
+    difficulty: 'HARD',
+    footballer_status: 'NOT_ACTIVE',
+    variation: null,
+    admin_only: false,
+    active: 0,
+    retired: 3,
+    target_pool_size: 2,
+    max_pool_size: 6,
+    auto_size_enabled: true,
+    exhausted_count: 5,
+    last_exhausted_at: '2026-08-28T10:00:00+00:00',
+  };
+
+  it('labels the bucket and flags under-floor stock', async () => {
+    const { GridPools } = await import('@/components/analytics/panels/GridPools');
+    render(<GridPools data={{ ...response(), pools: [pool] }} />);
+
+    expect(screen.getByText('Hard · Retired · 3x3')).toBeInTheDocument();
+
+    const stock = screen.getByText('0 / 2');
+
+    expect(stock).toHaveClass('text-amber-600');
+    expect(screen.getByText('last 2026-08-28')).toBeInTheDocument();
+    expect(screen.getByText('auto')).toBeInTheDocument();
+  });
+
+  it('marks admin test pools and pinned sizing', async () => {
+    const { GridPools } = await import('@/components/analytics/panels/GridPools');
+    render(
+      <GridPools
+        data={{
+          ...response(),
+          pools: [{
+            ...pool,
+            admin_only: true,
+            auto_size_enabled: false,
+            active: 4,
+            last_exhausted_at: null,
+            variation: 'World Cup',
+          }],
+        }}
+      />,
+    );
+
+    expect(screen.getByText('test pool')).toBeInTheDocument();
+    expect(screen.getByText('pinned')).toBeInTheDocument();
+    expect(screen.getByText('Hard · Retired · 3x3 · World Cup')).toBeInTheDocument();
+    // At/above floor: no amber.
+    expect(screen.getByText('4 / 2')).not.toHaveClass('text-amber-600');
   });
 });
