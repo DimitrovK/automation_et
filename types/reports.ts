@@ -1233,6 +1233,77 @@ export type LineupsAnalyticsResponse = {
   };
 } & ResolvedRange;
 
+/** One Grid mode bucket: difficulty × roster × size, with its outcomes. */
+export type GridModeRow = {
+  /** EASY | HARD; null only on legacy data bugs — surfaced, never hidden. */
+  difficulty: string | null;
+  /** BOTH = the classic mixed pool; ACTIVE / NOT_ACTIVE are the roster modes. */
+  footballer_status: string;
+  grid_size: string;
+  sessions: number;
+  finished: number;
+  completion_pct: number;
+  perfect: number;
+  perfect_pct: number;
+  avg_score: number | null;
+  /** Player-made wrong placements in this bucket (Extra-Time excluded). */
+  wrong_guesses: number;
+};
+
+export type GridVariationRow = {
+  variation_id: number | null;
+  variation: string;
+  sessions: number;
+  finished: number;
+  completion_pct: number;
+  perfect: number;
+  perfect_pct: number;
+  avg_score: number | null;
+};
+
+/** One pool footballer's outcome split, wrong-rate ordered (worklist). */
+export type GridFootballerRow = {
+  footballer_id: number;
+  name: string;
+  shown: number;
+  placed: number;
+  wrong: number;
+  skipped: number;
+  wrong_pct: number;
+  skip_pct: number;
+};
+
+/**
+ * One criterion identity: (type, display text) — merges the same criterion
+ * across generated grids while keeping era/threshold variants apart.
+ */
+export type GridCriterionRow = {
+  criterion_type: string;
+  label: string;
+  sessions: number;
+  attempts: number;
+  wrong: number;
+  wrong_pct: number;
+};
+
+export type GridCriterionTypeRow = {
+  criterion_type: string;
+  identities: number;
+  attempts: number;
+  wrong: number;
+  wrong_pct: number;
+};
+
+export type GridAnalyticsResponse = {
+  modes: GridModeRow[];
+  variations: GridVariationRow[];
+  footballers: GridFootballerRow[];
+  criteria: GridCriterionRow[];
+  criterion_types: GridCriterionTypeRow[];
+  /** The PLAYED_FOR_CLUB slice by reach — the most displayed clubs. */
+  teams: GridCriterionRow[];
+} & ResolvedRange;
+
 /**
  * One completeness check on the football data.
  *

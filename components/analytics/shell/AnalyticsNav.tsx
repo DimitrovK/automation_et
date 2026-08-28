@@ -1,7 +1,7 @@
 'use client';
 
 import type { NavGroup, NavItem } from '@/components/admin/SectionNav';
-import { Database, Flag, HelpCircle, Route, Shield, User, Users } from 'lucide-react';
+import { Database, Flag, Grid3x3, HelpCircle, Route, Shield, User, Users } from 'lucide-react';
 
 /**
  * Analytics, which is not Reports and should not be folded into it.
@@ -13,9 +13,9 @@ import { Database, Flag, HelpCircle, Route, Shield, User, Users } from 'lucide-r
  * weekly by whoever is deciding what to build, and this is read by whoever is
  * writing content, when they are writing it.
  *
- * Grouped rather than flat because one more is coming (App#1475) and a
- * heading that appears later reorganises the section under someone who had
- * learned where things were.
+ * Grouped so a per-game page that arrives later (Grid did, App#1545; more
+ * will) slots into an existing heading instead of reorganising the section
+ * under someone who had learned where things were.
  */
 export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
   {
@@ -23,6 +23,7 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/analytics/career-path', label: 'Career Path', icon: Route },
       { href: '/analytics/lineups', label: 'Lineups', icon: Users },
+      { href: '/analytics/grid', label: 'Grid', icon: Grid3x3 },
     ],
   },
   {
