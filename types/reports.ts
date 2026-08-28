@@ -1317,6 +1317,22 @@ export type GridAssists = {
   et_criteria: { criterion_type: string; label: string; placements: number }[];
 };
 
+/** Current stock of one pre-generation bucket. Not windowed. */
+export type GridPoolRow = {
+  grid_size: string;
+  difficulty: string | null;
+  footballer_status: string;
+  variation: string | null;
+  admin_only: boolean;
+  active: number;
+  retired: number;
+  target_pool_size: number;
+  max_pool_size: number;
+  auto_size_enabled: boolean;
+  exhausted_count: number;
+  last_exhausted_at: string | null;
+};
+
 export type GridAnalyticsResponse = {
   modes: GridModeRow[];
   variations: GridVariationRow[];
@@ -1326,6 +1342,8 @@ export type GridAnalyticsResponse = {
   /** The PLAYED_FOR_CLUB slice by reach — the most displayed clubs. */
   teams: GridCriterionRow[];
   assists: GridAssists;
+  /** Pool stock per active pre-generation bucket — current state, unwindowed. */
+  pools: GridPoolRow[];
 } & ResolvedRange;
 
 /**
