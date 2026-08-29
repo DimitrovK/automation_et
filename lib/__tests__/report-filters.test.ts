@@ -12,6 +12,9 @@ const defaults = {
   limit: 25,
   search: '',
   compareOffset: 1,
+  gridDifficulty: null,
+  gridRoster: null,
+  gridSize: null,
 };
 
 describe('report filter URL state', () => {
@@ -187,5 +190,24 @@ describe('every report page can be exported', () => {
       offenders.map(f => f.replace(process.cwd(), '')),
       'Report pages with no CSV export — the data can be read but not taken anywhere',
     ).toEqual([]);
+  });
+});
+
+describe('grid mode drill-down params', () => {
+  it('round-trips the three axes and drops junk values', () => {
+    const filters = { ...defaults, gridDifficulty: 'HARD', gridRoster: 'NOT_ACTIVE', gridSize: '3x3' };
+
+    expect(__test.serialise(filters, defaults)).toBe('?difficulty=HARD&roster=NOT_ACTIVE&size=3x3');
+    expect(__test.parse('?difficulty=HARD&roster=NOT_ACTIVE&size=3x3', defaults)).toMatchObject({
+      gridDifficulty: 'HARD',
+      gridRoster: 'NOT_ACTIVE',
+      gridSize: '3x3',
+    });
+    // A mistyped shared link degrades to unfiltered, never to a 400.
+    expect(__test.parse('?difficulty=LEGEND&roster=ROBOTS&size=9x9', defaults)).toMatchObject({
+      gridDifficulty: null,
+      gridRoster: null,
+      gridSize: null,
+    });
   });
 });
