@@ -68,13 +68,21 @@ function metricColor(theme: ChartTheme, metric: MetricKey): string {
  * alternative is the one thing worse than both — it lets the author choose
  * where the lines cross.
  */
-export function ActivityChart({ series, title, description, metric, color, granularity, onGranularityChange }: {
+export function ActivityChart({ series, title, description, metric, color, granularity, onGranularityChange, layout = 'primary' }: {
   series: ActivityDay[];
   title: string;
   description: string;
   metric: MetricKey;
   /** Overrides the metric colour — used to match the selected game's badge. */
   color?: string;
+  /**
+   * 'primary' = the selected metric large with the other three as context
+   * sparklines. 'grid' = all four as EQUAL panels — the Daily Pulse view,
+   * where no one metric outranks the rest. Both keep one y-axis per
+   * metric: magnitudes differ by orders, and a shared axis flattens the
+   * small series while implying the gaps are comparable.
+   */
+  layout?: 'primary' | 'grid';
   /**
    * Controlled, because the bucketing happens server-side: a week's distinct
    * players must be computed, not summed, so changing this refetches rather
@@ -150,65 +158,104 @@ export function ActivityChart({ series, title, description, metric, color, granu
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-72 sm:h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
-            <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
-            <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-            <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
-            {/* One line, its own axis. The others are below at their own
-                scales rather than squashed onto this one. */}
-            <Line
-              type="monotone"
-              dataKey={primaryOption.key}
-              name={primaryOption.label}
-              stroke={primaryColor}
-              strokeWidth={2.5}
-              dot={false}
-              activeDot={{ r: 4 }}
-              connectNulls={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </CardContent>
-
-      {/* The other three, each on its own scale. Same x-axis, no shared y —
-          so the shapes can be compared without the numbers being implied to
-          be comparable. */}
-      <CardContent className="grid grid-cols-1 gap-4 pt-0 sm:grid-cols-3">
-        {panels.context.map(key => METRIC_OPTIONS.find(option => option.key === key)!).map(option => (
-          <div key={option.key} className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
-              {option.label}
-              <span className="ml-1 font-normal text-muted-foreground/70 tabular-nums">
-                {total(data, option.key).toLocaleString()}
-              </span>
-            </p>
-            <div className="h-20">
+      {layout === 'grid'
+        ? (
+            <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {METRIC_OPTIONS.map(option => (
+                <div key={option.key} className="space-y-1">
+                  <p className="text-sm font-medium">
+                    {option.label}
+                    <span className="ml-1.5 text-xs font-normal text-muted-foreground tabular-nums">
+                      {total(data, option.key).toLocaleString()}
+                    </span>
+                  </p>
+                  <div className="h-44">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                        <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
+                        <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+                        <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
+                        <Line
+                          type="monotone"
+                          dataKey={option.key}
+                          name={option.label}
+                          stroke={metricColor(theme, option.key)}
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 3 }}
+                          connectNulls={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          )
+        : (
+            <CardContent className="h-72 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                  <XAxis dataKey="label" hide />
-                  {/* Its own domain, which is the entire point: on the shared
-                      axis above, a series in the tens beside one in the
-                      thousands was a flat line along the bottom. */}
-                  <YAxis hide domain={['dataMin', 'dataMax']} />
+                <LineChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                  <XAxis dataKey="label" tick={theme.tick} interval="preserveStartEnd" minTickGap={24} />
+                  <YAxis tick={theme.tick} allowDecimals={false} width={44} />
                   <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
+                  {/* One line, its own axis. The others are below at their own
+                      scales rather than squashed onto this one. */}
                   <Line
                     type="monotone"
-                    dataKey={option.key}
-                    name={option.label}
-                    stroke={metricColor(theme, option.key)}
-                    strokeWidth={1.5}
+                    dataKey={primaryOption.key}
+                    name={primaryOption.label}
+                    stroke={primaryColor}
+                    strokeWidth={2.5}
                     dot={false}
+                    activeDot={{ r: 4 }}
                     connectNulls={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
+            </CardContent>
+          )}
+
+      {/* The other three, each on its own scale. Same x-axis, no shared y —
+          so the shapes can be compared without the numbers being implied to
+          be comparable. */}
+      {layout === 'primary' && (
+        <CardContent className="grid grid-cols-1 gap-4 pt-0 sm:grid-cols-3">
+          {panels.context.map(key => METRIC_OPTIONS.find(option => option.key === key)!).map(option => (
+            <div key={option.key} className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">
+                {option.label}
+                <span className="ml-1 font-normal text-muted-foreground/70 tabular-nums">
+                  {total(data, option.key).toLocaleString()}
+                </span>
+              </p>
+              <div className="h-20">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                    <XAxis dataKey="label" hide />
+                    {/* Its own domain, which is the entire point: on the shared
+                      axis above, a series in the tens beside one in the
+                      thousands was a flat line along the bottom. */}
+                    <YAxis hide domain={['dataMin', 'dataMax']} />
+                    <Tooltip content={<ChartTooltip />} cursor={theme.tooltip.cursor} />
+                    <Line
+                      type="monotone"
+                      dataKey={option.key}
+                      name={option.label}
+                      stroke={metricColor(theme, option.key)}
+                      strokeWidth={1.5}
+                      dot={false}
+                      connectNulls={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        ))}
-      </CardContent>
+          ))}
+        </CardContent>
+      )}
     </Card>
   );
 }
