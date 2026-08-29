@@ -161,6 +161,11 @@ export default function ReportsPage() {
             series={data.series}
             metric={metric}
             color={game ? resolveColor(meta, game) : undefined}
+            // All four metrics as equal panels: the pulse question is "how is
+            // everything moving", not "how is one metric moving" — that view
+            // stays on the per-game pages. The metric toggle above keeps
+            // driving the games leaderboard below.
+            layout="grid"
             title={`${selectedLabel ?? 'All games'} — last ${data.window} days`}
             description={`${data.totals.games_started.toLocaleString()} played, ${data.totals.games_finished.toLocaleString()} finished, ${data.totals.distinct_players.toLocaleString()} distinct players.`}
           />
