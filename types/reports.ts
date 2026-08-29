@@ -1241,6 +1241,9 @@ export type GridModeRow = {
   footballer_status: string;
   grid_size: string;
   sessions: number;
+  /** Daily Grid sessions inside this bucket — the mode's front door. */
+  daily_sessions: number;
+  daily_pct: number;
   finished: number;
   completion_pct: number;
   perfect: number;

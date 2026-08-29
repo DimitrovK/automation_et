@@ -16,6 +16,8 @@ function mode(over: Partial<GridModeRow>): GridModeRow {
     footballer_status: 'BOTH',
     grid_size: '4x4',
     sessions: 3758,
+    daily_sessions: 1200,
+    daily_pct: 31.9,
     finished: 3161,
     completion_pct: 84.1,
     perfect: 77,
@@ -92,7 +94,7 @@ describe('GridModes', () => {
         data={response({
           modes: [
             mode({}),
-            mode({ difficulty: 'EASY', footballer_status: 'NOT_ACTIVE', grid_size: '3x3', sessions: 12 }),
+            mode({ difficulty: 'EASY', footballer_status: 'NOT_ACTIVE', grid_size: '3x3', sessions: 12, daily_sessions: 0, daily_pct: 0.0 }),
           ],
         })}
       />,
@@ -101,6 +103,14 @@ describe('GridModes', () => {
     // The wire vocabulary never leaks: EASY reads Standard, NOT_ACTIVE reads
     // Retired, BOTH adds nothing.
     expect(screen.getByText('Hard · 4x4')).toBeInTheDocument();
+
+    // Header and cells stay aligned: the Daily column sits between the
+    // mode label and Sessions in BOTH.
+    const table = screen.getByText('Hard · 4x4').closest('table')!;
+    const headers = within(table).getAllByRole('columnheader').map(th => th.textContent);
+
+    expect(headers.slice(0, 3)).toEqual(['Mode', 'Daily', 'Sessions']);
+    expect(within(table).getByText('31.9%')).toBeInTheDocument();
     expect(screen.getByText('Standard · Retired · 3x3')).toBeInTheDocument();
     expect(screen.queryByText(/NOT_ACTIVE|BOTH/)).not.toBeInTheDocument();
   });
