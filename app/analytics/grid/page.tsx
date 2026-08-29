@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import type { GridModeRow } from '@/types/reports';
 import { useMemo } from 'react';
+import { SurfaceTabs } from '@/components/admin/SurfaceTabs';
 import { ActiveFilterChips } from '@/components/analytics/ActiveFilterChips';
 import { modeLabel } from '@/components/analytics/panels/grid-mode';
 import { GridAssists } from '@/components/analytics/panels/GridAssists';
@@ -90,6 +91,8 @@ export default function GridAnalyticsPage() {
       title="Grid content"
       description="Which criteria mislead, which pool footballers are broken or dead weight, and whether each mode and variation actually plays."
     >
+      <SurfaceTabs gameKey="grid" active="content" />
+
       <FilterBar>
         <RangePicker
           value={range}

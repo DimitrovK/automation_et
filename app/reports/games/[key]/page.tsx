@@ -2,10 +2,11 @@
 
 import type { RangeState } from '@/lib/report-range';
 import type { Granularity } from '@/types/reports';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { SurfaceTabs } from '@/components/admin/SurfaceTabs';
 import { ActivityChart } from '@/components/reports/charts/ActivityChart';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { GameHourProfile } from '@/components/reports/charts/GameHourProfile';
@@ -26,7 +27,6 @@ import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
-import { CONTENT_ANALYTICS_BY_GAME } from '@/lib/global-nav';
 import { compareToParams, rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
@@ -107,16 +107,8 @@ export default function GameDetailPage() {
         </Link>
         {/* The other half of this game's story: this page is behaviour, the
             analytics page is content quality. Games without a content page
-            simply don't offer the link. */}
-        {CONTENT_ANALYTICS_BY_GAME[gameKey] && (
-          <Link
-            href={CONTENT_ANALYTICS_BY_GAME[gameKey]}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            Content analytics
-            <ArrowRight className="size-4" />
-          </Link>
-        )}
+            render no tabs. */}
+        <SurfaceTabs gameKey={gameKey} active="behaviour" />
       </div>
 
       <FilterBar>

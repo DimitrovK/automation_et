@@ -2,6 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { SurfaceTabs } from '@/components/admin/SurfaceTabs';
 import { LineupSlots } from '@/components/analytics/panels/LineupSlots';
 import { LineupWorkload } from '@/components/analytics/panels/LineupWorkload';
 import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
@@ -55,6 +56,8 @@ export default function LineupsAnalyticsPage() {
       title="Lineup content"
       description="Which slots cost the most guesses, and which lineups ask the most of a player."
     >
+      <SurfaceTabs gameKey="missing11" active="content" />
+
       <FilterBar>
         <RangePicker
           value={range}
