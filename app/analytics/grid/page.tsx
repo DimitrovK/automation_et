@@ -1,7 +1,10 @@
 'use client';
 
 import type { RangeState } from '@/lib/report-range';
+import type { GridModeRow } from '@/types/reports';
 import { useMemo } from 'react';
+import { ActiveFilterChips } from '@/components/analytics/ActiveFilterChips';
+import { modeLabel } from '@/components/analytics/panels/grid-mode';
 import { GridAssists } from '@/components/analytics/panels/GridAssists';
 import { GridBehaviourStrip } from '@/components/analytics/panels/GridBehaviourStrip';
 import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
@@ -46,12 +49,26 @@ export default function GridAnalyticsPage() {
     game: null,
     metric: 'games_started',
   });
-  const { range, includeBots } = filters;
+  const { range, includeBots, gridDifficulty, gridRoster, gridSize } = filters;
   const setRange = (next: RangeState) => update({ range: next });
   const setIncludeBots = (next: boolean) => update({ includeBots: next });
+  // Mode drill-down: the three axes ride the URL (shareable) and the API
+  // request together. Selecting a row sets all three; clearing nulls them.
+  const selectedKey = gridDifficulty || gridRoster || gridSize
+    ? `${gridDifficulty}|${gridRoster}|${gridSize}`
+    : null;
+  const selectMode = (row: GridModeRow | null) => update(row
+    ? { gridDifficulty: row.difficulty, gridRoster: row.footballer_status, gridSize: row.grid_size }
+    : { gridDifficulty: null, gridRoster: null, gridSize: null });
   const params = useMemo(
-    () => ({ ...rangeToParams(range), include_bots: includeBots }),
-    [range, includeBots],
+    () => ({
+      ...rangeToParams(range),
+      include_bots: includeBots,
+      ...(gridDifficulty ? { difficulty: gridDifficulty } : {}),
+      ...(gridRoster ? { footballer_status: gridRoster } : {}),
+      ...(gridSize ? { grid_size: gridSize } : {}),
+    }),
+    [range, includeBots, gridDifficulty, gridRoster, gridSize],
   );
 
   const state = useReport(
@@ -82,6 +99,33 @@ export default function GridAnalyticsPage() {
         />
       </FilterBar>
 
+      <ActiveFilterChips
+        chips={[
+          ...(selectedKey
+            ? [{
+                key: 'mode',
+                kind: 'Mode',
+                label: modeLabel({
+                  difficulty: gridDifficulty,
+                  footballer_status: gridRoster ?? 'BOTH',
+                  grid_size: gridSize ?? '',
+                } as GridModeRow),
+                onClear: () => selectMode(null),
+              }]
+            : []),
+          ...(range.start || range.window !== 90
+            ? [{
+                key: 'range',
+                kind: 'Range',
+                label: range.start
+                  ? `${range.start} → ${range.end ?? 'today'}`
+                  : `Last ${range.window} days`,
+                onClear: () => setRange({ window: 90 }),
+              }]
+            : []),
+        ]}
+      />
+
       <ReportPanel state={summary} skeletonClassName="h-28 w-full">
         {data => <GridBehaviourStrip data={data} />}
       </ReportPanel>
@@ -99,7 +143,7 @@ export default function GridAnalyticsPage() {
       </ReportPanel>
 
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
-        {data => <GridModes data={data} />}
+        {data => <GridModes data={data} selectedKey={selectedKey} onSelectMode={selectMode} />}
       </ReportPanel>
 
       <SectionHeader

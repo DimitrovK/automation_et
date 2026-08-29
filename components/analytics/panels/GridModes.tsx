@@ -7,6 +7,7 @@ import { MetricRow } from '@/components/reports/primitives/MetricRow';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { modeKey, modeLabel } from './grid-mode';
 
 /**
  * How each Grid mode and variation actually plays.
@@ -20,20 +21,6 @@ import { cn } from '@/lib/utils';
 
 /** Below this, completion is worth a look whatever the mode promises. */
 const LOW_COMPLETION_PCT = 60;
-
-function modeLabel(row: GridModeRow): string {
-  const difficulty = row.difficulty === 'EASY'
-    ? 'Standard'
-    : row.difficulty === 'HARD'
-      ? 'Hard'
-      : row.difficulty ?? 'Unclassified';
-  const roster = row.footballer_status === 'ACTIVE'
-    ? ' · Active'
-    : row.footballer_status === 'NOT_ACTIVE'
-      ? ' · Retired'
-      : '';
-  return `${difficulty}${roster} · ${row.grid_size}`;
-}
 
 function OutcomeCells({ row }: { row: GridModeRow | GridVariationRow }) {
   return (
@@ -59,7 +46,13 @@ function OutcomeCells({ row }: { row: GridModeRow | GridVariationRow }) {
   );
 }
 
-export function GridModes({ data }: { data: GridAnalyticsResponse }) {
+export function GridModes({ data, selectedKey = null, onSelectMode }: {
+  data: GridAnalyticsResponse;
+  /** modeKey() of the drilled-into bucket, or null. */
+  selectedKey?: string | null;
+  /** Called with the row to drill in, or null to clear (same row clicked). */
+  onSelectMode?: (row: GridModeRow | null) => void;
+}) {
   const totalSessions = data.modes.reduce((sum, row) => sum + row.sessions, 0);
   const totalFinished = data.modes.reduce((sum, row) => sum + row.finished, 0);
   const totalPerfect = data.modes.reduce((sum, row) => sum + row.perfect, 0);
@@ -75,6 +68,7 @@ export function GridModes({ data }: { data: GridAnalyticsResponse }) {
           Every difficulty × roster × size bucket that was played, and every
           variation. A new mode appears here the day it gets its first player —
           judge it on completion and errors before anyone has to complain.
+          {onSelectMode && ' Click a mode to narrow the worklists below to it.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 overflow-x-auto">
@@ -113,19 +107,41 @@ export function GridModes({ data }: { data: GridAnalyticsResponse }) {
                   <Th align="right" title="Player-made wrong placements (Extra-Time excluded)">Wrong guesses</Th>
                 </ReportHead>
                 <tbody>
-                  {data.modes.map(row => (
-                    <ReportRow key={`${row.difficulty}-${row.footballer_status}-${row.grid_size}`}>
-                      <Td strong>{modeLabel(row)}</Td>
-                      <Td align="right">
-                        {`${row.daily_pct}%`}
-                        <span className="ml-1 text-xs text-muted-foreground">{`(${row.daily_sessions.toLocaleString()})`}</span>
-                      </Td>
-                      <OutcomeCells row={row} />
-                      <Td align="right" className="text-muted-foreground">
-                        {row.wrong_guesses.toLocaleString()}
-                      </Td>
-                    </ReportRow>
-                  ))}
+                  {data.modes.map((row) => {
+                    const isSelected = selectedKey === modeKey(row);
+                    return (
+                      <ReportRow
+                        key={modeKey(row)}
+                        className={cn(isSelected && 'bg-primary/10 hover:bg-primary/15')}
+                      >
+                        <Td strong>
+                          {onSelectMode
+                            ? (
+                                <button
+                                  type="button"
+                                  aria-pressed={isSelected}
+                                  onClick={() => onSelectMode(isSelected ? null : row)}
+                                  className={cn(
+                                    'text-left hover:text-primary hover:underline',
+                                    isSelected && 'text-primary',
+                                  )}
+                                >
+                                  {modeLabel(row)}
+                                </button>
+                              )
+                            : modeLabel(row)}
+                        </Td>
+                        <Td align="right">
+                          {`${row.daily_pct}%`}
+                          <span className="ml-1 text-xs text-muted-foreground">{`(${row.daily_sessions.toLocaleString()})`}</span>
+                        </Td>
+                        <OutcomeCells row={row} />
+                        <Td align="right" className="text-muted-foreground">
+                          {row.wrong_guesses.toLocaleString()}
+                        </Td>
+                      </ReportRow>
+                    );
+                  })}
                 </tbody>
               </ReportTable>
             )}

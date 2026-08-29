@@ -5,7 +5,7 @@ import type {
   GridModeRow,
 } from '@/types/reports';
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
 import { GridModes } from '@/components/analytics/panels/GridModes';
 import { GridPool } from '@/components/analytics/panels/GridPool';
@@ -447,6 +447,70 @@ describe('GridBehaviourStrip', () => {
   it('renders nothing without a grid row', async () => {
     const { GridBehaviourStrip } = await import('@/components/analytics/panels/GridBehaviourStrip');
     const { container } = render(<GridBehaviourStrip data={{ by_game: [] } as never} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('mode drill-down UI', () => {
+  it('selecting a mode row reports the row, selecting it again clears', async () => {
+    const { GridModes } = await import('@/components/analytics/panels/GridModes');
+    const { modeKey } = await import('@/components/analytics/panels/grid-mode');
+    const row = mode({});
+    const onSelectMode = vi.fn();
+    render(
+      <GridModes
+        data={response({ modes: [row] })}
+        selectedKey={null}
+        onSelectMode={onSelectMode}
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: 'Hard · 4x4' });
+
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+
+    button.click();
+
+    expect(onSelectMode).toHaveBeenCalledWith(row);
+
+    // Re-render as selected: same click now clears.
+    onSelectMode.mockClear();
+    render(
+      <GridModes
+        data={response({ modes: [row] })}
+        selectedKey={modeKey(row)}
+        onSelectMode={onSelectMode}
+      />,
+    );
+    const selected = screen.getAllByRole('button', { name: 'Hard · 4x4' })[1]!;
+
+    expect(selected).toHaveAttribute('aria-pressed', 'true');
+
+    selected.click();
+
+    expect(onSelectMode).toHaveBeenCalledWith(null);
+  });
+
+  it('chips render the narrowing and clear on click', async () => {
+    const { ActiveFilterChips } = await import('@/components/analytics/ActiveFilterChips');
+    const clear = vi.fn();
+    render(
+      <ActiveFilterChips
+        chips={[{ key: 'mode', kind: 'Mode', label: 'Hard · Retired · 3x3', onClear: clear }]}
+      />,
+    );
+
+    expect(screen.getByText('Hard · Retired · 3x3')).toBeInTheDocument();
+
+    screen.getByRole('button', { name: 'Clear mode filter' }).click();
+
+    expect(clear).toHaveBeenCalled();
+  });
+
+  it('renders nothing with no chips', async () => {
+    const { ActiveFilterChips } = await import('@/components/analytics/ActiveFilterChips');
+    const { container } = render(<ActiveFilterChips chips={[]} />);
 
     expect(container).toBeEmptyDOMElement();
   });

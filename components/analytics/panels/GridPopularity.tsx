@@ -1,11 +1,12 @@
 'use client';
 
-import type { GridAnalyticsResponse, GridModeRow } from '@/types/reports';
+import type { GridAnalyticsResponse } from '@/types/reports';
 import { PopularityBars } from '@/components/analytics/charts/PopularityBars';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { difficultyTier } from '@/lib/data-colours';
+import { modeLabel } from './grid-mode';
 
 /**
  * What Grid players actually pick — modes and variations as lengths on one
@@ -21,20 +22,6 @@ import { difficultyTier } from '@/lib/data-colours';
  * surface here; variation bars use the game's registry colour — ranking is
  * the message there, not identity.
  */
-
-function modeLabel(row: GridModeRow): string {
-  const difficulty = row.difficulty === 'EASY'
-    ? 'Standard'
-    : row.difficulty === 'HARD'
-      ? 'Hard'
-      : row.difficulty ?? 'Unclassified';
-  const roster = row.footballer_status === 'ACTIVE'
-    ? ' · Active'
-    : row.footballer_status === 'NOT_ACTIVE'
-      ? ' · Retired'
-      : '';
-  return `${difficulty}${roster} · ${row.grid_size}`;
-}
 
 export function GridPopularity({ data }: { data: GridAnalyticsResponse }) {
   const { meta } = useGameMeta(true);

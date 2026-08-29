@@ -34,7 +34,24 @@ export type ReportFilters = {
   /** An explicitly named comparison period, for "this month vs launch month". */
   compareStart?: string;
   compareEnd?: string;
+  /**
+   * Grid analytics mode drill-down — only that page sets these (the same
+   * way search/limit belong to the leaderboards and compare* to the
+   * summary). Wire vocabulary, validated against the same allowlists the
+   * API enforces so a mistyped shared link degrades to unfiltered.
+   */
+  gridDifficulty: string | null;
+  gridRoster: string | null;
+  gridSize: string | null;
 };
+
+const GRID_DIFFICULTIES = ['EASY', 'HARD'];
+const GRID_ROSTERS = ['ACTIVE', 'NOT_ACTIVE', 'BOTH'];
+const GRID_SIZES = ['3x3', '4x4', '5x4', '6x4'];
+
+function allowlisted(value: string | null, allowed: string[]): string | null {
+  return value && allowed.includes(value) ? value : null;
+}
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -96,6 +113,9 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
     compareOffset,
     compareStart: hasCompare ? compareStart : undefined,
     compareEnd: hasCompare ? (compareEnd ?? undefined) : undefined,
+    gridDifficulty: allowlisted(params.get('difficulty'), GRID_DIFFICULTIES),
+    gridRoster: allowlisted(params.get('roster'), GRID_ROSTERS),
+    gridSize: allowlisted(params.get('size'), GRID_SIZES),
   };
 }
 
@@ -137,6 +157,15 @@ function serialise(filters: ReportFilters, defaults: ReportFilters): string {
   } else if (filters.compareOffset !== defaults.compareOffset) {
     params.set('compare_offset', String(filters.compareOffset));
   }
+  if (filters.gridDifficulty) {
+    params.set('difficulty', filters.gridDifficulty);
+  }
+  if (filters.gridRoster) {
+    params.set('roster', filters.gridRoster);
+  }
+  if (filters.gridSize) {
+    params.set('size', filters.gridSize);
+  }
   const query = params.toString();
   return query ? `?${query}` : '';
 }
@@ -145,7 +174,7 @@ export function useReportFilters(
   // `limit` is optional: only the leaderboard views paginate, and requiring it
   // on the other seven pages would put a number in front of readers that means
   // nothing there.
-  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search' | 'compareOffset'> & {
+  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search' | 'compareOffset' | 'gridDifficulty' | 'gridRoster' | 'gridSize'> & {
     limit?: number;
     search?: string;
     compareOffset?: number;
@@ -156,6 +185,10 @@ export function useReportFilters(
     search: '',
     // Only the summary compares periods; the other pages never mention it.
     compareOffset: 1,
+    // Only grid analytics drills into a mode; everywhere else stays null.
+    gridDifficulty: null,
+    gridRoster: null,
+    gridSize: null,
     ...suppliedDefaults,
   };
   const [filters, setFilters] = useState<ReportFilters>(defaults);
