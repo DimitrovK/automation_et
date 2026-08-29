@@ -7,6 +7,7 @@ import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { MetricRow } from '@/components/reports/primitives/MetricRow';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { criterionTypeLabel } from '@/lib/criterion-type-label';
 import { editFootballerHref } from '@/lib/footballer-links';
 import { cn } from '@/lib/utils';
 
@@ -167,7 +168,9 @@ export function GridAssists({ data }: { data: GridAnalyticsResponse }) {
                 {et_criteria.map(row => (
                   <ReportRow key={`${row.criterion_type}:${row.label}`}>
                     <Td strong>{row.label}</Td>
-                    <Td className="text-muted-foreground">{row.criterion_type}</Td>
+                    <Td className="text-muted-foreground">
+                      <span title={row.criterion_type}>{criterionTypeLabel(row.criterion_type)}</span>
+                    </Td>
                     <Td align="right">{row.placements.toLocaleString()}</Td>
                   </ReportRow>
                 ))}
