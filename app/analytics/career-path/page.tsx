@@ -2,6 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { SurfaceTabs } from '@/components/admin/SurfaceTabs';
 import { DifficultyTiers } from '@/components/analytics/panels/DifficultyTiers';
 import { FootballerContent } from '@/components/analytics/panels/FootballerContent';
 import { ModeRates } from '@/components/analytics/panels/ModeRates';
@@ -77,6 +78,8 @@ export default function CareerPathAnalyticsPage() {
       title="Career Path content"
       description="Which footballers are too hard, which are merely common, and whether the grading means anything."
     >
+      <SurfaceTabs gameKey="career_path" active="content" />
+
       <FilterBar>
         <RangePicker
           value={range}
