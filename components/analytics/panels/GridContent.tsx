@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { criterionTypeLabel } from '@/lib/criterion-type-label';
 import { cn } from '@/lib/utils';
 
 /**
@@ -36,7 +37,9 @@ function CriterionTable({ rows, showType = true }: { rows: GridCriterionRow[]; s
           <ReportRow key={`${row.criterion_type}:${row.label}`}>
             <Td strong>{row.label}</Td>
             {showType && (
-              <Td className="text-muted-foreground">{row.criterion_type}</Td>
+              <Td className="text-muted-foreground">
+                <span title={row.criterion_type}>{criterionTypeLabel(row.criterion_type)}</span>
+              </Td>
             )}
             <Td align="right">{row.sessions.toLocaleString()}</Td>
             <Td align="right">{row.attempts.toLocaleString()}</Td>
@@ -111,7 +114,9 @@ export function GridCriterionTypes({ data }: { data: GridAnalyticsResponse }) {
                 <tbody>
                   {data.criterion_types.map(row => (
                     <ReportRow key={row.criterion_type}>
-                      <Td strong>{row.criterion_type}</Td>
+                      <Td strong>
+                        <span title={row.criterion_type}>{criterionTypeLabel(row.criterion_type)}</span>
+                      </Td>
                       <Td align="right">{row.identities.toLocaleString()}</Td>
                       <Td align="right">{row.attempts.toLocaleString()}</Td>
                       <Td align="right">{row.wrong.toLocaleString()}</Td>

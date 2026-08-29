@@ -163,7 +163,8 @@ describe('GridCriteria', () => {
     const row = screen.getByText('ABW').closest('tr')!;
 
     expect(within(row).getByText('92.4%')).toBeInTheDocument();
-    expect(within(row).getByText('NATIONALITY')).toBeInTheDocument();
+    // Human label in the cell, wire value in the tooltip.
+    expect(within(row).getByText('Nationality')).toHaveAttribute('title', 'NATIONALITY');
   });
 });
 
@@ -182,7 +183,7 @@ describe('GridCriterionTypes', () => {
         })}
       />,
     );
-    const row = screen.getByText('PLAYED_FOR_CLUB').closest('tr')!;
+    const row = screen.getByText('Played for club').closest('tr')!;
 
     expect(within(row).getByText('287')).toBeInTheDocument();
     expect(within(row).getByText('66,330')).toBeInTheDocument();
@@ -201,7 +202,7 @@ describe('GridTeams', () => {
 
     expect(screen.getByText('Man Utd')).toBeInTheDocument();
     // Every row here is PLAYED_FOR_CLUB — a type column would be noise.
-    expect(screen.queryByText('PLAYED_FOR_CLUB')).not.toBeInTheDocument();
+    expect(screen.queryByText('Played for club')).not.toBeInTheDocument();
   });
 });
 
