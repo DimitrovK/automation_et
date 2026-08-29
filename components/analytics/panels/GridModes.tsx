@@ -104,6 +104,7 @@ export function GridModes({ data }: { data: GridAnalyticsResponse }) {
               <ReportTable>
                 <ReportHead>
                   <Th>Mode</Th>
+                  <Th align="right" title="Share of this bucket's sessions that were the Daily Grid">Daily</Th>
                   <Th align="right">Sessions</Th>
                   <Th align="right">Finished</Th>
                   <Th align="right" title="Finished as a share of started">Completion</Th>
@@ -115,6 +116,10 @@ export function GridModes({ data }: { data: GridAnalyticsResponse }) {
                   {data.modes.map(row => (
                     <ReportRow key={`${row.difficulty}-${row.footballer_status}-${row.grid_size}`}>
                       <Td strong>{modeLabel(row)}</Td>
+                      <Td align="right">
+                        {`${row.daily_pct}%`}
+                        <span className="ml-1 text-xs text-muted-foreground">{`(${row.daily_sessions.toLocaleString()})`}</span>
+                      </Td>
                       <OutcomeCells row={row} />
                       <Td align="right" className="text-muted-foreground">
                         {row.wrong_guesses.toLocaleString()}
