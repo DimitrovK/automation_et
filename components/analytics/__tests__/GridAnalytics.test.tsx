@@ -61,7 +61,6 @@ function response(over: Partial<GridAnalyticsResponse> = {}): GridAnalyticsRespo
     game_type: null,
     include_bots: false,
     modes: [],
-    variations: [],
     footballers: [],
     criteria: [],
     criterion_types: [],
@@ -123,27 +122,14 @@ describe('GridModes', () => {
     expect(screen.getByText('Unclassified · 4x4')).toBeInTheDocument();
   });
 
-  it('renders variations with the same outcome columns', () => {
-    render(
-      <GridModes
-        data={response({
-          modes: [mode({})],
-          variations: [{
-            variation_id: null,
-            variation: 'Default',
-            sessions: 6888,
-            finished: 5616,
-            completion_pct: 81.5,
-            perfect: 232,
-            perfect_pct: 4.1,
-            avg_score: 12.6,
-          }],
-        })}
-      />,
-    );
-    const row = screen.getByText('Default').closest('tr')!;
+  it('renders cleanly when the backend still sends the retired variations keys', () => {
+    // Backend rolls out after this app: the old payload carries
+    // `variations: []`; the next one omits it. Neither may change the panel.
+    const legacy = { ...response({ modes: [mode({})] }), variations: [] } as GridAnalyticsResponse;
+    render(<GridModes data={legacy} />);
 
-    expect(within(row).getByText('81.5%')).toBeInTheDocument();
+    expect(screen.getByText('Modes')).toBeInTheDocument();
+    expect(screen.queryByText(/variation/i)).not.toBeInTheDocument();
   });
 
   it('shows an empty state when nothing was played', () => {
@@ -230,7 +216,7 @@ describe('GridPool', () => {
 });
 
 describe('GridPopularity', () => {
-  it('renders both charts with accessible summaries, largest first', async () => {
+  it('renders the modes chart with an accessible summary, largest first', async () => {
     const { GridPopularity } = await import('@/components/analytics/panels/GridPopularity');
     render(
       <GridPopularity
@@ -239,25 +225,14 @@ describe('GridPopularity', () => {
             mode({ sessions: 10, difficulty: 'EASY', grid_size: '3x3' }),
             mode({ sessions: 3758 }),
           ],
-          variations: [{
-            variation_id: null,
-            variation: 'Default',
-            sessions: 3768,
-            finished: 3000,
-            completion_pct: 79.6,
-            perfect: 100,
-            perfect_pct: 3.3,
-            avg_score: 12.0,
-          }],
         })}
       />,
     );
 
     expect(screen.getByText('Modes people pick')).toBeInTheDocument();
-    expect(screen.getByText('Variations people pick')).toBeInTheDocument();
+    expect(screen.queryByText(/variation/i)).not.toBeInTheDocument();
     // The sr-only summary carries the ranked values — largest mode first.
     expect(screen.getByText(/Grid sessions by mode: Hard · 4x4 3758/)).toBeInTheDocument();
-    expect(screen.getByText(/Grid sessions by variation: Default 3768/)).toBeInTheDocument();
   });
 
   it('shows an empty state when nothing was played', async () => {
@@ -341,7 +316,6 @@ describe('GridPools', () => {
     grid_size: '3x3',
     difficulty: 'HARD',
     footballer_status: 'NOT_ACTIVE',
-    variation: null,
     admin_only: false,
     active: 0,
     retired: 3,
@@ -377,7 +351,6 @@ describe('GridPools', () => {
             auto_size_enabled: false,
             active: 4,
             last_exhausted_at: null,
-            variation: 'World Cup',
           }],
         }}
       />,
@@ -385,7 +358,6 @@ describe('GridPools', () => {
 
     expect(screen.getByText('test pool')).toBeInTheDocument();
     expect(screen.getByText('pinned')).toBeInTheDocument();
-    expect(screen.getByText('Hard · Retired · 3x3 · World Cup')).toBeInTheDocument();
     // At/above floor: no amber.
     expect(screen.getByText('4 / 2')).not.toHaveClass('text-amber-600');
   });

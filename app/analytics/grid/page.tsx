@@ -29,7 +29,7 @@ import { ReportsAPI } from '@/lib/reports-api';
  *
  * Grid's puzzles are generated, so there is no "broken puzzle" to find; what
  * an admin tunes is what generation draws from. The page leads with the mode
- * and variation health (is a newly composed mode playable at all), then the
+ * health (is a newly composed mode playable at all), then the
  * criterion worklist (which criteria mislead — the single most actionable
  * signal here), then the footballer pool (data bugs and dead weight).
  *
@@ -89,7 +89,7 @@ export default function GridAnalyticsPage() {
   return (
     <AnalyticsShell
       title="Grid content"
-      description="Which criteria mislead, which pool footballers are broken or dead weight, and whether each mode and variation actually plays."
+      description="Which criteria mislead, which pool footballers are broken or dead weight, and whether each mode actually plays."
     >
       <SurfaceTabs gameKey="grid" active="content" />
 

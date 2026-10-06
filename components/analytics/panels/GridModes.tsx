@@ -1,6 +1,6 @@
 'use client';
 
-import type { GridAnalyticsResponse, GridModeRow, GridVariationRow } from '@/types/reports';
+import type { GridAnalyticsResponse, GridModeRow } from '@/types/reports';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { MetricRow } from '@/components/reports/primitives/MetricRow';
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { modeKey, modeLabel } from './grid-mode';
 
 /**
- * How each Grid mode and variation actually plays.
+ * How each Grid mode actually plays.
  *
  * A mode bucket is difficulty × roster × size — the exact thing an admin
  * composes in the Grid admin. A freshly composed mode shows up here the day
@@ -22,7 +22,7 @@ import { modeKey, modeLabel } from './grid-mode';
 /** Below this, completion is worth a look whatever the mode promises. */
 const LOW_COMPLETION_PCT = 60;
 
-function OutcomeCells({ row }: { row: GridModeRow | GridVariationRow }) {
+function OutcomeCells({ row }: { row: GridModeRow }) {
   return (
     <>
       <Td align="right">{row.sessions.toLocaleString()}</Td>
@@ -61,12 +61,12 @@ export function GridModes({ data, selectedKey = null, onSelectMode }: {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          Modes and variations
+          Modes
           <MetricInfo metric="grid_perfect_pct" />
         </CardTitle>
         <CardDescription>
-          Every difficulty × roster × size bucket that was played, and every
-          variation. A new mode appears here the day it gets its first player —
+          Every difficulty × roster × size bucket that was played. A new mode
+          appears here the day it gets its first player —
           judge it on completion and errors before anyone has to complain.
           {onSelectMode && ' Click a mode to narrow the worklists below to it.'}
         </CardDescription>
@@ -145,27 +145,6 @@ export function GridModes({ data, selectedKey = null, onSelectMode }: {
                 </tbody>
               </ReportTable>
             )}
-
-        {data.variations.length > 0 && (
-          <ReportTable>
-            <ReportHead>
-              <Th>Variation</Th>
-              <Th align="right">Sessions</Th>
-              <Th align="right">Finished</Th>
-              <Th align="right">Completion</Th>
-              <Th align="right">Perfect</Th>
-              <Th align="right">Avg score</Th>
-            </ReportHead>
-            <tbody>
-              {data.variations.map(row => (
-                <ReportRow key={row.variation_id ?? 'default'}>
-                  <Td strong>{row.variation}</Td>
-                  <OutcomeCells row={row} />
-                </ReportRow>
-              ))}
-            </tbody>
-          </ReportTable>
-        )}
       </CardContent>
     </Card>
   );
