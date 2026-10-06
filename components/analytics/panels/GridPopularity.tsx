@@ -4,29 +4,18 @@ import type { GridAnalyticsResponse } from '@/types/reports';
 import { PopularityBars } from '@/components/analytics/charts/PopularityBars';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { difficultyTier } from '@/lib/data-colours';
 import { modeLabel } from './grid-mode';
 
 /**
- * What Grid players actually pick — modes and variations as lengths on one
- * baseline, side by side.
- *
- * Two charts rather than one: a variation session is ALSO in some mode
- * bucket, so a single combined chart would count the same play twice and
- * invite exactly the wrong comparison. Side by side, each chart's bars sum
- * to the window's play and the eye can still hop between them.
+ * What Grid players actually pick — modes as lengths on one baseline.
  *
  * Mode bars borrow the difficulty palette (Standard green, Hard orange) so
  * the chart reads with the same colour vocabulary as every difficulty
- * surface here; variation bars use the game's registry colour — ranking is
- * the message there, not identity.
+ * surface here.
  */
 
 export function GridPopularity({ data }: { data: GridAnalyticsResponse }) {
-  const { meta } = useGameMeta(true);
-  const colorFor = useGameColor();
-
   if (data.modes.length === 0) {
     return (
       <Card>
@@ -51,41 +40,18 @@ export function GridPopularity({ data }: { data: GridAnalyticsResponse }) {
       colour: difficultyTier(row.difficulty ?? '').hex,
     }));
 
-  const variationRows = [...data.variations]
-    .sort((a, b) => b.sessions - a.sessions)
-    .map(row => ({
-      key: String(row.variation_id ?? 'default'),
-      label: row.variation,
-      value: row.sessions,
-      colour: colorFor(meta, 'grid'),
-    }));
-
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Modes people pick</CardTitle>
-          <CardDescription>
-            Sessions per difficulty × roster × size bucket. Hover for the
-            share of all Grid play.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PopularityBars ariaLabel="Grid sessions by mode" rows={modeRows} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Variations people pick</CardTitle>
-          <CardDescription>
-            Sessions per variation — Default is the un-themed game. The same
-            sessions as the modes chart, cut the other way.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PopularityBars ariaLabel="Grid sessions by variation" rows={variationRows} />
-        </CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Modes people pick</CardTitle>
+        <CardDescription>
+          Sessions per difficulty × roster × size bucket. Hover for the
+          share of all Grid play.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <PopularityBars ariaLabel="Grid sessions by mode" rows={modeRows} />
+      </CardContent>
+    </Card>
   );
 }

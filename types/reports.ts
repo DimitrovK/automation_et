@@ -1253,17 +1253,6 @@ export type GridModeRow = {
   wrong_guesses: number;
 };
 
-export type GridVariationRow = {
-  variation_id: number | null;
-  variation: string;
-  sessions: number;
-  finished: number;
-  completion_pct: number;
-  perfect: number;
-  perfect_pct: number;
-  avg_score: number | null;
-};
-
 /**
  * One pool footballer's outcome split over PLACEABLE appearances,
  * wrong-rate ordered (worklist). Distractor wrong-guesses live in
@@ -1331,7 +1320,6 @@ export type GridPoolRow = {
   grid_size: string;
   difficulty: string | null;
   footballer_status: string;
-  variation: string | null;
   admin_only: boolean;
   active: number;
   retired: number;
@@ -1344,7 +1332,6 @@ export type GridPoolRow = {
 
 export type GridAnalyticsResponse = {
   modes: GridModeRow[];
-  variations: GridVariationRow[];
   footballers: GridFootballerRow[];
   criteria: GridCriterionRow[];
   criterion_types: GridCriterionTypeRow[];

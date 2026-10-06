@@ -30,8 +30,7 @@ function bucketLabel(row: GridPoolRow): string {
     : row.footballer_status === 'NOT_ACTIVE'
       ? ' · Retired'
       : '';
-  const variation = row.variation ? ` · ${row.variation}` : '';
-  return `${difficulty}${roster} · ${row.grid_size}${variation}`;
+  return `${difficulty}${roster} · ${row.grid_size}`;
 }
 
 export function GridPools({ data }: { data: GridAnalyticsResponse }) {
@@ -61,7 +60,7 @@ export function GridPools({ data }: { data: GridAnalyticsResponse }) {
                 </ReportHead>
                 <tbody>
                   {data.pools.map(row => (
-                    <ReportRow key={`${row.grid_size}-${row.difficulty}-${row.footballer_status}-${row.variation ?? ''}-${row.admin_only}`}>
+                    <ReportRow key={`${row.grid_size}-${row.difficulty}-${row.footballer_status}-${row.admin_only}`}>
                       <Td strong>
                         {bucketLabel(row)}
                         {row.admin_only && (
