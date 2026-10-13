@@ -21,6 +21,7 @@ import { Navigation } from '@/components/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { useAuth } from '@/lib/auth';
+import { postCareerLookup } from '@/lib/career-lookup-webhook';
 import config from '@/lib/config';
 import { FootballerAPI } from '@/lib/footballer-api';
 
@@ -204,15 +205,7 @@ export default function FootballerCareerApp() {
 
       try {
         const body = mode === 'wikipedia_url' ? { wikipedia_url: value } : { name: value };
-        const response = await fetch(connectionSettings.webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-          signal: controller.signal,
-          mode: 'cors',
-        });
+        const response = await postCareerLookup(connectionSettings.webhookUrl, body, controller.signal);
         clearTimeout(timeoutId);
 
         if (!response.ok) {
@@ -288,7 +281,7 @@ export default function FootballerCareerApp() {
           <p className="text-muted-foreground">Search for detailed career information of football players</p>
 
           {/* Desktop layout - settings button positioned absolutely */}
-          <div className="absolute right-0 top-0 hidden items-center gap-2 md:flex">
+          <div className="absolute top-0 right-0 hidden items-center gap-2 md:flex">
             {/* Connection Settings Dialog */}
             <ConnectionSettings
               onSettingsChange={setConnectionSettings}
