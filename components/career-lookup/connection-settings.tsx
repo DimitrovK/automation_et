@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { postCareerLookup } from '@/lib/career-lookup-webhook';
 import config from '@/lib/config';
 
 type ConnectionSettingsProps = {
@@ -59,15 +60,7 @@ export function ConnectionSettings({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: 'test' }),
-        signal: controller.signal,
-        mode: 'cors',
-      });
+      const response = await postCareerLookup(webhookUrl, { name: 'test' }, controller.signal);
 
       clearTimeout(timeoutId);
       addDebugInfo(`${webhookUrl} - Status: ${response.status}`);

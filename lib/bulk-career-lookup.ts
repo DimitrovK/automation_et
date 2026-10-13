@@ -7,6 +7,7 @@ import type { BulkLookupResult, CheckMode, NationComparison } from '@/components
 import type { DeploymentLogEntry } from '@/types/deployment';
 import type { Footballer, FootballerNationStat, n8nWikiPlayerData, NationalTeam } from '@/types/player';
 import { isNoInternationalCareer } from '@/components/career-lookup/international-career-card';
+import { postCareerLookup } from '@/lib/career-lookup-webhook';
 import config from '@/lib/config';
 import { FootballerAPI } from '@/lib/footballer-api';
 import { createLogEntry } from '@/types/deployment';
@@ -43,12 +44,7 @@ export async function fetchWikipediaData(
         };
       }
 
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
+      const response = await postCareerLookup(webhookUrl, payload, controller.signal);
 
       clearTimeout(timeoutId);
 
