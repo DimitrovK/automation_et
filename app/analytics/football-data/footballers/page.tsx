@@ -12,6 +12,7 @@ import { ReviewQueue } from '@/components/analytics/panels/ReviewQueue';
 import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -133,57 +134,61 @@ export default function FootballersAnalyticsPage() {
         )}
       </ReportPanel>
 
-      <ReportPanel state={matrix} skeletonClassName="h-120 w-full">
-        {matrixData => (
-          <FootballerMatrix
-            data={matrixData}
-            // Nationality rows lead to the footballer list filtered by it;
-            // the by-country table below leads to the roster instead.
-            rowHref={dimension === 'nation' ? row => `/footballer-management?nation=${row.key}` : undefined}
-            dimension={dimension}
-            onDimensionChange={(next) => {
+      <Fold id="footballers-matrices" title="Difficulty by nation and club" summary="Who the catalogue holds per nation and per club nation, by difficulty">
+        <ReportPanel state={matrix} skeletonClassName="h-120 w-full">
+          {matrixData => (
+            <FootballerMatrix
+              data={matrixData}
+              // Nationality rows lead to the footballer list filtered by it;
+              // the by-country table below leads to the roster instead.
+              rowHref={dimension === 'nation' ? row => `/footballer-management?nation=${row.key}` : undefined}
+              dimension={dimension}
+              onDimensionChange={(next) => {
               // Reset the row filters: a search for an Italian club means
               // nothing once the rows are nations.
-              setDimension(next);
-              setMatrixSearch('');
-              setMatrixDifficulty(null);
-              setMatrixLimit(PAGE);
-            }}
-            search={matrixSearch}
-            onSearchChange={setMatrixSearch}
-            difficulty={matrixDifficulty}
-            onDifficultyChange={setMatrixDifficulty}
-            expanded={matrixLimit > PAGE}
-            onExpand={() => setMatrixLimit(EXPANDED)}
-          />
-        )}
-      </ReportPanel>
+                setDimension(next);
+                setMatrixSearch('');
+                setMatrixDifficulty(null);
+                setMatrixLimit(PAGE);
+              }}
+              search={matrixSearch}
+              onSearchChange={setMatrixSearch}
+              difficulty={matrixDifficulty}
+              onDifficultyChange={setMatrixDifficulty}
+              expanded={matrixLimit > PAGE}
+              onExpand={() => setMatrixLimit(EXPANDED)}
+            />
+          )}
+        </ReportPanel>
 
-      <ReportPanel state={clubMatrix} skeletonClassName="h-120 w-full">
-        {clubData => (
-          <FootballerMatrix
-            data={clubData}
-            title="Footballers by the country they played in"
-            description="Distinct footballers with at least one club in each country, by difficulty. A different question from the table above: the catalogue is thick with Brazilians and thin on anyone who played in Brazil, and a club-based game only cares about the second. Someone who played in England and Italy is in both rows, so these sum to more than the catalogue holds. Approved footballers only."
-            palette="deep"
-            // Every row opens the roster behind the number.
-            rowHref={row => `/nation-players?nationId=${row.key}`}
-            dimension="club_nation"
-            onDimensionChange={() => {}}
-            dimensions={CLUB_DIMENSION}
-            search={clubSearch}
-            onSearchChange={setClubSearch}
-            difficulty={clubDifficulty}
-            onDifficultyChange={setClubDifficulty}
-            expanded={clubLimit > PAGE}
-            onExpand={() => setClubLimit(EXPANDED)}
-          />
-        )}
-      </ReportPanel>
+        <ReportPanel state={clubMatrix} skeletonClassName="h-120 w-full">
+          {clubData => (
+            <FootballerMatrix
+              data={clubData}
+              title="Footballers by the country they played in"
+              description="Distinct footballers with at least one club in each country, by difficulty. A different question from the table above: the catalogue is thick with Brazilians and thin on anyone who played in Brazil, and a club-based game only cares about the second. Someone who played in England and Italy is in both rows, so these sum to more than the catalogue holds. Approved footballers only."
+              palette="deep"
+              // Every row opens the roster behind the number.
+              rowHref={row => `/nation-players?nationId=${row.key}`}
+              dimension="club_nation"
+              onDimensionChange={() => {}}
+              dimensions={CLUB_DIMENSION}
+              search={clubSearch}
+              onSearchChange={setClubSearch}
+              difficulty={clubDifficulty}
+              onDifficultyChange={setClubDifficulty}
+              expanded={clubLimit > PAGE}
+              onExpand={() => setClubLimit(EXPANDED)}
+            />
+          )}
+        </ReportPanel>
+      </Fold>
 
-      <ReportPanel state={state} skeletonClassName="h-96 w-full">
-        {data => <DataCoverage data={data} />}
-      </ReportPanel>
+      <Fold id="footballers-coverage" title="What the games cannot use" summary="Missing data that keeps footballers out of a game">
+        <ReportPanel state={state} skeletonClassName="h-96 w-full">
+          {data => <DataCoverage data={data} />}
+        </ReportPanel>
+      </Fold>
     </InsightsShell>
   );
 }

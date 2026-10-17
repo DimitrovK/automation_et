@@ -11,8 +11,8 @@ import { QuestionQuality } from '@/components/analytics/panels/QuestionQuality';
 import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
-import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -105,44 +105,41 @@ export default function QuestionsAnalyticsPage() {
         )}
       </ReportPanel>
 
-      <SectionHeader
-        title="Which questions are broken"
-        description="A worklist: the handful worth an afternoon, rather than the bank as a whole."
-      />
+      <Fold id="questions-which-questions-are-broken" title="Which questions are broken" summary="A worklist: the handful worth an afternoon, rather than the bank as a whole.">
 
-      <ReportPanel state={state} skeletonClassName="h-96 w-full">
-        {data => <QuestionQuality data={data} />}
-      </ReportPanel>
+        <ReportPanel state={state} skeletonClassName="h-96 w-full">
+          {data => <QuestionQuality data={data} />}
+        </ReportPanel>
 
-      {/* Underneath, because it answers the question the list raises rather than
+        {/* Underneath, because it answers the question the list raises rather than
           the one someone arrives with: is this a few bad questions, or is the
           whole bank mis-graded? */}
-      <SectionHeader
-        title="The bank as a whole"
-        description="Whether the grading separates anything, and whether there is material left."
-      />
+      </Fold>
 
-      <ReportPanel state={state} skeletonClassName="h-64 w-full">
-        {data => <QuestionBank data={data} />}
-      </ReportPanel>
+      <Fold id="questions-the-bank-as-a-whole" title="The bank as a whole" summary="Whether the grading separates anything, and whether there is material left.">
 
-      {/* The Quiz dashboard's content half, folded in here rather than given its
+        <ReportPanel state={state} skeletonClassName="h-64 w-full">
+          {data => <QuestionBank data={data} />}
+        </ReportPanel>
+
+        {/* The Quiz dashboard's content half, folded in here rather than given its
           own destination (#1475). Its other half was top players by quizzes
           played, which is Reports and better there. Two panels about this same
           bank do not earn a nav entry — the argument R4 used to cut the
           reporting nav from ten destinations to six. */}
-      <SectionHeader
-        title="Categories and what ran"
-        description="Where the bank is weakest by subject, and which scheduled quizzes people actually played."
-      />
+      </Fold>
 
-      <ReportPanel state={state} skeletonClassName="h-80 w-full">
-        {data => <CategoryQuality data={data} />}
-      </ReportPanel>
+      <Fold id="questions-categories-and-what-ran" title="Categories and what ran" summary="Where the bank is weakest by subject, and which scheduled quizzes people actually played.">
 
-      <ReportPanel state={state} skeletonClassName="h-64 w-full">
-        {data => <GlobalQuizUsage data={data} />}
-      </ReportPanel>
+        <ReportPanel state={state} skeletonClassName="h-80 w-full">
+          {data => <CategoryQuality data={data} />}
+        </ReportPanel>
+
+        <ReportPanel state={state} skeletonClassName="h-64 w-full">
+          {data => <GlobalQuizUsage data={data} />}
+        </ReportPanel>
+      </Fold>
+
     </InsightsShell>
   );
 }

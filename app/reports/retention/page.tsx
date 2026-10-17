@@ -11,8 +11,8 @@ import { FirstSessionFollowup } from '@/components/reports/panels/FirstSessionFo
 import { RetentionByGame } from '@/components/reports/panels/RetentionByGame';
 import { RetentionTable } from '@/components/reports/panels/RetentionTable';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
-import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -113,14 +113,13 @@ export default function RetentionPage() {
           confuse, and reading either alone gets the conclusion backwards. A game
           can hold nobody itself and still be the best front door on the
           platform. Its own panel, so one request cannot blank the other. */}
-      <SectionHeader
-        title="Where new players start"
-        description="Retention above asks whether a game keeps its own players. This asks which game keeps people on the platform at all."
-      />
+      <Fold id="retention-where-new-players-start" title="Where new players start" summary="Retention above asks whether a game keeps its own players. This asks which game keeps people on the platform at all.">
 
-      <ReportPanel state={firstSession} skeletonClassName="h-72 w-full">
-        {data => <FirstSessionFollowup data={data} meta={meta} />}
-      </ReportPanel>
+        <ReportPanel state={firstSession} skeletonClassName="h-72 w-full">
+          {data => <FirstSessionFollowup data={data} meta={meta} />}
+        </ReportPanel>
+      </Fold>
+
     </InsightsShell>
   );
 }
