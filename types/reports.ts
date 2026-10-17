@@ -218,6 +218,22 @@ export type ReportParams = {
 };
 
 /**
+ * The Grid page's filters (core/analytics/grid_population.py). Each is checked
+ * server-side; an unknown value is a 400.
+ */
+export type GridParams = ReportParams & {
+  play_type?: 'all' | 'solo' | 'multiplayer';
+  /** 'global' (grids with no variation) or a variation id. */
+  board?: string;
+  variation_mode?: string;
+  reveal?: string;
+  footballer_status?: string;
+  grid_size?: string;
+  split?: string;
+  group_by?: string;
+};
+
+/**
  * Buckets the activity series can be rolled up into.
  *
  * Server-side, because distinct players are not additive: a week's figure has
@@ -1317,6 +1333,11 @@ export type GridAssists = {
 
 /** Current stock of one pre-generation bucket. Not windowed. */
 export type GridPoolRow = {
+  /** 'global' or the variation id, with its name; a country board's pool is its own row. */
+  board: string;
+  board_label: string;
+  variation_mode: string | null;
+  variation_mode_label: string | null;
   grid_size: string;
   difficulty: string | null;
   footballer_status: string;
@@ -1340,6 +1361,44 @@ export type GridAnalyticsResponse = {
   assists: GridAssists;
   /** Pool stock per active pre-generation bucket — current state, unwindowed. */
   pools: GridPoolRow[];
+  /** The modes table's other groupings: the same columns, one row per split value. */
+  breakdown: { group_by: string; rows: GridBreakdownRow[] };
+  population: GridPopulation;
+} & ResolvedRange;
+
+/** What the server parsed from the Grid filters — render chips from this, not from the request. */
+export type GridPopulation = {
+  play_type: 'all' | 'solo' | 'multiplayer';
+  board: string | number | null;
+  variation_mode: string | null;
+  reveal: string | null;
+};
+
+export type GridBreakdownRow = Omit<GridModeRow, 'difficulty' | 'footballer_status' | 'grid_size'> & {
+  key: string;
+  label: string;
+};
+
+export type GridTiles = {
+  sessions: number;
+  players: number;
+  completion_pct: number;
+  multiplayer_pct: number;
+};
+
+/** One bucket of the sessions chart: `total` plus one count per series key. */
+export type GridSessionsPoint = { date: string; total: number } & Record<string, number | string>;
+
+export type GridSessionsResponse = {
+  split: string;
+  granularity: Granularity;
+  /** The series in the window, biggest first, with their labels and totals. */
+  series_keys: { key: string; label: string; sessions: number }[];
+  series: GridSessionsPoint[];
+  tiles: GridTiles;
+  /** The same tiles for the window before, of the same length. */
+  previous: GridTiles;
+  population: GridPopulation;
 } & ResolvedRange;
 
 /**

@@ -15,6 +15,8 @@ import type {
   GamesResponse,
   GlossaryResponse,
   GridAnalyticsResponse,
+  GridParams,
+  GridSessionsResponse,
   GrowthResponse,
   LineupsAnalyticsResponse,
   MultiplayerResponse,
@@ -186,8 +188,13 @@ export class ReportsAPI {
   }
 
   /** GET /core/analytics/grid/ — Grid content, mode and pool health. */
-  static async getGridAnalytics(params?: ReportParams): Promise<GridAnalyticsResponse> {
+  static async getGridAnalytics(params?: GridParams): Promise<GridAnalyticsResponse> {
     return apiFetcher<GridAnalyticsResponse>(`core/analytics/grid/${buildQuery(params)}`);
+  }
+
+  /** GET /core/analytics/grid/sessions/ — Grid sessions over time, split one way, with the headline tiles. */
+  static async getGridSessions(params?: GridParams): Promise<GridSessionsResponse> {
+    return apiFetcher<GridSessionsResponse>(`core/analytics/grid/sessions/${buildQuery(params)}`);
   }
 
   /** GET /core/analytics/football-data/ — data completeness where it is used. */

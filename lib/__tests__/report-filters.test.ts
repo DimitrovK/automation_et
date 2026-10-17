@@ -15,6 +15,12 @@ const defaults = {
   gridDifficulty: null,
   gridRoster: null,
   gridSize: null,
+  gridPlayType: 'all' as const,
+  gridBoard: null,
+  gridVariationMode: null,
+  gridReveal: null,
+  gridSplit: 'play_type' as const,
+  gridGroupBy: 'mode' as const,
 };
 
 describe('report filter URL state', () => {

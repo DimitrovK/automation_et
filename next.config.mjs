@@ -13,6 +13,9 @@ const nextConfig = {
       // Patterns is gone rather than folded: play-by-hour is noise at this
       // volume. It's one useful panel, new vs returning, is on the overview.
       { source: '/reports/patterns', destination: '/reports', permanent: true },
+      // Grid's behaviour and content pages became one dashboard (grid dashboard, 2026-10-17).
+      { source: '/reports/games/grid', destination: '/games/grid', permanent: true },
+      { source: '/analytics/grid', destination: '/games/grid', permanent: true },
     ];
   },
   typescript: {

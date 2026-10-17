@@ -4,10 +4,10 @@ import type {
   GridFootballerRow,
   GridModeRow,
 } from '@/types/reports';
-import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { GridCriteria, GridCriterionTypes, GridTeams } from '@/components/analytics/panels/GridContent';
-import { GridModes } from '@/components/analytics/panels/GridModes';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GridBreakdown } from '@/components/analytics/grid/GridBreakdown';
+import { GridCriteria } from '@/components/analytics/panels/GridContent';
 import { GridPool } from '@/components/analytics/panels/GridPool';
 
 function mode(over: Partial<GridModeRow>): GridModeRow {
@@ -82,60 +82,79 @@ function response(over: Partial<GridAnalyticsResponse> = {}): GridAnalyticsRespo
       et_criteria: [],
     },
     pools: [],
+    breakdown: { group_by: 'board', rows: [] },
+    population: { play_type: 'all', board: null, variation_mode: null, reveal: null },
     ...over,
   };
 }
 
-describe('GridModes', () => {
-  it('composes the mode label from difficulty, roster and size', () => {
+// Every card folds; these tests are about what an open card shows.
+beforeEach(() => {
+  for (const id of ['grid-breakdown', 'grid-criteria', 'grid-footballers', 'grid-help', 'grid-stock']) {
+    localStorage.setItem(`panel-open:${id}`, '1');
+  }
+});
+
+describe('GridBreakdown', () => {
+  const noop = () => {};
+
+  it('names each mode in reader words, with its share of sessions', () => {
     render(
-      <GridModes
+      <GridBreakdown
+        groupBy="mode"
+        onGroupByChange={noop}
         data={response({
           modes: [
             mode({}),
             mode({ difficulty: 'EASY', footballer_status: 'NOT_ACTIVE', grid_size: '3x3', sessions: 12, daily_sessions: 0, daily_pct: 0.0 }),
+            mode({ difficulty: null, sessions: 1 }),
           ],
         })}
       />,
     );
 
-    // The wire vocabulary never leaks: EASY reads Standard, NOT_ACTIVE reads
-    // Retired, BOTH adds nothing.
-    expect(screen.getByText('Hard · 4x4')).toBeInTheDocument();
+    const table = screen.getAllByText('Hard · 4x4')[0]!.closest('table')!;
 
-    // Header and cells stay aligned: the Daily column sits between the
-    // mode label and Sessions in BOTH.
-    const table = screen.getByText('Hard · 4x4').closest('table')!;
-    const headers = within(table).getAllByRole('columnheader').map(th => th.textContent);
-
-    expect(headers.slice(0, 3)).toEqual(['Mode', 'Daily', 'Sessions']);
-    expect(within(table).getByText('31.9%')).toBeInTheDocument();
+    expect(within(table).getAllByRole('columnheader').map(th => th.textContent).slice(0, 3)).toEqual(['Mode', 'Sessions', 'Daily']);
     expect(screen.getByText('Standard · Retired · 3x3')).toBeInTheDocument();
+    // A null difficulty is a data bug: the row must show, not vanish.
+    expect(screen.getByText('Unclassified · 4x4')).toBeInTheDocument();
     expect(screen.queryByText(/NOT_ACTIVE|BOTH/)).not.toBeInTheDocument();
   });
 
-  it('never hides an unclassified bucket', () => {
-    // difficulty null is a data bug when it appears — the row must render,
-    // not vanish, or the bug stays invisible.
-    render(<GridModes data={response({ modes: [mode({ difficulty: null })] })} />);
+  it('groups by any split from the breakdown rows, and flags a weak row in the folded headline', () => {
+    const { rerender } = render(
+      <GridBreakdown
+        groupBy="board"
+        onGroupByChange={noop}
+        data={response({
+          breakdown: {
+            group_by: 'board',
+            rows: [
+              { ...mode({}), key: 'global', label: 'Global' },
+              { ...mode({ sessions: 80, completion_pct: 41.0 }), key: '7', label: 'Bulgaria' },
+            ],
+          },
+        })}
+      />,
+    );
 
-    expect(screen.getByText('Unclassified · 4x4')).toBeInTheDocument();
-  });
+    expect(screen.getByRole('columnheader', { name: 'Board' })).toBeInTheDocument();
+    expect(screen.getByText('Bulgaria completes at 41%')).toBeInTheDocument();
 
-  it('renders cleanly when the backend still sends the retired variations keys', () => {
-    // Backend rolls out after this app: the old payload carries
-    // `variations: []`; the next one omits it. Neither may change the panel.
-    const legacy = { ...response({ modes: [mode({})] }), variations: [] } as GridAnalyticsResponse;
-    render(<GridModes data={legacy} />);
-
-    expect(screen.getByText('Modes')).toBeInTheDocument();
-    expect(screen.queryByText(/variation/i)).not.toBeInTheDocument();
-  });
-
-  it('shows an empty state when nothing was played', () => {
-    render(<GridModes data={response()} />);
+    // A response for another grouping is never drawn under this one's heading.
+    rerender(<GridBreakdown groupBy="reveal" onGroupByChange={noop} data={response()} />);
 
     expect(screen.getByText('No Grid session in this window.')).toBeInTheDocument();
+  });
+
+  it('narrows the page to a mode on click, and clears it on a second click', () => {
+    const onSelectMode = vi.fn();
+    render(<GridBreakdown groupBy="mode" onGroupByChange={noop} data={response({ modes: [mode({})] })} onSelectMode={onSelectMode} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hard · 4x4' }));
+
+    expect(onSelectMode).toHaveBeenCalledWith(expect.objectContaining({ difficulty: 'HARD', grid_size: '4x4' }));
   });
 });
 
@@ -154,40 +173,26 @@ describe('GridCriteria', () => {
   });
 });
 
-describe('GridCriterionTypes', () => {
-  it('states reach via attempts and identities', () => {
+describe('GridCriteria tabs', () => {
+  it('shows types and clubs as tabs of the same card', () => {
     render(
-      <GridCriterionTypes
+      <GridCriteria
         data={response({
-          criterion_types: [{
-            criterion_type: 'PLAYED_FOR_CLUB',
-            identities: 287,
-            attempts: 66330,
-            wrong: 42711,
-            wrong_pct: 64.4,
-          }],
-        })}
-      />,
-    );
-    const row = screen.getByText('Played for club').closest('tr')!;
-
-    expect(within(row).getByText('287')).toBeInTheDocument();
-    expect(within(row).getByText('66,330')).toBeInTheDocument();
-  });
-});
-
-describe('GridTeams', () => {
-  it('renders clubs without the redundant type column', () => {
-    render(
-      <GridTeams
-        data={response({
+          criterion_types: [{ criterion_type: 'PLAYED_FOR_CLUB', identities: 287, attempts: 66330, wrong: 42711, wrong_pct: 64.4 }],
           teams: [criterion({ label: 'Man Utd', criterion_type: 'PLAYED_FOR_CLUB', wrong_pct: 33.0 })],
         })}
       />,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: 'By type' }));
+    const row = screen.getByText('Played for club').closest('tr')!;
+
+    expect(within(row).getByText('66,330')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clubs' }));
+
     expect(screen.getByText('Man Utd')).toBeInTheDocument();
-    // Every row here is PLAYED_FOR_CLUB — a type column would be noise.
+    // Every club row is PLAYED_FOR_CLUB: a type column would be noise.
     expect(screen.queryByText('Played for club')).not.toBeInTheDocument();
   });
 });
@@ -212,34 +217,6 @@ describe('GridPool', () => {
     render(<GridPool data={response()} />);
 
     expect(screen.getByText(/25 decided appearances/)).toBeInTheDocument();
-  });
-});
-
-describe('GridPopularity', () => {
-  it('renders the modes chart with an accessible summary, largest first', async () => {
-    const { GridPopularity } = await import('@/components/analytics/panels/GridPopularity');
-    render(
-      <GridPopularity
-        data={response({
-          modes: [
-            mode({ sessions: 10, difficulty: 'EASY', grid_size: '3x3' }),
-            mode({ sessions: 3758 }),
-          ],
-        })}
-      />,
-    );
-
-    expect(screen.getByText('Modes people pick')).toBeInTheDocument();
-    expect(screen.queryByText(/variation/i)).not.toBeInTheDocument();
-    // The sr-only summary carries the ranked values — largest mode first.
-    expect(screen.getByText(/Grid sessions by mode: Hard · 4x4 3758/)).toBeInTheDocument();
-  });
-
-  it('shows an empty state when nothing was played', async () => {
-    const { GridPopularity } = await import('@/components/analytics/panels/GridPopularity');
-    render(<GridPopularity data={response()} />);
-
-    expect(screen.getByText('No Grid session in this window.')).toBeInTheDocument();
   });
 });
 
@@ -313,6 +290,10 @@ describe('GridAssists', () => {
 
 describe('GridPools', () => {
   const pool = {
+    board: 'global',
+    board_label: 'Global',
+    variation_mode: null,
+    variation_mode_label: null,
     grid_size: '3x3',
     difficulty: 'HARD',
     footballer_status: 'NOT_ACTIVE',
@@ -385,105 +366,5 @@ describe('worklist footballer links', () => {
     expect(screen.getByRole('link', { name: 'Ray Stewart' })).toHaveAttribute('href', '/footballer-management?edit=7');
     expect(screen.getByRole('link', { name: 'Luis Hernandez' })).toHaveAttribute('href', '/footballer-management?edit=8');
     expect(screen.getByRole('link', { name: 'Carlos Ruiz' })).toHaveAttribute('href', '/footballer-management?edit=9');
-  });
-});
-
-describe('GridBehaviourStrip', () => {
-  it('renders the four behaviour figures for grid and links to reports', async () => {
-    const { GridBehaviourStrip } = await import('@/components/analytics/panels/GridBehaviourStrip');
-    render(
-      <GridBehaviourStrip
-        data={{
-          by_game: [{
-            game_type: 'grid',
-            completion_pct: 84.1,
-            sessions_per_player: 3.2,
-            share_pct: 18.5,
-            repeat_players: 41,
-            repeat_rate_pct: 22.4,
-            previous_games_started: 100,
-            trend_pct: 4.2,
-            games_started: 120,
-            games_finished: 101,
-          }],
-        } as never}
-      />,
-    );
-
-    expect(screen.getByText('84.1%')).toBeInTheDocument();
-    expect(screen.getByText('22.4%')).toBeInTheDocument();
-    expect(screen.getByText('3.2')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /full behaviour view/i })).toHaveAttribute('href', '/reports/games/grid');
-  });
-
-  it('renders nothing without a grid row', async () => {
-    const { GridBehaviourStrip } = await import('@/components/analytics/panels/GridBehaviourStrip');
-    const { container } = render(<GridBehaviourStrip data={{ by_game: [] } as never} />);
-
-    expect(container).toBeEmptyDOMElement();
-  });
-});
-
-describe('mode drill-down UI', () => {
-  it('selecting a mode row reports the row, selecting it again clears', async () => {
-    const { GridModes } = await import('@/components/analytics/panels/GridModes');
-    const { modeKey } = await import('@/components/analytics/panels/grid-mode');
-    const row = mode({});
-    const onSelectMode = vi.fn();
-    render(
-      <GridModes
-        data={response({ modes: [row] })}
-        selectedKey={null}
-        onSelectMode={onSelectMode}
-      />,
-    );
-
-    const button = screen.getByRole('button', { name: 'Hard · 4x4' });
-
-    expect(button).toHaveAttribute('aria-pressed', 'false');
-
-    button.click();
-
-    expect(onSelectMode).toHaveBeenCalledWith(row);
-
-    // Re-render as selected: same click now clears.
-    onSelectMode.mockClear();
-    render(
-      <GridModes
-        data={response({ modes: [row] })}
-        selectedKey={modeKey(row)}
-        onSelectMode={onSelectMode}
-      />,
-    );
-    const selected = screen.getAllByRole('button', { name: 'Hard · 4x4' })[1]!;
-
-    expect(selected).toHaveAttribute('aria-pressed', 'true');
-
-    selected.click();
-
-    expect(onSelectMode).toHaveBeenCalledWith(null);
-  });
-
-  it('chips render the narrowing and clear on click', async () => {
-    const { ActiveFilterChips } = await import('@/components/analytics/ActiveFilterChips');
-    const clear = vi.fn();
-    render(
-      <ActiveFilterChips
-        chips={[{ key: 'mode', kind: 'Mode', label: 'Hard · Retired · 3x3', onClear: clear }]}
-      />,
-    );
-
-    expect(screen.getByText('Hard · Retired · 3x3')).toBeInTheDocument();
-
-    screen.getByRole('button', { name: 'Clear mode filter' }).click();
-
-    expect(clear).toHaveBeenCalled();
-  });
-
-  it('renders nothing with no chips', async () => {
-    const { ActiveFilterChips } = await import('@/components/analytics/ActiveFilterChips');
-    const { container } = render(<ActiveFilterChips chips={[]} />);
-
-    expect(container).toBeEmptyDOMElement();
   });
 });
