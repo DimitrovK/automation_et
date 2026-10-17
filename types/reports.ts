@@ -206,9 +206,6 @@ export type ReportParams = {
   game_type?: string;
   include_bots?: boolean;
   limit?: number;
-  /** Anomaly knobs. Bounded server-side; out-of-range values are rejected. */
-  min_volume?: number;
-  min_change_pct?: number;
   /** Bucket size for the activity series. Rejected server-side if unknown. */
   granularity?: Granularity;
   /** Username fragment, case-insensitive. Narrows who is counted, not who survives. */
@@ -609,47 +606,6 @@ export type FirstSessionResponse = {
   min_players: number;
   total_new_players: number;
   rows: FirstSessionRow[];
-} & ResolvedRange;
-
-export type AnomalyFinding = {
-  scope: 'platform' | 'game';
-  game_type: string | null;
-  metric: string;
-  /** Null for findings that aren't a change (e.g. a low completion rate). */
-  change_pct: number | null;
-  current: number;
-  previous: number | null;
-  severity: 'high' | 'medium';
-  headline: string;
-  detail: string;
-  /**
-   * How many standard deviations the move sits outside ordinary noise at this
-   * volume. `null` on rate findings, which have no Poisson difference to take.
-   */
-  z_score: number | null;
-  /**
-   * The smallest percentage move that would have been notable AT THIS VOLUME —
-   * 71% at 36 sessions, 9.5% at 2,000. Carried for the non-findings as much as
-   * the findings: without it, a reader seeing +28% missing from the panel
-   * concludes the panel is broken.
-   */
-  required_pct: number | null;
-};
-
-export type AnomaliesResponse = {
-  window_days: number;
-  compared_with: { start: string; end: string };
-  /** Returned so a reader can see what was filtered out, not just what survived. */
-  thresholds: {
-    min_volume: number;
-    min_change_pct: number;
-    severe_change_pct: number;
-    /** The test that actually decides. `min_change_pct` is only a floor. */
-    sigma: number;
-  };
-  /** Lets an empty list mean "nothing moved" rather than "we couldn't tell". */
-  coverage: { complete: boolean; missing_days: string[] };
-  findings: AnomalyFinding[];
 } & ResolvedRange;
 
 /** One band of "how far did they get", as a share of the session's own length. */

@@ -1,6 +1,5 @@
 import type {
   ActivityResponse,
-  AnomaliesResponse,
   AttemptsResponse,
   CareerPathAnalyticsResponse,
   CareerPathFootballerDetail,
@@ -103,11 +102,6 @@ export class ReportsAPI {
   /** GET /core/reporting/glossary/ — what every reported number means. */
   static async getGlossary(): Promise<GlossaryResponse> {
     return apiFetcher<GlossaryResponse>('core/reporting/glossary/');
-  }
-
-  /** GET /core/reporting/anomalies/ — what moved enough to be worth attention. */
-  static async getAnomalies(params?: ReportParams): Promise<AnomaliesResponse> {
-    return apiFetcher<AnomaliesResponse>(`core/reporting/anomalies/${buildQuery(params)}`);
   }
 
   /** GET /core/reporting/duration/ — median session length per game. */
