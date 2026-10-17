@@ -5,6 +5,7 @@ import type { GameRowWithDuration, GameSortKey } from '@/lib/report-sort';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { PopularityBars } from '@/components/analytics/charts/PopularityBars';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { FavouredVsPlayedChart } from '@/components/reports/favourites/FavouredVsPlayedChart';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
@@ -24,7 +25,6 @@ import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { Sparkline } from '@/components/reports/primitives/Sparkline';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
 import { gameName, useGameColor, useGameMeta } from '@/hooks/use-game-meta';
@@ -144,8 +144,8 @@ export default function GamesIndexPage() {
   }, [state.data, duration.data, sortBy]);
 
   return (
-    <ReportsShell
-      title="Games"
+    <InsightsShell
+      title="All games"
       description="Every game side by side. Click one for its own report."
     >
       <FilterBar>
@@ -420,6 +420,6 @@ export default function GamesIndexPage() {
           </>
         )}
       </ReportPanel>
-    </ReportsShell>
+    </InsightsShell>
   );
 }

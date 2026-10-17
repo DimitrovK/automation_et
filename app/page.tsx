@@ -7,7 +7,6 @@ import {
   FileText,
   Globe2,
   MessageCircle,
-  Microscope,
   Search,
   Settings,
   Users,
@@ -16,12 +15,11 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { ANALYTICS_QUICK_LINKS } from '@/components/analytics/shell/AnalyticsNav';
-import { LoadingSpinner } from '@/components/loading-spinner';
+import { INSIGHTS_QUICK_LINKS } from '@/components/insights/InsightsNav';
 
+import { LoadingSpinner } from '@/components/loading-spinner';
 import { LoginForm } from '@/components/login-form';
 import { Navigation } from '@/components/navigation';
-import { REPORT_QUICK_LINKS } from '@/components/reports/shell/ReportsNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
@@ -263,11 +261,11 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="size-5 text-red-600" />
-                Reports
+                Insights
               </CardTitle>
               <CardDescription>
-                How the platform is doing: today against a typical day, per-game health,
-                who is playing and whether they come back.
+                How the platform is doing: activity, each game's health and content,
+                who plays and whether they come back, and the football data behind it.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -276,49 +274,10 @@ export default function DashboardPage() {
                 className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
               >
                 <FileText className="mr-2 size-4" />
-                Open Reports
+                Open Insights
               </Button>
               <div className="flex flex-wrap gap-1">
-                {REPORT_QUICK_LINKS.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
-                  >
-                    <Icon className="size-3.5 shrink-0" />
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Analytics sits beside Reports rather than inside it. Reports say
-              how players are behaving; analytics say whether the material they
-              are playing is any good — a different question asked by a
-              different person, usually while they are writing content. */}
-          <Card className="transition-shadow duration-200 hover:shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Microscope className="size-5 text-sky-600" />
-                Analytics
-              </CardTitle>
-              <CardDescription>
-                Whether the content holds up: which footballers make everyone take a
-                hint, which questions nobody gets right, and what the data behind
-                them is missing.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button
-                onClick={() => router.push('/analytics/football-data')}
-                className="w-full border-emerald-500 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg transition-all duration-200 hover:border-emerald-600 hover:from-emerald-600 hover:to-green-700 hover:shadow-xl"
-              >
-                <Microscope className="mr-2 size-4" />
-                Open Analytics
-              </Button>
-              <div className="flex flex-wrap gap-1">
-                {ANALYTICS_QUICK_LINKS.map(({ href, label, icon: Icon }) => (
+                {INSIGHTS_QUICK_LINKS.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
                     href={href}

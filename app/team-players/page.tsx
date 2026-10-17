@@ -105,7 +105,7 @@ function TeamPlayers() {
         {error && (
           <div
             role="alert"
-            className="whitespace-pre-line rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+            className="rounded-md border border-red-300 bg-red-50 p-3 text-sm whitespace-pre-line text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
           >
             {error}
           </div>

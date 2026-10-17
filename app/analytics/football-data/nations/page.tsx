@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { NationDepth } from '@/components/analytics/panels/NationDepth';
 import { NationGaps } from '@/components/analytics/panels/NationGaps';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { useNationTable } from '@/hooks/use-nation-table';
 import { useReport } from '@/hooks/use-report';
@@ -45,7 +45,7 @@ export default function NationsAnalyticsPage() {
   );
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Nations"
       description="Where the catalogue is deepest, and which nations nothing points at."
     >
@@ -76,6 +76,6 @@ export default function NationsAnalyticsPage() {
           />
         )}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }

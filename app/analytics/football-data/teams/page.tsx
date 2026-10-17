@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ReviewQueue } from '@/components/analytics/panels/ReviewQueue';
 import { SquadDepth } from '@/components/analytics/panels/SquadDepth';
 import { TeamGaps } from '@/components/analytics/panels/TeamGaps';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { useReport } from '@/hooks/use-report';
 import { useTeamTable } from '@/hooks/use-team-table';
@@ -41,7 +41,7 @@ export default function TeamsAnalyticsPage() {
   );
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Teams"
       description="Which teams the catalogue leans on, which it forgot, and what is waiting on review."
     >
@@ -73,6 +73,6 @@ export default function TeamsAnalyticsPage() {
           </div>
         )}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }

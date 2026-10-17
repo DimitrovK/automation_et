@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { SurfaceTabs } from '@/components/admin/SurfaceTabs';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ActivityChart } from '@/components/reports/charts/ActivityChart';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { GameHourProfile } from '@/components/reports/charts/GameHourProfile';
@@ -20,7 +21,6 @@ import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { ReportError } from '@/components/reports/primitives/ReportError';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { StatTile } from '@/components/reports/primitives/StatTile';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
@@ -90,7 +90,7 @@ export default function GameDetailPage() {
   const row = summary.data?.by_game.find(entry => entry.game_type === gameKey);
 
   return (
-    <ReportsShell
+    <InsightsShell
       title={label}
       description="Everything about one game: volume, completion, who plays it and how long they stay."
     >
@@ -232,6 +232,6 @@ export default function GameDetailPage() {
           </CardContent>
         </Card>
       )}
-    </ReportsShell>
+    </InsightsShell>
   );
 }

@@ -12,7 +12,6 @@ import {
   LineChart,
   Menu,
   MessageCircle,
-  Microscope,
   Search,
   Sparkles,
   UserCog,
@@ -29,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserMenu } from '@/components/user-menu';
-import { ANALYTICS_CHILDREN, REPORTS_CHILDREN } from '@/lib/global-nav';
+import { INSIGHTS_CHILDREN } from '@/lib/global-nav';
 import { cn } from '@/lib/utils';
 
 type NavigationProps = {
@@ -116,20 +115,12 @@ export function Navigation({ className }: NavigationProps) {
       ],
     },
     {
-      label: 'Reports',
+      // One section for "how is the platform doing": Reports and Analytics
+      // were two, with overlapping pages and two "Per game" groups.
+      label: 'Insights',
       icon: LineChart,
-      description: 'Platform activity and multiplayer reporting',
-      children: REPORTS_CHILDREN,
-    },
-    {
-      // Analytics is not Reports: reports answer "how are players behaving",
-      // analytics answer "is the material any good". Different question,
-      // different reader — so it gets its own section rather than a fifth
-      // entry under Reports.
-      label: 'Analytics',
-      icon: Microscope,
-      description: 'Whether the content and the data behind it are any good',
-      children: ANALYTICS_CHILDREN,
+      description: 'Activity, games, players and the football data behind them',
+      children: INSIGHTS_CHILDREN,
     },
     {
       label: 'Discord Control',

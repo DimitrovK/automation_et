@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar, FilterGroup, Segmented } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
@@ -11,7 +12,6 @@ import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { PlayStyleBadge } from '@/components/reports/primitives/PlayStyleBadge';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -89,7 +89,7 @@ export default function PlayersReportPage() {
   );
 
   return (
-    <ReportsShell
+    <InsightsShell
       title="Players"
       description="Who played the most. Bot/simulation accounts are excluded by default."
     >
@@ -261,6 +261,6 @@ export default function PlayersReportPage() {
           </Card>
         )}
       </ReportPanel>
-    </ReportsShell>
+    </InsightsShell>
   );
 }

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ChartTooltip } from '@/components/reports/charts/ChartTooltip';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
@@ -15,7 +16,6 @@ import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { StatTile } from '@/components/reports/primitives/StatTile';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
@@ -77,7 +77,7 @@ export default function PlayerDetailPage() {
   const style = playStyle(state.data?.totals.games_played ?? 0, state.data?.totals.mp_sessions);
 
   return (
-    <ReportsShell
+    <InsightsShell
       title={state.data ? state.data.username : 'Player'}
       description="One player's activity: what they play, how much they finish, and how often they show up."
     >
@@ -248,6 +248,6 @@ export default function PlayerDetailPage() {
           </>
         )}
       </ReportPanel>
-    </ReportsShell>
+    </InsightsShell>
   );
 }

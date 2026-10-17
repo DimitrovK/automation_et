@@ -2,10 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { BarChart3, BookOpen, Users } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { SectionNav } from '@/components/admin/SectionNav';
-import { ANALYTICS_NAV_GROUPS, ANALYTICS_QUICK_LINKS } from '@/components/analytics/shell/AnalyticsNav';
-import { REPORT_NAV_GROUPS, REPORT_NAV_TRAILING, REPORT_QUICK_LINKS } from '@/components/reports/shell/ReportsNav';
+import { INSIGHTS_NAV_GROUPS, INSIGHTS_NAV_TRAILING, INSIGHTS_QUICK_LINKS } from '@/components/insights/InsightsNav';
 import { USER_HUB_NAV_GROUPS, USER_HUB_NAV_TRAILING } from '@/components/user-hub/UserHubShell';
-import { GLOBAL_NAV_SECTION_HREFS } from '@/lib/global-nav';
+import { INSIGHTS_CHILDREN } from '@/lib/global-nav';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/reports/players' }));
 
@@ -69,13 +68,13 @@ describe('sectionNav', () => {
   });
 });
 
-describe('report nav groups', () => {
+describe('insights nav', () => {
   it('has no group heading that duplicates a page name', () => {
     // A heading and an item with the same word makes the grouping look like a
     // typo rather than structure.
-    const items = REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item.label));
+    const items = INSIGHTS_NAV_GROUPS.flatMap(group => group.items.map(item => item.label));
 
-    for (const group of REPORT_NAV_GROUPS) {
+    for (const group of INSIGHTS_NAV_GROUPS) {
       expect(items, `group "${group.heading}" repeats a page name`).not.toContain(group.heading);
     }
   });
@@ -84,8 +83,8 @@ describe('report nav groups', () => {
     // The dashboard card duplicates a handful of hrefs. A shortcut outliving
     // the page it points at is a 404 reached from the front door, and nothing
     // else would catch it.
-    const linked = new Set(REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)));
-    const orphans = REPORT_QUICK_LINKS.filter(link => !linked.has(link.href));
+    const linked = new Set(INSIGHTS_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)));
+    const orphans = INSIGHTS_QUICK_LINKS.filter(link => !linked.has(link.href));
 
     expect(orphans.map(o => o.href), 'quick links pointing nowhere').toEqual([]);
   });
@@ -93,37 +92,39 @@ describe('report nav groups', () => {
   it('keeps the dashboard shortlist short', () => {
     // A card reprinting the whole nav is the nav with worse typography. The
     // dashboard's job is to get someone moving, not to enumerate.
-    expect(REPORT_QUICK_LINKS.length).toBeLessThanOrEqual(4);
+    expect(INSIGHTS_QUICK_LINKS.length).toBeLessThanOrEqual(4);
   });
 
-  it('covers every report page', async () => {
-    // A page missing from the nav is unreachable except by URL — which is how
+  it('covers every insights page', async () => {
+    // A page missing from the nav is unreachable except by URL, which is how
     // the player drill-down went unlinked until it was noticed by hand.
-    const { readdirSync } = await import('node:fs');
+    const { existsSync, readdirSync } = await import('node:fs');
     const { join } = await import('node:path');
 
-    const root = join(process.cwd(), 'app', 'reports');
-    const routes = new Set<string>(['/reports']);
+    const routes = new Set<string>();
     const walk = (dir: string, prefix: string) => {
+      if (existsSync(join(dir, 'page.tsx'))) {
+        routes.add(prefix);
+      }
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        // Route groups and colocated tests are not pages.
+        // Dynamic segments (a game, a player) are reached from their lists, and tests are not pages.
         if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name === '__tests__') {
           continue;
         }
-        routes.add(`${prefix}/${entry.name}`);
         walk(join(dir, entry.name), `${prefix}/${entry.name}`);
       }
     };
-    walk(root, '/reports');
+    for (const section of ['reports', 'analytics', 'games']) {
+      walk(join(process.cwd(), 'app', section), `/${section}`);
+    }
 
     const linked = new Set([
-      ...REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
-      REPORT_NAV_TRAILING.href,
+      ...INSIGHTS_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
+      INSIGHTS_NAV_TRAILING.href,
     ]);
-
     const missing = [...routes].filter(route => !linked.has(route));
 
-    expect(missing, `Report pages not in the nav: ${missing.join(', ')}`).toEqual([]);
+    expect(missing, `Insights pages not in the nav: ${missing.join(', ')}`).toEqual([]);
   });
 });
 
@@ -171,33 +172,13 @@ describe('user hub nav groups', () => {
   });
 });
 
-describe('the global nav agrees with the sections it links into', () => {
-  // The section navs already guard their own shortcuts. Nothing guarded the
-  // GLOBAL nav, which is a hand-maintained second copy of the same lists — and
-  // it had drifted: it still offered Patterns, Session length and Favourites,
-  // three routes retired in #1474 R4, while omitting Needs attention, Games and
-  // the glossary. Every one of those was a click into a redirect.
-  const sectionHrefs = new Set([
-    ...REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
-    REPORT_NAV_TRAILING.href,
-    ...ANALYTICS_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
-  ]);
-
-  it.each([...GLOBAL_NAV_SECTION_HREFS])('%s is a real destination', (href) => {
-    expect(sectionHrefs).toContain(href);
-  });
-
-  it('offers every reports and analytics destination', () => {
-    // The other direction: a page nobody links to is a page nobody finds.
-    for (const href of sectionHrefs) {
-      expect(GLOBAL_NAV_SECTION_HREFS).toContain(href);
-    }
-  });
-
-  it('every analytics shortcut is a real nav destination', () => {
-    const analyticsHrefs = ANALYTICS_NAV_GROUPS.flatMap(g => g.items.map(i => i.href));
-    for (const link of ANALYTICS_QUICK_LINKS) {
-      expect(analyticsHrefs).toContain(link.href);
-    }
+describe('the global nav agrees with the section nav', () => {
+  // It is built from the section nav now; this pins that nothing was dropped
+  // or added on the way, which is how the old hand-kept copy drifted.
+  it('offers exactly the insights destinations, glossary included', () => {
+    expect(INSIGHTS_CHILDREN.map(page => page.href)).toEqual([
+      ...INSIGHTS_NAV_GROUPS.flatMap(group => group.items.map(item => item.href)),
+      INSIGHTS_NAV_TRAILING.href,
+    ]);
   });
 });

@@ -7,10 +7,10 @@ Spec: `docs/superpowers/specs/2026-10-17-grid-dashboard-design.md`. Owner asked 
 - [x] Spec written
 - [x] Plan: kept to the spec's delivery order (bounded steps; one review per step)
 - [x] 1. BE: sessions endpoint, filters, MP inclusion, variation pools — App#2248 merged + deployed by hand 2026-10-17 (prod: 47–85 ms per split)
-- [ ] 2. FE: collapsible ReportPanel, /games/grid, redirects, Grid duplicate removals (automation_et PR)
-- [ ] 3a. FE: remove anomalies page + nav
-- [ ] 3b. BE: remove anomalies endpoint
-- [ ] 4. Project 2 spec (all games, merged nav)
+- [x] 2. FE: /games/grid, PanelCard/Fold, redirects, removals — automation_et#185 merged, Vercel READY 2026-10-17 (also fixed useReport stale responses on every page)
+- [x] 3a. FE: remove anomalies page + nav — automation_et#186, READY
+- [x] 3b. BE: remove anomalies endpoint — App#2249, deployed by hand, endpoint 404 on prod
+- [ ] 4. Project 2: spec `docs/superpowers/specs/2026-10-17-insights-design.md`, then its phases (see the spec)
 
 ## Rules carried from memory
 
@@ -18,7 +18,7 @@ Merge one PR at a time, watch deploy green before the next. One test run at a ti
 
 ## UX review notes for project 2
 
-(collect cross-game findings here as they come up)
+Audit done 2026-10-17 (read-only agent); its findings are folded into the project 2 spec.
 
 ## Log
 

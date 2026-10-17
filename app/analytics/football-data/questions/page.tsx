@@ -8,7 +8,7 @@ import { GlobalQuizUsage } from '@/components/analytics/panels/GlobalQuizUsage';
 import { QuestionBank } from '@/components/analytics/panels/QuestionBank';
 import { QuestionCatalogue } from '@/components/analytics/panels/QuestionCatalogue';
 import { QuestionQuality } from '@/components/analytics/panels/QuestionQuality';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
@@ -74,7 +74,7 @@ export default function QuestionsAnalyticsPage() {
   );
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Questions"
       description="How big the question bank is, how it is shaped, and which questions are broken."
     >
@@ -143,6 +143,6 @@ export default function QuestionsAnalyticsPage() {
       <ReportPanel state={state} skeletonClassName="h-64 w-full">
         {data => <GlobalQuizUsage data={data} />}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }

@@ -1278,7 +1278,7 @@ export default function FootballerManagementPage() {
                               : ''}`
                         }
                       >
-                        <div className="pl-2 pt-4">
+                        <div className="pt-4 pl-2">
                           <Checkbox
                             checked={checked}
                             onCheckedChange={(v) => {

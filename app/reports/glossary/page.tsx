@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGlossary } from '@/hooks/use-glossary';
@@ -20,7 +20,7 @@ export default function GlossaryPage() {
   const { metrics, byKey, isLoading, failed } = useGlossary(enabled);
 
   return (
-    <ReportsShell
+    <InsightsShell
       title="What the numbers mean"
       description="Every metric: what it counts, what it leaves out, and how it can be misread."
     >
@@ -81,6 +81,6 @@ export default function GlossaryPage() {
           </Card>
         ))}
       </div>
-    </ReportsShell>
+    </InsightsShell>
   );
 }

@@ -2,6 +2,7 @@
 
 import type { GameTotals, Granularity } from '@/types/reports';
 import { useMemo, useState } from 'react';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ActivityChart } from '@/components/reports/charts/ActivityChart';
 import { GrowthFlow } from '@/components/reports/charts/GrowthFlow';
 import { NewVsReturning } from '@/components/reports/charts/NewVsReturning';
@@ -15,7 +16,6 @@ import { WeeklyPulseTiles } from '@/components/reports/panels/WeeklyPulseTiles';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -80,7 +80,7 @@ export default function ReportsPage() {
   const selectedLabel = game ? (meta[game]?.label ?? game) : null;
 
   return (
-    <ReportsShell
+    <InsightsShell
       title="Daily Pulse"
       description="How today is going, measured against a typical day of the same weekday."
     >
@@ -219,6 +219,6 @@ export default function ReportsPage() {
           onSelect={next => update({ game: next })}
         />
       )}
-    </ReportsShell>
+    </InsightsShell>
   );
 }
