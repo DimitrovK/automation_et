@@ -40,10 +40,13 @@ const REVEALS: readonly { value: string; label: string }[] = [
  * Boards come from the window's own sessions (biggest first), so the list
  * names what was actually played rather than every variation ever made.
  */
-export function GridFilters({ value, onChange, boards }: {
+export function GridFilters({ value, onChange, boards, modeLabels, revealLabels }: {
   value: GridPopulationFilters;
   onChange: (patch: Partial<GridPopulationFilters>) => void;
   boards: BoardOption[];
+  /** Grid settings' names for HOME / ABROAD and INSTANT / FINAL. */
+  modeLabels: Record<string, string>;
+  revealLabels: Record<string, string>;
 }) {
   const countryBoard = value.board !== null && value.board !== 'global';
   const selectedMissing = countryBoard && !boards.some(b => b.key === value.board);
@@ -82,7 +85,7 @@ export function GridFilters({ value, onChange, boards }: {
           <Segmented
             label="Country mode"
             value={value.variationMode ?? ANY}
-            options={VARIATION_MODES}
+            options={VARIATION_MODES.map(option => ({ ...option, label: modeLabels[option.value] ?? option.label }))}
             onChange={mode => onChange({ variationMode: mode === ANY ? null : mode })}
           />
         </FilterGroup>
@@ -92,7 +95,7 @@ export function GridFilters({ value, onChange, boards }: {
         <Segmented
           label="Timing"
           value={value.reveal ?? ANY}
-          options={REVEALS}
+          options={REVEALS.map(option => ({ ...option, label: revealLabels[option.value] ?? option.label }))}
           onChange={reveal => onChange({ reveal: reveal === ANY ? null : reveal })}
         />
       </FilterGroup>

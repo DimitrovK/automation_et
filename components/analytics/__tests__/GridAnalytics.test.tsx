@@ -84,13 +84,31 @@ function response(over: Partial<GridAnalyticsResponse> = {}): GridAnalyticsRespo
     pools: [],
     breakdown: { group_by: 'board', rows: [] },
     population: { play_type: 'all', board: null, variation_mode: null, reveal: null },
+    multiplayer: {
+      funnel: null,
+      room_games: 0,
+      released: 0,
+      avg_players: null,
+      player_sessions: 0,
+      finished: 0,
+      forfeited: 0,
+      forfeit_pct: 0,
+      finish_reasons: {},
+      var_enabled_rooms: 0,
+      peek_enabled_rooms: 0,
+      var_checks: 0,
+      var_found_wrong: 0,
+      peeks: 0,
+      peeks_shown: 0,
+      sessions_peeking: 0,
+    },
     ...over,
   };
 }
 
 // Every card folds; these tests are about what an open card shows.
 beforeEach(() => {
-  for (const id of ['grid-breakdown', 'grid-criteria', 'grid-footballers', 'grid-help', 'grid-stock']) {
+  for (const id of ['grid-breakdown', 'grid-criteria', 'grid-footballers', 'grid-help', 'grid-stock', 'grid-multiplayer']) {
     localStorage.setItem(`panel-open:${id}`, '1');
   }
 });
@@ -382,5 +400,36 @@ describe('foldSeries', () => {
     expect(folded.series[4]!.sessions).toBe(30);
     expect(folded.points[0]).toMatchObject({ a: 6, d: 3, total: 21 });
     expect(Object.values(folded.points[0]!).filter(v => v === 3).length).toBe(2); // d, and e + f folded
+  });
+});
+
+describe('GridMultiplayer', () => {
+  it('reads the room funnel, the leavers and how the helpers were spent', async () => {
+    const { GridMultiplayer } = await import('@/components/analytics/grid/GridMultiplayer');
+    render(
+      <GridMultiplayer
+        data={{
+          ...response().multiplayer,
+          funnel: { game_type: 'grid', rooms_created: 12, rooms_started: 9, rooms_finished: 8, rooms_cancelled: 3, never_started_pct: 25 },
+          room_games: 9,
+          released: 8,
+          avg_players: 3.4,
+          player_sessions: 31,
+          forfeited: 4,
+          forfeit_pct: 12.9,
+          finish_reasons: { all_players_finished: 6, timeout: 2 },
+          var_enabled_rooms: 9,
+          var_checks: 10,
+          var_found_wrong: 4,
+          peeks: 8,
+          peeks_shown: 6,
+        }}
+      />,
+    );
+
+    expect(screen.getByText('25% never started')).toBeInTheDocument();
+    expect(screen.getByText('1 still waiting for results')).toBeInTheDocument();
+    expect(screen.getByText('Everyone finished')).toBeInTheDocument();
+    expect(screen.getByText('40%')).toBeInTheDocument(); // VAR checks that found a wrong card
   });
 });
