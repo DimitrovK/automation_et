@@ -43,7 +43,34 @@ export type ReportFilters = {
   gridDifficulty: string | null;
   gridRoster: string | null;
   gridSize: string | null;
+  /**
+   * The Grid page's population (core/analytics/grid_population.py): play type,
+   * board ('global' or a variation id), country mode and timing. Every Grid
+   * card follows them. Null / 'all' means no narrowing.
+   */
+  gridPlayType: GridPlayType;
+  gridBoard: string | null;
+  gridVariationMode: string | null;
+  gridReveal: string | null;
+  /** How the sessions chart is split, and how the modes table is grouped. */
+  gridSplit: GridSplit;
+  gridGroupBy: GridGroupBy;
 };
+
+export const GRID_PLAY_TYPES = ['all', 'solo', 'multiplayer'] as const;
+export type GridPlayType = typeof GRID_PLAY_TYPES[number];
+export const GRID_SPLITS = ['play_type', 'board', 'variation_mode', 'reveal', 'difficulty'] as const;
+export type GridSplit = typeof GRID_SPLITS[number];
+/** The modes table's grouping: the mode bucket, or any of the splits. */
+export const GRID_GROUP_BYS = ['mode', ...GRID_SPLITS] as const;
+export type GridGroupBy = typeof GRID_GROUP_BYS[number];
+const GRID_VARIATION_MODES = ['HOME', 'ABROAD'];
+const GRID_REVEALS = ['INSTANT', 'FINAL'];
+const GRID_BOARD = /^(?:global|\d{1,9})$/;
+
+function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+  return value && (allowed as readonly string[]).includes(value) ? value as T : fallback;
+}
 
 const GRID_DIFFICULTIES = ['EASY', 'HARD'];
 const GRID_ROSTERS = ['ACTIVE', 'NOT_ACTIVE', 'BOTH'];
@@ -116,6 +143,12 @@ function parse(search: string, fallback: ReportFilters): ReportFilters {
     gridDifficulty: allowlisted(params.get('difficulty'), GRID_DIFFICULTIES),
     gridRoster: allowlisted(params.get('roster'), GRID_ROSTERS),
     gridSize: allowlisted(params.get('size'), GRID_SIZES),
+    gridPlayType: oneOf(params.get('play'), GRID_PLAY_TYPES, fallback.gridPlayType),
+    gridBoard: GRID_BOARD.test(params.get('board') ?? '') ? params.get('board') : null,
+    gridVariationMode: allowlisted(params.get('country_mode'), GRID_VARIATION_MODES),
+    gridReveal: allowlisted(params.get('timing'), GRID_REVEALS),
+    gridSplit: oneOf(params.get('split'), GRID_SPLITS, fallback.gridSplit),
+    gridGroupBy: oneOf(params.get('group'), GRID_GROUP_BYS, fallback.gridGroupBy),
   };
 }
 
@@ -166,15 +199,36 @@ function serialise(filters: ReportFilters, defaults: ReportFilters): string {
   if (filters.gridSize) {
     params.set('size', filters.gridSize);
   }
+  if (filters.gridPlayType !== defaults.gridPlayType) {
+    params.set('play', filters.gridPlayType);
+  }
+  if (filters.gridBoard) {
+    params.set('board', filters.gridBoard);
+  }
+  if (filters.gridVariationMode) {
+    params.set('country_mode', filters.gridVariationMode);
+  }
+  if (filters.gridReveal) {
+    params.set('timing', filters.gridReveal);
+  }
+  if (filters.gridSplit !== defaults.gridSplit) {
+    params.set('split', filters.gridSplit);
+  }
+  if (filters.gridGroupBy !== defaults.gridGroupBy) {
+    params.set('group', filters.gridGroupBy);
+  }
   const query = params.toString();
   return query ? `?${query}` : '';
 }
+
+type GridOnlyFilter = 'gridDifficulty' | 'gridRoster' | 'gridSize' | 'gridPlayType' | 'gridBoard'
+  | 'gridVariationMode' | 'gridReveal' | 'gridSplit' | 'gridGroupBy';
 
 export function useReportFilters(
   // `limit` is optional: only the leaderboard views paginate, and requiring it
   // on the other seven pages would put a number in front of readers that means
   // nothing there.
-  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search' | 'compareOffset' | 'gridDifficulty' | 'gridRoster' | 'gridSize'> & {
+  suppliedDefaults: Omit<ReportFilters, 'limit' | 'search' | 'compareOffset' | GridOnlyFilter> & {
     limit?: number;
     search?: string;
     compareOffset?: number;
@@ -189,6 +243,12 @@ export function useReportFilters(
     gridDifficulty: null,
     gridRoster: null,
     gridSize: null,
+    gridPlayType: 'all',
+    gridBoard: null,
+    gridVariationMode: null,
+    gridReveal: null,
+    gridSplit: 'play_type',
+    gridGroupBy: 'mode',
     ...suppliedDefaults,
   };
   const [filters, setFilters] = useState<ReportFilters>(defaults);

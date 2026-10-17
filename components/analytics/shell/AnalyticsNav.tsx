@@ -23,7 +23,7 @@ export const ANALYTICS_NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/analytics/career-path', label: 'Career Path', icon: Route },
       { href: '/analytics/lineups', label: 'Lineups', icon: Users },
-      { href: '/analytics/grid', label: 'Grid', icon: Grid3x3 },
+      { href: '/games/grid', label: 'Grid', icon: Grid3x3 },
     ],
   },
   {

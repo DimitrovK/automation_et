@@ -50,14 +50,28 @@ export function useReport<T>(
   fetcherRef.current = fetcher;
   const paramsRef = useRef(params);
   paramsRef.current = params;
+  // Only the newest request may write. Without this, two requests in flight
+  // (a page's first render with its defaults, then the filters read from the
+  // URL; or two quick filter clicks) resolved in arrival order, and a slower
+  // OLD answer replaced the new one: the Grid chart showed the solo/multiplayer
+  // split under a "Board" switch after a reload.
+  const requestRef = useRef(0);
 
   const load = useCallback(async () => {
+    const request = ++requestRef.current;
+    const current = () => request === requestRef.current;
     setIsLoading(true);
     setError(null);
     setNotDeployed(false);
     try {
-      setData(await fetcherRef.current(paramsRef.current));
+      const result = await fetcherRef.current(paramsRef.current);
+      if (current()) {
+        setData(result);
+      }
     } catch (err: unknown) {
+      if (!current()) {
+        return;
+      }
       const raw = err instanceof Error ? err.message : `Failed to load ${endpointLabel}`;
       const is404 = /404|Not Found/i.test(raw);
       setNotDeployed(is404);
@@ -68,7 +82,9 @@ export function useReport<T>(
       );
       setData(null);
     } finally {
-      setIsLoading(false);
+      if (current()) {
+        setIsLoading(false);
+      }
     }
     // `key` and `resourceKey` are not read inside this callback, and the rule
     // is right that they are unnecessary for correctness of its BODY. They are

@@ -15,6 +15,12 @@ const defaults = {
   gridDifficulty: null,
   gridRoster: null,
   gridSize: null,
+  gridPlayType: 'all' as const,
+  gridBoard: null,
+  gridVariationMode: null,
+  gridReveal: null,
+  gridSplit: 'play_type' as const,
+  gridGroupBy: 'mode' as const,
 };
 
 describe('report filter URL state', () => {
@@ -208,6 +214,20 @@ describe('grid mode drill-down params', () => {
       gridDifficulty: null,
       gridRoster: null,
       gridSize: null,
+    });
+  });
+
+  it('round-trips the Grid page filters and drops values the API would refuse', () => {
+    const grid = { ...defaults, gridPlayType: 'multiplayer' as const, gridBoard: '7', gridVariationMode: 'ABROAD', gridReveal: 'FINAL', gridSplit: 'board' as const, gridGroupBy: 'reveal' as const };
+    const query = __test.serialise(grid, defaults);
+
+    expect(query).toBe('?play=multiplayer&board=7&country_mode=ABROAD&timing=FINAL&split=board&group=reveal');
+    expect(__test.parse(query, defaults)).toEqual(grid);
+    expect(__test.parse('?play=bots&board=../x&timing=LATER&split=size', defaults)).toMatchObject({
+      gridPlayType: 'all',
+      gridBoard: null,
+      gridReveal: null,
+      gridSplit: 'play_type',
     });
   });
 });
