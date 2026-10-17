@@ -101,4 +101,34 @@ describe('useReport', () => {
 
     expect(calls).toEqual([18, 19]);
   });
+
+  it('never lets an older, slower answer replace the newer one', async () => {
+    // A page renders with its defaults, then reads its filters from the URL:
+    // two requests in flight, and the first one answering last used to win.
+    const resolvers: Record<number, (value: { window: number }) => void> = {};
+    const fetcher = vi.fn((params?: { window: number }) => new Promise<{ window: number }>((resolve) => {
+      resolvers[params!.window] = resolve;
+    }));
+
+    function Switches() {
+      const [window, setWindow] = useState(30);
+      const { data } = useReport(fetcher as never, { window } as never, true, 'test');
+      return (
+        <div>
+          <button type="button" onClick={() => setWindow(90)}>wider</button>
+          <span>{data ? `window ${(data as { window: number }).window}` : 'loading'}</span>
+        </div>
+      );
+    }
+
+    render(<Switches />);
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    act(() => screen.getByText('wider').click());
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+
+    await act(async () => resolvers[90]!({ window: 90 }));
+    await act(async () => resolvers[30]!({ window: 30 }));
+
+    expect(screen.getByText('window 90')).toBeInTheDocument();
+  });
 });
