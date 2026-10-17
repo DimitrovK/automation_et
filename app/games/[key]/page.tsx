@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { GAME_CONTENT } from '@/components/games/GameContent';
+import { TopPlayersCard } from '@/components/games/TopPlayersCard';
 import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ActivityChart } from '@/components/reports/charts/ActivityChart';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
@@ -19,13 +20,13 @@ import { ContentHealth } from '@/components/reports/panels/ContentHealth';
 import { DifficultyOutcomes } from '@/components/reports/panels/DifficultyOutcomes';
 import { DurationTable } from '@/components/reports/panels/DurationTable';
 import { GameRetentionCard } from '@/components/reports/panels/GameRetentionCard';
+import { MultiplayerFunnel } from '@/components/reports/panels/MultiplayerFunnel';
 import { ProgressDropOff } from '@/components/reports/panels/ProgressDropOff';
 import { UnfinishedTable } from '@/components/reports/panels/UnfinishedTable';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
-import { Fold, PanelCard } from '@/components/reports/primitives/PanelCard';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportError } from '@/components/reports/primitives/ReportError';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { StatTile } from '@/components/reports/primitives/StatTile';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -118,6 +119,10 @@ export default function GameDetailPage() {
     ready,
     'The unfinished-sessions endpoint',
   );
+  // Rooms, not participations: one five-player room is one match.
+  const rooms = useReport(ReportsAPI.getMultiplayer, params, ready, 'The multiplayer reporting endpoint');
+  const roomRow = rooms.data?.by_game.find(row => row.game_type === gameKey);
+  const newPlayers = patterns.data?.new_vs_returning?.reduce((sum, day) => sum + day.new_players, 0);
   const contentParams = useMemo(() => ({ ...rangeToParams(range), include_bots: includeBots }), [range, includeBots]);
 
   const label = gameName(meta[gameKey], gameKey);
@@ -288,7 +293,21 @@ export default function GameDetailPage() {
         </ReportPanel>
       </Fold>
 
+      {roomRow && (
+        <Fold
+          id={`game-${gameKey}-rooms`}
+          title="Multiplayer rooms"
+          summary={`${roomRow.rooms_created.toLocaleString()} lobbies · ${roomRow.rooms_finished.toLocaleString()} finished · ${roomRow.never_started_pct}% never started`}
+        >
+          <MultiplayerFunnel rows={[roomRow]} meta={meta} />
+        </Fold>
+      )}
+
       <SectionHeader title="Players" description="Who plays it and whether they come back. These follow the date range." />
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile label="New players" value={newPlayers === undefined ? '—' : newPlayers.toLocaleString()} hint="First game of this game in the window" />
+      </div>
 
       <Fold id={`game-${gameKey}-retention`} title="Retention" summary="Does it keep its new players, against the other games">
         <ReportPanel state={retention} skeletonClassName="h-64 w-full">
@@ -299,42 +318,7 @@ export default function GameDetailPage() {
       </Fold>
 
       <ReportPanel state={players} skeletonClassName="h-16 w-full">
-        {data => (
-          <PanelCard
-            id={`game-${gameKey}-top-players`}
-            title="Top players"
-            summary={data.players[0] ? `${data.players[0].username} leads with ${data.players[0].games_played.toLocaleString()} games` : undefined}
-            description="Ranked within this game only."
-            contentClassName="overflow-x-auto"
-          >
-            {data.players.length === 0
-              ? <EmptyState>Nobody played this game in the selected range.</EmptyState>
-              : (
-                  <ReportTable>
-                    <ReportHead>
-                      <Th>#</Th>
-                      <Th>Player</Th>
-                      <Th align="right">Played</Th>
-                      <Th align="right">Finished</Th>
-                    </ReportHead>
-                    <tbody>
-                      {data.players.map((player, index) => (
-                        <ReportRow key={player.user_id}>
-                          <Td className="text-muted-foreground">{index + 1}</Td>
-                          <Td>
-                            <Link href={`/reports/players/${player.user_id}`} className="font-medium text-primary hover:underline">
-                              {player.username}
-                            </Link>
-                          </Td>
-                          <Td align="right">{player.games_played.toLocaleString()}</Td>
-                          <Td align="right">{player.games_finished.toLocaleString()}</Td>
-                        </ReportRow>
-                      ))}
-                    </tbody>
-                  </ReportTable>
-                )}
-          </PanelCard>
-        )}
+        {data => <TopPlayersCard id={`game-${gameKey}-top-players`} data={data} description="Ranked within this game only, with how much of it was in rooms." />}
       </ReportPanel>
     </InsightsShell>
   );

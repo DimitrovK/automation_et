@@ -9,12 +9,14 @@ import { useMemo, useState } from 'react';
 import { ActiveFilterChips } from '@/components/analytics/ActiveFilterChips';
 import { GridBreakdown } from '@/components/analytics/grid/GridBreakdown';
 import { GridFilters } from '@/components/analytics/grid/GridFilters';
+import { GridMultiplayer } from '@/components/analytics/grid/GridMultiplayer';
 import { GridHealthTiles, GridSessionsChart } from '@/components/analytics/grid/GridSessionsChart';
 import { modeLabel } from '@/components/analytics/panels/grid-mode';
 import { GridAssists } from '@/components/analytics/panels/GridAssists';
 import { GridCriteria } from '@/components/analytics/panels/GridContent';
 import { GridPool } from '@/components/analytics/panels/GridPool';
 import { GridPools } from '@/components/analytics/panels/GridPools';
+import { TopPlayersCard } from '@/components/games/TopPlayersCard';
 import { InsightsShell } from '@/components/insights/InsightsShell';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { GameHourProfile } from '@/components/reports/charts/GameHourProfile';
@@ -22,10 +24,8 @@ import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { DurationTable } from '@/components/reports/panels/DurationTable';
 import { GameRetentionCard } from '@/components/reports/panels/GameRetentionCard';
-import { EmptyState } from '@/components/reports/primitives/EmptyState';
-import { Fold, PanelCard } from '@/components/reports/primitives/PanelCard';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
-import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { StatTile } from '@/components/reports/primitives/StatTile';
 import { useGameMeta } from '@/hooks/use-game-meta';
@@ -36,6 +36,7 @@ import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
 
 const PLAY_LABEL = { all: null, solo: 'Solo', multiplayer: 'Multiplayer' } as const;
+// Fallbacks until the first answer: the real names come from Grid settings (labels).
 const MODE_LABEL: Record<string, string> = { HOME: 'Classic', ABROAD: 'Reversed' };
 const REVEAL_LABEL: Record<string, string> = { INSTANT: 'Instant', FINAL: 'Final Whistle' };
 
@@ -145,6 +146,9 @@ export default function GridDashboardPage() {
   const selectMode = (row: GridModeRow | null) => update(row
     ? { gridDifficulty: row.difficulty, gridRoster: row.footballer_status, gridSize: row.grid_size }
     : { gridDifficulty: null, gridRoster: null, gridSize: null });
+  const modeLabels = { ...MODE_LABEL, ...boardList.data?.labels?.variation_mode };
+  const revealLabels = { ...REVEAL_LABEL, ...boardList.data?.labels?.reveal };
+  const newPlayers = patterns.data?.new_vs_returning?.reduce((sum, day) => sum + day.new_players, 0);
   const gridRetention = retention.data?.by_game?.find(row => row.game_type === 'grid');
   const d7 = gridRetention?.d7;
 
@@ -161,15 +165,15 @@ export default function GridDashboardPage() {
           includeBots={includeBots}
           onIncludeBotsChange={(next: boolean) => update({ includeBots: next })}
         />
-        <GridFilters value={population} onChange={setPopulation} boards={boards} />
+        <GridFilters value={population} onChange={setPopulation} boards={boards} modeLabels={modeLabels} revealLabels={revealLabels} />
       </FilterBar>
 
       <ActiveFilterChips
         chips={[
           ...(PLAY_LABEL[gridPlayType] ? [{ key: 'play', kind: 'Play type', label: PLAY_LABEL[gridPlayType]!, onClear: () => setPopulation({ playType: 'all' }) }] : []),
           ...(gridBoard ? [{ key: 'board', kind: 'Board', label: boardName(gridBoard), onClear: () => setPopulation({ board: null }) }] : []),
-          ...(gridVariationMode ? [{ key: 'country_mode', kind: 'Country mode', label: MODE_LABEL[gridVariationMode] ?? gridVariationMode, onClear: () => setPopulation({ variationMode: null }) }] : []),
-          ...(gridReveal ? [{ key: 'timing', kind: 'Timing', label: REVEAL_LABEL[gridReveal] ?? gridReveal, onClear: () => setPopulation({ reveal: null }) }] : []),
+          ...(gridVariationMode ? [{ key: 'country_mode', kind: 'Country mode', label: modeLabels[gridVariationMode] ?? gridVariationMode, onClear: () => setPopulation({ variationMode: null }) }] : []),
+          ...(gridReveal ? [{ key: 'timing', kind: 'Timing', label: revealLabels[gridReveal] ?? gridReveal, onClear: () => setPopulation({ reveal: null }) }] : []),
           ...(selectedMode
             ? [{
                 key: 'mode',
@@ -241,9 +245,20 @@ export default function GridDashboardPage() {
         {data => <GridPools data={data} initialBoard={gridBoard} />}
       </ReportPanel>
 
+      <SectionHeader title="Multiplayer" description="Grid rooms: whether lobbies become games, who stays to the whistle, and how VAR and Peek are spent." />
+
+      <ReportPanel state={content} skeletonClassName="h-48 w-full">
+        {data => <GridMultiplayer data={data.multiplayer} />}
+      </ReportPanel>
+
       <SectionHeader title="Players" description="Who plays Grid and whether they come back. These follow the date range only: they are about people, not one way of playing." />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <StatTile
+          label="New players"
+          value={newPlayers === undefined ? '—' : newPlayers.toLocaleString()}
+          hint="First Grid game in the window"
+        />
         <StatTile
           label="Back within 7 days"
           value={d7?.pct === null || d7?.pct === undefined ? '—' : `${d7.pct}%`}
@@ -259,42 +274,7 @@ export default function GridDashboardPage() {
       </Fold>
 
       <ReportPanel state={players} skeletonClassName="h-16 w-full">
-        {data => (
-          <PanelCard
-            id="grid-top-players"
-            title="Top players"
-            summary={data.players[0] ? `${data.players[0].username} leads with ${data.players[0].games_played.toLocaleString()} games` : undefined}
-            description="Busiest players of Grid in the date range, solo and room games together."
-            contentClassName="overflow-x-auto"
-          >
-            {data.players.length === 0
-              ? <EmptyState>Nobody played Grid in the selected range.</EmptyState>
-              : (
-                  <ReportTable>
-                    <ReportHead>
-                      <Th>#</Th>
-                      <Th>Player</Th>
-                      <Th align="right">Played</Th>
-                      <Th align="right">Finished</Th>
-                    </ReportHead>
-                    <tbody>
-                      {data.players.map((player, index) => (
-                        <ReportRow key={player.user_id}>
-                          <Td className="text-muted-foreground">{index + 1}</Td>
-                          <Td>
-                            <Link href={`/reports/players/${player.user_id}`} className="font-medium text-primary hover:underline">
-                              {player.username}
-                            </Link>
-                          </Td>
-                          <Td align="right">{player.games_played.toLocaleString()}</Td>
-                          <Td align="right">{player.games_finished.toLocaleString()}</Td>
-                        </ReportRow>
-                      ))}
-                    </tbody>
-                  </ReportTable>
-                )}
-          </PanelCard>
-        )}
+        {data => <TopPlayersCard id="grid-top-players" data={data} description="Busiest players of Grid in the date range, with how much of it was in rooms." />}
       </ReportPanel>
     </InsightsShell>
   );

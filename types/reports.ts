@@ -1320,7 +1320,30 @@ export type GridAnalyticsResponse = {
   /** The modes table's other groupings: the same columns, one row per split value. */
   breakdown: { group_by: string; rows: GridBreakdownRow[] };
   population: GridPopulation;
+  /** Grid rooms in the window; not narrowed by the population. */
+  multiplayer: GridMultiplayer;
 } & ResolvedRange;
+
+export type GridMultiplayer = {
+  /** The reporting room funnel for Grid; null when no lobby was opened. */
+  funnel: MultiplayerGameRow | null;
+  room_games: number;
+  released: number;
+  avg_players: number | null;
+  player_sessions: number;
+  finished: number;
+  forfeited: number;
+  forfeit_pct: number;
+  /** all_players_finished | timeout | manual | ended_by_game → room games. */
+  finish_reasons: Record<string, number>;
+  var_enabled_rooms: number;
+  peek_enabled_rooms: number;
+  var_checks: number;
+  var_found_wrong: number;
+  peeks: number;
+  peeks_shown: number;
+  sessions_peeking: number;
+};
 
 /** What the server parsed from the Grid filters — render chips from this, not from the request. */
 export type GridPopulation = {
@@ -1355,6 +1378,8 @@ export type GridSessionsResponse = {
   /** The same tiles for the window before, of the same length. */
   previous: GridTiles;
   population: GridPopulation;
+  /** Names from Grid settings: what players read for each country mode and timing. */
+  labels: { variation_mode: Record<string, string>; reveal: Record<string, string> };
 } & ResolvedRange;
 
 /**

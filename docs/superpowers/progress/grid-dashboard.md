@@ -15,7 +15,7 @@ Spec: `docs/superpowers/specs/2026-10-17-grid-dashboard-design.md`. Owner asked 
   - [x] P2 /games/<key> for every game + GAME_CONTENT registry — #188
   - [x] P3 fold the long pages, popularity chart removed — #189
   - [x] P4 consistency: Players 30d default, "Came back" label — this PR. Kept on purpose: Retention 60d (D30 needs it), Questions/Footballers 90d (volume), data pages no range
-- [ ] Final adversarial review of the whole Insights surface; then notify the owner
+- [x] Final adversarial review of the whole Insights surface — fixes in automation_et#191 (sidebar default, unknown games, one-game copy). Remaining nits left on purpose: folded shared rows still fetch on load; game badges on a game page link to itself.
 
 ## Rules carried from memory
 
@@ -29,3 +29,8 @@ Audit done 2026-10-17 (read-only agent); its findings are folded into the projec
 
 - 2026-10-17: BE deploys are manual on the box (`sudo extratime-deploy`), no GHA minutes. Full BE suite: 3 pre-existing failures on production, filed App#2246 (agent-ok) and App#2247.
 - Deviation from spec: Players tiles are players / D7 / top player / MP share (no 'new players'; top players has no solo/MP columns) — needs BE, park for project 2.
+
+## Round 2 (owner: "go go + add multiplayer", 2026-10-17)
+
+- [x] BE: Grid rooms block (`grid_multiplayer`) + settings labels — App#2250, deployed by hand
+- [x] FE: Grid page Multiplayer section, new-players tile, shared TopPlayersCard with Solo/Multiplayer, filters/chips from settings labels; game pages get a Multiplayer rooms fold and a new-players tile — this PR
