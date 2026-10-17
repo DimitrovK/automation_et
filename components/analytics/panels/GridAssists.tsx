@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 const NOTABLE_WASTE_PCT = 50;
 
 /** The headline while folded: how much help was spent, and how much of it was wasted. */
-export function assistsSummary(data: GridAnalyticsResponse): string | undefined {
+function assistsSummary(data: GridAnalyticsResponse): string | undefined {
   const { et_used, et_wasted, deliberate_skips } = data.assists.summary;
   if (et_used === 0 && deliberate_skips === 0) {
     return undefined;

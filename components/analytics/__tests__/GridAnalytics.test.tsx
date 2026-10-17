@@ -368,3 +368,19 @@ describe('worklist footballer links', () => {
     expect(screen.getByRole('link', { name: 'Carlos Ruiz' })).toHaveAttribute('href', '/footballer-management?edit=9');
   });
 });
+
+describe('foldSeries', () => {
+  it('keeps the four biggest series and sums the rest into Other, point by point', async () => {
+    const { foldSeries } = await import('@/components/analytics/grid/GridSessionsChart');
+    const keys = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const folded = foldSeries({
+      series_keys: keys.map((key, index) => ({ key, label: key.toUpperCase(), sessions: 60 - index * 10 })),
+      series: [{ date: '2026-10-01', total: 21, a: 6, b: 5, c: 4, d: 3, e: 2, f: 1 }],
+    } as never);
+
+    expect(folded.series.map(s => s.label)).toEqual(['A', 'B', 'C', 'D', 'Other (2)']);
+    expect(folded.series[4]!.sessions).toBe(30);
+    expect(folded.points[0]).toMatchObject({ a: 6, d: 3, total: 21 });
+    expect(Object.values(folded.points[0]!).filter(v => v === 3).length).toBe(2); // d, and e + f folded
+  });
+});

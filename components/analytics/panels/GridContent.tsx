@@ -108,7 +108,7 @@ function CriterionTypeTable({ data }: { data: GridAnalyticsResponse }) {
 }
 
 /** The headline while folded: how many criteria sit at or above the notable wrong rate. */
-export function criteriaSummary(data: GridAnalyticsResponse): string | undefined {
+function criteriaSummary(data: GridAnalyticsResponse): string | undefined {
   if (data.criteria.length === 0) {
     return undefined;
   }

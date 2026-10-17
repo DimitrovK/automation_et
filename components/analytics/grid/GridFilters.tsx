@@ -59,7 +59,7 @@ export function GridFilters({ value, onChange, boards }: {
         />
       </FilterGroup>
 
-      <FilterGroup label="Board" hint="Global is the standard grid; the others are country boards.">
+      <FilterGroup label="Board" hint="Global is the standard grid; the others are country boards. Counts are all play in the date range.">
         <select
           aria-label="Board"
           value={value.board ?? ''}
@@ -67,6 +67,7 @@ export function GridFilters({ value, onChange, boards }: {
           className="h-7 rounded-md border bg-background px-2 text-xs"
         >
           <option value="">All boards</option>
+          {!boards.some(b => b.key === 'global') && <option value="global">Global</option>}
           {boards.map(board => (
             <option key={board.key} value={board.key}>
               {`${board.label} · ${board.sessions.toLocaleString()}`}

@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useId, useLayoutEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 const STORAGE_PREFIX = 'panel-open:';
@@ -73,7 +73,8 @@ export function PanelCard({
   const [open, setOpen] = useState(defaultOpen || !collapsible);
   const bodyId = useId();
 
-  useEffect(() => {
+  // Before paint, so a card the reader closed never flashes open first.
+  useLayoutEffect(() => {
     if (!collapsible) {
       return;
     }
@@ -89,26 +90,21 @@ export function PanelCard({
     setOpen(!open);
   };
 
-  const heading = (
-    <span className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-      <CardTitle className="flex items-center gap-2 text-base">{title}</CardTitle>
-      {summary && (
-        <span className="text-sm font-normal text-muted-foreground">{summary}</span>
-      )}
-    </span>
-  );
+  const heading = <span className="text-base leading-none font-semibold tracking-tight">{title}</span>;
+  // Outside the toggle, so the button's name is the card's title, not today's numbers.
+  const headline = summary && <span className="text-sm text-muted-foreground">{summary}</span>;
 
   return (
     <Card className={cn('gap-0', className)} data-panel-id={id} data-open={open ? 'true' : 'false'}>
       <CardHeader className={cn('space-y-2', open && 'pb-4')}>
-        <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           {collapsible
             ? (
                 <button
                   type="button"
                   onClick={toggle}
                   aria-expanded={open}
-                  aria-controls={bodyId}
+                  aria-controls={open ? bodyId : undefined}
                   className="group flex min-w-0 items-start gap-2 text-left"
                 >
                   <ChevronDown
@@ -122,7 +118,8 @@ export function PanelCard({
                 </button>
               )
             : heading}
-          {info && <span className="mt-0.5 shrink-0">{info}</span>}
+          {info && <span className="shrink-0">{info}</span>}
+          {headline}
           {open && actions && <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>}
         </div>
         {open && description && <CardDescription>{description}</CardDescription>}
@@ -185,7 +182,8 @@ export function Fold({ id, title, summary, defaultOpen = false, children }: {
   const [open, setOpen] = useState(defaultOpen);
   const bodyId = useId();
 
-  useEffect(() => {
+  // Before paint, so a card the reader closed never flashes open first.
+  useLayoutEffect(() => {
     const stored = readStored(id);
     if (stored !== null) {
       // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
@@ -198,7 +196,7 @@ export function Fold({ id, title, summary, defaultOpen = false, children }: {
       <button
         type="button"
         aria-expanded={open}
-        aria-controls={bodyId}
+        aria-controls={open ? bodyId : undefined}
         onClick={() => {
           writeStored(id, !open);
           setOpen(!open);

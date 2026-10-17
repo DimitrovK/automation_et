@@ -27,7 +27,7 @@ function rowsFor(data: GridAnalyticsResponse, groupBy: GridGroupBy): Row[] {
 }
 
 /** The headline while folded: the weakest well-played row, or the volume. */
-export function breakdownSummary(rows: Row[]): string | undefined {
+function breakdownSummary(rows: Row[]): string | undefined {
   if (rows.length === 0) {
     return undefined;
   }
@@ -81,7 +81,7 @@ export function GridBreakdown({ data, groupBy, onGroupByChange, selectedKey = nu
     >
       {rows.length === 0
         ? (
-            <EmptyState hint="Try a wider date range or fewer filters.">
+            <EmptyState hint={groupLoading ? undefined : 'Try a wider date range or fewer filters.'}>
               {groupLoading ? 'Loading…' : 'No Grid session in this window.'}
             </EmptyState>
           )

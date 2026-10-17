@@ -95,7 +95,8 @@ export default function GridDashboardPage() {
     ...rangeParams,
     play_type: gridPlayType,
     ...(gridBoard ? { board: gridBoard } : {}),
-    ...(gridVariationMode ? { variation_mode: gridVariationMode } : {}),
+    // The global board has no country mode: a mode left over in the URL is never applied there.
+    ...(gridVariationMode && gridBoard !== 'global' ? { variation_mode: gridVariationMode } : {}),
     ...(gridReveal ? { reveal: gridReveal } : {}),
   }), [rangeParams, gridPlayType, gridBoard, gridVariationMode, gridReveal]);
 
@@ -150,7 +151,7 @@ export default function GridDashboardPage() {
   return (
     <AnalyticsShell
       title="Grid"
-      description="Is Grid healthy, is its content good, and who plays it. Every card follows the filters."
+      description="Is Grid healthy, is its content good, and who plays it. Health and Content follow the filters; a card that can't says so."
       actions={<Link href="/reports/glossary" className="text-sm text-muted-foreground hover:text-foreground hover:underline">What the numbers mean</Link>}
     >
       <FilterBar>
@@ -199,9 +200,17 @@ export default function GridDashboardPage() {
       </ReportPanel>
 
       <Fold id="grid-when-and-how-long" title="When and how long" summary="Time of day and session length · all Grid play">
-        {patterns.data && <GameHourProfile data={patterns.data} gameLabel="Grid" />}
-        {duration.data && <DurationTable data={duration.data} meta={meta} />}
-        {duration.data && <DurationHistogram data={duration.data} meta={meta} />}
+        <ReportPanel state={patterns} skeletonClassName="h-40 w-full">
+          {data => <GameHourProfile data={data} gameLabel="Grid" />}
+        </ReportPanel>
+        <ReportPanel state={duration} skeletonClassName="h-64 w-full">
+          {data => (
+            <>
+              <DurationTable data={data} meta={meta} />
+              <DurationHistogram data={data} meta={meta} />
+            </>
+          )}
+        </ReportPanel>
       </Fold>
 
       <SectionHeader title="Content" description="Which modes play well, which criteria and footballers mislead, and whether the pools are stocked." />
@@ -229,24 +238,24 @@ export default function GridDashboardPage() {
         {data => <GridAssists data={data} />}
       </ReportPanel>
       <ReportPanel state={content} skeletonClassName="h-16 w-full">
-        {data => <GridPools data={data} />}
+        {data => <GridPools data={data} initialBoard={gridBoard} />}
       </ReportPanel>
 
       <SectionHeader title="Players" description="Who plays Grid and whether they come back. These follow the date range only: they are about people, not one way of playing." />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Players" value={sessions.data ? sessions.data.tiles.players.toLocaleString() : '—'} hint="With the filters above" />
+      <div className="grid grid-cols-2 gap-3">
         <StatTile
           label="Back within 7 days"
           value={d7?.pct === null || d7?.pct === undefined ? '—' : `${d7.pct}%`}
           hint={d7 ? `${d7.returned.toLocaleString()} of ${d7.players.toLocaleString()} new Grid players` : 'Not enough new players yet'}
         />
         <StatTile label="Top player's games" value={players.data?.players[0] ? players.data.players[0].games_played.toLocaleString() : '—'} hint={players.data?.players[0]?.username} />
-        <StatTile label="Multiplayer share" value={sessions.data ? `${sessions.data.tiles.multiplayer_pct}%` : '—'} hint="Room sessions, with the filters above" />
       </div>
 
       <Fold id="grid-retention" title="Retention" summary={d7 ? `${d7.pct ?? '—'}% back within 7 days` : undefined}>
-        {retention.data && <GameRetentionCard data={retention.data} gameKey="grid" gameLabel="Grid" />}
+        <ReportPanel state={retention} skeletonClassName="h-64 w-full">
+          {data => <GameRetentionCard data={data} gameKey="grid" gameLabel="Grid" />}
+        </ReportPanel>
       </Fold>
 
       <ReportPanel state={players} skeletonClassName="h-16 w-full">

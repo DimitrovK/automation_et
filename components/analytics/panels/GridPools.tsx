@@ -42,7 +42,7 @@ function poolKey(row: GridPoolRow): string {
 const underFloor = (row: GridPoolRow) => row.active < row.target_pool_size;
 
 /** The headline while folded: how many pools are below their floor, across every board. */
-export function poolsSummary(pools: GridPoolRow[]): string | undefined {
+function poolsSummary(pools: GridPoolRow[]): string | undefined {
   if (pools.length === 0) {
     return undefined;
   }
@@ -50,9 +50,13 @@ export function poolsSummary(pools: GridPoolRow[]): string | undefined {
   return under === 0 ? `all ${pools.length} pools stocked` : `${under} of ${pools.length} pools under their floor`;
 }
 
-export function GridPools({ data }: { data: GridAnalyticsResponse }) {
+export function GridPools({ data, initialBoard = 'global' }: {
+  data: GridAnalyticsResponse;
+  /** The page's board filter, so a reader looking at one country lands on its pools. */
+  initialBoard?: string | null;
+}) {
   const boards = [...new Map(data.pools.map(row => [row.board, row.board_label])).entries()];
-  const [board, setBoard] = useState<string>('global');
+  const [board, setBoard] = useState<string>(initialBoard ?? 'global');
   const rows = data.pools.filter(row => row.board === board);
   const underByBoard = new Map<string, number>();
   for (const row of data.pools.filter(underFloor)) {

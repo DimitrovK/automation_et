@@ -26,7 +26,7 @@ const NOTABLE_WRONG_PCT = 50;
 const NOTABLE_SKIP_PCT = 60;
 
 /** The headline while folded: how many pool footballers look broken or dead. */
-export function footballersSummary(data: GridAnalyticsResponse): string | undefined {
+function footballersSummary(data: GridAnalyticsResponse): string | undefined {
   if (data.footballers.length === 0) {
     return undefined;
   }

@@ -32,9 +32,9 @@ const GRANULARITY_OPTIONS: readonly { value: Granularity; label: string }[] = [
 
 /** The palette has five hues and never cycles: past four series the rest fold into "Other". */
 const MAX_SERIES = 4;
-export const OTHER_KEY = '__other';
+const OTHER_KEY = '__other';
 
-export type ChartSeries = { key: string; label: string; sessions: number };
+type ChartSeries = { key: string; label: string; sessions: number };
 
 /** The series to draw, and the points with everything past the first four summed into "Other". */
 export function foldSeries(data: GridSessionsResponse): {
@@ -147,6 +147,8 @@ export function GridSessionsChart({ data, split, onSplitChange, granularity, onG
   const theme = chartTheme(resolvedTheme === 'dark');
   const { series, points } = foldSeries(data);
   const empty = data.tiles.sessions === 0;
+  // The switch moved and the answer for it is on its way: never draw the old split under the new name.
+  const stale = data.split !== split;
   const top = series[0];
 
   return (
@@ -154,7 +156,7 @@ export function GridSessionsChart({ data, split, onSplitChange, granularity, onG
       id="grid-sessions"
       collapsible={false}
       title="Grid sessions over time"
-      summary={top && !empty ? `${data.tiles.sessions.toLocaleString()} in the window · most: ${top.label}` : undefined}
+      summary={top && !empty && !stale ? `${data.tiles.sessions.toLocaleString()} in the window · most: ${top.label}` : undefined}
       description="Every started Grid session, solo and room games alike unless the filters above narrow them. Pick how to split it."
       actions={(
         <>
@@ -164,48 +166,50 @@ export function GridSessionsChart({ data, split, onSplitChange, granularity, onG
       )}
       contentClassName="flex h-80 flex-col gap-3 sm:h-96"
     >
-      {empty
-        ? <EmptyState hint="Try a wider date range or fewer filters.">No Grid session in this window.</EmptyState>
-        : (
-            <>
-              <ResponsiveContainer width="100%" height="100%" className="min-h-0 flex-1">
-                <AreaChart data={points} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
-                  <XAxis
-                    dataKey="date"
-                    tick={theme.tick}
-                    interval="preserveStartEnd"
-                    minTickGap={24}
-                    tickFormatter={(iso: string) => formatDate(iso, data.granularity)}
-                  />
-                  <YAxis tick={theme.tick} allowDecimals={false} width={44} />
-                  <Tooltip
-                    content={<ChartTooltip />}
-                    cursor={theme.tooltip.cursor}
-                    labelFormatter={label => formatDate(String(label), data.granularity)}
-                  />
-                  {series.map((s, index) => (
-                    <Area
-                      key={s.key}
-                      type="monotone"
-                      dataKey={s.key}
-                      name={s.label}
-                      stroke={theme.series[index]}
-                      fill={theme.series[index]}
-                      fillOpacity={0.2}
-                      isAnimationActive={false}
+      {stale
+        ? <EmptyState>Loading…</EmptyState>
+        : empty
+          ? <EmptyState hint="Try a wider date range or fewer filters.">No Grid session in this window.</EmptyState>
+          : (
+              <>
+                <ResponsiveContainer width="100%" height="100%" className="min-h-0 flex-1">
+                  <AreaChart data={points} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.grid.stroke} />
+                    <XAxis
+                      dataKey="date"
+                      tick={theme.tick}
+                      interval="preserveStartEnd"
+                      minTickGap={24}
+                      tickFormatter={(iso: string) => formatDate(iso, data.granularity)}
                     />
-                  ))}
-                </AreaChart>
-              </ResponsiveContainer>
-              <ChartLegend
-                series={series.map((s, index) => ({
-                  label: `${s.label} · ${s.sessions.toLocaleString()}`,
-                  colour: theme.series[index]!,
-                }))}
-              />
-            </>
-          )}
+                    <YAxis tick={theme.tick} allowDecimals={false} width={44} />
+                    <Tooltip
+                      content={<ChartTooltip />}
+                      cursor={theme.tooltip.cursor}
+                      labelFormatter={label => formatDate(String(label), data.granularity)}
+                    />
+                    {series.map((s, index) => (
+                      <Area
+                        key={s.key}
+                        type="monotone"
+                        dataKey={s.key}
+                        name={s.label}
+                        stroke={theme.series[index]}
+                        fill={theme.series[index]}
+                        fillOpacity={0.2}
+                        isAnimationActive={false}
+                      />
+                    ))}
+                  </AreaChart>
+                </ResponsiveContainer>
+                <ChartLegend
+                  series={series.map((s, index) => ({
+                    label: `${s.label} · ${s.sessions.toLocaleString()}`,
+                    colour: theme.series[index]!,
+                  }))}
+                />
+              </>
+            )}
     </PanelCard>
   );
 }
