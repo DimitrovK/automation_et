@@ -68,6 +68,7 @@ A Next.js application for managing footballer career data with Django backend in
 | `NEXT_PUBLIC_API_BASE_URL` | Django API base URL | `https://api.extratime.world` |
 | `NEXT_PUBLIC_N8N_WEBHOOK_URL` | N8N webhook endpoint | `https://n8n.extratime.world/webhook/footballer-career` |
 | `NEXT_PUBLIC_ADMIN_BASE_URL` | Django admin base URL | `https://api.extratime.world/admin/` |
+| `DISCORD_BOT_TOKEN` | Bot token for Discord Control (server-only; Sensitive in Vercel, never `NEXT_PUBLIC_`) | — |
 
 ## Deployment
 
