@@ -91,7 +91,7 @@ export function ContentHealth({ data, meta }: { data: ContentResponse; meta: Gam
             work it out. */}
         <p className="text-sm">
           {data.games_running_low.length === 0
-            ? 'Every game has material staged or in the pool.'
+            ? (data.rows.length === 1 ? 'Material is staged or in the pool.' : 'Every game has material staged or in the pool.')
             : `${data.games_running_low.length === 1 ? '1 game is' : `${data.games_running_low.length} games are`} running low.`}
         </p>
 

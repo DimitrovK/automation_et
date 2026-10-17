@@ -238,7 +238,7 @@ export default function DashboardPage() {
               </CardTitle>
               <CardDescription>
                 Search users and open a profile — favourites, status, activity (read-only).
-                Favourites analytics moved to Reports.
+                Favourites analytics are under Insights › All games.
               </CardDescription>
             </CardHeader>
             <CardContent>
