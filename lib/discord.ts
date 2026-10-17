@@ -1,6 +1,11 @@
 import type { DiscordSendMessageResponse } from '@/types/discord';
-import config from '@/lib/config';
 import { DiscordApiError } from '@/types/discord';
+
+// Server-only: read by the `sendDiscordMessageAction` server action. Never give it a
+// NEXT_PUBLIC_ prefix: Next.js inlines those into the browser bundle.
+function getDiscordToken(): string {
+  return process.env.DISCORD_BOT_TOKEN || '';
+}
 
 /**
  * Validates Discord message input
@@ -25,7 +30,7 @@ export async function sendDiscordMessage(
   message: string,
 ): Promise<DiscordSendMessageResponse> {
   // Check if bot token is configured
-  const discordToken = config.getDiscordToken();
+  const discordToken = getDiscordToken();
   if (!discordToken) {
     throw new DiscordApiError(500, 'Discord bot token not configured');
   }
@@ -102,5 +107,5 @@ export async function sendDiscordMessage(
  * Utility function to check if Discord bot is configured
  */
 export function isDiscordBotConfigured(): boolean {
-  return config.isDiscordTokenConfigured();
+  return !!getDiscordToken();
 }
