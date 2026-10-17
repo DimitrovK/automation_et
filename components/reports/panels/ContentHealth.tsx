@@ -110,7 +110,7 @@ export function ContentHealth({ data, meta }: { data: ContentResponse; meta: Gam
                   {data.rows.map(row => (
                     <ReportRow key={row.game_type}>
                       <Td strong>
-                        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                        <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                         {row.topped_up_by_a_job && (
                           // A shrinking pool here is a broken job, not a content
                           // shortage — a different alert with a different owner,

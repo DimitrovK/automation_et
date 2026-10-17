@@ -67,7 +67,7 @@ describe('firstSessionFollowup', () => {
   it('links each starting game to its own report', () => {
     render(<FirstSessionFollowup data={response([row({ game_type: 'grid' })])} meta={META} />);
 
-    expect(screen.getByRole('link', { name: /Grid/ })).toHaveAttribute('href', '/reports/games/grid');
+    expect(screen.getByRole('link', { name: /Grid/ })).toHaveAttribute('href', '/games/grid');
   });
 
   it('says so when nobody started in the window', () => {

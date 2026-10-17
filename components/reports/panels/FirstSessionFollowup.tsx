@@ -67,7 +67,7 @@ export function FirstSessionFollowup({ data, meta }: { data: FirstSessionRespons
                         <GameBadge
                           gameKey={row.game_type}
                           meta={meta}
-                          href={`/reports/games/${row.game_type}`}
+                          href={`/games/${row.game_type}`}
                         />
                       </Td>
                       <Td align="right">{row.new_players.toLocaleString()}</Td>

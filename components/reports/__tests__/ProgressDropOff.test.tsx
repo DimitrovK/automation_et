@@ -136,7 +136,7 @@ describe('progressDropOff', () => {
     render(<ProgressDropOff data={response([row({ game_type: 'missing11' })])} meta={META} />);
 
     expect(screen.getByRole('link', { name: /Guess The Line Up/ }))
-      .toHaveAttribute('href', '/reports/games/missing11');
+      .toHaveAttribute('href', '/games/missing11');
   });
 
   it('says what a step is for this game, since the games disagree', () => {

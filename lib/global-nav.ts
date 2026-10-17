@@ -24,14 +24,3 @@ export const INSIGHTS_CHILDREN: NavigationPage[] = [
   }))),
   { ...INSIGHTS_NAV_TRAILING, description: 'How each figure is calculated, and how it gets misread' },
 ];
-
-/**
- * Reports ↔ Analytics ties for games that have a content-analytics page.
- * Keyed by the BE registry's game_type — the reports game page uses this to
- * offer "content analytics" beside its behavioural view, so the two surfaces
- * point at each other instead of the reader knowing both exist.
- */
-export const CONTENT_ANALYTICS_BY_GAME: Record<string, string> = {
-  career_path: '/analytics/career-path',
-  missing11: '/analytics/lineups',
-};

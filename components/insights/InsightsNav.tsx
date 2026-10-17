@@ -40,8 +40,8 @@ export const INSIGHTS_NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/reports/games', label: 'All games', icon: LayoutGrid },
       { href: '/games/grid', label: 'Grid', icon: Grid3x3 },
-      { href: '/analytics/career-path', label: 'Career Path', icon: Route },
-      { href: '/analytics/lineups', label: 'Missing 11', icon: Users2 },
+      { href: '/games/career_path', label: 'Career Path', icon: Route },
+      { href: '/games/missing11', label: 'Missing 11', icon: Users2 },
       { href: '/reports/multiplayer', label: 'Multiplayer', icon: Gamepad2 },
     ],
   },

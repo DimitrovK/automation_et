@@ -197,7 +197,7 @@ export default function PlayerDetailPage() {
                   <CardContent className="space-y-2">
                     {data.by_game.map(row => (
                       <div key={row.game_type} className="flex flex-wrap items-center justify-between gap-2">
-                        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                        <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                         <span className="text-sm text-muted-foreground tabular-nums">
                           {row.games_played.toLocaleString()}
                           {' played · '}

@@ -22,6 +22,10 @@ const nextConfig = {
       // and the old questions URL moved here from a redirect-only page.
       { source: '/analytics/football-data', destination: '/analytics/football-data/footballers', permanent: true },
       { source: '/analytics/questions', destination: '/analytics/football-data/questions', permanent: true },
+      // One page per game (Insights phase 2): behaviour and content in one place.
+      { source: '/reports/games/:key', destination: '/games/:key', permanent: true },
+      { source: '/analytics/career-path', destination: '/games/career_path', permanent: true },
+      { source: '/analytics/lineups', destination: '/games/missing11', permanent: true },
     ];
   },
   typescript: {

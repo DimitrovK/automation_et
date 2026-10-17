@@ -94,7 +94,7 @@ export function ProgressDropOff({ data, meta }: { data: ProgressResponse; meta: 
                   {measurable.map(row => (
                     <ReportRow key={row.game_type}>
                       <Td strong>
-                        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                        <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                         {row.unit && (
                           // Guarded: `unit` is nullable on the wire, and an
                           // unsupported row that slipped into this table would
@@ -151,7 +151,7 @@ export function ProgressDropOff({ data, meta }: { data: ProgressResponse; meta: 
               {unsupported.map(row => (
                 <div key={row.game_type} className="flex flex-wrap items-baseline gap-x-2 text-xs">
                   <dt>
-                    <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                    <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                   </dt>
                   <dd className="text-muted-foreground">{row.reason}</dd>
                 </div>
