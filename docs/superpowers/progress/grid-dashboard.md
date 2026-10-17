@@ -10,7 +10,12 @@ Spec: `docs/superpowers/specs/2026-10-17-grid-dashboard-design.md`. Owner asked 
 - [x] 2. FE: /games/grid, PanelCard/Fold, redirects, removals — automation_et#185 merged, Vercel READY 2026-10-17 (also fixed useReport stale responses on every page)
 - [x] 3a. FE: remove anomalies page + nav — automation_et#186, READY
 - [x] 3b. BE: remove anomalies endpoint — App#2249, deployed by hand, endpoint 404 on prod
-- [ ] 4. Project 2: spec `docs/superpowers/specs/2026-10-17-insights-design.md`, then its phases (see the spec)
+- [x] 4. Project 2 (Insights), spec `docs/superpowers/specs/2026-10-17-insights-design.md`:
+  - [x] P1 one Insights nav/shell — automation_et#187
+  - [x] P2 /games/<key> for every game + GAME_CONTENT registry — #188
+  - [x] P3 fold the long pages, popularity chart removed — #189
+  - [x] P4 consistency: Players 30d default, "Came back" label — this PR. Kept on purpose: Retention 60d (D30 needs it), Questions/Footballers 90d (volume), data pages no range
+- [ ] Final adversarial review of the whole Insights surface; then notify the owner
 
 ## Rules carried from memory
 
