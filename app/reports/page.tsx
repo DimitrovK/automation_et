@@ -15,6 +15,7 @@ import { RollupHealthBanner } from '@/components/reports/panels/RollupHealthBann
 import { WeeklyPulseTiles } from '@/components/reports/panels/WeeklyPulseTiles';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
@@ -127,7 +128,7 @@ export default function ReportsPage() {
                     reading today's numbers as the selected period's. */}
             {data.pulse_applies
               ? (
-                  <>
+                  <Fold id="pulse-today" title="Today against a typical day" summary="One day is mostly noise at this volume; the week above is the signal">
                     <PulseTiles pulse={data.pulse} />
                     <p className="text-center text-xs text-muted-foreground">
                       {selectedLabel ? `${selectedLabel} · ` : ''}
@@ -138,7 +139,7 @@ export default function ReportsPage() {
                       {data.pulse.weekday}
                       s — not with yesterday, which would make every Monday look like a crash.
                     </p>
-                  </>
+                  </Fold>
                 )
               : (
                   <p className="rounded-md border border-border bg-muted/50 p-3 text-center text-sm text-muted-foreground">
@@ -182,9 +183,11 @@ export default function ReportsPage() {
         {data => <GrowthFlow data={data} />}
       </ReportPanel>
 
-      <ReportPanel state={patterns} skeletonClassName="h-72 w-full">
-        {data => <NewVsReturning rows={data.new_vs_returning} />}
-      </ReportPanel>
+      <Fold id="pulse-new-vs-returning" title="New and returning, by day" summary="A narrower view of the growth flow above">
+        <ReportPanel state={patterns} skeletonClassName="h-72 w-full">
+          {data => <NewVsReturning rows={data.new_vs_returning} />}
+        </ReportPanel>
+      </Fold>
 
       {allGames.data && (
         <div className="flex justify-end">

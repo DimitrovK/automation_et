@@ -4,7 +4,6 @@ import type { RangeState } from '@/lib/report-range';
 import type { GameRowWithDuration, GameSortKey } from '@/lib/report-sort';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { PopularityBars } from '@/components/analytics/charts/PopularityBars';
 import { InsightsShell } from '@/components/insights/InsightsShell';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { FavouredVsPlayedChart } from '@/components/reports/favourites/FavouredVsPlayedChart';
@@ -21,13 +20,13 @@ import { EmptyState } from '@/components/reports/primitives/EmptyState';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
 import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
+import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
-import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { Sparkline } from '@/components/reports/primitives/Sparkline';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFavouredVsPlayed } from '@/hooks/use-favoured-vs-played';
-import { gameName, useGameColor, useGameMeta } from '@/hooks/use-game-meta';
+import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
 import { useAuth } from '@/lib/auth';
@@ -77,7 +76,6 @@ export default function GamesIndexPage() {
   );
 
   const { meta } = useGameMeta(enabled);
-  const colorFor = useGameColor();
   // Session length is a per-game property but lives on another endpoint, so the
   // comparison table had to be read beside a second page to answer "which game
   // holds attention". Merged in here instead.
@@ -177,37 +175,10 @@ export default function GamesIndexPage() {
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => (
           <>
-            {/* The glance before the tables: which games are big, as lengths
-              on one baseline. Everything else on this page assumes the
-              reader already knows the answer to this. */}
-            <Card>
-              <CardHeader>
-                <CardTitle>What people play</CardTitle>
-                <CardDescription>
-                  Games started in the window, side by side. Hover for the
-                  share of all play.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PopularityBars
-                  ariaLabel="Games started by game"
-                  rows={[...data.by_game]
-                    .sort((a, b) => b.games_started - a.games_started)
-                    .map(row => ({
-                      key: row.game_type,
-                      label: gameName(meta[row.game_type], row.game_type),
-                      value: row.games_started,
-                      colour: colorFor(meta, row.game_type),
-                    }))}
-                />
-              </CardContent>
-            </Card>
-
             {/* Reach and depth say which games are worth attention; this says
               where the recoverable sessions actually are, which is a
               different question and the one nobody could answer from a
               completion-rate column. */}
-            <AbandonedPanel rows={data.by_game} meta={meta} />
             <Card>
               <CardHeader>
                 <CardTitle>Comparison</CardTitle>
@@ -328,98 +299,99 @@ export default function GamesIndexPage() {
           "where do people give up on it" — and because one of the numbers the
           table above carries is wrong until this panel corrects it. Conquest
           reads 99% complete there and 44% here; the difference is a timer. */}
-      <SectionHeader
-        title="How hard each game is"
-        description="Completion has been standing in for difficulty, and on two games it does not hold."
-      />
-
-      <ReportPanel state={difficulty} skeletonClassName="h-96 w-full">
-        {data => <DifficultyOutcomes data={data} meta={meta} />}
+      <ReportPanel state={state} skeletonClassName="h-16 w-full">
+        {data => (
+          <Fold id="games-abandoned" title="Where the abandoned sessions are" summary="Which games hold the sessions players could still be won back from">
+            <AbandonedPanel rows={data.by_game} meta={meta} />
+          </Fold>
+        )}
       </ReportPanel>
 
-      <ReportPanel state={attempts} skeletonClassName="h-56 w-full">
-        {data => <AttemptSpread data={data} meta={meta} />}
-      </ReportPanel>
+      <Fold id="games-difficulty" title="How hard each game is" summary="Completion has been standing in for difficulty, and on two games it does not hold.">
 
-      {/* Under the games table, not on a page of its own: it answers the next
+        <ReportPanel state={difficulty} skeletonClassName="h-96 w-full">
+          {data => <DifficultyOutcomes data={data} meta={meta} />}
+        </ReportPanel>
+
+        <ReportPanel state={attempts} skeletonClassName="h-56 w-full">
+          {data => <AttemptSpread data={data} meta={meta} />}
+        </ReportPanel>
+
+        {/* Under the games table, not on a page of its own: it answers the next
           question that table raises. "Abandoned: 5,399" says a session ended
           incomplete; this says 44% of those got nowhere at all, which is a
           different problem with a different fix. Its own panel, so one slow
           request cannot blank the table above. */}
-      <SectionHeader
-        title="Where sessions stop"
-        description="Started versus finished says a session ended incomplete. It cannot say whether the player quit on the first screen or the last."
-      />
+      </Fold>
 
-      <ReportPanel state={progress} skeletonClassName="h-80 w-full">
-        {data => <ProgressDropOff data={data} meta={meta} />}
-      </ReportPanel>
+      <Fold id="games-dropoff" title="Where sessions stop" summary="Started versus finished says a session ended incomplete. It cannot say whether the player quit on the first screen or the last.">
 
-      {/* After difficulty and drop-off, because those describe how the games
+        <ReportPanel state={progress} skeletonClassName="h-80 w-full">
+          {data => <ProgressDropOff data={data} meta={meta} />}
+        </ReportPanel>
+
+        {/* After difficulty and drop-off, because those describe how the games
           play and this describes whether there is anything left to play. It is
           also the only panel here that can be acted on the same afternoon:
           everything else asks for a design change, this asks someone to stage
           more lineups. */}
-      <SectionHeader
-        title="Whether there is material left"
-        description="Two games schedule their content against a calendar. The rest draw from a pool."
-      />
+      </Fold>
 
-      <ReportPanel state={content} skeletonClassName="h-64 w-full">
-        {data => <ContentHealth data={data} meta={meta} />}
-      </ReportPanel>
+      <Fold id="games-material" title="Whether there is material left" summary="Two games schedule their content against a calendar. The rest draw from a pool.">
 
-      <ReportPanel state={fallbacks} skeletonClassName="h-56 w-full">
-        {data => <FormatFallbacks data={data} />}
-      </ReportPanel>
+        <ReportPanel state={content} skeletonClassName="h-64 w-full">
+          {data => <ContentHealth data={data} meta={meta} />}
+        </ReportPanel>
 
-      <SectionHeader
-        title="What is lying around"
-        description="A snapshot of unfinished sessions, and whether favouriting a game predicts playing it."
-      />
+        <ReportPanel state={fallbacks} skeletonClassName="h-56 w-full">
+          {data => <FormatFallbacks data={data} />}
+        </ReportPanel>
+      </Fold>
 
-      {/* Folded in from their own destinations (#1474 R4). Both answer per-game
+      <Fold id="games-lying-around" title="What is lying around" summary="A snapshot of unfinished sessions, and whether favouriting a game predicts playing it.">
+
+        {/* Folded in from their own destinations (#1474 R4). Both answer per-game
           questions and neither earned a nav entry: the unfinished pool is 93%
           older than a week and static, and four favourites charts were more
           surface than the feature has earned. Separate panels, so one slow
           request cannot blank the table above. */}
-      <ReportPanel state={unfinished} skeletonClassName="h-64 w-full">
-        {data => (
-          <UnfinishedTable
-            rows={data.rows}
+        <ReportPanel state={unfinished} skeletonClassName="h-64 w-full">
+          {data => (
+            <UnfinishedTable
+              rows={data.rows}
+              meta={meta}
+              asOf={data.as_of}
+              totalStale={data.total_stale_sessions}
+            />
+          )}
+        </ReportPanel>
+
+        {favourites.data && !favourites.error && (
+          <FavouredVsPlayedChart
+            data={favourites.data}
+            isLoading={favourites.isLoading}
+            error={favourites.error}
+            notDeployed={favourites.notDeployed}
             meta={meta}
-            asOf={data.as_of}
-            totalStale={data.total_stale_sessions}
+            onRetry={favourites.refetch}
           />
         )}
-      </ReportPanel>
+      </Fold>
 
-      {favourites.data && !favourites.error && (
-        <FavouredVsPlayedChart
-          data={favourites.data}
-          isLoading={favourites.isLoading}
-          error={favourites.error}
-          notDeployed={favourites.notDeployed}
-          meta={meta}
-          onRetry={favourites.refetch}
-        />
-      )}
+      <Fold id="games-duration" title="How long a session lasts" summary="The closest available proxy for which games hold attention. Campaign-shaped games are marked — their sessions span days, not sittings.">
 
-      <SectionHeader
-        title="How long a session lasts"
-        description="The closest available proxy for which games hold attention. Campaign-shaped games are marked — their sessions span days, not sittings."
-      />
-
-      <ReportPanel state={duration} skeletonClassName="h-80 w-full">
-        {data => (
-          <>
-            <DurationTable data={data} meta={meta} />
-            {/* After the comparison, because "which game holds attention" comes
+        <ReportPanel state={duration} skeletonClassName="h-80 w-full">
+          {data => (
+            <>
+              <DurationTable data={data} meta={meta} />
+              {/* After the comparison, because "which game holds attention" comes
                 before "what does this one look like". */}
-            <DurationHistogram data={data} meta={meta} />
-          </>
-        )}
-      </ReportPanel>
+              <DurationHistogram data={data} meta={meta} />
+            </>
+          )}
+        </ReportPanel>
+      </Fold>
+
     </InsightsShell>
   );
 }
