@@ -7,7 +7,7 @@ import { DifficultyTiers } from '@/components/analytics/panels/DifficultyTiers';
 import { FootballerContent } from '@/components/analytics/panels/FootballerContent';
 import { ModeRates } from '@/components/analytics/panels/ModeRates';
 import { ModeVolume } from '@/components/analytics/panels/ModeVolume';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
@@ -74,7 +74,7 @@ export default function CareerPathAnalyticsPage() {
   );
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Career Path content"
       description="Which footballers are too hard, which are merely common, and whether the grading means anything."
     >
@@ -136,6 +136,6 @@ export default function CareerPathAnalyticsPage() {
       <ReportPanel state={state} skeletonClassName="h-64 w-full">
         {data => <DifficultyTiers data={data} />}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }

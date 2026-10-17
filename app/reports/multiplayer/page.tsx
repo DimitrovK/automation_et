@@ -2,6 +2,7 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo } from 'react';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { ModeBreakdown } from '@/components/reports/charts/ModeBreakdown';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
@@ -12,7 +13,6 @@ import { GameBadge } from '@/components/reports/primitives/GameBadge';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { StatTile } from '@/components/reports/primitives/StatTile';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { gameName, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
@@ -54,7 +54,7 @@ export default function MultiplayerReportPage() {
   );
 
   return (
-    <ReportsShell
+    <InsightsShell
       title="Multiplayer"
       description="Rooms opened, started and finished. Counts rooms — not per-player participations."
     >
@@ -161,6 +161,6 @@ export default function MultiplayerReportPage() {
           </>
         )}
       </ReportPanel>
-    </ReportsShell>
+    </InsightsShell>
   );
 }

@@ -18,6 +18,10 @@ const nextConfig = {
       { source: '/analytics/grid', destination: '/games/grid', permanent: true },
       // Needs attention was removed: it flagged noise more than news at this volume.
       { source: '/reports/anomalies', destination: '/reports', permanent: true },
+      // Insights (2026-10-17): the one-card football-data overview folded into Footballers,
+      // and the old questions URL moved here from a redirect-only page.
+      { source: '/analytics/football-data', destination: '/analytics/football-data/footballers', permanent: true },
+      { source: '/analytics/questions', destination: '/analytics/football-data/questions', permanent: true },
     ];
   },
   typescript: {

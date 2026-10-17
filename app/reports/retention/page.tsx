@@ -3,6 +3,7 @@
 import type { RangeState } from '@/lib/report-range';
 import type { RetentionCohort } from '@/types/reports';
 import { useMemo } from 'react';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { GameFilter } from '@/components/reports/filters/GameFilter';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
@@ -12,7 +13,6 @@ import { RetentionTable } from '@/components/reports/panels/RetentionTable';
 import { ExportButton } from '@/components/reports/primitives/ExportButton';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
-import { ReportsShell } from '@/components/reports/shell/ReportsShell';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
@@ -58,7 +58,7 @@ export default function RetentionPage() {
   );
 
   return (
-    <ReportsShell
+    <InsightsShell
       title="Retention"
       description="Do players come back? Volume can look healthy right up until the supply of new players runs out."
     >
@@ -121,6 +121,6 @@ export default function RetentionPage() {
       <ReportPanel state={firstSession} skeletonClassName="h-72 w-full">
         {data => <FirstSessionFollowup data={data} meta={meta} />}
       </ReportPanel>
-    </ReportsShell>
+    </InsightsShell>
   );
 }

@@ -15,7 +15,7 @@ import { GridAssists } from '@/components/analytics/panels/GridAssists';
 import { GridCriteria } from '@/components/analytics/panels/GridContent';
 import { GridPool } from '@/components/analytics/panels/GridPool';
 import { GridPools } from '@/components/analytics/panels/GridPools';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { DurationHistogram } from '@/components/reports/charts/DurationHistogram';
 import { GameHourProfile } from '@/components/reports/charts/GameHourProfile';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
@@ -149,7 +149,7 @@ export default function GridDashboardPage() {
   const d7 = gridRetention?.d7;
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Grid"
       description="Is Grid healthy, is its content good, and who plays it. Health and Content follow the filters; a card that can't says so."
       actions={<Link href="/reports/glossary" className="text-sm text-muted-foreground hover:text-foreground hover:underline">What the numbers mean</Link>}
@@ -296,6 +296,6 @@ export default function GridDashboardPage() {
           </PanelCard>
         )}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }

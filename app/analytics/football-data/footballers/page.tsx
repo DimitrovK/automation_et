@@ -2,13 +2,14 @@
 
 import type { RangeState } from '@/lib/report-range';
 import { useMemo, useState } from 'react';
+import { CatalogueGrowth } from '@/components/analytics/panels/CatalogueGrowth';
 import { DataCoverage } from '@/components/analytics/panels/DataCoverage';
 import { DifficultyCatalogue } from '@/components/analytics/panels/DifficultyCatalogue';
 import { EraAndPools } from '@/components/analytics/panels/EraAndPools';
 import { FootballerBreakdown } from '@/components/analytics/panels/FootballerBreakdown';
 import { FootballerMatrix } from '@/components/analytics/panels/FootballerMatrix';
 import { ReviewQueue } from '@/components/analytics/panels/ReviewQueue';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
@@ -91,9 +92,9 @@ export default function FootballersAnalyticsPage() {
   );
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Footballers"
-      description="How the catalogue is shaped, who built it, and what the games cannot use."
+      description="What was added, how the footballer catalogue is shaped, who built it, and what the games cannot use."
     >
       <FilterBar>
         <RangePicker
@@ -103,6 +104,12 @@ export default function FootballersAnalyticsPage() {
           onIncludeBotsChange={setIncludeBots}
         />
       </FilterBar>
+
+      {/* What was added, at the top: the football-data overview page held only
+          this chart and fetched the same coverage call as this page. */}
+      <ReportPanel state={state} skeletonClassName="h-112 w-full">
+        {data => <CatalogueGrowth data={data} />}
+      </ReportPanel>
 
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => (
@@ -177,6 +184,6 @@ export default function FootballersAnalyticsPage() {
       <ReportPanel state={state} skeletonClassName="h-96 w-full">
         {data => <DataCoverage data={data} />}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }

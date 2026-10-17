@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { SurfaceTabs } from '@/components/admin/SurfaceTabs';
 import { LineupSlots } from '@/components/analytics/panels/LineupSlots';
 import { LineupWorkload } from '@/components/analytics/panels/LineupWorkload';
-import { AnalyticsShell } from '@/components/analytics/shell/AnalyticsShell';
+import { InsightsShell } from '@/components/insights/InsightsShell';
 import { FilterBar } from '@/components/reports/filters/FilterBar';
 import { RangePicker } from '@/components/reports/filters/RangePicker';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
@@ -52,7 +52,7 @@ export default function LineupsAnalyticsPage() {
   );
 
   return (
-    <AnalyticsShell
+    <InsightsShell
       title="Lineup content"
       description="Which slots cost the most guesses, and which lineups ask the most of a player."
     >
@@ -79,6 +79,6 @@ export default function LineupsAnalyticsPage() {
       <ReportPanel state={state} skeletonClassName="h-80 w-full">
         {data => <LineupWorkload data={data} />}
       </ReportPanel>
-    </AnalyticsShell>
+    </InsightsShell>
   );
 }
