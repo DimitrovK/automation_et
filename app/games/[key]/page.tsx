@@ -80,7 +80,11 @@ export default function GameDetailPage() {
   );
 
   const { meta } = useGameMeta(enabled);
-  const ready = enabled && !!gameKey;
+  // Wait for the game list, and fetch nothing for a key that isn't a game: a
+  // mistyped URL used to fire ten requests that all answered 400.
+  const metaLoaded = Object.keys(meta).length > 0;
+  const knownGame = !!meta[gameKey];
+  const ready = enabled && !!gameKey && knownGame;
   const summary = useReport(ReportsAPI.getSummary, params, ready, 'The reporting summary endpoint');
   const activity = useReport(ReportsAPI.getActivity, params, ready, 'The reporting activity endpoint');
   const duration = useReport(ReportsAPI.getDuration, params, ready, 'The duration reporting endpoint');
@@ -120,6 +124,16 @@ export default function GameDetailPage() {
   const ownContent = GAME_CONTENT[gameKey];
   const games = Object.values(meta).sort((a, b) => gameName(a, a.key).localeCompare(gameName(b, b.key)));
   const row = summary.data?.by_game.find(entry => entry.game_type === gameKey);
+
+  if (enabled && metaLoaded && !knownGame) {
+    return (
+      <InsightsShell title="Game not found" description="There is no game with this address.">
+        <EmptyState hint="Pick a game from the list.">
+          <Link href="/reports/games" className="text-primary hover:underline">All games</Link>
+        </EmptyState>
+      </InsightsShell>
+    );
+  }
 
   return (
     <InsightsShell
@@ -213,7 +227,9 @@ export default function GameDetailPage() {
 
       <Fold id={`game-${gameKey}-when`} title="When and how long" summary="Time of day and session length">
         <ReportPanel state={patterns} skeletonClassName="h-40 w-full">
-          {data => <GameHourProfile data={data} gameLabel={label} />}
+          {data => ((data.by_hour ?? []).some(hour => hour.games_started > 0)
+            ? <GameHourProfile data={data} gameLabel={label} />
+            : <EmptyState>No sessions in this window.</EmptyState>)}
         </ReportPanel>
         <ReportPanel state={duration} skeletonClassName="h-64 w-full">
           {data => (
@@ -247,16 +263,18 @@ export default function GameDetailPage() {
 
       <Fold id={`game-${gameKey}-material`} title="Material left" summary="Content stock and unfinished sessions (today, not windowed)">
         <ReportPanel state={content} skeletonClassName="h-48 w-full">
-          {data => (
-            <ContentHealth
-              meta={meta}
-              data={{
-                ...data,
-                rows: data.rows.filter(entry => entry.game_type === gameKey),
-                games_running_low: data.games_running_low.filter(key => key === gameKey),
-              }}
-            />
-          )}
+          {data => (!data.rows.some(entry => entry.game_type === gameKey)
+            ? <EmptyState>This game has no content pool to run low.</EmptyState>
+            : (
+                <ContentHealth
+                  meta={meta}
+                  data={{
+                    ...data,
+                    rows: data.rows.filter(entry => entry.game_type === gameKey),
+                    games_running_low: data.games_running_low.filter(key => key === gameKey),
+                  }}
+                />
+              ))}
         </ReportPanel>
         <ReportPanel state={unfinished} skeletonClassName="h-48 w-full">
           {data => (
@@ -264,7 +282,7 @@ export default function GameDetailPage() {
               rows={data.rows.filter(entry => entry.game_type === gameKey)}
               meta={meta}
               asOf={data.as_of}
-              totalStale={data.total_stale_sessions}
+              totalStale={data.rows.filter(entry => entry.game_type === gameKey).reduce((sum, entry) => sum + entry.stale_sessions, 0)}
             />
           )}
         </ReportPanel>
@@ -274,7 +292,9 @@ export default function GameDetailPage() {
 
       <Fold id={`game-${gameKey}-retention`} title="Retention" summary="Does it keep its new players, against the other games">
         <ReportPanel state={retention} skeletonClassName="h-64 w-full">
-          {data => <GameRetentionCard data={data} gameKey={gameKey} gameLabel={label} />}
+          {data => (data.by_game?.some(row => row.game_type === gameKey)
+            ? <GameRetentionCard data={data} gameKey={gameKey} gameLabel={label} />
+            : <EmptyState>No new players of this game in the window to follow.</EmptyState>)}
         </ReportPanel>
       </Fold>
 

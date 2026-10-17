@@ -43,8 +43,7 @@ export function Navigation({ className }: NavigationProps) {
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
     'Footballer Data': true, // Expanded by default
     'User Hub': true,
-    'Reports': true,
-    'Analytics': true,
+    'Insights': true,
   });
 
   // State for mobile menu

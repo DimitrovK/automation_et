@@ -102,7 +102,7 @@ export function SectionShell({
                         // private per-user data, which is why the bar is higher
                         // here than everywhere else in the tool.
                         ? 'This section surfaces private user data, so it is limited to superusers.'
-                        : 'Reports are limited to staff accounts.'}
+                        : 'Insights are limited to staff accounts.'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

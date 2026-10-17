@@ -26,7 +26,8 @@ import {
  * question. Now there is one section, grouped by what the reader is looking
  * for: the platform, a game, people, the football data behind the games.
  *
- * The routes did not move (bookmarks keep working); only the grouping did.
+ * Pages that moved (one page per game) keep their old URLs as redirects in
+ * next.config.mjs, so bookmarks still land.
  */
 export const INSIGHTS_NAV_GROUPS: NavGroup[] = [
   {
