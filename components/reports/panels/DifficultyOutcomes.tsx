@@ -96,7 +96,7 @@ export function DifficultyOutcomes({ data, meta }: { data: DifficultyResponse; m
                   {rows.map(row => (
                     <ReportRow key={row.game_type}>
                       <Td strong>
-                        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                        <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                       </Td>
                       <Td align="right">{row.sessions.toLocaleString()}</Td>
                       <Td align="right" strong><Rate value={row.completion_pct} /></Td>
@@ -125,7 +125,7 @@ export function DifficultyOutcomes({ data, meta }: { data: DifficultyResponse; m
         {rows.filter(row => row.difficulty.length > 0 && row.difficulty_label).map(row => (
           <div key={row.game_type} className="space-y-2 border-t pt-4">
             <p className="flex items-center gap-2 text-sm font-medium">
-              <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+              <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
               <span className="text-muted-foreground">{`by ${row.difficulty_label!.toLowerCase()}`}</span>
             </p>
             <ReportTable>

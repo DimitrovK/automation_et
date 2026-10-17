@@ -68,7 +68,7 @@ export function AttemptSpread({ data, meta }: { data: AttemptsResponse; meta: Ga
                   {data.rows.map(row => (
                     <ReportRow key={row.game_type}>
                       <Td strong>
-                        <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                        <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                       </Td>
                       <Td align="right">{row.sessions.toLocaleString()}</Td>
                       <Td align="right">

@@ -250,7 +250,7 @@ export default function GamesIndexPage() {
                           <GameBadge
                             gameKey={row.game_type}
                             meta={meta}
-                            href={`/reports/games/${row.game_type}`}
+                            href={`/games/${row.game_type}`}
                           />
                         </Td>
                         <Td align="right" strong>

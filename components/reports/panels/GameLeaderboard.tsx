@@ -168,7 +168,7 @@ export function GameLeaderboard({ rows, meta, metric, selected, onSelect }: {
                     ]}
                   />
                   <Link
-                    href={`/reports/games/${row.game_type}`}
+                    href={`/games/${row.game_type}`}
                     className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
                   >
                     Open full report for this game →

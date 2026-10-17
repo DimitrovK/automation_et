@@ -69,7 +69,7 @@ export function UnfinishedTable({ rows, meta, asOf, totalStale }: {
                       <ReportRow key={row.game_type}>
                         <Td strong>
                           <span className="flex items-center gap-2">
-                            <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                            <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                             {/* Stated on the row, not in a footnote: a game whose
                                 sweeper closes idle sessions cannot accumulate an
                                 old pool, so its number is not comparable with a

@@ -77,7 +77,7 @@ export function RetentionByGame({ data, meta }: { data: RetentionResponse; meta:
               return (
                 <ReportRow key={row.game_type}>
                   <Td>
-                    <GameBadge gameKey={row.game_type} meta={meta} href={`/reports/games/${row.game_type}`} />
+                    <GameBadge gameKey={row.game_type} meta={meta} href={`/games/${row.game_type}`} />
                   </Td>
                   {offsets.map((key) => {
                     const value = cell(row, key);
