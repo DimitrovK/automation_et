@@ -32,7 +32,7 @@ export default function PlayersReportPage() {
   // Filters live in the URL so a view can be bookmarked, shared or reloaded
   // without losing what was selected.
   const { filters, update } = useReportFilters({
-    range: { window: 7 },
+    range: { window: 30 },
     includeBots: false,
     game: null,
     metric: 'games_started',

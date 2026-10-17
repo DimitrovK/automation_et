@@ -178,7 +178,7 @@ export default function GameDetailPage() {
                       hint="Of games started"
                     />
                     <StatTile
-                      label="Repeat rate"
+                      label="Came back"
                       metric="repeat_rate_pct"
                       value={row.repeat_rate_pct === null ? '—' : `${row.repeat_rate_pct}%`}
                       hint="Players who came back another day"
