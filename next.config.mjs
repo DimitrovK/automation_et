@@ -16,6 +16,8 @@ const nextConfig = {
       // Grid's behaviour and content pages became one dashboard (grid dashboard, 2026-10-17).
       { source: '/reports/games/grid', destination: '/games/grid', permanent: true },
       { source: '/analytics/grid', destination: '/games/grid', permanent: true },
+      // Needs attention was removed: it flagged noise more than news at this volume.
+      { source: '/reports/anomalies', destination: '/reports', permanent: true },
     ];
   },
   typescript: {

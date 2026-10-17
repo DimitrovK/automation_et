@@ -10,7 +10,6 @@ import {
   Repeat,
   Route,
   Shield,
-  TriangleAlert,
   User,
   Users,
   Users2,
@@ -36,7 +35,6 @@ export type NavigationPage = {
  */
 export const REPORTS_CHILDREN: NavigationPage[] = [
   { label: 'Daily Pulse', href: '/reports', icon: BarChart3, description: 'How today compares with a typical day' },
-  { label: 'Needs attention', href: '/reports/anomalies', icon: TriangleAlert, description: 'What moved more than noise explains' },
   { label: 'Games', href: '/reports/games', icon: LayoutGrid, description: 'Per-game health, content and format' },
   { label: 'Multiplayer', href: '/reports/multiplayer', icon: Gamepad2, description: 'Room funnel: created, started, finished' },
   { label: 'Players', href: '/reports/players', icon: Users, description: 'Most active players over a window' },
