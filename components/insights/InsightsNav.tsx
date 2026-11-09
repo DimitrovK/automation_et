@@ -12,6 +12,7 @@ import {
   Repeat,
   Route,
   Shield,
+  Trophy,
   User,
   Users,
   Users2,
@@ -34,6 +35,7 @@ export const INSIGHTS_NAV_GROUPS: NavGroup[] = [
     heading: 'Overview',
     items: [
       { href: '/reports', label: 'Daily Pulse', icon: BarChart3 },
+      { href: '/reports/season', label: 'Season', icon: Trophy },
     ],
   },
   {
