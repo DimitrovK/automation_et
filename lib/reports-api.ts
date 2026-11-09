@@ -29,6 +29,7 @@ import type {
   ReportParams,
   RetentionResponse,
   RollupHealth,
+  SeasonReport,
   SummaryResponse,
   TeamGapsResponse,
   TeamOrdering,
@@ -97,6 +98,15 @@ export class ReportsAPI {
   /** GET /core/reporting/rollup-health/ — is the rollup complete and current. */
   static async getRollupHealth(): Promise<RollupHealth> {
     return apiFetcher<RollupHealth>('core/reporting/rollup-health/');
+  }
+
+  /**
+   * GET /core/reporting/season/ — one season as the Django admin's Season
+   * dashboard shows it. No season: the one in focus there. Not range-filtered,
+   * so it takes no `ReportParams`.
+   */
+  static async getSeason(season?: number): Promise<SeasonReport> {
+    return apiFetcher<SeasonReport>(`core/reporting/season/${buildQuery({ season })}`);
   }
 
   /** GET /core/reporting/glossary/ — what every reported number means. */

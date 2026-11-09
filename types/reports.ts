@@ -1634,3 +1634,64 @@ export type DifficultyTier = {
    */
   with_picture_pct: number | null;
 };
+
+/**
+ * GET /core/reporting/season/ (App#2604): one season as the Django admin's
+ * Season dashboard shows it, from the same backend read, so the two never
+ * disagree. Not range-filtered: a season has its own dates.
+ */
+export type SeasonCheck = {
+  label: string;
+  /** Null: not due yet (fair play before the start). */
+  done: boolean | null;
+  detail: string;
+  /** Absolute Django admin URL where the step is done; '' when there is none. */
+  link: string;
+  link_text: string;
+};
+
+export type SeasonGameRow = {
+  /** The season board key ('line-up'). */
+  game_key: string;
+  /** The `core.game_stats` key ('missing11'): the one `/games/<key>` uses. */
+  stats_key: string;
+  label: string;
+  counted: number;
+  /** Players ranked on the main board; null before the season starts. */
+  size: number | null;
+  min_games: number;
+  /** "username (value)", or '—'. */
+  leader: string;
+  /** The player-facing board page. */
+  page: string;
+  /** The Django admin archive, once frozen; '' before. */
+  archive: string;
+};
+
+export type SeasonReport = {
+  seasons: { number: number; name: string }[];
+  season: {
+    number: number;
+    name: string;
+    /** UPCOMING / LIVE / FINALIZING / FINISHED, by dates. */
+    status: string;
+    audience: string;
+    audience_label: string;
+    starts_at: string;
+    ends_at: string;
+    is_preseason: boolean;
+  };
+  /** "Day 13 of 35 · ends in 22d 4h". */
+  timing: string;
+  progress: number;
+  /** Both ends, in Sofia time. */
+  dates: string;
+  numbers: { label: string; value: string; note: string }[];
+  per_day: { day: string; counted: number }[];
+  games: SeasonGameRow[];
+  checklist: SeasonCheck[];
+  champions: { board: string; username: string; picture: string | null; picture_name: string }[];
+  removals: { username: string; game: string; reason: string; by: string; at: string }[];
+  /** The same season on the Django admin's Season dashboard. */
+  admin_url: string;
+};

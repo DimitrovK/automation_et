@@ -28,9 +28,11 @@ import { Fold } from '@/components/reports/primitives/PanelCard';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { StatTile } from '@/components/reports/primitives/StatTile';
+import { SeasonGameStrip } from '@/components/seasons/SeasonGameStrip';
 import { useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
+import { useSeasonReport } from '@/hooks/use-season-report';
 import { useAuth } from '@/lib/auth';
 import { rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -149,6 +151,8 @@ export default function GridDashboardPage() {
   const modeLabels = { ...MODE_LABEL, ...boardList.data?.labels?.variation_mode };
   const revealLabels = { ...REVEAL_LABEL, ...boardList.data?.labels?.reveal };
   const newPlayers = patterns.data?.new_vs_returning?.reduce((sum, day) => sum + day.new_players, 0);
+  // The season in focus, not the range below: a season has its own dates.
+  const season = useSeasonReport(null, enabled);
   const gridRetention = retention.data?.by_game?.find(row => row.game_type === 'grid');
   const d7 = gridRetention?.d7;
 
@@ -158,6 +162,8 @@ export default function GridDashboardPage() {
       description="Is Grid healthy, is its content good, and who plays it. Health and Content follow the filters; a card that can't says so."
       actions={<Link href="/reports/glossary" className="text-sm text-muted-foreground hover:text-foreground hover:underline">What the numbers mean</Link>}
     >
+      {season.data && <SeasonGameStrip report={season.data} gameKey="grid" />}
+
       <FilterBar>
         <RangePicker
           value={range}

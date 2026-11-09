@@ -29,10 +29,12 @@ import { ReportError } from '@/components/reports/primitives/ReportError';
 import { ReportPanel } from '@/components/reports/primitives/ReportPanel';
 import { SectionHeader } from '@/components/reports/primitives/SectionHeader';
 import { StatTile } from '@/components/reports/primitives/StatTile';
+import { SeasonGameStrip } from '@/components/seasons/SeasonGameStrip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { gameName, useGameColor, useGameMeta } from '@/hooks/use-game-meta';
 import { useReport } from '@/hooks/use-report';
 import { useReportFilters } from '@/hooks/use-report-filters';
+import { useSeasonReport } from '@/hooks/use-season-report';
 import { useAuth } from '@/lib/auth';
 import { compareToParams, rangeToParams } from '@/lib/report-range';
 import { ReportsAPI } from '@/lib/reports-api';
@@ -121,6 +123,8 @@ export default function GameDetailPage() {
   );
   // Rooms, not participations: one five-player room is one match.
   const rooms = useReport(ReportsAPI.getMultiplayer, params, ready, 'The multiplayer reporting endpoint');
+  // The season in focus, not the range below: a season has its own dates.
+  const season = useSeasonReport(null, ready);
   const roomRow = rooms.data?.by_game.find(row => row.game_type === gameKey);
   const newPlayers = patterns.data?.new_vs_returning?.reduce((sum, day) => sum + day.new_players, 0);
   const contentParams = useMemo(() => ({ ...rangeToParams(range), include_bots: includeBots }), [range, includeBots]);
@@ -160,6 +164,8 @@ export default function GameDetailPage() {
           {games.map(game => <option key={game.key} value={game.key}>{gameName(game, game.key)}</option>)}
         </select>
       </div>
+
+      {season.data && <SeasonGameStrip report={season.data} gameKey={gameKey} />}
 
       <FilterBar>
         <RangePicker
