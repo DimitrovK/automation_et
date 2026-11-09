@@ -389,7 +389,7 @@ describe('worklist footballer links', () => {
 
 describe('foldSeries', () => {
   it('keeps the four biggest series and sums the rest into Other, point by point', async () => {
-    const { foldSeries } = await import('@/components/analytics/grid/GridSessionsChart');
+    const { foldSeries } = await import('@/lib/grid-sessions');
     const keys = ['a', 'b', 'c', 'd', 'e', 'f'];
     const folded = foldSeries({
       series_keys: keys.map((key, index) => ({ key, label: key.toUpperCase(), sessions: 60 - index * 10 })),

@@ -2,7 +2,6 @@
 
 import type { GridGroupBy } from '@/hooks/use-report-filters';
 import type { GridAnalyticsResponse, GridBreakdownRow, GridModeRow } from '@/types/reports';
-import { GROUP_OPTIONS } from '@/components/analytics/grid/GridSessionsChart';
 import { modeKey, modeLabel } from '@/components/analytics/panels/grid-mode';
 import { DataBar } from '@/components/reports/primitives/DataBar';
 import { EmptyState } from '@/components/reports/primitives/EmptyState';
@@ -10,6 +9,7 @@ import { MetricInfo } from '@/components/reports/primitives/MetricInfo';
 import { PanelCard, Segmented } from '@/components/reports/primitives/PanelCard';
 import { ReportHead, ReportRow, ReportTable, Td, Th } from '@/components/reports/primitives/ReportTable';
 import { MAGNITUDE_BAR, MAGNITUDE_TRACK } from '@/lib/data-colours';
+import { GROUP_OPTIONS } from '@/lib/grid-sessions';
 import { cn } from '@/lib/utils';
 
 /** Below this, completion is worth a look whatever the mode promises. */
